@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat P2P com Contatos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    #root {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .peer-id-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+    .peer-id-input {
+      flex: 1;
+      margin-right: 10px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .message.you {
+      background-color: #e3f2fd;
+      margin-left: 20%;
+    }
+    .message.other {
+      background-color: #f1f1f1;
+      margin-right: 20%;
+    }
+    .file-link {
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .progress-container {
+      margin-top: 5px;
+    }
+    .progress-bar {
+      height: 5px;
+      background: #ddd;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 100%;
+      background: #4CAF50;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .connected-peers {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+    .peer-item {
+      margin: 5px 0;
+      padding: 5px;
+      background: #e3f2fd;
+      border-radius: 3px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .file-input-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const usePersistentId = () => {
+      const [peerId, setPeerId] = useState('');
+
+      useEffect(() => {
+        const generateId = () => {
+          const savedId = localStorage.getItem('p2pChatId');
+          if (savedId) return savedId;
+          
+          const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+          const buffer = new Uint8Array(6);
+          crypto.getRandomValues(buffer);
+          const newId = Array.from(buffer)
+            .map(b => chars[b % chars.length])
+            .join('');
+          
+          localStorage.setItem('p2pChatId', newId);
+          return newId;
+        };
+        setPeerId(generateId());
+      }, []);
+
+      return peerId;
+    };
+
+    const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
+      const [newName, setNewName] = useState('');
+      const [newPeerId, setNewPeerId] = useState('');
+
+      const handleAddContact = () => {
+        if (newName && newPeerId) {
+          const newContact = { name: newName, peerId: newPeerId };
+          setContacts(prev => {
+            const updated = [...prev, newContact];
+            localStorage.setItem('p2pContacts', JSON.stringify(updated));
+            return updated;
+          });
+          setNewName('');
+          setNewPeerId('');
+        }
+      };
+
+      const handleRemoveContact = (peerId) => {
+        setContacts(prev => {
+          const updated = prev.filter(c => c.peerId !== peerId);
+          localStorage.setItem('p2pContacts', JSON.stringify(updated));
+          return updated;
+        });
+      };
+
+      return (
+        <div>
+          <button onClick={onBack} style={{ marginBottom: '20px' }}>
+            ← 
+          </button>
+          
+          <h2>Lista de Contatos</h2>
+          
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+            <input
+              type="text"
+              placeholder="Nome do contato"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="ID do contato"
+              value={newPeerId}
+              onChange={(e) => setNewPeerId(e.target.value)}
+            />
+            <button onClick={handleAddContact}>➕</button>
+          </div>
+
+          <div className="connected-peers">
+            {contacts.map((contact, i) => (
+              <div 
+                key={i} 
+                className="peer-item"
+                onClick={() => onSelectContact(contact.peerId)}
+              >
+                <span style={{ flex: 1 }}>
+                  {contact.name} - {contact.peerId}
+                </span>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveContact(contact.peerId);
+                  }}
+                  style={{ marginLeft: '10px' }}
+                >
+                  🗑 
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const peerId = usePersistentId();
+      const [connections, setConnections] = useState([]);
+      const [messages, setMessages] = useState([]);
+      const [newMessage, setNewMessage] = useState('');
+      const [showContacts, setShowContacts] = useState(false);
+      const [contacts, setContacts] = useState(() => {
+        const saved = localStorage.getItem('p2pContacts');
+        return saved ? JSON.parse(saved) : [];
+      });
+      
+      const peerInstance = useRef(null);
+      const fileInputRef = useRef(null);
+      const pendingFiles = useRef({});
+      const CHUNK_SIZE = 16 * 1024;
+
+      useEffect(() => {
+        if (!peerId) return;
+
+        const peer = new Peer(peerId, {
+          host: '0.peerjs.com',
+          port: 443,
+          secure: true,
+          config: {
+            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+          }
+        });
+
+        peer.on('connection', (conn) => {
+          conn.on('open', () => {
+            setConnections(prev => [...prev, conn]);
+          });
+
+          conn.on('data', handleIncomingData);
+        });
+
+        peerInstance.current = peer;
+
+        return () => peer.destroy();
+      }, [peerId]);
+
+      const handleIncomingData = (data, peerId) => {
+        if (data.type === 'message') {
+          setMessages(prev => [...prev, {
+            text: data.text,
+            sender: peerId,
+            time: new Date().toLocaleTimeString(),
+            type: 'text'
+          }]);
+        } else if (data.type === 'file-start') {
+          pendingFiles.current[data.fileId] = {
+            fileName: data.fileName,
+            chunks: [],
+            totalChunks: data.totalChunks
+          };
+          
+          setMessages(prev => [...prev, {
+            fileId: data.fileId,
+            fileName: data.fileName,
+            sender: peerId,
+            time: new Date().toLocaleTimeString(),
+            type: 'file',
+            receiving: true,
+            progress: 0
+          }]);
+        } else if (data.type === 'file-chunk') {
+          const fileData = pendingFiles.current[data.fileId];
+          if (fileData) {
+            fileData.chunks[data.chunkIndex] = data.chunk;
+            
+            const receivedChunks = fileData.chunks.filter(c => c).length;
+            const progress = Math.floor((receivedChunks / fileData.totalChunks) * 100);
+            
+            setMessages(prev => prev.map(msg => 
+              msg.fileId === data.fileId ? { ...msg, progress } : msg
+            ));
+
+            if (receivedChunks === fileData.totalChunks) {
+              const completeData = fileData.chunks.join('');
+              const blob = new Blob([completeData], { type: 'application/octet-stream' });
+              const url = URL.createObjectURL(blob);
+              
+              setMessages(prev => prev.map(msg => 
+                msg.fileId === data.fileId ? { 
+                  ...msg, 
+                  fileData: url,
+                  receiving: false
+                } : msg
+              ));
+              
+              delete pendingFiles.current[data.fileId];
+            }
+          }
+        }
+      };
+
+      const connectToPeer = (peerIdToConnect) => {
+        if (!peerIdToConnect || !peerInstance.current) return;
+
+        const conn = peerInstance.current.connect(peerIdToConnect);
+        
+        conn.on('open', () => {
+          setConnections(prev => [...prev, conn]);
+        });
+
+        conn.on('data', (data) => {
+          handleIncomingData(data, conn.peer);
+        });
+      };
+
+      const sendMessage = () => {
+        if (newMessage.trim() && connections.length > 0) {
+          connections.forEach(conn => {
+            conn.send({ type: 'message', text: newMessage });
+          });
+          
+          setMessages(prev => [...prev, {
+            text: newMessage,
+            sender: 'you',
+            time: new Date().toLocaleTimeString(),
+            type: 'text'
+          }]);
+          
+          setNewMessage('');
+        }
+      };
+
+      const handleFileChange = () => {
+        const file = fileInputRef.current.files[0];
+        if (!file || connections.length === 0) return;
+
+        const fileId = Date.now();
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const reader = new FileReader();
+        let chunkIndex = 0;
+
+        setMessages(prev => [...prev, {
+          fileId,
+          fileName: file.name,
+          sender: 'you',
+          time: new Date().toLocaleTimeString(),
+          type: 'file',
+          sending: true,
+          progress: 0
+        }]);
+
+        connections.forEach(conn => {
+          conn.send({
+            type: 'file-start',
+            fileId,
+            fileName: file.name,
+            totalChunks
+          });
+        });
+
+        reader.onload = (e) => {
+          connections.forEach(conn => {
+            conn.send({
+              type: 'file-chunk',
+              fileId,
+              chunkIndex,
+              chunk: e.target.result,
+              totalChunks
+            });
+          });
+
+          const progress = Math.floor(((chunkIndex + 1) / totalChunks) * 100);
+          setMessages(prev => prev.map(msg => 
+            msg.fileId === fileId ? { ...msg, progress } : msg
+          ));
+
+          chunkIndex++;
+          if (chunkIndex < totalChunks) {
+            const nextOffset = chunkIndex * CHUNK_SIZE;
+            const nextChunk = file.slice(nextOffset, nextOffset + CHUNK_SIZE);
+            reader.readAsDataURL(nextChunk);
+          } else {
+            setMessages(prev => prev.map(msg => 
+              msg.fileId === fileId ? { ...msg, sending: false } : msg
+            ));
+          }
+        };
+
+        const firstChunk = file.slice(0, CHUNK_SIZE);
+        reader.readAsDataURL(firstChunk);
+        fileInputRef.current.value = '';
+      };
+
+      return (
+        <div>
+          {!showContacts ? (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h1>PSA</h1>
+                <button onClick={() => setShowContacts(true)}>
+                  📋
+                </button>
+              </div>
+              
+              <div className="peer-id-container">
+                <span>Seu ID Fixo: <strong>{peerId || 'Gerando...'}</strong></span>
+              </div>
+
+              {connections.length > 0 && (
+                <div className="connected-peers">
+                  <h3>Conexões Ativas:</h3>
+                  {connections.map((conn, i) => (
+                    <div key={i} className="peer-item">
+                      {conn.peer}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={{ 
+                height: '300px', 
+                border: '1px solid #ddd',
+                padding: '10px',
+                overflowY: 'scroll',
+                marginBottom: '10px'
+              }}>
+                {messages.map((msg, i) => (
+                  <div 
+                    key={i}
+                    className={`message ${msg.sender === 'you' ? 'you' : 'other'}`}
+                  >
+                    {msg.type === 'text' ? (
+                      msg.text
+                    ) : (
+                      <div>
+                        {msg.fileData ? (
+                          <a
+                            href={msg.fileData}
+                            download={msg.fileName}
+                            className="file-link"
+                          >
+                            {msg.fileName}
+                          </a>
+                        ) : (
+                          <span>{msg.fileName}</span>
+                        )}
+                        {(msg.receiving || msg.sending) && (
+                          <div className="progress-container">
+                            <div className="progress-bar">
+                              <div 
+                                className="progress" 
+                                style={{ width: `${msg.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '0.8em', color: '#666' }}>
+                      {msg.time} {msg.sender === 'you' ? '(Você)' : ''}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="file-input-container">
+                <button 
+                  onClick={() => fileInputRef.current.click()}
+                  disabled={connections.length === 0}
+                >
+                  ∞
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Digite sua mensagem..."
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                  style={{ flex: 1, marginRight: '10px' }}
+                />
+                <button 
+                  onClick={sendMessage} 
+                  disabled={connections.length === 0 || !newMessage.trim()}
+                >
+                  ➤ 
+                </button>
+              </div>
+            </div>
+          ) : (
+            <ContactsScreen 
+              contacts={contacts}
+              setContacts={setContacts}
+              onBack={() => setShowContacts(false)}
+              onSelectContact={(peerId) => {
+                connectToPeer(peerId);
+                setShowContacts(false);
+              }}
+            />
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
