@@ -7,16 +7,18 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 0;
+      margin: 0;
       background-color: #f5f5f5;
+      height: 100vh;
     }
     #root {
-      max-width: 800px;
+      width: 100%;
+      height: 100vh;
       margin: 0 auto;
       background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 10px;
+      box-sizing: border-box;
     }
     .peer-id-container {
       display: flex;
@@ -25,26 +27,21 @@
       padding: 10px;
       background: #f8f9fa;
       border-radius: 5px;
-    }
-    .peer-id-input {
-      flex: 1;
-      margin-right: 10px;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      font-size: 0.9em;
     }
     .message {
       margin-bottom: 10px;
       padding: 10px;
       border-radius: 5px;
+      word-break: break-word;
     }
     .message.you {
       background-color: #e3f2fd;
-      margin-left: 20%;
+      margin-left: 15%;
     }
     .message.other {
       background-color: #f1f1f1;
-      margin-right: 20%;
+      margin-right: 15%;
     }
     .file-link {
       color: #1976d2;
@@ -80,14 +77,16 @@
       cursor: pointer;
       display: flex;
       align-items: center;
+      font-size: 0.9em;
     }
     button {
       background: #4CAF50;
       color: white;
       border: none;
-      padding: 8px 15px;
+      padding: 12px;
       border-radius: 4px;
       cursor: pointer;
+      min-width: 40px;
     }
     button:disabled {
       background: #cccccc;
@@ -95,8 +94,52 @@
     }
     .file-input-container {
       display: flex;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      background: white;
+      padding: 5px 0;
+    }
+    .messages-container {
+      height: calc(100vh - 220px);
+      overflow-y: auto;
+      padding: 10px;
+      margin-bottom: 60px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    @media (max-width: 480px) {
+      #root {
+        padding: 5px;
+      }
+      .message.you {
+        margin-left: 5%;
+      }
+      .message.other {
+        margin-right: 5%;
+      }
+      .peer-id-container {
+        font-size: 0.8em;
+        padding: 8px;
+      }
+      .connected-peers {
+        font-size: 0.8em;
+      }
+      .messages-container {
+        height: calc(100vh - 200px);
+        margin-bottom: 50px;
+      }
+      button {
+        padding: 10px;
+      }
     }
   </style>
 
@@ -159,13 +202,9 @@
 
       return (
         <div>
-          <button onClick={onBack} style={{ marginBottom: '20px' }}>
-            ← 
-          </button>
-          
+          <button onClick={onBack} style={{ marginBottom: '20px' }}>←</button>
           <h2>Lista de Contatos</h2>
-          
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             <input
               type="text"
               placeholder="Nome do contato"
@@ -180,7 +219,6 @@
             />
             <button onClick={handleAddContact}>➕</button>
           </div>
-
           <div className="connected-peers">
             {contacts.map((contact, i) => (
               <div 
@@ -188,18 +226,14 @@
                 className="peer-item"
                 onClick={() => onSelectContact(contact.peerId)}
               >
-                <span style={{ flex: 1 }}>
-                  {contact.name} - {contact.peerId}
-                </span>
+                <span style={{ flex: 1 }}>{contact.name} - {contact.peerId}</span>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleRemoveContact(contact.peerId);
                   }}
                   style={{ marginLeft: '10px' }}
-                >
-                  🗑 
-                </button>
+                >🗑</button>
               </div>
             ))}
           </div>
@@ -259,8 +293,10 @@
         } else if (data.type === 'file-start') {
           pendingFiles.current[data.fileId] = {
             fileName: data.fileName,
-            chunks: [],
-            totalChunks: data.totalChunks
+            buffers: [],
+            totalChunks: data.totalChunks,
+            bytesReceived: 0,
+            totalSize: data.totalSize
           };
           
           setMessages(prev => [...prev, {
@@ -275,18 +311,25 @@
         } else if (data.type === 'file-chunk') {
           const fileData = pendingFiles.current[data.fileId];
           if (fileData) {
-            fileData.chunks[data.chunkIndex] = data.chunk;
-            
-            const receivedChunks = fileData.chunks.filter(c => c).length;
-            const progress = Math.floor((receivedChunks / fileData.totalChunks) * 100);
+            const chunkData = new Uint8Array(data.chunk);
+            fileData.buffers[data.chunkIndex] = chunkData;
+            fileData.bytesReceived += chunkData.length;
+
+            const progress = Math.floor((fileData.bytesReceived / fileData.totalSize) * 100);
             
             setMessages(prev => prev.map(msg => 
               msg.fileId === data.fileId ? { ...msg, progress } : msg
             ));
 
-            if (receivedChunks === fileData.totalChunks) {
-              const completeData = fileData.chunks.join('');
-              const blob = new Blob([completeData], { type: 'application/octet-stream' });
+            if (fileData.bytesReceived === fileData.totalSize) {
+              const fullBuffer = new Uint8Array(fileData.totalSize);
+              let offset = 0;
+              fileData.buffers.forEach(chunk => {
+                fullBuffer.set(chunk, offset);
+                offset += chunk.length;
+              });
+
+              const blob = new Blob([fullBuffer], { type: 'application/octet-stream' });
               const url = URL.createObjectURL(blob);
               
               setMessages(prev => prev.map(msg => 
@@ -358,19 +401,22 @@
             type: 'file-start',
             fileId,
             fileName: file.name,
-            totalChunks
+            totalChunks,
+            totalSize: file.size
           });
         });
 
         reader.onload = (e) => {
+          const chunk = new Uint8Array(e.target.result);
+          
           connections.forEach(conn => {
             conn.send({
               type: 'file-chunk',
               fileId,
               chunkIndex,
-              chunk: e.target.result,
+              chunk: chunk.buffer,
               totalChunks
-            });
+            }, true);
           });
 
           const progress = Math.floor(((chunkIndex + 1) / totalChunks) * 100);
@@ -382,7 +428,7 @@
           if (chunkIndex < totalChunks) {
             const nextOffset = chunkIndex * CHUNK_SIZE;
             const nextChunk = file.slice(nextOffset, nextOffset + CHUNK_SIZE);
-            reader.readAsDataURL(nextChunk);
+            reader.readAsArrayBuffer(nextChunk);
           } else {
             setMessages(prev => prev.map(msg => 
               msg.fileId === fileId ? { ...msg, sending: false } : msg
@@ -391,7 +437,7 @@
         };
 
         const firstChunk = file.slice(0, CHUNK_SIZE);
-        reader.readAsDataURL(firstChunk);
+        reader.readAsArrayBuffer(firstChunk);
         fileInputRef.current.value = '';
       };
 
@@ -401,9 +447,7 @@
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h1>PSA</h1>
-                <button onClick={() => setShowContacts(true)}>
-                  📋
-                </button>
+                <button onClick={() => setShowContacts(true)}>📋</button>
               </div>
               
               <div className="peer-id-container">
@@ -414,20 +458,12 @@
                 <div className="connected-peers">
                   <h3>Conexões Ativas:</h3>
                   {connections.map((conn, i) => (
-                    <div key={i} className="peer-item">
-                      {conn.peer}
-                    </div>
+                    <div key={i} className="peer-item">{conn.peer}</div>
                   ))}
                 </div>
               )}
 
-              <div style={{ 
-                height: '300px', 
-                border: '1px solid #ddd',
-                padding: '10px',
-                overflowY: 'scroll',
-                marginBottom: '10px'
-              }}>
+              <div className="messages-container">
                 {messages.map((msg, i) => (
                   <div 
                     key={i}
@@ -451,10 +487,7 @@
                         {(msg.receiving || msg.sending) && (
                           <div className="progress-container">
                             <div className="progress-bar">
-                              <div 
-                                className="progress" 
-                                style={{ width: `${msg.progress}%` }}
-                              />
+                              <div className="progress" style={{ width: `${msg.progress}%` }} />
                             </div>
                           </div>
                         )}
@@ -471,9 +504,7 @@
                 <button 
                   onClick={() => fileInputRef.current.click()}
                   disabled={connections.length === 0}
-                >
-                  ∞
-                </button>
+                >∞</button>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -486,14 +517,11 @@
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Digite sua mensagem..."
                   onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  style={{ flex: 1, marginRight: '10px' }}
                 />
                 <button 
                   onClick={sendMessage} 
                   disabled={connections.length === 0 || !newMessage.trim()}
-                >
-                  ➤ 
-                </button>
+                >➤</button>
               </div>
             </div>
           ) : (
