@@ -144,6 +144,13 @@
       border-radius: 4px;
       flex: 1;
     }
+    /* Nova estilização para a lista de contatos */
+    .contacts-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border-right: 4px solid #4CAF50;
+      padding-right: 10px;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -251,11 +258,35 @@
     const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
       const [newName, setNewName] = useState('');
       const [newPeerId, setNewPeerId] = useState('');
+      const [nameError, setNameError] = useState('');
+      const [idError, setIdError] = useState('');
+
+      const validateForm = () => {
+        let isValid = true;
+        
+        // Validação do nome
+        if (!newName.trim()) {
+          setNameError('Nome é obrigatório');
+          isValid = false;
+        } else {
+          setNameError('');
+        }
+        
+        // Validação do ID
+        if (!newPeerId.trim()) {
+          setIdError('ID é obrigatório');
+          isValid = false;
+        } else {
+          setIdError('');
+        }
+        
+        return isValid;
+      };
 
       const handleAddContact = (e) => {
         e.preventDefault(); // Prevent form submission
         
-        if (newName && newPeerId) {
+        if (validateForm()) {
           const newContact = { name: newName, peerId: newPeerId };
           setContacts(prev => {
             const updated = [...prev, newContact];
@@ -285,25 +316,33 @@
           
           <form className="contact-form" onSubmit={handleAddContact}>
             <div className="contact-form-row">
-              <input
-                type="text"
-                placeholder="Nome do contato"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                required
-              />
-              <input
-                type="text"
-                placeholder="ID do contato"
-                value={newPeerId}
-                onChange={(e) => setNewPeerId(e.target.value)}
-                required
-              />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <input
+                  type="text"
+                  placeholder="Nome do contato"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  style={{ borderColor: nameError ? 'red' : '#ddd' }}
+                />
+                {nameError && <span style={{ color: 'red', fontSize: '12px' }}>{nameError}</span>}
+              </div>
+              
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <input
+                  type="text"
+                  placeholder="ID do contato"
+                  value={newPeerId}
+                  onChange={(e) => setNewPeerId(e.target.value)}
+                  style={{ borderColor: idError ? 'red' : '#ddd' }}
+                />
+                {idError && <span style={{ color: 'red', fontSize: '12px' }}>{idError}</span>}
+              </div>
+              
               <button type="submit">Adicionar</button>
             </div>
           </form>
 
-          <div className="connected-peers">
+          <div className="connected-peers contacts-list">
             {contacts.length === 0 ? (
               <p>Nenhum contato adicionado ainda.</p>
             ) : (
