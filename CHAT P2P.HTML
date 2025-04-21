@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat P2P com Contatos</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -98,6 +99,51 @@
       gap: 10px;
       margin-top: 10px;
     }
+    .voice-button {
+      background: #4CAF50;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .voice-button.recording {
+      background: #ff0000;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .button-icon {
+      color: white;
+      font-size: 16px;
+    }
+    .audio-player {
+      margin-top: 5px;
+      width: 100%;
+    }
+    /* Form styling */
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .contact-form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .contact-form input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      flex: 1;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -132,11 +178,83 @@
       return peerId;
     };
 
+    const VoiceRecorder = ({ onRecordingComplete, disabled }) => {
+      const [isRecording, setIsRecording] = useState(false);
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
+
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorderRef.current = new MediaRecorder(stream);
+          
+          mediaRecorderRef.current.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
+          
+          mediaRecorderRef.current.onstop = () => {
+            if (audioChunksRef.current.length === 0) {
+              console.error("No audio data collected");
+              return;
+            }
+            
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            onRecordingComplete(audioBlob);
+            audioChunksRef.current = [];
+            
+            // Stop all tracks to release the microphone
+            stream.getTracks().forEach(track => track.stop());
+          };
+          
+          audioChunksRef.current = []; // Clear any previous chunks
+          mediaRecorderRef.current.start(200); // Collect chunks more frequently
+          setIsRecording(true);
+        } catch (err) {
+          alert('Erro ao acessar o microfone: ' + err);
+          console.error(err);
+        }
+      };
+
+      const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+          try {
+            mediaRecorderRef.current.stop();
+          } catch (err) {
+            console.error("Error stopping media recorder:", err);
+          }
+          setIsRecording(false);
+        }
+      };
+
+      const toggleRecording = () => {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
+        }
+      };
+
+      return (
+        <button 
+          className={`voice-button ${isRecording ? 'recording' : ''}`}
+          onClick={toggleRecording}
+          disabled={disabled}
+          title="Gravar áudio"
+        >
+          <i className="fas fa-microphone button-icon"></i>
+        </button>
+      );
+    };
+
     const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
       const [newName, setNewName] = useState('');
       const [newPeerId, setNewPeerId] = useState('');
 
-      const handleAddContact = () => {
+      const handleAddContact = (e) => {
+        e.preventDefault(); // Prevent form submission
+        
         if (newName && newPeerId) {
           const newContact = { name: newName, peerId: newPeerId };
           setContacts(prev => {
@@ -149,7 +267,8 @@
         }
       };
 
-      const handleRemoveContact = (peerId) => {
+      const handleRemoveContact = (peerId, e) => {
+        e.stopPropagation();
         setContacts(prev => {
           const updated = prev.filter(c => c.peerId !== peerId);
           localStorage.setItem('p2pContacts', JSON.stringify(updated));
@@ -160,46 +279,52 @@
       return (
         <div>
           <button onClick={onBack} style={{ marginBottom: '20px' }}>
-            ← 
+            ← Voltar
           </button>
           <h2>Lista de Contatos</h2>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <input
-              type="text"
-              placeholder="Nome do contato"
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="ID do contato"
-              value={newPeerId}
-              onChange={(e) => setNewPeerId(e.target.value)}
-            />
-            <button onClick={handleAddContact}>➕</button>
-          </div>
+          
+          <form className="contact-form" onSubmit={handleAddContact}>
+            <div className="contact-form-row">
+              <input
+                type="text"
+                placeholder="Nome do contato"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="ID do contato"
+                value={newPeerId}
+                onChange={(e) => setNewPeerId(e.target.value)}
+                required
+              />
+              <button type="submit">Adicionar</button>
+            </div>
+          </form>
 
           <div className="connected-peers">
-            {contacts.map((contact, i) => (
-              <div 
-                key={i} 
-                className="peer-item"
-                onClick={() => onSelectContact(contact.peerId)}
-              >
-                <span style={{ flex: 1 }}>
-                  {contact.name} - {contact.peerId}
-                </span>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleRemoveContact(contact.peerId);
-                  }}
-                  style={{ marginLeft: '10px' }}
+            {contacts.length === 0 ? (
+              <p>Nenhum contato adicionado ainda.</p>
+            ) : (
+              contacts.map((contact, i) => (
+                <div 
+                  key={i} 
+                  className="peer-item"
+                  onClick={() => onSelectContact(contact.peerId)}
                 >
-                  🗑 
-                </button>
-              </div>
-            ))}
+                  <span style={{ flex: 1 }}>
+                    {contact.name} - {contact.peerId}
+                  </span>
+                  <button 
+                    onClick={(e) => handleRemoveContact(contact.peerId, e)}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
       );
@@ -219,7 +344,15 @@
       const peerInstance = useRef(null);
       const fileInputRef = useRef(null);
       const pendingFiles = useRef({});
+      const messagesEndRef = useRef(null);
       const CHUNK_SIZE = 16 * 1024;
+
+      // Auto-scroll to bottom of messages
+      useEffect(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, [messages]);
 
       useEffect(() => {
         if (!peerId) return;
@@ -229,24 +362,57 @@
           port: 443,
           secure: true,
           config: {
-            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-          }
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          },
+          debug: 3
+        });
+
+        peer.on('open', (id) => {
+          console.log("Connected to PeerJS with ID:", id);
+        });
+
+        peer.on('error', (err) => {
+          console.error("PeerJS error:", err);
+          alert(`Erro de conexão: ${err.type}`);
         });
 
         peer.on('connection', (conn) => {
+          console.log("Incoming connection from:", conn.peer);
+          
           conn.on('open', () => {
+            console.log("Connection opened with:", conn.peer);
             setConnections(prev => [...prev, conn]);
           });
 
-          conn.on('data', handleIncomingData);
+          conn.on('data', (data) => {
+            console.log("Received data from:", conn.peer, data.type);
+            handleIncomingData(data, conn.peer);
+          });
+
+          conn.on('close', () => {
+            console.log("Connection closed with:", conn.peer);
+            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+          });
+
+          conn.on('error', (err) => {
+            console.error("Connection error with:", conn.peer, err);
+          });
         });
 
         peerInstance.current = peer;
 
-        return () => peer.destroy();
+        return () => {
+          console.log("Destroying peer connection");
+          peer.destroy();
+        };
       }, [peerId]);
 
       const handleIncomingData = (data, peerId) => {
+        console.log("Processing incoming data of type:", data.type);
+        
         if (data.type === 'message') {
           setMessages(prev => [...prev, {
             text: data.text,
@@ -299,27 +465,107 @@
               delete pendingFiles.current[data.fileId];
             }
           }
+        } else if (data.type === 'audio-start') {
+          console.log("Received audio-start:", data);
+          pendingFiles.current[data.audioId] = {
+            chunks: new Uint8Array(data.audioSize),
+            receivedBytes: 0,
+            totalSize: data.audioSize
+          };
+          
+          setMessages(prev => [...prev, {
+            audioId: data.audioId,
+            sender: peerId,
+            time: new Date().toLocaleTimeString(),
+            type: 'audio',
+            receiving: true,
+            progress: 0
+          }]);
+        } else if (data.type === 'audio-chunk') {
+          const audioData = pendingFiles.current[data.audioId];
+          if (audioData) {
+            const chunk = new Uint8Array(data.chunk);
+            audioData.chunks.set(chunk, data.offset);
+            audioData.receivedBytes += chunk.length;
+            
+            const progress = Math.floor((audioData.receivedBytes / audioData.totalSize) * 100);
+            
+            setMessages(prev => prev.map(msg => 
+              msg.audioId === data.audioId ? { ...msg, progress } : msg
+            ));
+
+            if (audioData.receivedBytes === audioData.totalSize) {
+              const blob = new Blob([audioData.chunks], { type: 'audio/webm' });
+              const url = URL.createObjectURL(blob);
+              
+              setMessages(prev => prev.map(msg => 
+                msg.audioId === data.audioId ? { 
+                  ...msg, 
+                  audioData: url,
+                  receiving: false
+                } : msg
+              ));
+              
+              delete pendingFiles.current[data.audioId];
+            }
+          }
         }
       };
 
       const connectToPeer = (peerIdToConnect) => {
-        if (!peerIdToConnect || !peerInstance.current) return;
+        if (!peerIdToConnect || !peerInstance.current) {
+          console.error("Cannot connect: missing peer ID or peer instance");
+          return;
+        }
 
-        const conn = peerInstance.current.connect(peerIdToConnect);
+        console.log("Connecting to peer:", peerIdToConnect);
         
-        conn.on('open', () => {
-          setConnections(prev => [...prev, conn]);
-        });
+        try {
+          const conn = peerInstance.current.connect(peerIdToConnect, {
+            reliable: true
+          });
+          
+          conn.on('open', () => {
+            console.log("Successfully connected to:", peerIdToConnect);
+            setConnections(prev => {
+              // Avoid duplicate connections
+              if (prev.some(c => c.peer === conn.peer)) {
+                return prev;
+              }
+              return [...prev, conn];
+            });
+          });
 
-        conn.on('data', (data) => {
-          handleIncomingData(data, conn.peer);
-        });
+          conn.on('data', (data) => {
+            console.log("Received data from connected peer:", data.type);
+            handleIncomingData(data, conn.peer);
+          });
+
+          conn.on('error', (err) => {
+            console.error("Connection error:", err);
+            alert(`Erro ao conectar com ${peerIdToConnect}: ${err}`);
+          });
+
+          conn.on('close', () => {
+            console.log("Connection closed with:", conn.peer);
+            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+          });
+        } catch (err) {
+          console.error("Error establishing connection:", err);
+          alert(`Erro ao estabelecer conexão: ${err.message}`);
+        }
       };
 
       const sendMessage = () => {
         if (newMessage.trim() && connections.length > 0) {
+          console.log("Sending text message to", connections.length, "peers");
+          
           connections.forEach(conn => {
-            conn.send({ type: 'message', text: newMessage });
+            try {
+              conn.send({ type: 'message', text: newMessage });
+            } catch (err) {
+              console.error("Error sending message to", conn.peer, err);
+            }
           });
           
           setMessages(prev => [...prev, {
@@ -337,6 +583,7 @@
         const file = fileInputRef.current.files[0];
         if (!file || connections.length === 0) return;
 
+        console.log("Sending file:", file.name, "size:", file.size);
         const fileId = Date.now();
         const reader = new FileReader();
         let offset = 0;
@@ -352,12 +599,16 @@
         }]);
 
         connections.forEach(conn => {
-          conn.send({
-            type: 'file-start',
-            fileId,
-            fileName: file.name,
-            fileSize: file.size
-          });
+          try {
+            conn.send({
+              type: 'file-start',
+              fileId,
+              fileName: file.name,
+              fileSize: file.size
+            });
+          } catch (err) {
+            console.error("Error sending file-start to", conn.peer, err);
+          }
         });
 
         const readChunk = () => {
@@ -369,12 +620,16 @@
           const chunkBuffer = new Uint8Array(e.target.result);
           
           connections.forEach(conn => {
-            conn.send({
-              type: 'file-chunk',
-              fileId,
-              chunk: chunkBuffer.buffer,
-              offset: offset
-            });
+            try {
+              conn.send({
+                type: 'file-chunk',
+                fileId,
+                chunk: chunkBuffer.buffer,
+                offset: offset
+              });
+            } catch (err) {
+              console.error("Error sending file chunk to", conn.peer, err);
+            }
           });
 
           offset += chunkBuffer.length;
@@ -397,6 +652,85 @@
         fileInputRef.current.value = '';
       };
 
+      const handleAudioRecording = (audioBlob) => {
+        if (!connections.length) {
+          console.error("No connections available to send audio");
+          return;
+        }
+        
+        console.log("Processing audio recording, size:", audioBlob.size);
+        const audioId = Date.now();
+        const reader = new FileReader();
+        let offset = 0;
+
+        // Create a URL for local playback
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        setMessages(prev => [...prev, {
+          audioId,
+          sender: 'you',
+          time: new Date().toLocaleTimeString(),
+          type: 'audio',
+          sending: true,
+          progress: 0,
+          audioData: audioUrl
+        }]);
+
+        // Notify peers that we're sending audio
+        connections.forEach(conn => {
+          try {
+            console.log("Sending audio-start to", conn.peer);
+            conn.send({
+              type: 'audio-start',
+              audioId,
+              audioSize: audioBlob.size
+            });
+          } catch (err) {
+            console.error("Error sending audio-start to", conn.peer, err);
+          }
+        });
+
+        const readChunk = () => {
+          const chunk = audioBlob.slice(offset, offset + CHUNK_SIZE);
+          reader.readAsArrayBuffer(chunk);
+        };
+
+        reader.onload = (e) => {
+          const chunkBuffer = new Uint8Array(e.target.result);
+          
+          connections.forEach(conn => {
+            try {
+              conn.send({
+                type: 'audio-chunk',
+                audioId,
+                chunk: chunkBuffer.buffer,
+                offset: offset
+              });
+            } catch (err) {
+              console.error("Error sending audio chunk to", conn.peer, err);
+            }
+          });
+
+          offset += chunkBuffer.length;
+          const progress = Math.floor((offset / audioBlob.size) * 100);
+          
+          setMessages(prev => prev.map(msg => 
+            msg.audioId === audioId ? { ...msg, progress } : msg
+          ));
+
+          if (offset < audioBlob.size) {
+            readChunk();
+          } else {
+            setMessages(prev => prev.map(msg => 
+              msg.audioId === audioId ? { ...msg, sending: false } : msg
+            ));
+            console.log("Audio sending complete");
+          }
+        };
+
+        readChunk();
+      };
+
       return (
         <div>
           {!showContacts ? (
@@ -404,7 +738,7 @@
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h1>PSA</h1>
                 <button onClick={() => setShowContacts(true)}>
-                  📋
+                  📋 Contatos
                 </button>
               </div>
               
@@ -414,7 +748,7 @@
 
               {connections.length > 0 && (
                 <div className="connected-peers">
-                  <h3>Conexões Ativas:</h3>
+                  <h3>Conexões Ativas: {connections.length}</h3>
                   {connections.map((conn, i) => (
                     <div key={i} className="peer-item">
                       {conn.peer}
@@ -437,7 +771,7 @@
                   >
                     {msg.type === 'text' ? (
                       msg.text
-                    ) : (
+                    ) : msg.type === 'file' ? (
                       <div>
                         {msg.fileData ? (
                           <a
@@ -461,20 +795,48 @@
                           </div>
                         )}
                       </div>
+                    ) : msg.type === 'audio' && (
+                      <div>
+                        {msg.audioData ? (
+                          <audio 
+                            controls 
+                            src={msg.audioData}
+                            className="audio-player"
+                          />
+                        ) : (
+                          <span>Áudio</span>
+                        )}
+                        {(msg.receiving || msg.sending) && (
+                          <div className="progress-container">
+                            <div className="progress-bar">
+                              <div 
+                                className="progress" 
+                                style={{ width: `${msg.progress}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
                     <div style={{ fontSize: '0.8em', color: '#666' }}>
                       {msg.time} {msg.sender === 'you' ? '(Você)' : ''}
                     </div>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               <div className="file-input-container">
+                <VoiceRecorder 
+                  onRecordingComplete={handleAudioRecording}
+                  disabled={connections.length === 0}
+                />
                 <button 
                   onClick={() => fileInputRef.current.click()}
                   disabled={connections.length === 0}
+                  title="Enviar arquivo"
                 >
-                  ∞
+                  <i className="fas fa-paperclip"></i>
                 </button>
                 <input
                   type="file"
@@ -493,8 +855,9 @@
                 <button 
                   onClick={sendMessage} 
                   disabled={connections.length === 0 || !newMessage.trim()}
+                  title="Enviar mensagem"
                 >
-                  ➤ 
+                  <i className="fas fa-paper-plane"></i>
                 </button>
               </div>
             </div>
