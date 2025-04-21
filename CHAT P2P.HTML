@@ -151,6 +151,17 @@
       border-right: 4px solid #4CAF50;
       padding-right: 10px;
     }
+    .id-backup-container {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #fff3cd;
+      border-radius: 4px;
+      border: 1px solid #ffeeba;
+    }
+    .copy-button {
+      background: #007bff;
+      margin-left: 10px;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -161,28 +172,163 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    const usePersistentId = () => {
-      const [peerId, setPeerId] = useState('');
+    // Constante para o nome da chave no localStorage para o ID
+    const PEER_ID_STORAGE_KEY = 'p2pChatId';
+    // Chave de backup para o ID
+    const PEER_ID_BACKUP_KEY = 'p2pChatId_backup';
 
+    // ID fixo aprimorado com múltiplas camadas de persistência
+    const usePersistentId = () => {
+      const [peerId, setPeerId] = useState(() => {
+        // Primeiro tenta obter do localStorage
+        let savedId = localStorage.getItem(PEER_ID_STORAGE_KEY);
+        
+        // Se não existe, tenta obter do backup
+        if (!savedId || savedId.length === 0) {
+          console.log("ID principal não encontrado, tentando backup");
+          savedId = localStorage.getItem(PEER_ID_BACKUP_KEY) || '';
+          
+          // Se encontrou no backup, restaura para o principal
+          if (savedId.length > 0) {
+            console.log("Restaurando ID do backup:", savedId);
+            try {
+              localStorage.setItem(PEER_ID_STORAGE_KEY, savedId);
+            } catch (e) {
+              console.error("Erro ao restaurar ID para storage principal:", e);
+            }
+          }
+        }
+        
+        // Se temos um ID válido, retorna ele
+        if (savedId && savedId.length > 0) {
+          console.log("Usando ID existente:", savedId);
+          return savedId;
+        }
+        
+        // Caso contrário, gera um novo
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        const buffer = new Uint8Array(6);
+        crypto.getRandomValues(buffer);
+        const newId = Array.from(buffer)
+          .map(b => chars[b % chars.length])
+          .join('');
+        
+        console.log("Gerando novo ID:", newId);
+        
+        // Tenta salvar o novo ID em múltiplos lugares
+        try {
+          localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+          localStorage.setItem(PEER_ID_BACKUP_KEY, newId);
+          // Também tenta salvar no sessionStorage como backup adicional
+          sessionStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+          
+          // Tenta salvar em um cookie (expira em 1 ano)
+          document.cookie = `${PEER_ID_STORAGE_KEY}=${newId}; max-age=31536000; path=/`;
+        } catch (e) {
+          console.error("Erro ao salvar novo ID:", e);
+        }
+        
+        return newId;
+      });
+
+      // Implementação adicional para garantir que o ID seja preservado
       useEffect(() => {
-        const generateId = () => {
-          const savedId = localStorage.getItem('p2pChatId');
-          if (savedId) return savedId;
+        // Verifica regularmente e restaura o ID se necessário
+        const checkId = () => {
+          const currentSavedId = localStorage.getItem(PEER_ID_STORAGE_KEY);
           
-          const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-          const buffer = new Uint8Array(6);
-          crypto.getRandomValues(buffer);
-          const newId = Array.from(buffer)
-            .map(b => chars[b % chars.length])
-            .join('');
-          
-          localStorage.setItem('p2pChatId', newId);
-          return newId;
+          // Se o ID salvo não corresponder ao atual, restaura
+          if (!currentSavedId || currentSavedId !== peerId) {
+            console.log("Restaurando ID no localStorage:", peerId);
+            try {
+              localStorage.setItem(PEER_ID_STORAGE_KEY, peerId);
+              localStorage.setItem(PEER_ID_BACKUP_KEY, peerId);
+              sessionStorage.setItem(PEER_ID_STORAGE_KEY, peerId);
+              document.cookie = `${PEER_ID_STORAGE_KEY}=${peerId}; max-age=31536000; path=/`;
+            } catch (e) {
+              console.error("Erro ao restaurar ID:", e);
+            }
+          }
         };
-        setPeerId(generateId());
-      }, []);
+        
+        // Verifica imediatamente
+        checkId();
+        
+        // Verifica a cada 10 segundos
+        const intervalId = setInterval(checkId, 10000);
+        
+        // Monitora eventos de storage para detectar alterações externas
+        const handleStorageChange = (e) => {
+          if (e.key === PEER_ID_STORAGE_KEY && e.newValue !== peerId) {
+            console.warn("ID alterado externamente, restaurando para:", peerId);
+            localStorage.setItem(PEER_ID_STORAGE_KEY, peerId);
+          }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Limpa ao desmontar
+        return () => {
+          clearInterval(intervalId);
+          window.removeEventListener('storage', handleStorageChange);
+        };
+      }, [peerId]);
 
       return peerId;
+    };
+
+    // Componente para backup manual do ID
+    const IdBackupTools = ({ peerId }) => {
+      const [showBackupTools, setShowBackupTools] = useState(false);
+
+      const copyToClipboard = () => {
+        navigator.clipboard.writeText(peerId).then(() => {
+          alert("ID copiado para a área de transferência!");
+        });
+      };
+
+      const saveIdBackup = () => {
+        const backupId = prompt("Insira seu ID de backup:");
+        if (backupId && backupId.trim()) {
+          try {
+            localStorage.setItem(PEER_ID_STORAGE_KEY, backupId);
+            localStorage.setItem(PEER_ID_BACKUP_KEY, backupId);
+            sessionStorage.setItem(PEER_ID_STORAGE_KEY, backupId);
+            document.cookie = `${PEER_ID_STORAGE_KEY}=${backupId}; max-age=31536000; path=/`;
+            alert("ID restaurado com sucesso! A página será recarregada.");
+            window.location.reload();
+          } catch (e) {
+            alert("Erro ao restaurar ID: " + e);
+          }
+        }
+      };
+
+      return (
+        <div>
+          <button 
+            onClick={() => setShowBackupTools(!showBackupTools)}
+            style={{ marginLeft: '10px', background: '#6c757d' }}
+          >
+            {showBackupTools ? 'Esconder Opções' : '⚙️ Opções de ID'}
+          </button>
+          
+          {showBackupTools && (
+            <div className="id-backup-container">
+              <div>
+                <strong>Guarde seu ID fixo para não perdê-lo:</strong> {peerId}
+                <button 
+                  onClick={copyToClipboard}
+                  className="copy-button"
+                >
+                  Copiar
+                </button>
+              </div>
+              <p><small>Se perder seu ID, você pode restaurá-lo abaixo:</small></p>
+              <button onClick={saveIdBackup}>Restaurar ID</button>
+            </div>
+          )}
+        </div>
+      );
     };
 
     const VoiceRecorder = ({ onRecordingComplete, disabled }) => {
@@ -375,6 +521,7 @@
       const [messages, setMessages] = useState([]);
       const [newMessage, setNewMessage] = useState('');
       const [showContacts, setShowContacts] = useState(false);
+      const [connectionStatus, setConnectionStatus] = useState('desconectado');
       const [contacts, setContacts] = useState(() => {
         const saved = localStorage.getItem('p2pContacts');
         return saved ? JSON.parse(saved) : [];
@@ -385,6 +532,7 @@
       const pendingFiles = useRef({});
       const messagesEndRef = useRef(null);
       const CHUNK_SIZE = 16 * 1024;
+      const connectionAttemptRef = useRef(0);
 
       // Auto-scroll to bottom of messages
       useEffect(() => {
@@ -396,56 +544,187 @@
       useEffect(() => {
         if (!peerId) return;
 
-        const peer = new Peer(peerId, {
-          host: '0.peerjs.com',
-          port: 443,
-          secure: true,
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-          },
-          debug: 3
-        });
-
-        peer.on('open', (id) => {
-          console.log("Connected to PeerJS with ID:", id);
-        });
-
-        peer.on('error', (err) => {
-          console.error("PeerJS error:", err);
-          alert(`Erro de conexão: ${err.type}`);
-        });
-
-        peer.on('connection', (conn) => {
-          console.log("Incoming connection from:", conn.peer);
+        // Função para criar ou reconectar o peer
+        const setupPeer = () => {
+          console.log("Configurando peer com ID:", peerId);
+          setConnectionStatus('conectando');
           
-          conn.on('open', () => {
-            console.log("Connection opened with:", conn.peer);
-            setConnections(prev => [...prev, conn]);
+          // Limpa qualquer instância anterior
+          if (peerInstance.current) {
+            try {
+              peerInstance.current.destroy();
+            } catch (err) {
+              console.error("Erro ao destruir instância anterior:", err);
+            }
+          }
+          
+          const peer = new Peer(peerId, {
+            host: '0.peerjs.com',
+            port: 443,
+            secure: true,
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ]
+            },
+            debug: 3
           });
 
-          conn.on('data', (data) => {
-            console.log("Received data from:", conn.peer, data.type);
-            handleIncomingData(data, conn.peer);
+          peer.on('open', (id) => {
+            console.log("Connected to PeerJS with ID:", id);
+            setConnectionStatus('conectado');
+            
+            // Verifica se o ID retornado é o mesmo que estamos tentando usar
+            if (id !== peerId) {
+              console.error("ID mismatch:", id, "vs", peerId);
+              
+              // Se tentou reconectar muitas vezes, pode ser um problema com o servidor
+              if (connectionAttemptRef.current > 2) {
+                console.warn("Muitas tentativas de reconexão, aceitando novo ID");
+                // Atualiza localStorage com o novo ID para evitar conflitos futuros
+                localStorage.setItem(PEER_ID_STORAGE_KEY, id);
+                localStorage.setItem(PEER_ID_BACKUP_KEY, id);
+                alert(`Não foi possível conectar com o ID ${peerId}. Um novo ID foi gerado: ${id}`);
+                window.location.reload();
+                return;
+              }
+              
+              // Incrementa tentativa e tenta novamente
+              connectionAttemptRef.current++;
+              
+              // Recria com nosso ID fixo - pode falhar se o ID já estiver em uso
+              setTimeout(() => {
+                try {
+                  peer.destroy();
+                } catch (err) {
+                  console.error("Erro ao destruir peer:", err);
+                }
+                setupPeer();
+              }, 1000);
+            }
           });
 
-          conn.on('close', () => {
-            console.log("Connection closed with:", conn.peer);
-            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+          peer.on('error', (err) => {
+            console.error("PeerJS error:", err);
+            setConnectionStatus(`erro: ${err.type}`);
+            
+            if (err.type === 'unavailable-id') {
+              console.warn("ID indisponível, problema de conexão ou ID em uso");
+              
+              // Se for um problema de ID em uso, podemos tentar gerar um novo
+              // Mas apenas se tivermos tentado muitas vezes
+              if (connectionAttemptRef.current > 2) {
+                // Gerar um novo ID
+                const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+                const buffer = new Uint8Array(6);
+                crypto.getRandomValues(buffer);
+                const newId = Array.from(buffer)
+                  .map(b => chars[b % chars.length])
+                  .join('');
+                
+                console.log("Gerando novo ID após falha:", newId);
+                localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+                localStorage.setItem(PEER_ID_BACKUP_KEY, newId);
+                
+                // Atualiza a página para usar o novo ID
+                alert(`Seu ID fixo (${peerId}) parece estar em uso por outra pessoa. Um novo ID foi gerado, a página será recarregada.`);
+                window.location.reload();
+                return;
+              }
+              
+              // Incrementa tentativa e tenta novamente após um tempo
+              connectionAttemptRef.current++;
+              setTimeout(setupPeer, 2000);
+            } else {
+              // Para outros erros, tenta reconectar após um tempo
+              setTimeout(() => {
+                try {
+                  setupPeer();
+                } catch (e) {
+                  console.error("Erro ao tentar reconectar:", e);
+                }
+              }, 3000);
+            }
           });
 
-          conn.on('error', (err) => {
-            console.error("Connection error with:", conn.peer, err);
+          peer.on('disconnected', () => {
+            console.log("Peer desconectado");
+            setConnectionStatus('desconectado');
+            
+            // Tenta reconectar automaticamente
+            setTimeout(() => {
+              try {
+                if (peer.destroyed) {
+                  setupPeer();
+                } else {
+                  peer.reconnect();
+                }
+              } catch (e) {
+                console.error("Erro ao reconectar:", e);
+                setupPeer();
+              }
+            }, 1000);
           });
-        });
 
-        peerInstance.current = peer;
+          peer.on('connection', (conn) => {
+            console.log("Incoming connection from:", conn.peer);
+            
+            conn.on('open', () => {
+              console.log("Connection opened with:", conn.peer);
+              setConnections(prev => {
+                // Evita conexões duplicadas
+                if (prev.some(c => c.peer === conn.peer)) {
+                  return prev;
+                }
+                return [...prev, conn];
+              });
+            });
+
+            conn.on('data', (data) => {
+              console.log("Received data from:", conn.peer, data.type);
+              handleIncomingData(data, conn.peer);
+            });
+
+            conn.on('close', () => {
+              console.log("Connection closed with:", conn.peer);
+              setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+            });
+
+            conn.on('error', (err) => {
+              console.error("Connection error with:", conn.peer, err);
+            });
+          });
+
+          peerInstance.current = peer;
+        };
+        
+        // Configura o peer inicial
+        setupPeer();
+
+        // Verifica a conexão periodicamente
+        const checkConnectionInterval = setInterval(() => {
+          if (peerInstance.current && peerInstance.current.disconnected) {
+            console.log("Detectada desconexão, tentando reconectar...");
+            try {
+              peerInstance.current.reconnect();
+            } catch (e) {
+              console.error("Erro ao tentar reconectar:", e);
+              setupPeer();
+            }
+          }
+        }, 30000); // A cada 30 segundos
 
         return () => {
+          clearInterval(checkConnectionInterval);
           console.log("Destroying peer connection");
-          peer.destroy();
+          if (peerInstance.current) {
+            try {
+              peerInstance.current.destroy();
+            } catch (e) {
+              console.error("Erro ao destruir peer:", e);
+            }
+          }
         };
       }, [peerId]);
 
@@ -576,7 +855,7 @@
           });
 
           conn.on('data', (data) => {
-            console.log("Received data from connected peer:", data.type);
+           console.log("Received data from connected peer:", data.type);
             handleIncomingData(data, conn.peer);
           });
 
