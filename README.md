@@ -1,2 +1,4 @@
 # Chicken
-Chat diretamente entre dispositivos: Mensagens criptografadas e compartilhamento de arquivos sem servidores. Seus contatos, seu controle!
+1-O CHAT P2P PODE  CONECTAR  CLIENTE COM CLIENTE  POR MEIO DO ID FIXO.
+2-O CHAT P2P PODE SE CONECTAR  COM O DISTRIBUIDOR QUE SERVE PARA  CRIAR SALAS  DE BATE PAPO.
+3-O ID   DO  DISTRIBUIDOR  PODE SER EDITADO PARA CRIAR UM ID PERSONALIZADO.
