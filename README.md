@@ -5,6 +5,7 @@ Todos os usuários que se conectarem ao ID do servidor irão receber as mensagen
 Chat P2P
 1.   Baixe o aplicativo Chat P2P .EXE : https://mega.nz/file/SItGARLJ#rHaKZgqilFt3ZB16b-GLJZOkfIPHynJ8f_ozHUC92Dg
 1.   Baixe o aplicativo Servidor Chat P2P .EXE : https://mega.nz/file/Sc8j0bbR#_6FpXjNsTTk5YpO7p3WvkPO_UMXOgKLbAdS-9AESNns
+
 ✅ COMO USAR:
 1. Baixe o arquivo no link acima
 2. Abra o EXE no seu computador
