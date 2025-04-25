@@ -650,13 +650,16 @@
 
             peer.on('error', (err) => {
               console.error("PeerJS: Error:", err);
-              setError(`Erro de conexão PeerJS: ${err.type}`);
-              if (err.type === 'unavailable-id') {
+              if (err.type === 'peer-unavailable') {
+                console.log("PeerJS: Peer unavailable, showing user-friendly message");
+                alert("Usuário offline");
+              } else if (err.type === 'unavailable-id') {
                 console.log("PeerJS: ID unavailable, generating new ID...");
                 const newId = generateNewId();
                 setPeerId(newId);
                 peer.destroy();
               } else {
+                setError(`Erro de conexão PeerJS: ${err.type}`);
                 alert(`Erro de conexão: ${err.type}`);
               }
             });
@@ -673,7 +676,6 @@
                   return prev;
                 });
 
-                // If broadcasting, automatically start a video call with the new peer
                 if (isBroadcasting && localStream) {
                   console.log("App: Automatically starting video call with new peer:", conn.peer);
                   startVideoCallWithPeer(conn.peer, localStream);
@@ -851,7 +853,12 @@
 
           conn.on('error', (err) => {
             console.error("App: Connection error:", err);
-            alert(`Erro ao conectar com ${peerIdToConnect}: ${err}`);
+            if (err.type === 'peer-unavailable') {
+              console.log("App: Peer unavailable, showing user-friendly message");
+              alert("Usuário offline");
+            } else {
+              alert(`Erro ao conectar com ${peerIdToConnect}: ${err.message}`);
+            }
           });
 
           conn.on('close', () => {
@@ -1076,26 +1083,9 @@
             throw new Error('Nenhuma webcam encontrada.');
           }
           
-          if (videoDevices.length === 1) {
-            console.log("App: Using single video device:", videoDevices[0].deviceId);
-            return videoDevices[0].deviceId;
-          }
-          
-          const deviceOptions = videoDevices
-            .map((device, index) => `${index + 1}. ${device.label || `Webcam ${index + 1}`}`)
-            .join('\n');
-          
-          const selection = prompt(
-            `Selecione uma webcam:\n${deviceOptions}\nDigite o número da webcam desejada:`
-          );
-          
-          const selectedIndex = parseInt(selection, 10) - 1;
-          if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= videoDevices.length) {
-            throw new Error('Seleção inválida. Usando a webcam padrão.');
-          }
-          
-          console.log("App: Selected video device:", videoDevices[selectedIndex].deviceId);
-          return videoDevices[selectedIndex].deviceId;
+          // Always use the first available video device to avoid using prompt()
+          console.log("App: Using video device:", videoDevices[0].deviceId);
+          return videoDevices[0].deviceId;
         } catch (err) {
           console.error('App: Error selecting video device:', err);
           alert('Erro ao selecionar webcam: ' + err.message);
