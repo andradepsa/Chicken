@@ -189,21 +189,6 @@
       background: #cccccc;
       cursor: not-allowed;
     }
-    .video-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .video-player {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    .remote-video {
-      background: #000;
-    }
     .active-call-indicator {
       display: inline-flex;
       align-items: center;
@@ -214,20 +199,40 @@
       border-radius: 12px;
       margin-left: 8px;
     }
-    .call-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .call-end-button {
-      background: #ff0000;
-    }
     .audio-call-container {
       background-color: #e8f5e9;
       border-radius: 8px;
       padding: 10px;
       margin-bottom: 10px;
       border: 1px solid #c8e6c9;
+    }
+    .call-end-button {
+      background: #ff0000;
+    }
+    .error-message {
+      color: red;
+      padding: 20px;
+      border: 1px solid red;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .video-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .video-player {
+      width: 200px;
+      height: 150px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      background: #000;
+    }
+    .video-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
     }
   </style>
 
@@ -237,20 +242,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
 
   <script type="text/babel">
+    console.log("Script started loading");
+
     const { useState, useEffect, useRef } = React;
 
-    // Error Boundary to catch runtime errors
     class ErrorBoundary extends React.Component {
       state = { error: null };
 
       static getDerivedStateFromError(error) {
+        console.error("ErrorBoundary caught error:", error);
         return { error };
       }
 
       render() {
         if (this.state.error) {
           return (
-            <div style={{ padding: '20px', color: 'red' }}>
+            <div className="error-message">
               <h1>Erro na aplicação</h1>
               <p>{this.state.error.message}</p>
               <p>Verifique o console do navegador para mais detalhes.</p>
@@ -276,12 +283,15 @@
       };
 
       useEffect(() => {
+        console.log("usePersistentId: Loading or generating ID");
         const loadOrGenerateId = () => {
           const savedId = localStorage.getItem(PEER_ID_STORAGE_KEY);
           if (savedId) {
+            console.log("usePersistentId: Loaded saved ID:", savedId);
             setPeerId(savedId);
           } else {
             const newId = generateId();
+            console.log("usePersistentId: Generated new ID:", newId);
             localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
             setPeerId(newId);
           }
@@ -299,6 +309,7 @@
 
       const startRecording = async () => {
         try {
+          console.log("VoiceRecorder: Starting recording");
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           mediaRecorderRef.current = new MediaRecorder(stream);
           
@@ -310,11 +321,12 @@
           
           mediaRecorderRef.current.onstop = () => {
             if (audioChunksRef.current.length === 0) {
-              console.error("No audio data collected");
+              console.error("VoiceRecorder: No audio data collected");
               return;
             }
             
             const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            console.log("VoiceRecorder: Recording stopped, blob size:", audioBlob.size);
             onRecordingComplete(audioBlob);
             audioChunksRef.current = [];
             
@@ -325,8 +337,8 @@
           mediaRecorderRef.current.start(200);
           setIsRecording(true);
         } catch (err) {
-          alert('Erro ao acessar o microfone: ' + err);
-          console.error(err);
+          console.error("VoiceRecorder: Error accessing microphone:", err);
+          alert('Erro ao acessar o microfone: ' + err.message);
         }
       };
 
@@ -334,8 +346,9 @@
         if (mediaRecorderRef.current && isRecording) {
           try {
             mediaRecorderRef.current.stop();
+            console.log("VoiceRecorder: Stopping recording");
           } catch (err) {
-            console.error("Error stopping media recorder:", err);
+            console.error("VoiceRecorder: Error stopping media recorder:", err);
           }
           setIsRecording(false);
         }
@@ -392,6 +405,7 @@
         
         if (validateForm()) {
           const newContact = { name: newName, peerId: newPeerId };
+          console.log("ContactsScreen: Adding contact:", newContact);
           setContacts(prev => {
             const updated = [...prev, newContact];
             localStorage.setItem('p2pContacts', JSON.stringify(updated));
@@ -404,6 +418,7 @@
 
       const handleRemoveContact = (peerId, e) => {
         e.stopPropagation();
+        console.log("ContactsScreen: Removing contact with peerId:", peerId);
         setContacts(prev => {
           const updated = prev.filter(c => c.peerId !== peerId);
           localStorage.setItem('p2pContacts', JSON.stringify(updated));
@@ -474,9 +489,12 @@
     };
 
     const App = () => {
+      console.log("App: Component rendering");
       const [peerId, setPeerId] = usePersistentId();
       const [userName, setUserName] = useState(() => {
-        return localStorage.getItem('p2pUserName') || '';
+        const savedName = localStorage.getItem('p2pUserName') || '';
+        console.log("App: Loaded username:", savedName);
+        return savedName;
       });
       const [editingName, setEditingName] = useState(!localStorage.getItem('p2pUserName'));
       const [connections, setConnections] = useState([]);
@@ -485,17 +503,22 @@
       const [showContacts, setShowContacts] = useState(false);
       const [contacts, setContacts] = useState(() => {
         const saved = localStorage.getItem('p2pContacts');
-        return saved ? JSON.parse(saved) : [];
+        const parsed = saved ? JSON.parse(saved) : [];
+        console.log("App: Loaded contacts:", parsed);
+        return parsed;
       });
-      const [activeCalls, setActiveCalls] = useState([]); // [{ peerId, call, localStream, type }, ...]
-      const [remoteStreams, setRemoteStreams] = useState([]); // [{ peerId, stream, type }, ...]
+      const [activeCalls, setActiveCalls] = useState([]);
+      const [remoteStreams, setRemoteStreams] = useState([]);
+      const [error, setError] = useState(null);
+      const [isBroadcasting, setIsBroadcasting] = useState(false);
+      const [localStream, setLocalStream] = useState(null);
 
       const peerInstance = useRef(null);
       const fileInputRef = useRef(null);
       const pendingFiles = useRef({});
       const messagesEndRef = useRef(null);
-      const videoRefs = useRef({}); // To store refs for each remote video element
-      const audioRefs = useRef({}); // To store refs for audio elements
+      const audioRefs = useRef({});
+      const videoRefs = useRef({});
       const CHUNK_SIZE = 16 * 1024;
 
       const generateNewId = () => {
@@ -505,6 +528,7 @@
         const newId = Array.from(buffer)
           .map(b => chars[b % chars.length])
           .join('');
+        console.log("App: Generated new ID:", newId);
         localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
         return newId;
       };
@@ -516,6 +540,7 @@
 
       const saveUserName = () => {
         if (userName.trim()) {
+          console.log("App: Saving username:", userName);
           localStorage.setItem('p2pUserName', userName);
           setEditingName(false);
         }
@@ -528,147 +553,170 @@
       }, [messages]);
 
       useEffect(() => {
-        // Assign video refs to streams
         remoteStreams.forEach(({ peerId, stream, type }) => {
-          if (type === 'video') {
-            const videoElement = videoRefs.current[peerId];
-            if (videoElement && videoElement.srcObject !== stream) {
-              videoElement.srcObject = stream;
-            }
-          } else if (type === 'voice') {
+          if (type === 'voice') {
             const audioElement = audioRefs.current[peerId];
             if (audioElement && audioElement.srcObject !== stream) {
+              console.log("App: Assigning audio stream for peer:", peerId);
               audioElement.srcObject = stream;
+            }
+          } else if (type === 'video') {
+            const videoElement = videoRefs.current[peerId];
+            if (videoElement && videoElement.srcObject !== stream) {
+              console.log("App: Assigning video stream for peer:", peerId);
+              videoElement.srcObject = stream;
             }
           }
         });
       }, [remoteStreams]);
 
       useEffect(() => {
-        if (!peerId) return;
+        if (!peerId) {
+          console.log("App: No peerId yet, waiting...");
+          return;
+        }
 
+        console.log("App: Initializing PeerJS with ID:", peerId);
         const createPeer = () => {
-          const peer = new Peer(peerId, {
-            host: '0.peerjs.com',
-            port: 443,
-            secure: true,
-            config: {
-              iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-              ]
-            },
-            debug: 3
-          });
+          try {
+            const peer = new Peer(peerId, {
+              host: '0.peerjs.com',
+              port: 443,
+              secure: true,
+              config: {
+                iceServers: [
+                  { urls: 'stun:stun.l.google.com:19302' },
+                  { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+              },
+              debug: 3
+            });
 
-          peer.on('open', (id) => {
-            console.log("Connected to PeerJS with ID:", id);
-          });
+            peer.on('open', (id) => {
+              console.log("PeerJS: Connected with ID:", id);
+            });
 
-          peer.on('call', (call) => {
-            // Determinar o tipo de chamada pela metadata
-            const callType = call.metadata && call.metadata.type === 'voice' ? 'voice' : 'video';
-            console.log(`Recebendo chamada de ${callType} de: ${call.peer}`);
+            peer.on('call', (call) => {
+              const callType = call.metadata && call.metadata.type === 'voice' ? 'voice' : 'video';
+              console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
 
-            navigator.mediaDevices.getUserMedia({ 
-              video: callType === 'video', 
-              audio: true 
-            })
-            .then((stream) => {
-              call.answer(stream);
-              setActiveCalls(prev => [...prev, {
-                peerId: call.peer,
-                call,
-                localStream: stream,
-                type: callType
-              }]);
-
-              call.on('stream', (remoteStream) => {
-                console.log(`Recebido stream de ${call.peer} (${callType})`);
-                setRemoteStreams(prev => {
-                  const exists = prev.some(s => s.peerId === call.peer && s.type === callType);
-                  if (exists) {
-                    return prev.map(s => (s.peerId === call.peer && s.type === callType) 
-                      ? { peerId: call.peer, stream: remoteStream, type: callType } 
-                      : s);
-                  }
-                  return [...prev, { peerId: call.peer, stream: remoteStream, type: callType }];
+              navigator.mediaDevices.getUserMedia({ 
+                video: callType === 'video', 
+                audio: true 
+              })
+              .then((stream) => {
+                console.log(`PeerJS: Answering ${callType} call from:`, call.peer);
+                call.answer(stream);
+                setActiveCalls(prev => {
+                  const newCall = {
+                    peerId: call.peer,
+                    call,
+                    localStream: stream,
+                    type: callType
+                  };
+                  return [...prev, newCall];
                 });
-              });
 
-              call.on('close', () => {
-                endCall(call.peer, callType);
-              });
+                call.on('stream', (remoteStream) => {
+                  console.log(`PeerJS: Received ${callType} stream from:`, call.peer);
+                  setRemoteStreams(prev => {
+                    const exists = prev.some(s => s.peerId === call.peer && s.type === callType);
+                    if (exists) {
+                      return prev.map(s => (s.peerId === call.peer && s.type === callType) 
+                        ? { peerId: call.peer, stream: remoteStream, type: callType } 
+                        : s);
+                    }
+                    return [...prev, { peerId: call.peer, stream: remoteStream, type: callType }];
+                  });
+                });
 
-              call.on('error', (err) => {
-                console.error(`Erro na chamada de ${callType}:`, err);
-                alert(`Erro na chamada de ${callType === 'voice' ? 'voz' : 'vídeo'}: ` + err.message);
-                endCall(call.peer, callType);
+                call.on('close', () => {
+                  console.log(`PeerJS: ${callType} call closed with:`, call.peer);
+                  endCall(call.peer, callType);
+                });
+
+                call.on('error', (err) => {
+                  console.error(`PeerJS: Error in ${callType} call:`, err);
+                  alert(`Erro na chamada de ${callType === 'voice' ? 'voz' : 'vídeo'}: ` + err.message);
+                  endCall(call.peer, callType);
+                });
+              })
+              .catch((err) => {
+                console.error(`PeerJS: Error answering ${callType} call:`, err);
+                alert(`Erro ao acessar ${callType === 'voice' ? 'o microfone' : 'a câmera/microfone'}: ` + err.message);
+                call.close();
               });
-            })
-            .catch((err) => {
-              console.error(`Erro ao responder chamada de ${callType}:`, err);
-              alert(`Erro ao acessar ${callType === 'voice' ? 'o microfone' : 'a câmera/microfone'}: ` + err.message);
-              call.close();
             });
-          });
 
-          peer.on('error', (err) => {
-            console.error("PeerJS error:", err);
-            if (err.type === 'unavailable-id') {
-              console.log("ID unavailable, generating new ID...");
-              const newId = generateNewId();
-              setPeerId(newId);
-              peer.destroy();
-            } else {
-              alert(`Erro de conexão: ${err.type}`);
-            }
-          });
+            peer.on('error', (err) => {
+              console.error("PeerJS: Error:", err);
+              setError(`Erro de conexão PeerJS: ${err.type}`);
+              if (err.type === 'unavailable-id') {
+                console.log("PeerJS: ID unavailable, generating new ID...");
+                const newId = generateNewId();
+                setPeerId(newId);
+                peer.destroy();
+              } else {
+                alert(`Erro de conexão: ${err.type}`);
+              }
+            });
 
-          peer.on('connection', (conn) => {
-            console.log("Incoming connection from:", conn.peer);
-            
-            conn.on('open', () => {
-              console.log("Connection opened with:", conn.peer);
-              setConnections(prev => {
-                if (!prev.some(c => c.peer === conn.peer)) {
-                  return [...prev, conn];
+            peer.on('connection', (conn) => {
+              console.log("PeerJS: Incoming connection from:", conn.peer);
+              
+              conn.on('open', () => {
+                console.log("PeerJS: Connection opened with:", conn.peer);
+                setConnections(prev => {
+                  if (!prev.some(c => c.peer === conn.peer)) {
+                    return [...prev, conn];
+                  }
+                  return prev;
+                });
+
+                // If broadcasting, automatically start a video call with the new peer
+                if (isBroadcasting && localStream) {
+                  console.log("App: Automatically starting video call with new peer:", conn.peer);
+                  startVideoCallWithPeer(conn.peer, localStream);
                 }
-                return prev;
+              });
+
+              conn.on('data', (data) => {
+                console.log("PeerJS: Received data from:", conn.peer, data.type);
+                handleIncomingData(data, conn.peer);
+              });
+
+              conn.on('close', () => {
+                console.log("PeerJS: Connection closed with:", conn.peer);
+                setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+                endCall(conn.peer, 'video');
+              });
+
+              conn.on('error', (err) => {
+                console.error("PeerJS: Connection error with:", conn.peer, err);
               });
             });
 
-            conn.on('data', (data) => {
-              console.log("Received data from:", conn.peer, data.type);
-              handleIncomingData(data, conn.peer);
-            });
-
-            conn.on('close', () => {
-              console.log("Connection closed with:", conn.peer);
-              setConnections(prev => prev.filter(c => c.peer !== conn.peer));
-            });
-
-            conn.on('error', (err) => {
-              console.error("Connection error with:", conn.peer, err);
-            });
-          });
-
-          peerInstance.current = peer;
+            peerInstance.current = peer;
+          } catch (err) {
+            console.error("App: Error creating PeerJS instance:", err);
+            setError(`Erro ao inicializar PeerJS: ${err.message}`);
+          }
         };
 
         createPeer();
 
         return () => {
-          console.log("Destroying peer connection");
+          console.log("App: Cleaning up PeerJS connection");
           if (peerInstance.current) {
             peerInstance.current.destroy();
           }
           activeCalls.forEach(({ peerId, type }) => endCall(peerId, type));
+          stopBroadcast();
         };
       }, [peerId]);
 
       const handleIncomingData = (data, peerId) => {
-        console.log("Processing incoming data of type:", data.type);
+        console.log("App: Processing incoming data of type:", data.type);
         
         if (data.type === 'message') {
           setMessages(prev => [...prev, {
@@ -725,7 +773,7 @@
             }
           }
         } else if (data.type === 'audio-start') {
-          console.log("Received audio-start:", data);
+          console.log("App: Received audio-start:", data);
           pendingFiles.current[data.audioId] = {
             chunks: new Uint8Array(data.audioSize),
             receivedBytes: 0,
@@ -774,11 +822,12 @@
 
       const connectToPeer = (peerIdToConnect) => {
         if (!peerIdToConnect || !peerInstance.current) {
-          console.error("Cannot connect: missing peer ID or peer instance");
+          console.error("App: Cannot connect: missing peer ID or peer instance");
+          alert("Erro: Peer não inicializado ou ID inválido");
           return;
         }
 
-        console.log("Connecting to peer:", peerIdToConnect);
+        console.log("App: Connecting to peer:", peerIdToConnect);
         
         try {
           const conn = peerInstance.current.connect(peerIdToConnect, {
@@ -786,7 +835,7 @@
           });
           
           conn.on('open', () => {
-            console.log("Successfully connected to:", peerIdToConnect);
+            console.log("App: Successfully connected to:", peerIdToConnect);
             setConnections(prev => {
               if (prev.some(c => c.peer === conn.peer)) {
                 return prev;
@@ -796,33 +845,34 @@
           });
 
           conn.on('data', (data) => {
-            console.log("Received data from connected peer:", data.type);
+            console.log("App: Received data from connected peer:", data.type);
             handleIncomingData(data, conn.peer);
           });
 
           conn.on('error', (err) => {
-            console.error("Connection error:", err);
+            console.error("App: Connection error:", err);
             alert(`Erro ao conectar com ${peerIdToConnect}: ${err}`);
           });
 
           conn.on('close', () => {
-            console.log("Connection closed with:", conn.peer);
+            console.log("App: Connection closed with:", conn.peer);
             setConnections(prev => prev.filter(c => c.peer !== conn.peer));
           });
         } catch (err) {
-          console.error("Error establishing connection:", err);
+          console.error("App: Error establishing connection:", err);
           alert(`Erro ao estabelecer conexão: ${err.message}`);
         }
       };
 
       const sendMessage = () => {
         if (!userName.trim()) {
+          console.log("App: Cannot send message: username not set");
           alert('Por favor, defina seu nome antes de enviar mensagens');
           setEditingName(true);
           return;
         }
         if (newMessage.trim() && connections.length > 0) {
-          console.log("Sending text message to", connections.length, "peers");
+          console.log("App: Sending text message to", connections.length, "peers");
           
           connections.forEach(conn => {
             try {
@@ -832,7 +882,7 @@
                 senderName: userName
               });
             } catch (err) {
-              console.error("Error sending message to", conn.peer, err);
+              console.error("App: Error sending message to", conn.peer, err);
             }
           });
           
@@ -850,6 +900,7 @@
 
       const handleFileChange = () => {
         if (!userName.trim()) {
+          console.log("App: Cannot send file: username not set");
           alert('Por favor, defina seu nome antes de enviar arquivos');
           setEditingName(true);
           return;
@@ -857,7 +908,7 @@
         const file = fileInputRef.current.files[0];
         if (!file || connections.length === 0) return;
 
-        console.log("Sending file:", file.name, "size:", file.size);
+        console.log("App: Sending file:", file.name, "size:", file.size);
         const fileId = Date.now();
         const reader = new FileReader();
         let offset = 0;
@@ -883,7 +934,7 @@
               senderName: userName
             });
           } catch (err) {
-            console.error("Error sending file-start to", conn.peer, err);
+            console.error("App: Error sending file-start to", conn.peer, err);
           }
         });
 
@@ -904,7 +955,7 @@
                 offset: offset
               });
             } catch (err) {
-              console.error("Error sending file chunk to", conn.peer, err);
+              console.error("App: Error sending file chunk to", conn.peer, err);
             }
           });
 
@@ -930,16 +981,17 @@
 
       const handleAudioRecording = (audioBlob) => {
         if (!userName.trim()) {
+          console.log("App: Cannot send audio: username not set");
           alert('Por favor, defina seu nome antes de enviar áudios');
           setEditingName(true);
           return;
         }
         if (!connections.length) {
-          console.error("No connections available to send audio");
+          console.error("App: No connections available to send audio");
           return;
         }
         
-        console.log("Processing audio recording, size:", audioBlob.size);
+        console.log("App: Processing audio recording, size:", audioBlob.size);
         const audioId = Date.now();
         const reader = new FileReader();
         let offset = 0;
@@ -959,7 +1011,7 @@
 
         connections.forEach(conn => {
           try {
-            console.log("Sending audio-start to", conn.peer);
+            console.log("App: Sending audio-start to", conn.peer);
             conn.send({
               type: 'audio-start',
               audioId,
@@ -967,7 +1019,7 @@
               senderName: userName
             });
           } catch (err) {
-            console.error("Error sending audio-start to", conn.peer, err);
+            console.error("App: Error sending audio-start to", conn.peer, err);
           }
         });
 
@@ -988,7 +1040,7 @@
                 offset: offset
               });
             } catch (err) {
-              console.error("Error sending audio chunk to", conn.peer, err);
+              console.error("App: Error sending audio chunk to", conn.peer, err);
             }
           });
 
@@ -1005,7 +1057,7 @@
             setMessages(prev => prev.map(msg => 
               msg.audioId === audioId ? { ...msg, sending: false } : msg
             ));
-            console.log("Audio sending complete");
+            console.log("App: Audio sending complete");
           }
         };
 
@@ -1014,6 +1066,7 @@
 
       const selectVideoDevice = async () => {
         try {
+          console.log("App: Selecting video device");
           await navigator.mediaDevices.getUserMedia({ video: true });
           
           const devices = await navigator.mediaDevices.enumerateDevices();
@@ -1024,6 +1077,7 @@
           }
           
           if (videoDevices.length === 1) {
+            console.log("App: Using single video device:", videoDevices[0].deviceId);
             return videoDevices[0].deviceId;
           }
           
@@ -1040,9 +1094,10 @@
             throw new Error('Seleção inválida. Usando a webcam padrão.');
           }
           
+          console.log("App: Selected video device:", videoDevices[selectedIndex].deviceId);
           return videoDevices[selectedIndex].deviceId;
         } catch (err) {
-          console.error('Erro ao selecionar dispositivo de vídeo:', err);
+          console.error('App: Error selecting video device:', err);
           alert('Erro ao selecionar webcam: ' + err.message);
           return null;
         }
@@ -1050,20 +1105,19 @@
 
       const startVoiceCall = async (peerIdToCall) => {
         if (!peerInstance.current) {
+          console.error("App: Cannot start voice call: Peer not initialized");
           alert('Peer não inicializado');
           return;
         }
 
         try {
-          // Solicitar apenas acesso ao áudio para chamadas de voz
+          console.log("App: Starting voice call with:", peerIdToCall);
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           
-          // Adicionar metadata para identificar como chamada de voz
           const call = peerInstance.current.call(peerIdToCall, stream, { 
             metadata: { type: 'voice' } 
           });
 
-          // Adicionar à lista de chamadas ativas com o tipo 'voice'
           setActiveCalls(prev => [...prev, {
             peerId: peerIdToCall,
             call,
@@ -1072,9 +1126,8 @@
           }]);
 
           call.on('stream', (remoteStream) => {
-            console.log(`Recebido stream de áudio de ${peerIdToCall}`);
+            console.log(`App: Received audio stream from:`, peerIdToCall);
             
-            // Adicionar o stream à lista de streams remotos com o tipo 'voice'
             setRemoteStreams(prev => {
               const exists = prev.some(s => s.peerId === peerIdToCall && s.type === 'voice');
               if (exists) {
@@ -1087,42 +1140,34 @@
           });
 
           call.on('close', () => {
+            console.log("App: Voice call closed with:", peerIdToCall);
             endCall(peerIdToCall, 'voice');
           });
 
           call.on('error', (err) => {
-            console.error('Erro na chamada de voz:', err);
+            console.error('App: Error in voice call:', err);
             alert('Erro na chamada de voz: ' + err.message);
             endCall(peerIdToCall, 'voice');
           });
         } catch (err) {
-          console.error('Erro ao iniciar chamada de voz:', err);
+          console.error('App: Error starting voice call:', err);
           alert('Erro ao acessar o microfone: ' + err.message);
         }
       };
 
-      const startVideoCall = async (peerIdToCall) => {
+      const startVideoCallWithPeer = (peerIdToCall, stream) => {
         if (!peerInstance.current) {
+          console.error("App: Cannot start video call: Peer not initialized");
           alert('Peer não inicializado');
           return;
         }
 
         try {
-          const deviceId = await selectVideoDevice();
-          
-          const constraints = {
-            video: deviceId ? { deviceId: { exact: deviceId } } : true,
-            audio: true
-          };
-
-          const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          
-          // Adicionar metadata para identificar como chamada de vídeo
+          console.log("App: Starting video call with:", peerIdToCall);
           const call = peerInstance.current.call(peerIdToCall, stream, { 
             metadata: { type: 'video' } 
           });
 
-          // Adicionar à lista de chamadas ativas com o tipo 'video'
           setActiveCalls(prev => [...prev, {
             peerId: peerIdToCall,
             call,
@@ -1131,9 +1176,7 @@
           }]);
 
           call.on('stream', (remoteStream) => {
-            console.log(`Recebido stream de vídeo de ${peerIdToCall}`);
-            
-            // Adicionar o stream à lista de streams remotos com o tipo 'video'
+            console.log(`App: Received video stream from:`, peerIdToCall);
             setRemoteStreams(prev => {
               const exists = prev.some(s => s.peerId === peerIdToCall && s.type === 'video');
               if (exists) {
@@ -1146,34 +1189,87 @@
           });
 
           call.on('close', () => {
+            console.log("App: Video call closed with:", peerIdToCall);
             endCall(peerIdToCall, 'video');
           });
 
           call.on('error', (err) => {
-            console.error('Erro na chamada de vídeo:', err);
+            console.error('App: Error in video call:', err);
             alert('Erro na chamada de vídeo: ' + err.message);
             endCall(peerIdToCall, 'video');
           });
         } catch (err) {
-          console.error('Erro ao iniciar chamada de vídeo:', err);
-          alert('Erro ao acessar a câmera/microfone: ' + err.message);
+          console.error('App: Error starting video call:', err);
+          alert('Erro ao iniciar videochamada: ' + err.message);
+          setError(`Erro ao iniciar videochamada: ${err.message}`);
         }
       };
 
+      const startBroadcast = async () => {
+        if (!peerInstance.current) {
+          console.error("App: Cannot start broadcast: Peer not initialized");
+          alert('Peer não inicializado');
+          return;
+        }
+
+        if (connections.length === 0) {
+          console.log("App: No connected peers for broadcast");
+          alert('Nenhum contato conectado para transmitir vídeo.');
+          return;
+        }
+
+        try {
+          const deviceId = await selectVideoDevice();
+          const constraints = {
+            video: deviceId ? { deviceId: { exact: deviceId } } : true,
+            audio: true
+          };
+
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          setLocalStream(stream);
+          setIsBroadcasting(true);
+
+          connections.forEach(conn => {
+            startVideoCallWithPeer(conn.peer, stream);
+          });
+        } catch (err) {
+          console.error('App: Error starting broadcast:', err);
+          alert('Erro ao acessar a câmera/microfone: ' + err.message);
+          setError(`Erro ao iniciar transmissão: ${err.message}`);
+        }
+      };
+
+      const stopBroadcast = () => {
+        if (localStream) {
+          localStream.getTracks().forEach(track => {
+            track.stop();
+            console.log("App: Stopped stream track:", track.kind);
+          });
+          setLocalStream(null);
+        }
+        setIsBroadcasting(false);
+        activeCalls.forEach(({ peerId, type }) => {
+          if (type === 'video') {
+            endCall(peerId, 'video');
+          }
+        });
+      };
+
       const endCall = (peerIdToEnd, callType) => {
+        console.log(`App: Ending ${callType} call with:`, peerIdToEnd);
         setActiveCalls(prev => {
           const callsToEnd = prev.filter(c => c.peerId === peerIdToEnd && (!callType || c.type === callType));
           
           callsToEnd.forEach(callData => {
-            if (callData.localStream) {
+            if (callData.localStream && callData.localStream !== localStream) {
               callData.localStream.getTracks().forEach(track => {
                 track.stop();
-                console.log(`Stream local de ${callData.type} encerrado:`, track.kind);
+                console.log(`App: Stopped ${callData.type} stream track:`, track.kind);
               });
             }
             if (callData.call) {
               callData.call.close();
-              console.log(`Chamada de ${callData.type} encerrada com:`, peerIdToEnd);
+              console.log(`App: Closed ${callData.type} call with:`, peerIdToEnd);
             }
           });
           
@@ -1198,6 +1294,17 @@
         </div>
       );
 
+      if (error) {
+        return (
+          <div className="error-message">
+            <h1>Erro na Aplicação</h1>
+            <p>{error}</p>
+            <p>Verifique o console do navegador para mais detalhes.</p>
+            <button onClick={() => window.location.reload()}>Recarregar</button>
+          </div>
+        );
+      }
+
       return (
         <div>
           {!showContacts ? (
@@ -1212,6 +1319,7 @@
                     className="call-button"
                     onClick={() => {
                       if (connections.length === 0) {
+                        console.log("App: No connected peers for voice call");
                         alert('Nenhum contato conectado para chamar.');
                         return;
                       }
@@ -1225,6 +1333,7 @@
                         if (peerIdToCall && connections.some(c => c.peer === peerIdToCall)) {
                           startVoiceCall(peerIdToCall);
                         } else if (peerIdToCall) {
+                          console.log("App: Invalid peer ID for voice call:", peerIdToCall);
                           alert('ID inválido ou contato não conectado.');
                         }
                       }
@@ -1237,28 +1346,17 @@
                   <button 
                     className="call-button"
                     onClick={() => {
-                      if (connections.length === 0) {
-                        alert('Nenhum contato conectado para videochamada.');
-                        return;
-                      }
-                      if (connections.length === 1) {
-                        startVideoCall(connections[0].peer);
+                      if (isBroadcasting) {
+                        stopBroadcast();
                       } else {
-                        const peerIdToCall = prompt(
-                          'Digite o ID do contato para videochamada:\n' + 
-                          connections.map(c => `${getContactName(c.peer)} (${c.peer})`).join('\n')
-                        );
-                        if (peerIdToCall && connections.some(c => c.peer === peerIdToCall)) {
-                          startVideoCall(peerIdToCall);
-                        } else if (peerIdToCall) {
-                          alert('ID inválido ou contato não conectado.');
-                        }
+                        startBroadcast();
                       }
                     }}
-                    title="Iniciar videochamada"
+                    title={isBroadcasting ? "Parar transmissão de vídeo" : "Iniciar transmissão de vídeo"}
                     disabled={connections.length === 0}
+                    style={{ background: isBroadcasting ? '#ff0000' : '#4CAF50' }}
                   >
-                    <i className="fas fa-video button-icon"></i>
+                    <i className={isBroadcasting ? "fas fa-stop button-icon" : "fas fa-video button-icon"}></i>
                   </button>
                 </div>
               </div>
@@ -1280,7 +1378,34 @@
                 <span>Seu ID Fixo: <strong>{peerId || 'Gerando...'}</strong></span>
               </div>
 
-              {/* Chamadas de voz ativas */}
+              {(localStream || remoteStreams.filter(s => s.type === 'video').length > 0) && (
+                <div className="video-container">
+                  {localStream && (
+                    <div>
+                      <div className="video-label">Você ({userName})</div>
+                      <video
+                        className="video-player"
+                        autoPlay
+                        muted
+                        ref={el => {
+                          if (el) el.srcObject = localStream;
+                        }}
+                      />
+                    </div>
+                  )}
+                  {remoteStreams.filter(s => s.type === 'video').map(({ peerId, stream }) => (
+                    <div key={`video-${peerId}`}>
+                      <div className="video-label">{getContactName(peerId)} ({peerId})</div>
+                      <video
+                        className="video-player"
+                        autoPlay
+                        ref={el => videoRefs.current[peerId] = el}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {remoteStreams.filter(s => s.type === 'voice').length > 0 && (
                 <div className="audio-call-container">
                   <h3>Chamadas de Voz Ativas</h3>
@@ -1292,7 +1417,7 @@
                           <audio
                             ref={el => audioRefs.current[peerId] = el}
                             autoPlay
-                            style={{ display: 'none' }} // Audio element is hidden
+                            style={{ display: 'none' }}
                           />
                         </div>
                         <button 
@@ -1302,28 +1427,6 @@
                           <i className="fas fa-phone-slash"></i> Encerrar
                         </button>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Chamadas de vídeo ativas */}
-              {remoteStreams.filter(s => s.type === 'video').length > 0 && (
-                <div className="video-container">
-                  {remoteStreams.filter(s => s.type === 'video').map(({ peerId, stream }) => (
-                    <div key={`video-${peerId}`}>
-                      <video
-                        ref={el => videoRefs.current[peerId] = el}
-                        className="video-player remote-video"
-                        autoPlay
-                      />
-                      <p>Vídeo de: {getContactName(peerId)}</p>
-                      <button 
-                        onClick={() => endCall(peerId, 'video')} 
-                        className="call-end-button"
-                      >
-                        <i className="fas fa-video-slash"></i> Encerrar Videochamada
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -1456,6 +1559,7 @@
               setContacts={setContacts}
               onBack={() => setShowContacts(false)}
               onSelectContact={(peerId) => {
+                console.log("App: Selecting contact:", peerId);
                 connectToPeer(peerId);
                 setShowContacts(false);
               }}
@@ -1465,12 +1569,25 @@
       );
     };
 
-    ReactDOM.render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>,
-      document.getElementById('root')
-    );
+    console.log("Attempting to render React app");
+    try {
+      ReactDOM.render(
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>,
+        document.getElementById('root')
+      );
+      console.log("React app rendered successfully");
+    } catch (err) {
+      console.error("Error rendering React app:", err);
+      document.getElementById('root').innerHTML = `
+        <div style="color: red; padding: 20px;">
+          <h1>Erro ao carregar a aplicação</h1>
+          <p>${err.message}</p>
+          <p>Verifique o console do navegador para mais detalhes.</p>
+        </div>
+      `;
+    }
   </script>
 </head>
 <body>
