@@ -204,6 +204,31 @@
     .remote-video {
       background: #000;
     }
+    .active-call-indicator {
+      display: inline-flex;
+      align-items: center;
+      background-color: #ff5722;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+    }
+    .call-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .call-end-button {
+      background: #ff0000;
+    }
+    .audio-call-container {
+      background-color: #e8f5e9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #c8e6c9;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -462,14 +487,15 @@
         const saved = localStorage.getItem('p2pContacts');
         return saved ? JSON.parse(saved) : [];
       });
-      const [activeCalls, setActiveCalls] = useState([]); // [{ peerId, call, localStream }, ...]
-      const [remoteStreams, setRemoteStreams] = useState([]); // [{ peerId, stream }, ...]
+      const [activeCalls, setActiveCalls] = useState([]); // [{ peerId, call, localStream, type }, ...]
+      const [remoteStreams, setRemoteStreams] = useState([]); // [{ peerId, stream, type }, ...]
 
       const peerInstance = useRef(null);
       const fileInputRef = useRef(null);
       const pendingFiles = useRef({});
       const messagesEndRef = useRef(null);
       const videoRefs = useRef({}); // To store refs for each remote video element
+      const audioRefs = useRef({}); // To store refs for audio elements
       const CHUNK_SIZE = 16 * 1024;
 
       const generateNewId = () => {
@@ -503,10 +529,17 @@
 
       useEffect(() => {
         // Assign video refs to streams
-        remoteStreams.forEach(({ peerId, stream }) => {
-          const videoElement = videoRefs.current[peerId];
-          if (videoElement && videoElement.srcObject !== stream) {
-            videoElement.srcObject = stream;
+        remoteStreams.forEach(({ peerId, stream, type }) => {
+          if (type === 'video') {
+            const videoElement = videoRefs.current[peerId];
+            if (videoElement && videoElement.srcObject !== stream) {
+              videoElement.srcObject = stream;
+            }
+          } else if (type === 'voice') {
+            const audioElement = audioRefs.current[peerId];
+            if (audioElement && audioElement.srcObject !== stream) {
+              audioElement.srcObject = stream;
+            }
           }
         });
       }, [remoteStreams]);
@@ -533,43 +566,51 @@
           });
 
           peer.on('call', (call) => {
-            console.log('Recebendo chamada de:', call.peer);
+            // Determinar o tipo de chamada pela metadata
+            const callType = call.metadata && call.metadata.type === 'voice' ? 'voice' : 'video';
+            console.log(`Recebendo chamada de ${callType} de: ${call.peer}`);
 
-            navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-              .then((stream) => {
-                call.answer(stream);
-                setActiveCalls(prev => [...prev, {
-                  peerId: call.peer,
-                  call,
-                  localStream: stream
-                }]);
+            navigator.mediaDevices.getUserMedia({ 
+              video: callType === 'video', 
+              audio: true 
+            })
+            .then((stream) => {
+              call.answer(stream);
+              setActiveCalls(prev => [...prev, {
+                peerId: call.peer,
+                call,
+                localStream: stream,
+                type: callType
+              }]);
 
-                call.on('stream', (remoteStream) => {
-                  console.log(`Recebido stream de ${call.peer}`);
-                  setRemoteStreams(prev => {
-                    const exists = prev.some(s => s.peerId === call.peer);
-                    if (exists) {
-                      return prev.map(s => s.peerId === call.peer ? { peerId: call.peer, stream: remoteStream } : s);
-                    }
-                    return [...prev, { peerId: call.peer, stream: remoteStream }];
-                  });
+              call.on('stream', (remoteStream) => {
+                console.log(`Recebido stream de ${call.peer} (${callType})`);
+                setRemoteStreams(prev => {
+                  const exists = prev.some(s => s.peerId === call.peer && s.type === callType);
+                  if (exists) {
+                    return prev.map(s => (s.peerId === call.peer && s.type === callType) 
+                      ? { peerId: call.peer, stream: remoteStream, type: callType } 
+                      : s);
+                  }
+                  return [...prev, { peerId: call.peer, stream: remoteStream, type: callType }];
                 });
-
-                call.on('close', () => {
-                  endCall(call.peer);
-                });
-
-                call.on('error', (err) => {
-                  console.error('Erro na chamada:', err);
-                  alert('Erro na chamada: ' + err.message);
-                  endCall(call.peer);
-                });
-              })
-              .catch((err) => {
-                console.error('Erro ao responder chamada:', err);
-                alert('Erro ao acessar a câmera/microfone: ' + err.message);
-                call.close();
               });
+
+              call.on('close', () => {
+                endCall(call.peer, callType);
+              });
+
+              call.on('error', (err) => {
+                console.error(`Erro na chamada de ${callType}:`, err);
+                alert(`Erro na chamada de ${callType === 'voice' ? 'voz' : 'vídeo'}: ` + err.message);
+                endCall(call.peer, callType);
+              });
+            })
+            .catch((err) => {
+              console.error(`Erro ao responder chamada de ${callType}:`, err);
+              alert(`Erro ao acessar ${callType === 'voice' ? 'o microfone' : 'a câmera/microfone'}: ` + err.message);
+              call.close();
+            });
           });
 
           peer.on('error', (err) => {
@@ -622,7 +663,7 @@
           if (peerInstance.current) {
             peerInstance.current.destroy();
           }
-          activeCalls.forEach(call => endCall(call.peerId));
+          activeCalls.forEach(({ peerId, type }) => endCall(peerId, type));
         };
       }, [peerId]);
 
@@ -1014,29 +1055,45 @@
         }
 
         try {
+          // Solicitar apenas acesso ao áudio para chamadas de voz
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'voice' } });
+          
+          // Adicionar metadata para identificar como chamada de voz
+          const call = peerInstance.current.call(peerIdToCall, stream, { 
+            metadata: { type: 'voice' } 
+          });
 
+          // Adicionar à lista de chamadas ativas com o tipo 'voice'
           setActiveCalls(prev => [...prev, {
             peerId: peerIdToCall,
             call,
-            localStream: stream
+            localStream: stream,
+            type: 'voice'
           }]);
 
           call.on('stream', (remoteStream) => {
-            const audio = new Audio();
-            audio.srcObject = remoteStream;
-            audio.play().catch(err => console.error('Erro ao reproduzir áudio:', err));
+            console.log(`Recebido stream de áudio de ${peerIdToCall}`);
+            
+            // Adicionar o stream à lista de streams remotos com o tipo 'voice'
+            setRemoteStreams(prev => {
+              const exists = prev.some(s => s.peerId === peerIdToCall && s.type === 'voice');
+              if (exists) {
+                return prev.map(s => (s.peerId === peerIdToCall && s.type === 'voice') 
+                  ? { peerId: peerIdToCall, stream: remoteStream, type: 'voice' } 
+                  : s);
+              }
+              return [...prev, { peerId: peerIdToCall, stream: remoteStream, type: 'voice' }];
+            });
           });
 
           call.on('close', () => {
-            endCall(peerIdToCall);
+            endCall(peerIdToCall, 'voice');
           });
 
           call.on('error', (err) => {
             console.error('Erro na chamada de voz:', err);
             alert('Erro na chamada de voz: ' + err.message);
-            endCall(peerIdToCall);
+            endCall(peerIdToCall, 'voice');
           });
         } catch (err) {
           console.error('Erro ao iniciar chamada de voz:', err);
@@ -1059,33 +1116,43 @@
           };
 
           const stream = await navigator.mediaDevices.getUserMedia(constraints);
-          const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+          
+          // Adicionar metadata para identificar como chamada de vídeo
+          const call = peerInstance.current.call(peerIdToCall, stream, { 
+            metadata: { type: 'video' } 
+          });
 
+          // Adicionar à lista de chamadas ativas com o tipo 'video'
           setActiveCalls(prev => [...prev, {
             peerId: peerIdToCall,
             call,
-            localStream: stream
+            localStream: stream,
+            type: 'video'
           }]);
 
           call.on('stream', (remoteStream) => {
-            console.log(`Recebido stream de ${peerIdToCall}`);
+            console.log(`Recebido stream de vídeo de ${peerIdToCall}`);
+            
+            // Adicionar o stream à lista de streams remotos com o tipo 'video'
             setRemoteStreams(prev => {
-              const exists = prev.some(s => s.peerId === peerIdToCall);
+              const exists = prev.some(s => s.peerId === peerIdToCall && s.type === 'video');
               if (exists) {
-                return prev.map(s => s.peerId === peerIdToCall ? { peerId: peerIdToCall, stream: remoteStream } : s);
+                return prev.map(s => (s.peerId === peerIdToCall && s.type === 'video') 
+                  ? { peerId: peerIdToCall, stream: remoteStream, type: 'video' } 
+                  : s);
               }
-              return [...prev, { peerId: peerIdToCall, stream: remoteStream }];
+              return [...prev, { peerId: peerIdToCall, stream: remoteStream, type: 'video' }];
             });
           });
 
           call.on('close', () => {
-            endCall(peerIdToCall);
+            endCall(peerIdToCall, 'video');
           });
 
           call.on('error', (err) => {
             console.error('Erro na chamada de vídeo:', err);
             alert('Erro na chamada de vídeo: ' + err.message);
-            endCall(peerIdToCall);
+            endCall(peerIdToCall, 'video');
           });
         } catch (err) {
           console.error('Erro ao iniciar chamada de vídeo:', err);
@@ -1093,25 +1160,27 @@
         }
       };
 
-      const endCall = (peerIdToEnd) => {
+      const endCall = (peerIdToEnd, callType) => {
         setActiveCalls(prev => {
-          const callData = prev.find(c => c.peerId === peerIdToEnd);
-          if (callData) {
+          const callsToEnd = prev.filter(c => c.peerId === peerIdToEnd && (!callType || c.type === callType));
+          
+          callsToEnd.forEach(callData => {
             if (callData.localStream) {
               callData.localStream.getTracks().forEach(track => {
                 track.stop();
-                console.log('Stream local encerrado:', track.kind);
+                console.log(`Stream local de ${callData.type} encerrado:`, track.kind);
               });
             }
             if (callData.call) {
               callData.call.close();
-              console.log('Chamada encerrada com:', peerIdToEnd);
+              console.log(`Chamada de ${callData.type} encerrada com:`, peerIdToEnd);
             }
-          }
-          return prev.filter(c => c.peerId !== peerIdToEnd);
+          });
+          
+          return prev.filter(c => c.peerId !== peerIdToEnd || (callType && c.type !== callType));
         });
 
-        setRemoteStreams(prev => prev.filter(s => s.peerId !== peerIdToEnd));
+        setRemoteStreams(prev => prev.filter(s => s.peerId !== peerIdToEnd || (callType && s.type !== callType)));
       };
 
       const renderNameForm = () => (
@@ -1211,18 +1280,49 @@
                 <span>Seu ID Fixo: <strong>{peerId || 'Gerando...'}</strong></span>
               </div>
 
-              {remoteStreams.length > 0 && (
+              {/* Chamadas de voz ativas */}
+              {remoteStreams.filter(s => s.type === 'voice').length > 0 && (
+                <div className="audio-call-container">
+                  <h3>Chamadas de Voz Ativas</h3>
+                  {remoteStreams.filter(s => s.type === 'voice').map(({ peerId, stream }) => (
+                    <div key={`voice-${peerId}`}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <i className="fas fa-phone"></i> Chamada de voz com: <strong>{getContactName(peerId)}</strong>
+                          <audio
+                            ref={el => audioRefs.current[peerId] = el}
+                            autoPlay
+                            style={{ display: 'none' }} // Audio element is hidden
+                          />
+                        </div>
+                        <button 
+                          onClick={() => endCall(peerId, 'voice')} 
+                          className="call-end-button"
+                        >
+                          <i className="fas fa-phone-slash"></i> Encerrar
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Chamadas de vídeo ativas */}
+              {remoteStreams.filter(s => s.type === 'video').length > 0 && (
                 <div className="video-container">
-                  {remoteStreams.map(({ peerId, stream }) => (
-                    <div key={peerId}>
+                  {remoteStreams.filter(s => s.type === 'video').map(({ peerId, stream }) => (
+                    <div key={`video-${peerId}`}>
                       <video
                         ref={el => videoRefs.current[peerId] = el}
                         className="video-player remote-video"
                         autoPlay
                       />
                       <p>Vídeo de: {getContactName(peerId)}</p>
-                      <button onClick={() => endCall(peerId)} style={{ background: '#ff0000' }}>
-                        Encerrar Videochamada com {getContactName(peerId)}
+                      <button 
+                        onClick={() => endCall(peerId, 'video')} 
+                        className="call-end-button"
+                      >
+                        <i className="fas fa-video-slash"></i> Encerrar Videochamada
                       </button>
                     </div>
                   ))}
@@ -1235,6 +1335,11 @@
                   {connections.map((conn, i) => (
                     <div key={i} className="peer-item">
                       {getContactName(conn.peer)}
+                      {activeCalls.filter(c => c.peerId === conn.peer).map((call, callIndex) => (
+                        <span key={callIndex} className="active-call-indicator">
+                          <i className={call.type === 'voice' ? 'fas fa-phone' : 'fas fa-video'}></i> {call.type}
+                        </span>
+                      ))}
                     </div>
                   ))}
                 </div>
