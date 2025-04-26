@@ -3,7 +3,7 @@ O servidor pode ser usado de forma opcional para criar uma sala de bate papo com
 Todos os usuários que se conectarem ao ID do servidor irão receber as mensagens enviadas para o ID do servidor. 
 
 Chat P2P
-1.   Baixe o aplicativo Chat P2P .EXE : https://mega.nz/file/aQVllAYS#Jp-5yW8tknzLW1qFSNvxgACO8VqfmnQhVCzMNEOizfI
+1.   Baixe o aplicativo Chat P2P .EXE : https://mega.nz/file/qRlWCbTT#cOVqnu3iKp2xmmYV99NCezIAfDimHRt2ZG1ZbX0mZpc
 1.   Baixe o aplicativo Servidor Chat P2P .EXE : https://mega.nz/file/qVtDTRKD#NgFDaXCBYZuAy7L-7y3vyUGsFLWF-Npgl1jcfB7H8Tk
 
 ✅ COMO USAR:
