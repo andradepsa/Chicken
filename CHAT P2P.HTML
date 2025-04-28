@@ -1149,12 +1149,7 @@
     //   - **Descrição**: Renderiza o cabeçalho, informações do usuário, ID do peer, contêiner de vídeo, chamadas de voz ativas, e alterna entre a tela de chat e a tela de contatos.
     //
     // PARTE 5: Componente Principal App
-   
-
-
-
-
- const App = () => {
+    const App = () => {
       console.log("App: Component rendering");
       const [peerId, setPeerId] = usePersistentId();
       const [userName, setUserName] = useState(() => localStorage.getItem('p2pUserName') || '');
@@ -1217,25 +1212,11 @@
         if (!peerId) return;
         console.log("App: Initializing PeerJS with ID:", peerId);
 
-        
-
-const peer = new Peer(peerId, {
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-      { urls: 'stun:stun.l.google.com:19305' },
-      { urls: 'stun:stun1.l.google.com:19305' },
-      { urls: 'stun:stun2.l.google.com:19305' },
-      { urls: 'stun:stun3.l.google.com:19305' },
-      { urls: 'stun:stun4.l.google.com:19305' }
-    ]
-  },
-  debug: 2
-});
+        const peer = new Peer(peerId, {
+          host: '0.peerjs.com', port: 443, secure: true,
+          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
+          debug: 2
+        });
 
         peer.on('open', (id) => {
           console.log("PeerJS: Connected with ID:", id);
@@ -1848,7 +1829,7 @@ const peer = new Peer(peerId, {
       "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
       "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
       "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
-      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂s", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
+      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂obes", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
       "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨",
       "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🙈", "🙉", "🙊",
       "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉",
@@ -1886,7 +1867,8 @@ const peer = new Peer(peerId, {
       "🛖", "🏠", "🏡", "🏘️", "🏚️", "🏢", "🏬", "🏣", "🏤", "🏥",
       "🏦", "🏨", "🏪", "🏫", "🏩", "💒", "🏛️", "⛪", "🕌", "🕍",
       "🛕", "⛩️", "🕋", "🛝", "🛗", "🪞", "🪟", "🪚", "🪤", "🪓",
-     
+      "🪒", "🪥", "🪦", "🪧", "🪨", "🪩", "🪪", "🪫", "🪬", "🪭",
+      "🪮", "🪯"
     ];
 
     return (
