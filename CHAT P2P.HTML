@@ -1174,58 +1174,85 @@
           });
         });
 
-        peer.on('call', async (call) => {
-          const callType = call.metadata?.type || 'video';
-          console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
 
-          try {
-            let localStream = localStreamsRef.current.get(call.peer + '_video');
-            if (!localStream) {
-              localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-              localStreamsRef.current.set(call.peer + '_video', localStream);
-              setIsLocalVideoVisible(true);
-              if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
-            }
 
-            console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "with local stream");
-            call.answer(localStream);
 
-            setActiveCalls(prev => [
-              ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
-              {
-                peerId: call.peer,
-                call,
-                localStream: localStream,
-                type: callType,
-                direction: 'incoming',
-                isTemporaryStream: false
-              }
-            ]);
 
-            call.on('stream', (remoteStream) => {
-              console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
-              setRemoteStreams(prev => [
-                ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
-                { peerId: call.peer, stream: remoteStream, type: callType }
-              ]);
-            });
 
-            call.on('close', () => {
-              console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
-              endCall(call.peer, callType);
-            });
 
-            call.on('error', (err) => {
-              console.error(`PeerJS: Error in incoming ${callType} call:`, err);
-              endCall(call.peer, callType);
-            });
 
-          } catch (err) {
-            console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
-            call.close();
-            alert('Erro ao acessar câmera/microfone: ' + err.message);
-          }
-        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       peer.on('call', async (call) => {
+  const callType = call.metadata?.type || 'video';
+  console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
+
+  try {
+    // Primeiro responda à chamada sem stream local (apenas para receber o vídeo do outro usuário)
+    console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
+    call.answer(null); // Responder sem stream inicialmente
+
+    setActiveCalls(prev => [
+      ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
+      {
+        peerId: call.peer,
+        call,
+        localStream: null, // Inicialmente sem stream local
+        type: callType,
+        direction: 'incoming',
+        isTemporaryStream: false
+      }
+    ]);
+
+    call.on('stream', (remoteStream) => {
+      console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
+      setRemoteStreams(prev => [
+        ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
+        { peerId: call.peer, stream: remoteStream, type: callType }
+      ]);
+    });
+
+    call.on('close', () => {
+      console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
+      endCall(call.peer, callType);
+    });
+
+    call.on('error', (err) => {
+      console.error(`PeerJS: Error in incoming ${callType} call:`, err);
+      endCall(call.peer, callType);
+    });
+
+  } catch (err) {
+    console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
+    call.close();
+    alert('Erro ao acessar câmera/microfone: ' + err.message);
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
         peerInstance.current = peer;
 
@@ -1571,89 +1598,166 @@
         }
       };
 
-      const toggleVideoCall = async (peerIdToCall) => {
-        if (!peerInstance.current) {
-          alert('Peer não inicializado');
-          return;
-        }
-        if (!peerIdToCall) {
-          alert('Selecione um contato.');
-          return;
-        }
 
-        const existingCall = activeCalls.find(c => c.peerId === peerIdToCall && c.type === 'video');
-        const isSendingVideo = existingCall && existingCall.localStream;
-        const conn = connections.find(c => c.peer === peerIdToCall);
 
-        if (isSendingVideo) {
-          console.log("App: Stopping local video stream for:", peerIdToCall);
-          if (existingCall) {
-            if (existingCall.localStream) {
-              existingCall.localStream.getTracks().forEach(track => track.stop());
-              localStreamsRef.current.delete(peerIdToCall + '_video');
-            }
-            if (existingCall.call) {
-              existingCall.call.close();
-            }
-            setActiveCalls(prev => prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')));
-            setRemoteStreams(prev => prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')));
-            if (localStreamsRef.current.size === 0) {
-              setIsLocalVideoVisible(false);
-              if (localVideoRef.current) localVideoRef.current.srcObject = null;
-            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const toggleVideoCall = async (peerIdToCall) => {
+  if (!peerInstance.current) {
+    alert('Peer não inicializado');
+    return;
+  }
+  if (!peerIdToCall) {
+    alert('Selecione um contato.');
+    return;
+  }
+
+  const existingCall = activeCalls.find(c => c.peerId === peerIdToCall && c.type === 'video');
+  const isSendingVideo = existingCall && existingCall.localStream;
+  const conn = connections.find(c => c.peer === peerIdToCall);
+
+  if (isSendingVideo) {
+    // Usuário já está enviando vídeo - vamos desligar a câmera
+    console.log("App: Stopping local video stream for:", peerIdToCall);
+    if (existingCall && existingCall.localStream) {
+      existingCall.localStream.getTracks().forEach(track => track.stop());
+      localStreamsRef.current.delete(peerIdToCall + '_video');
+    }
+    
+    // Não feche a chamada completamente, apenas atualize o estado para remover o stream local
+    setActiveCalls(prev => prev.map(c => {
+      if (c.peerId === peerIdToCall && c.type === 'video') {
+        return { ...c, localStream: null };
+      }
+      return c;
+    }));
+    
+    if (localStreamsRef.current.size === 0) {
+      setIsLocalVideoVisible(false);
+      if (localVideoRef.current) localVideoRef.current.srcObject = null;
+    }
+    
+  } else {
+    // Usuário quer ligar a câmera
+    if (!conn || !conn.open) {
+      alert(`Contato ${getContactName(peerIdToCall)} offline.`);
+      return;
+    }
+
+    try {
+      console.log("App: Getting video stream for:", peerIdToCall);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (!stream) return;
+
+      localStreamsRef.current.set(peerIdToCall + '_video', stream);
+      setIsLocalVideoVisible(true);
+      if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+
+      if (existingCall) {
+        // Se já temos uma chamada existente, adicione o stream local a ela
+        console.log("App: Adding local stream to existing call with:", peerIdToCall);
+        
+        // Atualize o estado da chamada com o novo stream local
+        setActiveCalls(prev => prev.map(c => {
+          if (c.peerId === peerIdToCall && c.type === 'video') {
+            return { ...c, localStream: stream };
           }
-        } else {
-          if (!conn || !conn.open) {
-            alert(`Contato ${getContactName(peerIdToCall)} offline.`);
-            return;
+          return c;
+        }));
+        
+        // Inicie uma nova chamada para enviar seu vídeo
+        const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+        
+        call.on('stream', (remoteStream) => {
+          console.log(`App: Received remote video stream response from:`, peerIdToCall);
+        });
+        
+        call.on('close', () => {
+          console.log("App: Outgoing video stream call closed with:", peerIdToCall);
+        });
+        
+        call.on('error', (err) => {
+          console.error('App: Error in outgoing video stream call:', err);
+        });
+        
+      } else {
+        // Se não há chamada existente, inicie uma nova
+        console.log("App: Starting new video call with:", peerIdToCall);
+        const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+        
+        setActiveCalls(prev => [
+          ...prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')),
+          {
+            peerId: peerIdToCall,
+            call,
+            localStream: stream,
+            type: 'video',
+            direction: 'outgoing',
+            isTemporaryStream: false
           }
+        ]);
 
-          try {
-            console.log("App: Starting video call with:", peerIdToCall);
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            if (!stream) return;
+        call.on('stream', (remoteStream) => {
+          console.log(`App: Received remote video stream from:`, peerIdToCall);
+          setRemoteStreams(prev => [
+            ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
+            { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
+          ]);
+        });
 
-            localStreamsRef.current.set(peerIdToCall + '_video', stream);
-            setIsLocalVideoVisible(true);
-            if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        call.on('close', () => {
+          console.log("App: Video call closed with:", peerIdToCall);
+          endCall(peerIdToCall, 'video');
+        });
 
-            const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
-            setActiveCalls(prev => [
-              ...prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')),
-              {
-                peerId: peerIdToCall,
-                call,
-                localStream: stream,
-                type: 'video',
-                direction: 'outgoing',
-                isTemporaryStream: false
-              }
-            ]);
+        call.on('error', (err) => {
+          console.error('App: Error in video call:', err);
+          alert('Erro chamada de vídeo: ' + err.message);
+          endCall(peerIdToCall, 'video');
+        });
+      }
+    } catch (err) {
+      console.error('App: Error starting video call:', err);
+      alert('Erro ao acessar câmera/microfone: ' + err.message);
+    }
+  }
+};
 
-            call.on('stream', (remoteStream) => {
-              console.log(`App: Received remote video stream from:`, peerIdToCall);
-              setRemoteStreams(prev => [
-                ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
-                { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
-              ]);
-            });
 
-            call.on('close', () => {
-              console.log("App: Video call closed with:", peerIdToCall);
-              endCall(peerIdToCall, 'video');
-            });
 
-            call.on('error', (err) => {
-              console.error('App: Error in video call:', err);
-              alert('Erro chamada de vídeo: ' + err.message);
-              endCall(peerIdToCall, 'video');
-            });
-          } catch (err) {
-            console.error('App: Error starting video call:', err);
-            alert('Erro ao acessar câmera/microfone: ' + err.message);
-          }
-        }
-      };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
       const endCall = (peerIdToEnd, callType) => {
         console.log(`App: Ending ${callType} call with:`, peerIdToEnd);
