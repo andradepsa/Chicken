@@ -500,89 +500,127 @@
             console.log(`Recebido stream de ${call.peer} (${callType}) com ${remoteStream.getAudioTracks().length} trilhas de áudio e ${remoteStream.getVideoTracks().length} trilhas de vídeo`);
             
             // Verificar se temos tracks disponíveis
-            if ((callType === 'voice' && remoteStream.getAudioTracks().length === 0) ||
-                (callType === 'video' && (remoteStream.getVideoTracks().length === 0 && remoteStream.getAudioTracks().length === 0))) {
-              console.error(`Não há trilhas de ${callType === 'voice' ? 'áudio' : 'mídia'} disponíveis no stream recebido de ${call.peer}`);
+            if ((callType === 'voice' && remoteStream.getAudioTracks().length === 0) &&
+                (callType === 'video' && remoteStream.getTracks().length === 0)) {
+              console.error(`Não há trilhas disponíveis no stream recebido de ${call.peer}`);
               return;
             }
             
-            const callData = { 
-              call, 
-              stream: remoteStream, 
-              redistributedCalls: new Map(),
-              type: callType
-            };
-            
-            // Adicionar a chamada ao activeCallsRef
-            if (!activeCallsRef.current.has(call.peer)) {
-              activeCallsRef.current.set(call.peer, []);
+            // Verificar se já existe uma entrada para esse peer e tipo de chamada
+            let existingCallData;
+            if (activeCallsRef.current.has(call.peer)) {
+              const calls = activeCallsRef.current.get(call.peer);
+              existingCallData = calls.find(c => c.type === callType);
             }
-            activeCallsRef.current.get(call.peer).push(callData);
-
-            // Redistribuir o stream para outros clientes conectados
-            activeConnectionsRef.current.forEach((conn, peerId) => {
-              if (peerId !== call.peer) {
+            
+            if (existingCallData) {
+              // Atualizar o stream na chamada existente
+              console.log(`Atualizando stream existente para ${call.peer} (${callType})`);
+              existingCallData.stream = remoteStream;
+              
+              // Atualizar todas as redistribuições existentes com o novo stream
+              existingCallData.redistributedCalls.forEach((redistCall, peerId) => {
                 try {
-                  console.log(`Iniciando chamada de ${callType} para ${peerId}`);
-                  
-                  // Clone o stream original para redistribuir
-                  const redistributedStream = new MediaStream();
-                  
-                  // Copiar as trilhas relevantes dependendo do tipo de chamada
+                  // Criar um novo stream com as trilhas do stream remoto recebido
+                  const newRedistributedStream = new MediaStream();
                   remoteStream.getTracks().forEach(track => {
-                    // Para chamadas de voz, só adicionamos trilhas de áudio
-                    if (callType === 'voice' && track.kind === 'audio') {
-                      redistributedStream.addTrack(track);
-                    }
-                    // Para chamadas de vídeo, adicionamos todas as trilhas
-                    else if (callType === 'video') {
-                      redistributedStream.addTrack(track);
-                    }
+                    newRedistributedStream.addTrack(track);
                   });
-
-                  // Verificar se temos tracks para redistribuir
-                  if ((callType === 'voice' && redistributedStream.getAudioTracks().length === 0) ||
-                      (callType === 'video' && redistributedStream.getTracks().length === 0)) {
-                    console.error(`Não foi possível redistribuir a chamada de ${callType} para ${peerId}: Nenhuma trilha disponível`);
-                    return;
-                  }
-
-                  // Criar uma nova chamada para cada cliente conectado com o mesmo tipo (voz/vídeo)
-                  const redistCall = peerInstance.current.call(peerId, redistributedStream, {
+                  
+                  // Fechar a chamada antiga e criar uma nova com o stream atualizado
+                  redistCall.close();
+                  
+                  // Criar nova chamada com o stream atualizado
+                  const newRedistCall = peerInstance.current.call(peerId, newRedistributedStream, {
                     metadata: { type: callType }
                   });
                   
-                  callData.redistributedCalls.set(peerId, redistCall);
+                  existingCallData.redistributedCalls.set(peerId, newRedistCall);
                   
-                  if (callType === 'voice') {
-                    setStats(prev => ({
-                      ...prev,
-                      voiceCallsDistributed: prev.voiceCallsDistributed + 1
-                    }));
-                  } else {
-                    setStats(prev => ({
-                      ...prev,
-                      callsDistributed: prev.callsDistributed + 1
-                    }));
-                  }
-
-                  redistCall.on('stream', (clientRemoteStream) => {
-                    console.log(`Recebido stream de volta de ${peerId} durante redistribuição de ${callType}`);
+                  newRedistCall.on('stream', (clientRemoteStream) => {
+                    console.log(`Recebido stream de volta de ${peerId} durante redistribuição atualizada de ${callType}`);
                   });
-
-                  redistCall.on('close', () => {
+                  
+                  newRedistCall.on('close', () => {
                     console.log(`Chamada de ${callType} redistribuída para ${peerId} encerrada`);
-                    callData.redistributedCalls.delete(peerId);
+                    existingCallData.redistributedCalls.delete(peerId);
                   });
-
-                  redistCall.on('error', (err) => {
+                  
+                  newRedistCall.on('error', (err) => {
                     console.error(`Erro na chamada de ${callType} redistribuída para ${peerId}:`, err);
                   });
+                  
                 } catch (err) {
-                  console.error(`Erro ao redistribuir chamada de ${callType} para ${peerId}:`, err);
+                  console.error(`Erro ao atualizar redistribuição para ${peerId}:`, err);
                 }
+              });
+              
+            } else {
+              // Criar uma nova entrada para esse peer e tipo de chamada
+              const callData = { 
+                call, 
+                stream: remoteStream, 
+                redistributedCalls: new Map(),
+                type: callType
+              };
+              
+              // Adicionar a chamada ao activeCallsRef
+              if (!activeCallsRef.current.has(call.peer)) {
+                activeCallsRef.current.set(call.peer, []);
               }
-            });
+              activeCallsRef.current.get(call.peer).push(callData);
+
+              // Redistribuir o stream para outros clientes conectados
+              activeConnectionsRef.current.forEach((conn, peerId) => {
+                if (peerId !== call.peer) {
+                  try {
+                    console.log(`Iniciando chamada de ${callType} para ${peerId}`);
+                    
+                    // Clone o stream original para redistribuir
+                    const redistributedStream = new MediaStream();
+                    
+                    // Copiar as trilhas relevantes dependendo do tipo de chamada
+                    remoteStream.getTracks().forEach(track => {
+                      redistributedStream.addTrack(track);
+                    });
+
+                    // Criar uma nova chamada para cada cliente conectado
+                    const redistCall = peerInstance.current.call(peerId, redistributedStream, {
+                      metadata: { type: callType }
+                    });
+                    
+                    callData.redistributedCalls.set(peerId, redistCall);
+                    
+                    if (callType === 'voice') {
+                      setStats(prev => ({
+                        ...prev,
+                        voiceCallsDistributed: prev.voiceCallsDistributed + 1
+                      }));
+                    } else {
+                      setStats(prev => ({
+                        ...prev,
+                        callsDistributed: prev.callsDistributed + 1
+                      }));
+                    }
+
+                    redistCall.on('stream', (clientRemoteStream) => {
+                      console.log(`Recebido stream de volta de ${peerId} durante redistribuição de ${callType}`);
+                    });
+
+                    redistCall.on('close', () => {
+                      console.log(`Chamada de ${callType} redistribuída para ${peerId} encerrada`);
+                      callData.redistributedCalls.delete(peerId);
+                    });
+
+                    redistCall.on('error', (err) => {
+                      console.error(`Erro na chamada de ${callType} redistribuída para ${peerId}:`, err);
+                    });
+                  } catch (err) {
+                    console.error(`Erro ao redistribuir chamada de ${callType} para ${peerId}:`, err);
+                  }
+                }
+              });
+            }
           });
 
           call.on('close', () => {
@@ -599,34 +637,18 @@
                     console.error(`Erro ao encerrar chamada de ${callType} redistribuída:`, e);
                   }
                 });
-                calls.splice(callIndex, 1);
-                if (calls.length === 0) {
-                  activeCallsRef.current.delete(call.peer);
-                }
+                // Não remover a entrada completamente para permitir que futuras chamadas
+                // do mesmo peer sejam tratadas corretamente
+                // calls.splice(callIndex, 1);
+                // if (calls.length === 0) {
+                //   activeCallsRef.current.delete(call.peer);
+                // }
               }
             }
           });
 
           call.on('error', (err) => {
             console.error(`Erro na chamada de ${callType} com ${call.peer}:`, err);
-            if (activeCallsRef.current.has(call.peer)) {
-              const calls = activeCallsRef.current.get(call.peer);
-              const callIndex = calls.findIndex(c => c.call === call);
-              if (callIndex !== -1) {
-                const callData = calls[callIndex];
-                callData.redistributedCalls.forEach(redistCall => {
-                  try {
-                    redistCall.close();
-                  } catch (e) {
-                    console.error(`Erro ao encerrar chamada de ${callType} redistribuída:`, e);
-                  }
-                });
-                calls.splice(callIndex, 1);
-                if (calls.length === 0) {
-                  activeCallsRef.current.delete(call.peer);
-                }
-              }
-            }
           });
         });
 
@@ -818,7 +840,7 @@
             ) : (
               <div>
                 {connections.map((peerId, index) => (
-                  <div key={index} className="peer-item">
+                 <div key={index} className="peer-item">
                     <span className="status-indicator status-online"></span>
                     {peerId}
                     {activeCallsRef.current.has(peerId) && activeCallsRef.current.get(peerId).map((callData, callIndex) => (
