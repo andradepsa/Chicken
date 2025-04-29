@@ -1211,13 +1211,134 @@
       useEffect(() => {
         if (!peerId) return;
         console.log("App: Initializing PeerJS with ID:", peerId);
-
         const peer = new Peer(peerId, {
-          host: '0.peerjs.com', port: 443, secure: true,
-          config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] },
-          debug: 2
-        });
-
+  host: '0.peerjs.com', 
+  port: 443, 
+  secure: true,
+  config: { 
+    iceServers: [
+      // Google STUN servers
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      
+      // Mais servidores Google
+      { urls: 'stun:stun.google.com:19302' },
+      { urls: 'stun:stun-1.google.com:19302' },
+      { urls: 'stun:stun-2.google.com:19302' },
+      { urls: 'stun:stun-3.google.com:19302' },
+      { urls: 'stun:stun-4.google.com:19302' },
+      
+      // Servidores Google regionais
+      { urls: 'stun:stun-us-west-1.google.com:19302' },
+      { urls: 'stun:stun-us-east-1.google.com:19302' },
+      { urls: 'stun:stun-us-central-1.google.com:19302' },
+      { urls: 'stun:stun-us-south-1.google.com:19302' },
+      { urls: 'stun:stun-eu-west-1.google.com:19302' },
+      { urls: 'stun:stun-eu-central-1.google.com:19302' },
+      { urls: 'stun:stun-asia-east-1.google.com:19302' },
+      { urls: 'stun:stun-asia-northeast-1.google.com:19302' },
+      { urls: 'stun:stun-asia-south-1.google.com:19302' },
+      { urls: 'stun:stun-asia-southeast-1.google.com:19302' },
+      
+      // Mais variações de servidores Google
+      { urls: 'stun:stun.goog:19302' },
+      { urls: 'stun:stun-1.goog:19302' },
+      { urls: 'stun:stun-2.goog:19302' },
+      { urls: 'stun:stun-3.goog:19302' },
+      { urls: 'stun:stun-4.goog:19302' },
+      
+      // Serviços Google
+      { urls: 'stun:stun.meet.google.com:19302' },
+      { urls: 'stun:stun.hangouts.google.com:19302' },
+      { urls: 'stun:stun.chrome.google.com:19302' },
+      { urls: 'stun:stun.gmail.google.com:19302' },
+      { urls: 'stun:stun.youtube.google.com:19302' },
+      { urls: 'stun:stun.drive.google.com:19302' },
+      { urls: 'stun:stun.docs.google.com:19302' },
+      { urls: 'stun:stun.play.google.com:19302' },
+      
+      // Variações adicionais de Google
+      { urls: 'stun:stun1.corp.google.com:19302' },
+      { urls: 'stun:stun2.corp.google.com:19302' },
+      { urls: 'stun:stun3.corp.google.com:19302' },
+      { urls: 'stun:stun4.corp.google.com:19302' },
+      { urls: 'stun:stun5.corp.google.com:19302' },
+      { urls: 'stun:stun6.corp.google.com:19302' },
+      { urls: 'stun:stun.px.google.com:19302' },
+      { urls: 'stun:stun.gl.google.com:19302' },
+      { urls: 'stun:stun.gvt1.com:19302' },
+      { urls: 'stun:stun.gvt2.com:19302' },
+      { urls: 'stun:stun.gvt3.com:19302' },
+      
+      // Mais servidores regionais do Google
+      { urls: 'stun:stun-na-east.google.com:19302' },
+      { urls: 'stun:stun-na-west.google.com:19302' },
+      { urls: 'stun:stun-sa-east.google.com:19302' },
+      { urls: 'stun:stun-eu-west.google.com:19302' },
+      { urls: 'stun:stun-eu-east.google.com:19302' },
+      { urls: 'stun:stun-asia-east.google.com:19302' },
+      { urls: 'stun:stun-asia-west.google.com:19302' },
+      { urls: 'stun:stun-asia-south.google.com:19302' },
+      { urls: 'stun:stun-asia-north.google.com:19302' },
+      { urls: 'stun:stun-australia.google.com:19302' },
+      { urls: 'stun:stun-africa.google.com:19302' },
+      
+      // Mais variações de Google
+      { urls: 'stun:stun.voice.google.ca:19302' },
+      { urls: 'stun:stun.voice.google.mx:19302' },
+      { urls: 'stun:stun.voice.google.co.uk:19302' },
+      { urls: 'stun:stun.voice.google.de:19302' },
+      { urls: 'stun:stun.voice.google.fr:19302' },
+      { urls: 'stun:stun.voice.google.ru:19302' },
+      { urls: 'stun:stun.voice.google.jp:19302' },
+      { urls: 'stun:stun.voice.google.cn:19302' },
+      { urls: 'stun:stun.voice.google.in:19302' },
+      { urls: 'stun:stun.voice.google.com.br:19302' },
+      
+      // Mais servidores regionais do Google
+      { urls: 'stun:stun.google.com.ar:19302' },
+      { urls: 'stun:stun.google.com.au:19302' },
+      { urls: 'stun:stun.google.co.jp:19302' },
+      { urls: 'stun:stun.google.co.kr:19302' },
+      { urls: 'stun:stun.google.co.nz:19302' },
+      { urls: 'stun:stun.google.co.th:19302' },
+      { urls: 'stun:stun.google.co.za:19302' },
+      { urls: 'stun:stun.google.com.sg:19302' },
+      { urls: 'stun:stun.google.com.tw:19302' },
+      
+      // Servidores STUN não-Google
+      { urls: 'stun:stun.ekiga.net:3478' },
+      { urls: 'stun:stun.ideasip.com:3478' },
+      { urls: 'stun:stun.schlund.de:3478' },
+      { urls: 'stun:stun.voiparound.com:3478' },
+      { urls: 'stun:stun.voipbuster.com:3478' },
+      { urls: 'stun:stun.voipstunt.com:3478' },
+      { urls: 'stun:stun.voxgratia.org:3478' },
+      { urls: 'stun:stun.services.mozilla.com:3478' },
+      { urls: 'stun:stun.stunprotocol.org:3478' },
+      { urls: 'stun:stun.counterpath.com:3478' },
+      { urls: 'stun:stun.12connect.com:3478' },
+      { urls: 'stun:stun.callwithus.com:3478' },
+      { urls: 'stun:stun.sipgate.net:3478' },
+      { urls: 'stun:stun.sipgate.net:10000' },
+      { urls: 'stun:stun.1und1.de:3478' },
+      { urls: 'stun:stun.gmx.net:3478' },
+      { urls: 'stun:stun.xten.com:3478' },
+      { urls: 'stun:stun.nextcloud.com:3478' },
+      { urls: 'stun:stun.sip.us:3478' },
+      { urls: 'stun:stun.twt.it:3478' }
+    ],
+    sdpSemantics: 'unified-plan',
+    iceTransportPolicy: 'all',
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require',
+    iceCandidatePoolSize: 10
+  },
+  debug: 2
+});
         peer.on('open', (id) => {
           console.log("PeerJS: Connected with ID:", id);
           setIsPeerInitialized(true);
@@ -1829,7 +1950,7 @@
       "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
       "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
       "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
-      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂obes", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
+      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
       "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨",
       "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🙈", "🙉", "🙊",
       "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉",
@@ -1867,8 +1988,7 @@
       "🛖", "🏠", "🏡", "🏘️", "🏚️", "🏢", "🏬", "🏣", "🏤", "🏥",
       "🏦", "🏨", "🏪", "🏫", "🏩", "💒", "🏛️", "⛪", "🕌", "🕍",
       "🛕", "⛩️", "🕋", "🛝", "🛗", "🪞", "🪟", "🪚", "🪤", "🪓",
-      "🪒", "🪥", "🪦", "🪧", "🪨", "🪩", "🪪", "🪫", "🪬", "🪭",
-      "🪮", "🪯"
+     
     ];
 
     return (
