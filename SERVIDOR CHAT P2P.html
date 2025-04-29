@@ -207,6 +207,20 @@
       border-radius: 5px;
       border: 1px solid #c8e6c9;
     }
+    .connection-quality {
+      margin-left: 10px;
+      font-size: 0.8em;
+      color: #666;
+    }
+    .quality-good {
+      color: #4CAF50;
+    }
+    .quality-medium {
+      color: #FFC107;
+    }
+    .quality-poor {
+      color: #F44336;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -219,6 +233,10 @@
 
     const PEER_ID_STORAGE_KEY = 'p2pChatDistributorId';
     const DEFAULT_ID = 'AAAAAA';
+    const MAX_CONNECTION_ATTEMPTS = 3;
+    const RECONNECT_DELAY = 5000; // 5 segundos
+    const CONNECTION_TIMEOUT = 15000; // 15 segundos
+    const HEARTBEAT_INTERVAL = 30000; // 30 segundos
 
     const usePersistentId = () => {
       const [peerId, setPeerId] = useState(() => {
@@ -362,14 +380,19 @@
         callsDistributed: 0,
         voiceCallsReceived: 0,
         voiceCallsDistributed: 0,
-        activeConnections: 0
+        activeConnections: 0,
+        connectionErrors: 0,
+        reconnects: 0
       });
       
       const peerInstance = useRef(null);
       const pendingFiles = useRef({});
       const messagesEndRef = useRef(null);
       const activeConnectionsRef = useRef(new Map());
-      const activeCallsRef = useRef(new Map()); // Mapa de chamadas ativas: peerId -> [{ call, stream, redistributedCalls, type }, ...]
+      const activeCallsRef = useRef(new Map());
+      const connectionAttempts = useRef(0);
+      const connectionTimeoutRef = useRef(null);
+      const heartbeatIntervalRef = useRef(null);
       const CHUNK_SIZE = 16 * 1024;
 
       useEffect(() => {
@@ -386,41 +409,56 @@
         }
       };
 
+      const cleanupResources = () => {
+        // Limpar todas as chamadas ativas
+        activeCallsRef.current.forEach((calls, peerId) => {
+          calls.forEach(callData => {
+            try {
+              callData.call.close();
+              callData.redistributedCalls.forEach(redistCall => redistCall.close());
+            } catch (e) {
+              console.error(`Erro ao encerrar chamada com ${peerId}:`, e);
+            }
+          });
+        });
+        activeCallsRef.current.clear();
+        
+        // Limpar todas as conexões
+        activeConnectionsRef.current.forEach((conn) => {
+          try {
+            conn.close();
+          } catch (e) {
+            console.error("Erro ao fechar conexão:", e);
+          }
+        });
+        activeConnectionsRef.current.clear();
+        
+        // Limpar intervalos e timeouts
+        if (connectionTimeoutRef.current) {
+          clearTimeout(connectionTimeoutRef.current);
+          connectionTimeoutRef.current = null;
+        }
+        
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+          heartbeatIntervalRef.current = null;
+        }
+      };
+
       const disconnectPeer = () => {
         if (peerInstance.current) {
           try {
             console.log("Desconectando peer...");
-            
-            activeCallsRef.current.forEach((calls, peerId) => {
-              calls.forEach(callData => {
-                try {
-                  callData.call.close();
-                  callData.redistributedCalls.forEach(redistCall => redistCall.close());
-                  console.log(`Chamada com ${peerId} encerrada`);
-                } catch (e) {
-                  console.error(`Erro ao encerrar chamada com ${peerId}:`, e);
-                }
-              });
-            });
-            activeCallsRef.current.clear();
-            
-            activeConnectionsRef.current.forEach((conn) => {
-              try {
-                conn.close();
-              } catch (e) {
-                console.error("Erro ao fechar conexão:", e);
-              }
-            });
-            
-            activeConnectionsRef.current.clear();
-            setConnections([]);
+            cleanupResources();
             
             peerInstance.current.destroy();
             peerInstance.current = null;
             
             setConnectionStatus('desconectado');
+            setConnections([]);
             
-            setStats({
+            setStats(prev => ({
+              ...prev,
               messagesReceived: 0,
               messagesDistributed: 0,
               callsReceived: 0,
@@ -428,7 +466,7 @@
               voiceCallsReceived: 0,
               voiceCallsDistributed: 0,
               activeConnections: 0
-            });
+            }));
             
             console.log("Peer desconectado com sucesso");
           } catch (err) {
@@ -437,12 +475,43 @@
         }
       };
 
+      const setupHeartbeat = () => {
+        if (heartbeatIntervalRef.current) {
+          clearInterval(heartbeatIntervalRef.current);
+        }
+        
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (peerInstance.current && !peerInstance.current.disconnected) {
+            // Verificar conexões ativas
+            activeConnectionsRef.current.forEach((conn, peerId) => {
+              if (!conn.open) {
+                console.log(`Conexão com ${peerId} está fechada, removendo...`);
+                activeConnectionsRef.current.delete(peerId);
+                setConnections(Array.from(activeConnectionsRef.current.keys()));
+              }
+            });
+            
+            // Verificar chamadas ativas
+            activeCallsRef.current.forEach((calls, peerId) => {
+              calls.forEach(callData => {
+                if (callData.call.peerConnection.connectionState === 'disconnected') {
+                  console.log(`Chamada com ${peerId} desconectada, encerrando...`);
+                  callData.call.close();
+                }
+              });
+            });
+          }
+        }, HEARTBEAT_INTERVAL);
+      };
+
       const setupPeer = () => {
         if (!peerId) return;
 
         console.log("Configurando distribuidor com ID:", peerId);
         setConnectionStatus('conectando');
+        connectionAttempts.current += 1;
         
+        // Limpar instância anterior se existir
         if (peerInstance.current) {
           try {
             peerInstance.current.destroy();
@@ -451,6 +520,26 @@
           }
         }
         
+        // Configurar timeout de conexão
+        if (connectionTimeoutRef.current) {
+          clearTimeout(connectionTimeoutRef.current);
+        }
+        
+        connectionTimeoutRef.current = setTimeout(() => {
+          if (connectionStatus === 'conectando') {
+            console.log("Timeout de conexão atingido");
+            setStats(prev => ({ ...prev, connectionErrors: prev.connectionErrors + 1 }));
+            
+            if (connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
+              console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
+              setTimeout(setupPeer, RECONNECT_DELAY);
+            } else {
+              setConnectionStatus('erro');
+              console.error("Número máximo de tentativas de conexão atingido");
+            }
+          }
+        }, CONNECTION_TIMEOUT);
+        
         const peer = new Peer(peerId, {
           host: '0.peerjs.com',
           port: 443,
@@ -458,7 +547,10 @@
           config: {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' },
+              { urls: 'stun:stun4.l.google.com:19302' }
             ]
           },
           debug: 2
@@ -467,6 +559,14 @@
         peer.on('open', (id) => {
           console.log("Distribuidor conectado com ID:", id);
           setConnectionStatus('conectado');
+          connectionAttempts.current = 0;
+          
+          if (connectionTimeoutRef.current) {
+            clearTimeout(connectionTimeoutRef.current);
+            connectionTimeoutRef.current = null;
+          }
+          
+          setupHeartbeat();
         });
 
         peer.on('connection', (conn) => {
@@ -475,7 +575,6 @@
         });
 
         peer.on('call', (call) => {
-          // Determinar o tipo de chamada pelos metadados
           const callType = call.metadata && call.metadata.type === 'voice' ? 'voice' : 'video';
           
           console.log(`Chamada de ${callType} recebida de ${call.peer}`);
@@ -492,21 +591,19 @@
             }));
           }
 
-          // Criar um stream vazio apenas para responder à chamada, sem enviar mídia do distribuidor
+          // Criar um stream vazio apenas para responder à chamada
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
 
           call.on('stream', (remoteStream) => {
             console.log(`Recebido stream de ${call.peer} (${callType}) com ${remoteStream.getAudioTracks().length} trilhas de áudio e ${remoteStream.getVideoTracks().length} trilhas de vídeo`);
             
-            // Verificar se temos tracks disponíveis
             if ((callType === 'voice' && remoteStream.getAudioTracks().length === 0) &&
                 (callType === 'video' && remoteStream.getTracks().length === 0)) {
               console.error(`Não há trilhas disponíveis no stream recebido de ${call.peer}`);
               return;
             }
             
-            // Verificar se já existe uma entrada para esse peer e tipo de chamada
             let existingCallData;
             if (activeCallsRef.current.has(call.peer)) {
               const calls = activeCallsRef.current.get(call.peer);
@@ -514,23 +611,18 @@
             }
             
             if (existingCallData) {
-              // Atualizar o stream na chamada existente
               console.log(`Atualizando stream existente para ${call.peer} (${callType})`);
               existingCallData.stream = remoteStream;
               
-              // Atualizar todas as redistribuições existentes com o novo stream
               existingCallData.redistributedCalls.forEach((redistCall, peerId) => {
                 try {
-                  // Criar um novo stream com as trilhas do stream remoto recebido
                   const newRedistributedStream = new MediaStream();
                   remoteStream.getTracks().forEach(track => {
                     newRedistributedStream.addTrack(track);
                   });
                   
-                  // Fechar a chamada antiga e criar uma nova com o stream atualizado
                   redistCall.close();
                   
-                  // Criar nova chamada com o stream atualizado
                   const newRedistCall = peerInstance.current.call(peerId, newRedistributedStream, {
                     metadata: { type: callType }
                   });
@@ -556,7 +648,6 @@
               });
               
             } else {
-              // Criar uma nova entrada para esse peer e tipo de chamada
               const callData = { 
                 call, 
                 stream: remoteStream, 
@@ -564,7 +655,6 @@
                 type: callType
               };
               
-              // Adicionar a chamada ao activeCallsRef
               if (!activeCallsRef.current.has(call.peer)) {
                 activeCallsRef.current.set(call.peer, []);
               }
@@ -576,15 +666,11 @@
                   try {
                     console.log(`Iniciando chamada de ${callType} para ${peerId}`);
                     
-                    // Clone o stream original para redistribuir
                     const redistributedStream = new MediaStream();
-                    
-                    // Copiar as trilhas relevantes dependendo do tipo de chamada
                     remoteStream.getTracks().forEach(track => {
                       redistributedStream.addTrack(track);
                     });
 
-                    // Criar uma nova chamada para cada cliente conectado
                     const redistCall = peerInstance.current.call(peerId, redistributedStream, {
                       metadata: { type: callType }
                     });
@@ -637,12 +723,6 @@
                     console.error(`Erro ao encerrar chamada de ${callType} redistribuída:`, e);
                   }
                 });
-                // Não remover a entrada completamente para permitir que futuras chamadas
-                // do mesmo peer sejam tratadas corretamente
-                // calls.splice(callIndex, 1);
-                // if (calls.length === 0) {
-                //   activeCallsRef.current.delete(call.peer);
-                // }
               }
             }
           });
@@ -654,36 +734,37 @@
 
         peer.on('error', (err) => {
           console.error("Erro no peer:", err);
-          setConnectionStatus('erro');
+          setStats(prev => ({ ...prev, connectionErrors: prev.connectionErrors + 1 }));
+          
+          if (connectionStatus === 'conectando' && connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
+            console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
+            setTimeout(setupPeer, RECONNECT_DELAY);
+          } else {
+            setConnectionStatus('erro');
+          }
         });
 
         peer.on('disconnected', () => {
           console.log("Peer desconectado");
-          setConnectionStatus('desconectado');
+          setStats(prev => ({ ...prev, reconnects: prev.reconnects + 1 }));
+          
+          if (connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
+            console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
+            setTimeout(() => {
+              try {
+                peer.reconnect();
+              } catch (e) {
+                console.error("Falha na reconexão, recriando peer:", e);
+                setupPeer();
+              }
+            }, RECONNECT_DELAY);
+          } else {
+            setConnectionStatus('desconectado');
+          }
         });
 
         peerInstance.current = peer;
       };
-
-      useEffect(() => {
-        if (connectionStatus !== 'conectado' && connectionStatus !== 'conectando') return;
-        
-        const checkConnectionInterval = setInterval(() => {
-          if (peerInstance.current && peerInstance.current.disconnected) {
-            console.log("Tentando reconectar...");
-            try {
-              peerInstance.current.reconnect();
-            } catch (e) {
-              console.error("Falha na reconexão, recriando peer:", e);
-              setupPeer();
-            }
-          }
-        }, 30000);
-
-        return () => {
-          clearInterval(checkConnectionInterval);
-        };
-      }, [connectionStatus]);
 
       const handleIdChange = (newId) => {
         disconnectPeer();
@@ -793,6 +874,12 @@
         });
       };
 
+      useEffect(() => {
+        return () => {
+          cleanupResources();
+        };
+      }, []);
+
       return (
         <div>
           <h1>P2P Message Distributor</h1>
@@ -831,6 +918,8 @@
             <p>Voice calls received: {stats.voiceCallsReceived}</p>
             <p>Distributed voice calls: {stats.voiceCallsDistributed}</p>
             <p>Active connections: {stats.activeConnections}</p>
+            <p>Connection errors: {stats.connectionErrors}</p>
+            <p>Reconnects: {stats.reconnects}</p>
           </div>
           
           <div className="connected-peers">
@@ -885,638 +974,5 @@
 </head>
 <body>
   <div id="root"></div>
-<script>
-
-
-
-// Script automatizado para testar chamadas de voz via distribuidor P2P
-
-(async () => {
-  const log = (msg) => console.log(`[Teste] ${msg}`);
-
-  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-  log("Iniciando testes automatizados de chamada P2P...");
-
-  if (!window.Peer) {
-    log("PeerJS não carregado. Testes abortados.");
-    return;
-  }
-
-  // IDs fixos para testes
-  const CLIENT_A_ID = "TESTA1";
-  const CLIENT_B_ID = "TESTB2";
-
-  // Criação de dois peers (cliente A e B)
-  const clientA = new Peer(CLIENT_A_ID, { host: '0.peerjs.com', port: 443, secure: true });
-  const clientB = new Peer(CLIENT_B_ID, { host: '0.peerjs.com', port: 443, secure: true });
-
-  let audioStreamA = null;
-  let audioStreamB = null;
-
-  clientA.on('open', async () => {
-    log("Cliente A conectado: " + CLIENT_A_ID);
-    try {
-      audioStreamA = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      log("Erro ao acessar microfone no cliente A: " + err);
-    }
-  });
-
-  clientB.on('open', async () => {
-    log("Cliente B conectado: " + CLIENT_B_ID);
-    try {
-      audioStreamB = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      log("Erro ao acessar microfone no cliente B: " + err);
-    }
-
-    await wait(2000); // aguarda A estar pronto
-    if (audioStreamA) {
-      const call = clientA.call(CLIENT_B_ID, audioStreamA, { metadata: { type: 'voice' } });
-      call.on('stream', (remoteStream) => {
-        log("Cliente A recebeu stream do Cliente B");
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        audio.play();
-      });
-    }
-  });
-
-  clientB.on('call', (call) => {
-    if (audioStreamB) {
-      call.answer(audioStreamB);
-      call.on('stream', (remoteStream) => {
-        log("Cliente B recebeu stream do Cliente A");
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        audio.play();
-      });
-    }reader.onerror = (err) => {
-        console.error(`App: Error reading ${typePrefix} blob:`, err);
-        alert(`Erro ao ler dados: ${err.message}`);
-        setMessages(prev => prev.map(msg => msg[idKey] === id ? { ...msg, sending: false, progress: -1 } : msg));
-      };
-      readChunk();
-    };
-
-    /*
-      TÍTULO: Gerenciamento de Arquivos
-      
-      DESCRIÇÃO DETALHADA:
-      As funções handleFileChange e handleAudioRecording implementam a interface para envio
-      de arquivos e gravações de áudio no chat, coordenando as validações necessárias e
-      iniciando o processo de transferência de dados em chunks.
-      
-      Aspectos principais e funcionamento:
-      
-      1. Verificações Preliminares: Ambas as funções realizam verificações essenciais antes
-         de iniciar a transferência, como:
-         - Confirmar se o usuário definiu seu nome
-         - Verificar se há um contato selecionado para envio
-         - Validar se existe uma conexão ativa com o contato
-      
-      2. Seleção de Arquivos: A função handleFileChange é acionada quando o usuário seleciona
-         um arquivo através do input oculto, obtém o arquivo selecionado e o passa para o
-         sistema de transferência.
-      
-      3. Processamento de Áudio: A função handleAudioRecording recebe um blob de áudio do
-         componente VoiceRecorder e o encaminha para o sistema de transferência, permitindo
-         o envio de mensagens de voz.
-      
-      4. Integração com UI: Ambas as funções interagem com elementos da UI, como alertas para
-         feedback ao usuário e manipulação de inputs.
-      
-      5. Reset após Envio: handleFileChange limpa o campo de arquivo após o envio para permitir
-         a seleção do mesmo arquivo novamente, se necessário.
-      
-      Estas funções demonstram uma boa separação de responsabilidades: elas não implementam
-      diretamente a lógica de transferência, mas realizam validações contextuais e conectam
-      a interface do usuário ao subsistema de transmissão de dados.
-    */
-    
-    const handleFileChange = (e) => {
-      if (!userName.trim()) {
-        alert('Defina seu nome.');
-        setEditingName(true);
-        return;
-      }
-      if (!selectedContact) {
-        alert('Selecione um contato.');
-        return;
-      }
-      const file = e.target.files[0];
-      if (!file) return;
-      const conn = connections.find(c => c.peer === selectedContact);
-      if (!conn || !conn.open) {
-        alert(`Contato ${getContactName(selectedContact)} offline.`);
-        return;
-      }
-
-      sendChunkedData(conn, 'fileId', file, 'file', { fileName: file.name });
-      fileInputRef.current.value = '';
-    };
-
-    const handleAudioRecording = (audioBlob, targetContact) => {
-      if (!userName.trim()) {
-        alert('Defina seu nome.');
-        setEditingName(true);
-        return;
-      }
-      if (!targetContact) {
-        alert('Selecione um contato.');
-        return;
-      }
-      const conn = connections.find(c => c.peer === targetContact);
-      if (!conn || !conn.open) {
-        alert(`Contato ${getContactName(targetContact)} offline.`);
-        return;
-      }
-
-      sendChunkedData(conn, 'audioId', audioBlob, 'audio', {});
-    };
-    
-    //FIM
-    
-    /*
-      TÍTULO: Sistema de Chamadas de Voz
-      
-      DESCRIÇÃO DETALHADA:
-      A função startVoiceCall implementa o sistema para iniciar chamadas de voz entre usuários,
-      utilizando WebRTC através da biblioteca PeerJS. Esta funcionalidade possibilita
-      comunicação por voz em tempo real, sem a necessidade de servidores intermediários.
-      
-      Principais aspectos e funcionamento:
-      
-      1. Verificações Iniciais: Realiza validações importantes antes de iniciar a chamada:
-         - Verifica se o PeerJS está inicializado
-         - Confirma se existe um contato selecionado para a chamada
-         - Evita iniciar chamadas duplicadas com o mesmo contato
-         - Valida se existe uma conexão ativa com o contato
-      
-      2. Acesso ao Microfone: Solicita permissão para acessar o microfone do usuário através
-         da API MediaDevices, criando um fluxo de áudio (stream) para transmissão.
-      
-      3. Armazenamento de Streams: Registra o stream local em um Map para facilitar a limpeza
-         posterior, quando a chamada for encerrada.
-      
-      4. Estabelecimento da Chamada: Utiliza o método call do PeerJS para criar uma conexão
-         de mídia com o contato escolhido, passando o stream de áudio e metadados (tipo de chamada).
-      
-      5. Gerenciamento de Estado da Chamada: Atualiza o estado activeCalls para refletir a
-         nova chamada, permitindo que a UI exiba informações adequadas.
-      
-      6. Recepção do Stream Remoto: Configura um handler para o evento 'stream', que é disparado
-         quando o fluxo de áudio do contato é recebido, adicionando-o ao estado remoteStreams.
-      
-      7. Manipulação de Eventos do Ciclo de Vida: Define handlers para os eventos 'close' e 'error',
-         garantindo que os recursos sejam liberados adequadamente ao final da chamada.
-      
-      8. Tratamento de Erros: Implementa captura e tratamento de erros durante todo o processo
-         de chamada, desde o acesso ao microfone até problemas na conexão WebRTC.
-      
-      Esta implementação oferece uma experiência de chamada de voz robusta, gerenciando
-      corretamente o ciclo de vida dos streams de mídia e proporcionando feedback adequado
-      ao usuário em caso de erros.
-    */
-    
-    const startVoiceCall = async (peerIdToCall) => {
-      if (!peerInstance.current) {
-        alert('Peer não inicializado');
-        return;
-      }
-      if (!peerIdToCall) {
-        alert('Selecione um contato.');
-        return;
-      }
-      if (activeCalls.some(c => c.peerId === peerIdToCall && c.type === 'voice')) return;
-      const conn = connections.find(c => c.peer === peerIdToCall);
-      if (!conn || !conn.open) {
-        alert(`Contato ${getContactName(peerIdToCall)} offline.`);
-        return;
-      }
-
-      try {
-        console.log("App: Starting voice call with:", peerIdToCall);
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-        if (!stream) return;
-
-        localStreamsRef.current.set(peerIdToCall + '_voice', stream);
-        const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'voice' } });
-
-        setActiveCalls(prev => [
-          ...prev,
-          {
-            peerId: peerIdToCall,
-            call,
-            localStream: stream,
-            type: 'voice',
-            direction: 'outgoing',
-            isTemporaryStream: false
-          }
-        ]);
-
-        call.on('stream', (remoteStream) => {
-          console.log(`App: Received remote audio stream from:`, peerIdToCall);
-          setRemoteStreams(prev => [
-            ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'voice')),
-            { peerId: peerIdToCall, stream: remoteStream, type: 'voice' }
-          ]);
-        });
-        call.on('close', () => {
-          console.log("App: Voice call closed with:", peerIdToCall);
-          endCall(peerIdToCall, 'voice');
-        });
-        call.on('error', (err) => {
-          console.error('App: Error in voice call:', err);
-          alert('Erro chamada de voz: ' + err.message);
-          endCall(peerIdToCall, 'voice');
-        });
-      } catch (err) {
-        console.error('App: Error starting voice call:', err);
-        alert('Erro ao acessar microfone: ' + err.message);
-      }
-    };
-    
-    //FIM
-    
-    /*
-      TÍTULO: Sistema de Chamadas de Vídeo
-      
-      DESCRIÇÃO DETALHADA:
-      A função toggleVideoCall implementa um sistema completo para gerenciar chamadas de vídeo,
-      permitindo tanto iniciar quanto encerrar videoconferências com outros usuários.
-      Este componente é a base da funcionalidade de comunicação visual em tempo real da aplicação.
-      
-      Principais características e funcionamento:
-      
-      1. Toggle Inteligente: A função atua como uma chave que alterna entre ligar e desligar
-         a câmera, baseando-se no estado atual da chamada com determinado contato.
-      
-      2. Desativação do Vídeo: Quando o usuário já está enviando vídeo para um contato,
-         a função:
-         - Para todas as tracks de mídia do stream local
-         - Remove o stream do registro interno (localStreamsRef)
-         - Atualiza o estado da chamada para refletir a remoção do stream local
-         - Esconde o preview de vídeo local se não houver mais streams ativos
-      
-      3. Ativação do Vídeo: Quando o usuário deseja iniciar/retomar o envio de vídeo:
-         - Solicita permissão para acessar câmera e microfone via MediaDevices API
-         - Registra o stream obtido para controle posterior
-         - Exibe o preview do vídeo local na interface
-      
-      4. Lógica de Chamadas Existentes: Implementa um tratamento especial para casos onde
-         já existe uma chamada estabelecida com o contato:
-         - Apenas adiciona um stream local à chamada existente
-         - Inicia uma nova chamada unidirecional para enviar o vídeo
-         - Mantém a chamada bidirecional original intacta
-      
-      5. Novas Chamadas: Para contatos sem chamada ativa, cria uma nova chamada completa:
-         - Estabelece conexão WebRTC via PeerJS
-         - Configura handlers para todos os eventos importantes (stream, close, error)
-         - Atualiza os estados para refletir a nova chamada na interface
-      
-      6. Tratamento de Erros: Implementa captura e tratamento robusto de erros para todas
-         as operações, desde acesso a dispositivos até falhas na conexão WebRTC.
-      
-      Este sistema de videochamadas demonstra uma arquitetura bem projetada para lidar
-      com a complexidade do WebRTC, gerenciando adequadamente diferentes estados de chamada
-      e proporcionando uma experiência fluida ao usuário.
-    */
-    
-    const toggleVideoCall = async (peerIdToCall) => {
-      if (!peerInstance.current) {
-        alert('Peer não inicializado');
-        return;
-      }
-      if (!peerIdToCall) {
-        alert('Selecione um contato.');
-        return;
-      }
-
-      const existingCall = activeCalls.find(c => c.peerId === peerIdToCall && c.type === 'video');
-      const isSendingVideo = existingCall && existingCall.localStream;
-      const conn = connections.find(c => c.peer === peerIdToCall);
-
-      if (isSendingVideo) {
-        // Usuário já está enviando vídeo - vamos desligar a câmera
-        console.log("App: Stopping local video stream for:", peerIdToCall);
-        if (existingCall && existingCall.localStream) {
-          existingCall.localStream.getTracks().forEach(track => track.stop());
-          localStreamsRef.current.delete(peerIdToCall + '_video');
-        }
-        
-        // Não feche a chamada completamente, apenas atualize o estado para remover o stream local
-        setActiveCalls(prev => prev.map(c => {
-          if (c.peerId === peerIdToCall && c.type === 'video') {
-            return { ...c, localStream: null };
-          }
-          return c;
-        }));
-        
-        if (localStreamsRef.current.size === 0) {
-          setIsLocalVideoVisible(false);
-          if (localVideoRef.current) localVideoRef.current.srcObject = null;
-        }
-        
-      } else {
-        // Usuário quer ligar a câmera
-        if (!conn || !conn.open) {
-          alert(`Contato ${getContactName(peerIdToCall)} offline.`);
-          return;
-        }
-
-        try {
-          console.log("App: Getting video stream for:", peerIdToCall);
-          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          if (!stream) return;
-
-          localStreamsRef.current.set(peerIdToCall + '_video', stream);
-          setIsLocalVideoVisible(true);
-          if (localVideoRef.current) localVideoRef.current.srcObject = stream;
-
-          if (existingCall) {
-            // Se já temos uma chamada existente, adicione o stream local a ela
-            console.log("App: Adding local stream to existing call with:", peerIdToCall);
-            
-            // Atualize o estado da chamada com o novo stream local
-            setActiveCalls(prev => prev.map(c => {
-              if (c.peerId === peerIdToCall && c.type === 'video') {
-                return { ...c, localStream: stream };
-              }
-              return c;
-            }));
-            
-            // Inicie uma nova chamada para enviar seu vídeo
-            const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
-            
-            call.on('stream', (remoteStream) => {
-              console.log(`App: Received remote video stream response from:`, peerIdToCall);
-            });
-            
-            call.on('close', () => {
-              console.log("App: Outgoing video stream call closed with:", peerIdToCall);
-            });
-            
-            call.on('error', (err) => {
-              console.error('App: Error in outgoing video stream call:', err);
-            });
-            
-          } else {
-            // Se não há chamada existente, inicie uma nova
-            console.log("App: Starting new video call with:", peerIdToCall);
-            const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
-            
-            setActiveCalls(prev => [
-              ...prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')),
-              {
-                peerId: peerIdToCall,
-                call,
-                localStream: stream,
-                type: 'video',
-                direction: 'outgoing',
-                isTemporaryStream: false
-              }
-            ]);
-
-            call.on('stream', (remoteStream) => {
-              console.log(`App: Received remote video stream from:`, peerIdToCall);
-              setRemoteStreams(prev => [
-                ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
-                { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
-              ]);
-            });
-
-            call.on('close', () => {
-              console.log("App: Video call closed with:", peerIdToCall);
-              endCall(peerIdToCall, 'video');
-            });
-
-            call.on('error', (err) => {
-              console.error('App: Error in video call:', err);
-              alert('Erro chamada de vídeo: ' + err.message);
-              endCall(peerIdToCall, 'video');
-            });
-          }
-        } catch (err) {
-          console.error('App: Error starting video call:', err);
-          alert('Erro ao acessar câmera/microfone: ' + err.message);
-        }
-      }
-    };
-    
-    //FIM
-    
-    /*
-      TÍTULO: Sistema de Encerramento de Chamadas
-      
-      DESCRIÇÃO DETALHADA:
-      A função endCall implementa o mecanismo para finalizar chamadas de voz e vídeo,
-      garantindo que todos os recursos associados sejam corretamente liberados e que
-      a interface reflita o novo estado da aplicação.
-      
-      Principais funcionalidades e funcionamento:
-      
-      1. Encerramento da Conexão WebRTC: Fecha a conexão PeerJS associada à chamada,
-         notificando o outro peer sobre o encerramento e interrompendo a transmissão
-         de mídia.
-      
-      2. Liberação de Recursos de Mídia: Interrompe todas as tracks de mídia ativas
-         (áudio/vídeo) associadas à chamada, garantindo que os dispositivos (microfone,
-         câmera) sejam liberados corretamente.
-      
-      3. Gerenciamento de Referências Internas: Remove o stream do registro interno
-         (localStreamsRef) através da função auxiliar stopAndRemoveLocalStream.
-      
-      4. Atualização de Estado: Remove a chamada encerrada dos estados activeCalls
-         e remoteStreams, garantindo que a interface seja atualizada corretamente.
-      
-      5. Gerenciamento do Vídeo Local: Implementa lógica para:
-         - Esconder o preview de vídeo local quando não há mais chamadas ativas
-         - Alternar o preview para outro stream ativo se a chamada atual era a que
-           estava sendo visualizada
-      
-      6. Detecção de Streams Ativos: Verifica se ainda existem streams de vídeo ativos
-         após o encerramento da chamada e atualiza a interface de acordo.
-      
-      Esta função é essencial para garantir uma experiência de usuário limpa, sem
-      vazamentos de memória ou consumo desnecessário de recursos do dispositivo,
-      um aspecto crítico em aplicações que utilizam recursos de mídia.
-    */
-    
-    const endCall = (peerIdToEnd, callType) => {
-      console.log(`App: Ending ${callType} call with:`, peerIdToEnd);
-      const callData = activeCalls.find(c => c.peerId === peerIdToEnd && c.type === callType);
-
-      if (callData) {
-        if (callData.call) {
-          callData.call.close();
-        }
-        if (callData.localStream) {
-          callData.localStream.getTracks().forEach(track => track.stop());
-          console.log(`App: Stopped local stream tracks for ${callType} call with ${peerIdToEnd}`);
-          stopAndRemoveLocalStream(peerIdToEnd + '_' + callType);
-        }
-      }
-
-      setActiveCalls(prev => prev.filter(c => !(c.peerId === peerIdToEnd && c.type === callType)));
-      setRemoteStreams(prev => prev.filter(s => !(s.peerId === peerIdToEnd && s.type === callType)));
-
-      const anyLocalVideoActive = Array.from(localStreamsRef.current.values()).some(
-        stream => stream.getVideoTracks().some(t => t.readyState === 'live')
-      );
-      if (!anyLocalVideoActive) {
-        setIsLocalVideoVisible(false);
-        if (localVideoRef.current) localVideoRef.current.srcObject = null;
-      } else if (
-        isLocalVideoVisible &&
-        (!localVideoRef.current?.srcObject?.active || localVideoRef.current?.srcObject === callData?.localStream)
-      ) {
-        const firstActiveStream = localStreamsRef.current.values().next().value;
-        if (localVideoRef.current && firstActiveStream) {
-          localVideoRef.current.srcObject = firstActiveStream;
-        }
-      }
-    };
-    
-    //FIM
-    
-    /*
-      TÍTULO: Componentes de Interface de Usuário Auxiliares
-      
-      DESCRIÇÃO DETALHADA:
-      Esta seção implementa componentes e funções auxiliares para a interface do usuário
-      que melhoram a experiência e facilitam a interação com a aplicação.
-      
-      Principais componentes e funcionalidades:
-      
-      1. Sistema de Emojis (populateEmojiPanel):
-         - Cria um painel de seleção de emojis para inserção rápida em mensagens de texto
-         - Organiza uma grande coleção de emojis em uma grade navegável
-         - Implementa a lógica para inserir o emoji selecionado na mensagem atual
-      
-      2. Formulário de Nome (renderNameForm):
-         - Fornece uma interface para o usuário definir ou editar seu nome de exibição
-         - Inclui validação básica (botão desabilitado quando o campo está vazio)
-         - Salva o nome no localStorage para persistência entre sessões
-      
-      3. Tratamento de Erros na Interface:
-         - Implementa uma visualização específica para o caso de ocorrer um erro crítico
-         - Exibe mensagem amigável com opção para recarregar a aplicação
-      
-      4. Renderização Condicional Principal:
-         - Alterna entre a tela de chat principal e a tela de gerenciamento de contatos
-         - Organiza os elementos da interface principal em seções lógicas (cabeçalho,
-           informações do usuário, container de vídeo, chamadas ativas, etc.)
-      
-      5. Integração dos Componentes:
-         - Conecta todos os componentes e subcomponentes da aplicação
-         - Passa as props necessárias para o funcionamento adequado de cada parte
-      
-      Este conjunto de componentes de UI demonstra uma abordagem modular e bem estruturada
-      para a construção da interface, facilitando a manutenção e expansão futura da aplicação.
-    */
-    
-    const populateEmojiPanel = () => {
-      const emojis = [
-        "😀","😁","😂","🤣","😃","😄","😅","😆","😉","😊",
-        "😋","😎","😍","😘","🥰","😗","😙","😚","🙂","🤗",
-        "🤩","🤔","🤨","😐","😑","😶","🙄","😏","😣","😥",
-        "😮","🤐","😴","😪","😵","😤","😭","😡","🤯","🥵",
-        "👍","👎","👌","✌️","🤞","👋","🤚","🖐️","👏","🙌",
-        "👐","🤲","🙏","💪","🦵","🦶","👂","👃","🧠","🫀",
-        "👀","👁️","🧑‍🦰","🧑‍🦱","🧑‍🦳","🧑‍🦲","👶","🧒","👦","👧",
-        "🧑","👱‍♂️","👱‍♀️","🧔","👨‍🦰","👩‍🦰","👨‍🦱","👩‍🦱","👨‍🦳","👩‍🦳",
-        "👨‍🦲","👩‍🦲","👩","👨","🧓","👴","👵","🙍‍♂️","🙍‍♀️","🙎‍♂️",
-        "🙎‍♀️","🙅‍♂️","🙅‍♀️","🙆‍♂️","🙆‍♀️","💁‍♂️","💁‍♀️","🙋‍♂️","🙋‍♀️","🧏‍♂️",
-        "🧏‍♀️","🙇‍♂️","🙇‍♀️","🤦‍♂️","🤦‍♀️","🤷‍♂️","🤷‍♀️","🧑‍⚕️","👨‍⚕️","👩‍⚕️",
-        "🧑‍🎓","👨‍🎓","👩‍🎓","🧑‍🏫","👨‍🏫","👩‍🏫","🧑‍⚖️","👨‍⚖️","👩‍⚖️","🧑‍🌾",
-        "👨‍🌾","👩‍🌾","🧑‍🍳","👨‍🍳","👩‍🍳","🧑‍🔧","👨‍🔧","👩‍🔧","🧑‍🏭","👨‍🏭",
-        "👩‍🏭","🧑‍💼","👨‍💼","👩‍💼","🧑‍🔬","👨‍🔬","👩‍🔬","🧑‍💻","👨‍💻","👩‍💻",
-        "🧑‍🎤","👨‍🎤","👩‍🎤","🧑‍🎨","👨‍🎨","👩‍🎨","🧑‍✈️","👨‍✈️","👩‍✈️","🧑‍🚀",
-        "👨‍🚀","👩‍🚀","🧑‍🚒","👨‍🚒","👩‍🚒","👮‍♂️","👮‍♀️","🕵️‍♂️","🕵️‍♀️","💂‍♂️",
-        "💂‍♀️","🥷","👷‍♂️","👷‍♀️","🤴","👸","👳‍♂️","👳‍♀️","👲","🧕",
-        "🤵","👰","🤰","🤱","👩‍🍼","👨‍🍼","🧑‍🍼","🧙‍♂️","🧙‍♀️","🧚‍♂️",
-        "🧚‍♀️","🧛‍♂️","🧛‍♀️","🧜‍♂️","🧜‍♀️","🧝‍♂️","🧝‍♀️","🧞‍♂️","🧞‍♀️","🧟‍♂️",
-        "🧟‍♀️","💆‍♂️","💆‍♀️","💇‍♂️","💇‍♀️","🚶‍♂️","🚶‍♀️","🏃‍♂️","🏃‍♀️","💃",
-        "🕺","🕴️","👯‍♂️","👯‍♀️","🧖‍♂️","🧖‍♀️","🧗‍♂️","🧗‍♀️","🏇","⛷️",
-        "🏂","🏌️‍♂️","🏌️‍♀️","🏄‍♂️","🏄‍♀️","🚣‍♂️","🚣‍♀️","🏊‍♂️","🏊‍♀️","⛹️‍♂️",
-        "⛹️‍♀️","🏋️‍♂️","🏋️‍♀️","🚴‍♂️","🚴‍♀️","🚵‍♂️","🚵‍♀️","🤸‍♂️","🤸‍♀️","🤼‍♂️",
-        "🤼‍♀️","🤽‍♂️","🤽‍♀️","🤾‍♂️","🤾‍♀️","🤹‍♂️","🤹‍♀️","🧘‍♂️","🧘‍♀️","🛀"
-      ];
-
-      return (
-        <div className="emoji-panel">
-          <div className="emoji-panel-header">EMOJIS</div>
-          <div className="emoji-panel-content">
-            {emojis.map((emoji, index) => (
-              <div key={index} className="emoji-item" onClick={() => setNewMessage(prev => prev + emoji)}>
-                {emoji}
-              </div>
-            ))}
-          </div>
-          <div className="emoji-panel-footer">
-            <div className="barra-rolagem-label"><br /></div>
-          </div>
-        </div>
-      );
-    };
-
-    const renderNameForm = () => (
-      <div className="user-name-form">
-        <input
-          type="text"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          placeholder="Digite seu nome"
-          required
-        />
-        <button onClick={saveUserName} disabled={!userName.trim()}>Salvar</button>
-      </div>
-    );
-
-    if (error) {
-      return (
-        <div className="error-message">
-          <h1>Erro na Aplicação</h1>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Recarregar</button>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        {!showContacts ? (
-          <div>
-            <div className="app-header">
-              <h1 className="app-title">PSA</h1>
-              <div className="header-buttons">
-                <button className="header-button" onClick={() => setShowContacts(true)} title="Ver Contatos">
-                  <i className="fas fa-address-book"></i>
-                </button>
-              </div>
-            </div>
-            <div className="user-info-container">
-              {editingName ? renderNameForm() : (
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <span>Seu nome: <span className="username">{userName}</span></span>
-                  <button onClick={() => setEditingName(true)} className="user-edit-button">Editar</button>
-                </div>
-              )}
-            </div>
-            <div className="peer-id-container">
-              <span>Seu ID: {peerId}</span>
-              <button onClick={() => navigator.
-  });
-
-  // Diagnóstico no console
-  clientA.on('error', err => log("Erro Cliente A: " + err));
-  clientB.on('error', err => log("Erro Cliente B: " + err));
-})();
-
-
-
-</script>
 </body>
 </html>
