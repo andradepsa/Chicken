@@ -5,6 +5,24 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/chat",
+        "destination": "/chat.html"
+      },
+      {
+        "source": "/mobile",
+        "destination": "/mobile.html"
+      },
+      {
+        "source": "/servidor",
+        "destination": "/servidor.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   }
 }
