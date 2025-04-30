@@ -9,15 +9,15 @@
     "rewrites": [
       {
         "source": "/chat",
-        "destination": "/chat.html"
+        "destination": "/chat-p2p-desktop.html"
       },
       {
         "source": "/mobile",
-        "destination": "/mobile.html"
+        "destination": "/chat-p2p-mobile.html"
       },
       {
         "source": "/servidor",
-        "destination": "/servidor.html"
+        "destination": "/chat-p2p-servidor.html"
       },
       {
         "source": "**",
