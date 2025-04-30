@@ -1,0 +1,15 @@
+{
+  "name": "chat-p2p",
+  "version": "1.0.0",
+  "description": "http://lattes.cnpq.br/7286865766488458",
+  "main": "main.js",
+  "author": "CHAT P2P",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0"
+  }
+}
