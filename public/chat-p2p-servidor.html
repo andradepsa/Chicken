@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-
-  
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat P2P Distribuidor</title>
@@ -209,20 +207,6 @@
       border-radius: 5px;
       border: 1px solid #c8e6c9;
     }
-    .connection-quality {
-      margin-left: 10px;
-      font-size: 0.8em;
-      color: #666;
-    }
-    .quality-good {
-      color: #4CAF50;
-    }
-    .quality-medium {
-      color: #FFC107;
-    }
-    .quality-poor {
-      color: #F44336;
-    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -235,10 +219,6 @@
 
     const PEER_ID_STORAGE_KEY = 'p2pChatDistributorId';
     const DEFAULT_ID = 'AAAAAA';
-    const MAX_CONNECTION_ATTEMPTS = 3;
-    const RECONNECT_DELAY = 5000; // 5 segundos
-    const CONNECTION_TIMEOUT = 15000; // 15 segundos
-    const HEARTBEAT_INTERVAL = 30000; // 30 segundos
 
     const usePersistentId = () => {
       const [peerId, setPeerId] = useState(() => {
@@ -382,19 +362,14 @@
         callsDistributed: 0,
         voiceCallsReceived: 0,
         voiceCallsDistributed: 0,
-        activeConnections: 0,
-        connectionErrors: 0,
-        reconnects: 0
+        activeConnections: 0
       });
       
       const peerInstance = useRef(null);
       const pendingFiles = useRef({});
       const messagesEndRef = useRef(null);
       const activeConnectionsRef = useRef(new Map());
-      const activeCallsRef = useRef(new Map());
-      const connectionAttempts = useRef(0);
-      const connectionTimeoutRef = useRef(null);
-      const heartbeatIntervalRef = useRef(null);
+      const activeCallsRef = useRef(new Map()); // Mapa de chamadas ativas: peerId -> [{ call, stream, redistributedCalls, type }, ...]
       const CHUNK_SIZE = 16 * 1024;
 
       useEffect(() => {
@@ -411,56 +386,41 @@
         }
       };
 
-      const cleanupResources = () => {
-        // Limpar todas as chamadas ativas
-        activeCallsRef.current.forEach((calls, peerId) => {
-          calls.forEach(callData => {
-            try {
-              callData.call.close();
-              callData.redistributedCalls.forEach(redistCall => redistCall.close());
-            } catch (e) {
-              console.error(`Erro ao encerrar chamada com ${peerId}:`, e);
-            }
-          });
-        });
-        activeCallsRef.current.clear();
-        
-        // Limpar todas as conexões
-        activeConnectionsRef.current.forEach((conn) => {
-          try {
-            conn.close();
-          } catch (e) {
-            console.error("Erro ao fechar conexão:", e);
-          }
-        });
-        activeConnectionsRef.current.clear();
-        
-        // Limpar intervalos e timeouts
-        if (connectionTimeoutRef.current) {
-          clearTimeout(connectionTimeoutRef.current);
-          connectionTimeoutRef.current = null;
-        }
-        
-        if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current);
-          heartbeatIntervalRef.current = null;
-        }
-      };
-
       const disconnectPeer = () => {
         if (peerInstance.current) {
           try {
             console.log("Desconectando peer...");
-            cleanupResources();
+            
+            activeCallsRef.current.forEach((calls, peerId) => {
+              calls.forEach(callData => {
+                try {
+                  callData.call.close();
+                  callData.redistributedCalls.forEach(redistCall => redistCall.close());
+                  console.log(`Chamada com ${peerId} encerrada`);
+                } catch (e) {
+                  console.error(`Erro ao encerrar chamada com ${peerId}:`, e);
+                }
+              });
+            });
+            activeCallsRef.current.clear();
+            
+            activeConnectionsRef.current.forEach((conn) => {
+              try {
+                conn.close();
+              } catch (e) {
+                console.error("Erro ao fechar conexão:", e);
+              }
+            });
+            
+            activeConnectionsRef.current.clear();
+            setConnections([]);
             
             peerInstance.current.destroy();
             peerInstance.current = null;
             
             setConnectionStatus('desconectado');
-            setConnections([]);
             
-            setStats(prev => ({
-              ...prev,
+            setStats({
               messagesReceived: 0,
               messagesDistributed: 0,
               callsReceived: 0,
@@ -468,7 +428,7 @@
               voiceCallsReceived: 0,
               voiceCallsDistributed: 0,
               activeConnections: 0
-            }));
+            });
             
             console.log("Peer desconectado com sucesso");
           } catch (err) {
@@ -477,43 +437,12 @@
         }
       };
 
-      const setupHeartbeat = () => {
-        if (heartbeatIntervalRef.current) {
-          clearInterval(heartbeatIntervalRef.current);
-        }
-        
-        heartbeatIntervalRef.current = setInterval(() => {
-          if (peerInstance.current && !peerInstance.current.disconnected) {
-            // Verificar conexões ativas
-            activeConnectionsRef.current.forEach((conn, peerId) => {
-              if (!conn.open) {
-                console.log(`Conexão com ${peerId} está fechada, removendo...`);
-                activeConnectionsRef.current.delete(peerId);
-                setConnections(Array.from(activeConnectionsRef.current.keys()));
-              }
-            });
-            
-            // Verificar chamadas ativas
-            activeCallsRef.current.forEach((calls, peerId) => {
-              calls.forEach(callData => {
-                if (callData.call.peerConnection.connectionState === 'disconnected') {
-                  console.log(`Chamada com ${peerId} desconectada, encerrando...`);
-                  callData.call.close();
-                }
-              });
-            });
-          }
-        }, HEARTBEAT_INTERVAL);
-      };
-
       const setupPeer = () => {
         if (!peerId) return;
 
         console.log("Configurando distribuidor com ID:", peerId);
         setConnectionStatus('conectando');
-        connectionAttempts.current += 1;
         
-        // Limpar instância anterior se existir
         if (peerInstance.current) {
           try {
             peerInstance.current.destroy();
@@ -522,26 +451,6 @@
           }
         }
         
-        // Configurar timeout de conexão
-        if (connectionTimeoutRef.current) {
-          clearTimeout(connectionTimeoutRef.current);
-        }
-        
-        connectionTimeoutRef.current = setTimeout(() => {
-          if (connectionStatus === 'conectando') {
-            console.log("Timeout de conexão atingido");
-            setStats(prev => ({ ...prev, connectionErrors: prev.connectionErrors + 1 }));
-            
-            if (connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
-              console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
-              setTimeout(setupPeer, RECONNECT_DELAY);
-            } else {
-              setConnectionStatus('erro');
-              console.error("Número máximo de tentativas de conexão atingido");
-            }
-          }
-        }, CONNECTION_TIMEOUT);
-        
         const peer = new Peer(peerId, {
           host: '0.peerjs.com',
           port: 443,
@@ -549,10 +458,7 @@
           config: {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' },
-              { urls: 'stun:stun3.l.google.com:19302' },
-              { urls: 'stun:stun4.l.google.com:19302' }
+              { urls: 'stun:stun1.l.google.com:19302' }
             ]
           },
           debug: 2
@@ -561,14 +467,6 @@
         peer.on('open', (id) => {
           console.log("Distribuidor conectado com ID:", id);
           setConnectionStatus('conectado');
-          connectionAttempts.current = 0;
-          
-          if (connectionTimeoutRef.current) {
-            clearTimeout(connectionTimeoutRef.current);
-            connectionTimeoutRef.current = null;
-          }
-          
-          setupHeartbeat();
         });
 
         peer.on('connection', (conn) => {
@@ -577,6 +475,7 @@
         });
 
         peer.on('call', (call) => {
+          // Determinar o tipo de chamada pelos metadados
           const callType = call.metadata && call.metadata.type === 'voice' ? 'voice' : 'video';
           
           console.log(`Chamada de ${callType} recebida de ${call.peer}`);
@@ -593,19 +492,21 @@
             }));
           }
 
-          // Criar um stream vazio apenas para responder à chamada
+          // Criar um stream vazio apenas para responder à chamada, sem enviar mídia do distribuidor
           const emptyStream = new MediaStream();
           call.answer(emptyStream);
 
           call.on('stream', (remoteStream) => {
             console.log(`Recebido stream de ${call.peer} (${callType}) com ${remoteStream.getAudioTracks().length} trilhas de áudio e ${remoteStream.getVideoTracks().length} trilhas de vídeo`);
             
+            // Verificar se temos tracks disponíveis
             if ((callType === 'voice' && remoteStream.getAudioTracks().length === 0) &&
                 (callType === 'video' && remoteStream.getTracks().length === 0)) {
               console.error(`Não há trilhas disponíveis no stream recebido de ${call.peer}`);
               return;
             }
             
+            // Verificar se já existe uma entrada para esse peer e tipo de chamada
             let existingCallData;
             if (activeCallsRef.current.has(call.peer)) {
               const calls = activeCallsRef.current.get(call.peer);
@@ -613,18 +514,23 @@
             }
             
             if (existingCallData) {
+              // Atualizar o stream na chamada existente
               console.log(`Atualizando stream existente para ${call.peer} (${callType})`);
               existingCallData.stream = remoteStream;
               
+              // Atualizar todas as redistribuições existentes com o novo stream
               existingCallData.redistributedCalls.forEach((redistCall, peerId) => {
                 try {
+                  // Criar um novo stream com as trilhas do stream remoto recebido
                   const newRedistributedStream = new MediaStream();
                   remoteStream.getTracks().forEach(track => {
                     newRedistributedStream.addTrack(track);
                   });
                   
+                  // Fechar a chamada antiga e criar uma nova com o stream atualizado
                   redistCall.close();
                   
+                  // Criar nova chamada com o stream atualizado
                   const newRedistCall = peerInstance.current.call(peerId, newRedistributedStream, {
                     metadata: { type: callType }
                   });
@@ -650,6 +556,7 @@
               });
               
             } else {
+              // Criar uma nova entrada para esse peer e tipo de chamada
               const callData = { 
                 call, 
                 stream: remoteStream, 
@@ -657,6 +564,7 @@
                 type: callType
               };
               
+              // Adicionar a chamada ao activeCallsRef
               if (!activeCallsRef.current.has(call.peer)) {
                 activeCallsRef.current.set(call.peer, []);
               }
@@ -668,11 +576,15 @@
                   try {
                     console.log(`Iniciando chamada de ${callType} para ${peerId}`);
                     
+                    // Clone o stream original para redistribuir
                     const redistributedStream = new MediaStream();
+                    
+                    // Copiar as trilhas relevantes dependendo do tipo de chamada
                     remoteStream.getTracks().forEach(track => {
                       redistributedStream.addTrack(track);
                     });
 
+                    // Criar uma nova chamada para cada cliente conectado
                     const redistCall = peerInstance.current.call(peerId, redistributedStream, {
                       metadata: { type: callType }
                     });
@@ -725,6 +637,12 @@
                     console.error(`Erro ao encerrar chamada de ${callType} redistribuída:`, e);
                   }
                 });
+                // Não remover a entrada completamente para permitir que futuras chamadas
+                // do mesmo peer sejam tratadas corretamente
+                // calls.splice(callIndex, 1);
+                // if (calls.length === 0) {
+                //   activeCallsRef.current.delete(call.peer);
+                // }
               }
             }
           });
@@ -736,37 +654,36 @@
 
         peer.on('error', (err) => {
           console.error("Erro no peer:", err);
-          setStats(prev => ({ ...prev, connectionErrors: prev.connectionErrors + 1 }));
-          
-          if (connectionStatus === 'conectando' && connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
-            console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
-            setTimeout(setupPeer, RECONNECT_DELAY);
-          } else {
-            setConnectionStatus('erro');
-          }
+          setConnectionStatus('erro');
         });
 
         peer.on('disconnected', () => {
           console.log("Peer desconectado");
-          setStats(prev => ({ ...prev, reconnects: prev.reconnects + 1 }));
-          
-          if (connectionAttempts.current < MAX_CONNECTION_ATTEMPTS) {
-            console.log(`Tentando reconectar (tentativa ${connectionAttempts.current + 1})...`);
-            setTimeout(() => {
-              try {
-                peer.reconnect();
-              } catch (e) {
-                console.error("Falha na reconexão, recriando peer:", e);
-                setupPeer();
-              }
-            }, RECONNECT_DELAY);
-          } else {
-            setConnectionStatus('desconectado');
-          }
+          setConnectionStatus('desconectado');
         });
 
         peerInstance.current = peer;
       };
+
+      useEffect(() => {
+        if (connectionStatus !== 'conectado' && connectionStatus !== 'conectando') return;
+        
+        const checkConnectionInterval = setInterval(() => {
+          if (peerInstance.current && peerInstance.current.disconnected) {
+            console.log("Tentando reconectar...");
+            try {
+              peerInstance.current.reconnect();
+            } catch (e) {
+              console.error("Falha na reconexão, recriando peer:", e);
+              setupPeer();
+            }
+          }
+        }, 30000);
+
+        return () => {
+          clearInterval(checkConnectionInterval);
+        };
+      }, [connectionStatus]);
 
       const handleIdChange = (newId) => {
         disconnectPeer();
@@ -876,12 +793,6 @@
         });
       };
 
-      useEffect(() => {
-        return () => {
-          cleanupResources();
-        };
-      }, []);
-
       return (
         <div>
           <h1>P2P Message Distributor</h1>
@@ -920,8 +831,6 @@
             <p>Voice calls received: {stats.voiceCallsReceived}</p>
             <p>Distributed voice calls: {stats.voiceCallsDistributed}</p>
             <p>Active connections: {stats.activeConnections}</p>
-            <p>Connection errors: {stats.connectionErrors}</p>
-            <p>Reconnects: {stats.reconnects}</p>
           </div>
           
           <div className="connected-peers">
@@ -975,7 +884,84 @@
   </script>
 </head>
 <body>
-  
   <div id="root"></div>
+<script>
+
+
+
+// Script automatizado para testar chamadas de voz via distribuidor P2P
+
+(async () => {
+  const log = (msg) => console.log(`[Teste] ${msg}`);
+
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+  log("Iniciando testes automatizados de chamada P2P...");
+
+  if (!window.Peer) {
+    log("PeerJS não carregado. Testes abortados.");
+    return;
+  }
+
+  // IDs fixos para testes
+  const CLIENT_A_ID = "TESTA1";
+  const CLIENT_B_ID = "TESTB2";
+
+  // Criação de dois peers (cliente A e B)
+  const clientA = new Peer(CLIENT_A_ID, { host: '0.peerjs.com', port: 443, secure: true });
+  const clientB = new Peer(CLIENT_B_ID, { host: '0.peerjs.com', port: 443, secure: true });
+
+  let audioStreamA = null;
+  let audioStreamB = null;
+
+  clientA.on('open', async () => {
+    log("Cliente A conectado: " + CLIENT_A_ID);
+    try {
+      audioStreamA = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      log("Erro ao acessar microfone no cliente A: " + err);
+    }
+  });
+
+  clientB.on('open', async () => {
+    log("Cliente B conectado: " + CLIENT_B_ID);
+    try {
+      audioStreamB = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      log("Erro ao acessar microfone no cliente B: " + err);
+    }
+
+    await wait(2000); // aguarda A estar pronto
+    if (audioStreamA) {
+      const call = clientA.call(CLIENT_B_ID, audioStreamA, { metadata: { type: 'voice' } });
+      call.on('stream', (remoteStream) => {
+        log("Cliente A recebeu stream do Cliente B");
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play();
+      });
+    }
+  });
+
+  clientB.on('call', (call) => {
+    if (audioStreamB) {
+      call.answer(audioStreamB);
+      call.on('stream', (remoteStream) => {
+        log("Cliente B recebeu stream do Cliente A");
+        const audio = new Audio();
+        audio.srcObject = remoteStream;
+        audio.play();
+      });
+    }
+  });
+
+  // Diagnóstico no console
+  clientA.on('error', err => log("Erro Cliente A: " + err));
+  clientB.on('error', err => log("Erro Cliente B: " + err));
+})();
+
+
+
+</script>
 </body>
 </html>
