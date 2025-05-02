@@ -18,7 +18,7 @@ Acessando o Aplicativo
 
 1. Chat P2P + Chat P2P= Comunicação Privada
 
-2. Servidor cria uma sala compartilhada
+2. Servidor cria uma Sala Compartilhada
 
 3. Chat P2P + Servidor = Comunicação em Grupo
 
