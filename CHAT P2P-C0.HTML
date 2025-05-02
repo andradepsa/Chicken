@@ -466,6 +466,9 @@
               <h1>Erro na aplicação</h1>
               <p>{this.state.error.message}</p>
               <p>Verifique o console do navegador para mais detalhes.</p>
+              <button onClick={() => window.location.reload()}>
+                Tentar novamente
+              </button>
             </div>
           );
         }
@@ -537,7 +540,10 @@
             onRecordingComplete(audioBlob, selectedContact);
             audioChunksRef.current = [];
 
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach(track => {
+              track.stop();
+              console.log("VoiceRecorder: Stopped audio track");
+            });
           };
 
           audioChunksRef.current = [];
@@ -834,11 +840,23 @@
 
       useEffect(() => {
         remoteStreams.forEach(({ peerId, stream, type, originalPeer }) => {
+          if (!stream || stream.getTracks().length === 0) {
+            console.warn(`Stream inválido para ${peerId} (${type})`);
+            return;
+          }
+
+          const hasValidTracks = stream.getTracks().some(track => track.enabled && track.readyState === 'live');
+          if (!hasValidTracks) {
+            console.warn(`Nenhum track válido para ${peerId} (${type})`);
+            return;
+          }
+
           if (type === 'voice') {
             const audioElement = audioRefs.current[peerId];
             if (audioElement && audioElement.srcObject !== stream) {
               console.log("UpdatedChatManager: Assigning audio stream for peer:", peerId);
               audioElement.srcObject = stream;
+              audioElement.playsInline = true;
               audioElement.play().catch(e => console.warn("Audio play failed:", e));
             }
           } else if (type === 'video') {
@@ -847,16 +865,24 @@
             if (videoElement && videoElement.srcObject !== stream) {
               console.log("UpdatedChatManager: Assigning video stream for key:", streamKey);
               videoElement.srcObject = stream;
+              videoElement.playsInline = true;
               videoElement.play().catch(e => console.warn("Video play failed:", e));
             }
           }
         });
+
         return () => {
           Object.values(audioRefs.current).forEach(audio => {
-            if (audio) audio.srcObject = null;
+            if (audio) {
+              audio.srcObject = null;
+              audio.pause();
+            }
           });
           Object.values(videoRefs.current).forEach(video => {
-            if (video) video.srcObject = null;
+            if (video) {
+              video.srcObject = null;
+              video.pause();
+            }
           });
         };
       }, [remoteStreams]);
@@ -873,6 +899,7 @@
                     ref={localVideoRef}
                     autoPlay
                     muted
+                    playsInline
                   ></video>
                 </div>
               )}
@@ -890,18 +917,43 @@
                       ref={el => {
                         if (el) {
                           videoRefs.current[streamKey] = el;
-                          if (el.srcObject !== streamData.stream) {
+                          if (el.srcObject !== streamData.stream && streamData.stream) {
                             console.log(`Atribuindo stream para ${streamKey}`);
                             el.srcObject = streamData.stream;
+                            el.playsInline = true;
                             el.play().catch(e => console.warn(`Falha ao reproduzir vídeo ${streamKey}:`, e));
                           }
                         }
                       }}
                       autoPlay
+                      playsInline
                     ></video>
                   </div>
                 );
               })}
+            </div>
+          )}
+          {remoteStreams.some(s => s.type === 'voice') && (
+            <div className="audio-call-container">
+              {remoteStreams.map((streamData, index) => (
+                streamData.type === 'voice' && (
+                  <audio
+                    key={`${streamData.peerId}_${index}`}
+                    ref={el => {
+                      if (el) {
+                        audioRefs.current[streamData.peerId] = el;
+                        if (el.srcObject !== streamData.stream) {
+                          el.srcObject = streamData.stream;
+                          el.playsInline = true;
+                          el.play().catch(e => console.warn("Audio play failed:", e));
+                        }
+                      }
+                    }}
+                    autoPlay
+                    playsInline
+                  />
+                )
+              ))}
             </div>
           )}
           <div className="chat-main-container">
@@ -1006,7 +1058,7 @@
                     ) : msg.type === 'audio' && (
                       <div>
                         {msg.audioData ? (
-                          <audio controls src={msg.audioData} className="audio-player" />
+                          <audio controls src={msg.audioData} className="audio-player" playsInline />
                         ) : (
                           <span>Áudio</span>
                         )}
@@ -1142,17 +1194,25 @@
       const stopAndRemoveLocalStream = (key) => {
         const stream = localStreamsRef.current.get(key);
         if (stream) {
-          stream.getTracks().forEach(track => track.stop());
+          stream.getTracks().forEach(track => {
+            track.stop();
+            console.log(`App: Stopped track ${track.kind} (${track.id}) for key ${key}`);
+          });
           localStreamsRef.current.delete(key);
-          console.log(`App: Stopped and removed local stream for key ${key}`);
-          if (localStreamsRef.current.size === 0) {
-            setIsLocalVideoVisible(false);
-            if (localVideoRef.current) localVideoRef.current.srcObject = null;
-          } else {
-            const firstActiveStream = localStreamsRef.current.values().next().value;
-            if (localVideoRef.current && firstActiveStream) {
-              localVideoRef.current.srcObject = firstActiveStream;
-            }
+          console.log(`App: Removed local stream for key ${key}`);
+        }
+        if (localStreamsRef.current.size === 0) {
+          setIsLocalVideoVisible(false);
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+            console.log("App: Cleared local video element srcObject");
+          }
+        } else {
+          const firstActiveStream = localStreamsRef.current.values().next().value;
+          if (localVideoRef.current && firstActiveStream) {
+            localVideoRef.current.srcObject = firstActiveStream;
+            localVideoRef.current.play().catch(e => console.warn("Local video play failed:", e));
+            console.log("App: Set first active stream to local video element");
           }
         }
       };
@@ -1170,27 +1230,7 @@
               { urls: 'stun:stun1.l.google.com:19302' },
               { urls: 'stun:stun2.l.google.com:19302' },
               { urls: 'stun:stun3.l.google.com:19302' },
-              { urls: 'stun:stun4.l.google.com:19302' },
-              { urls: 'stun:stun.ekiga.net:3478' },
-              { urls: 'stun:stun.ideasip.com:3478' },
-              { urls: 'stun:stun.schlund.de:3478' },
-              { urls: 'stun:stun.voiparound.com:3478' },
-              { urls: 'stun:stun.voipbuster.com:3478' },
-              { urls: 'stun:stun.voipstunt.com:3478' },
-              { urls: 'stun:stun.voxgratia.org:3478' },
-              { urls: 'stun:stun.services.mozilla.com:3478' },
-              { urls: 'stun:stun.stunprotocol.org:3478' },
-              { urls: 'stun:stun.counterpath.com:3478' },
-              { urls: 'stun:stun.12connect.com:3478' },
-              { urls: 'stun:stun.callwithus.com:3478' },
-              { urls: 'stun:stun.sipgate.net:3478' },
-              { urls: 'stun:stun.sipgate.net:10000' },
-              { urls: 'stun:stun.1und1.de:3478' },
-              { urls: 'stun:stun.gmx.net:3478' },
-              { urls: 'stun:stun.xten.com:3478' },
-              { urls: 'stun:stun.nextcloud.com:3478' },
-              { urls: 'stun:stun.sip.us:3478' },
-              { urls: 'stun:stun.twt.it:3478' }
+              { urls: 'stun:stun4.l.google.com:19302' }
             ],
             sdpSemantics: 'unified-plan',
             iceTransportPolicy: 'all',
@@ -1259,9 +1299,17 @@
           const originPeer = call.metadata?.original || call.peer;
 
           console.log(`PeerJS: Recebendo chamada ${callType} de: ${call.peer} (origem: ${originPeer})`);
-          console.log(`Chamadas ativas atuais: ${activeCalls.length}`);
 
           try {
+            const hasValidTracks = callType === 'voice'
+              ? call.metadata && call.metadata.type === 'voice'
+              : true;
+            if (!hasValidTracks) {
+              console.warn(`Chamada ${callType} de ${call.peer} inválida, fechando`);
+              call.close();
+              return;
+            }
+
             console.log(`Respondendo chamada ${callType} de: ${call.peer} sem stream local`);
             call.answer(null);
 
@@ -1298,6 +1346,15 @@
             call.on('stream', (remoteStream) => {
               console.log(`PeerJS: Recebido stream remoto de ${callType} de: ${call.peer} (origem: ${originPeer})`);
               console.log(`Stream tem ${remoteStream.getTracks().length} tracks: Video=${remoteStream.getVideoTracks().length}, Audio=${remoteStream.getAudioTracks().length}`);
+
+              const hasValidTracks = callType === 'voice'
+                ? remoteStream.getAudioTracks().length > 0
+                : remoteStream.getTracks().length > 0;
+              if (!hasValidTracks) {
+                console.warn(`Stream de ${callType} de ${call.peer} não tem trilhas válidas`);
+                call.close();
+                return;
+              }
 
               setRemoteStreams(prev => {
                 const streamId = `${call.peer}_${originPeer}_${callType}`;
@@ -1351,15 +1408,26 @@
             peerInstance.current = null;
           }
           localStreamsRef.current.forEach((stream, key) => {
-            stream.getTracks().forEach(track => track.stop());
-            console.log(`App Cleanup: Stopped local stream for ${key}`);
+            stream.getTracks().forEach(track => {
+              track.stop();
+              console.log(`App Cleanup: Stopped local stream track ${track.kind} for ${key}`);
+            });
           });
           localStreamsRef.current.clear();
           setActiveCalls([]);
           setRemoteStreams([]);
           setIsLocalVideoVisible(false);
-          if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+            localVideoRef.current.pause();
+          }
           setIsPeerInitialized(false);
+          Object.values(audioRefs.current).forEach(audio => {
+            if (audio) audio.srcObject = null;
+          });
+          Object.values(videoRefs.current).forEach(video => {
+            if (video) video.srcObject = null;
+          });
         };
       }, [peerId]);
 
@@ -1460,7 +1528,7 @@
             setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, progress } : msg));
             if (fileData.receivedBytes === fileData.totalSize) {
               const blob = new Blob([fileData.chunks], { type: fileData.fileType || 'application/octet-stream' });
-              const url =衍URL.createObjectURL(blob);
+              const url = URL.createObjectURL(blob);
               setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, fileData: url, receiving: false, progress: 100 } : msg));
               delete pendingFiles.current[data.fileId];
             }
@@ -1637,7 +1705,10 @@
           alert('Selecione um contato.');
           return;
         }
-        if (activeCalls.some(c => c.peerId === peerIdToCall && c.type === 'voice')) return;
+        if (activeCalls.some(c => c.peerId === peerIdToCall && c.type === 'voice')) {
+          console.log(`App: Chamada de voz já ativa com ${peerIdToCall}`);
+          return;
+        }
         const conn = connections.find(c => c.peer === peerIdToCall);
         if (!conn || !conn.open) {
           alert(`Contato ${getContactName(peerIdToCall)} offline.`);
@@ -1645,9 +1716,20 @@
         }
 
         try {
-          console.log("App: Starting voice call with:", peerIdToCall);
+          console.log("App: Verificando permissões para microfone...");
+          await navigator.permissions.query({ name: 'microphone' }).then(result => {
+            if (result.state === 'denied') {
+              throw new Error("Permissão de microfone negada");
+            }
+          });
+
+          console.log("App: Iniciando chamada de voz com:", peerIdToCall);
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-          if (!stream) return;
+          if (!stream || stream.getAudioTracks().length === 0) {
+            throw new Error("Nenhum track de áudio válido obtido");
+          }
+
+          console.log(`App: Stream de áudio obtido com ${stream.getAudioTracks().length} tracks`);
 
           localStreamsRef.current.set(peerIdToCall + '_voice', stream);
           const call = peerInstance.current.call(peerIdToCall, stream, {
@@ -1668,7 +1750,12 @@
           ]);
 
           call.on('stream', (remoteStream) => {
-            console.log(`App: Received remote audio stream from:`, peerIdToCall);
+            console.log(`App: Recebido stream remoto de áudio de:`, peerIdToCall);
+            if (remoteStream.getAudioTracks().length === 0) {
+              console.warn(`Stream de áudio de ${peerIdToCall} não contém tracks válidos`);
+              call.close();
+              return;
+            }
             setRemoteStreams(prev => [
               ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'voice')),
               {
@@ -1680,17 +1767,19 @@
               }
             ]);
           });
+
           call.on('close', () => {
-            console.log("App: Voice call closed with:", peerIdToCall);
+            console.log("App: Chamada de voz encerrada com:", peerIdToCall);
             endCall(peerIdToCall, 'voice', peerIdToCall);
           });
+
           call.on('error', (err) => {
-            console.error('App: Error in voice call:', err);
-            alert('Erro chamada de voz: ' + err.message);
+            console.error('App: Erro na chamada de voz:', err);
+            alert('Erro na chamada de voz: ' + err.message);
             endCall(peerIdToCall, 'voice', peerIdToCall);
           });
         } catch (err) {
-          console.error('App: Error starting voice call:', err);
+          console.error('App: Erro ao iniciar chamada de voz:', err);
           alert('Erro ao acessar microfone: ' + err.message);
         }
       };
@@ -1710,10 +1799,13 @@
         const conn = connections.find(c => c.peer === peerIdToCall);
 
         if (isSendingVideo) {
-          console.log("App: Stopping local video stream for:", peerIdToCall);
+          console.log("App: Desligando câmera para:", peerIdToCall);
           if (existingCall && existingCall.localStream) {
-            existingCall.localStream.getTracks().forEach(track => track.stop());
-            localStreamsRef.current.delete(peerIdToCall + '_video');
+            existingCall.localStream.getTracks().forEach(track => {
+              track.stop();
+              console.log(`App: Track ${track.kind} parado para chamada de vídeo com ${peerIdToCall}`);
+            });
+            stopAndRemoveLocalStream(peerIdToCall + '_video');
           }
 
           setActiveCalls(prev =>
@@ -1721,11 +1813,6 @@
               c.peerId === peerIdToCall && c.type === 'video' ? { ...c, localStream: null } : c
             )
           );
-
-          if (localStreamsRef.current.size === 0) {
-            setIsLocalVideoVisible(false);
-            if (localVideoRef.current) localVideoRef.current.srcObject = null;
-          }
         } else {
           if (!conn || !conn.open) {
             alert(`Contato ${getContactName(peerIdToCall)} offline.`);
@@ -1733,7 +1820,17 @@
           }
 
           try {
-            console.log("App: Getting video stream for:", peerIdToCall);
+            console.log("App: Verificando permissões para câmera e microfone...");
+            await Promise.all([
+              navigator.permissions.query({ name: 'camera' }).then(result => {
+                if (result.state === 'denied') throw new Error("Permissão de câmera negada");
+              }),
+              navigator.permissions.query({ name: 'microphone' }).then(result => {
+                if (result.state === 'denied') throw new Error("Permissão de microfone negada");
+              })
+            ]);
+
+            console.log("App: Obtendo stream de vídeo para:", peerIdToCall);
             const activeVideoStreams = remoteStreams.filter(s => s.type === 'video').length;
             const videoConstraints = {
               width: activeVideoStreams >= 2 ? 320 : 640,
@@ -1746,14 +1843,24 @@
               video: videoConstraints,
               audio: true
             });
-            if (!stream) return;
+
+            if (!stream || stream.getTracks().length === 0) {
+              throw new Error("Nenhum track válido obtido para vídeo");
+            }
+
+            console.log(`App: Stream de vídeo obtido com ${stream.getVideoTracks().length} tracks de vídeo e ${stream.getAudioTracks().length} tracks de áudio`);
 
             localStreamsRef.current.set(peerIdToCall + '_video', stream);
             setIsLocalVideoVisible(true);
-            if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.playsInline = true;
+              localVideoRef.current.play().catch(e => console.warn("Local video play failed:", e));
+              console.log("App: Stream local atribuído ao elemento de vídeo local");
+            }
 
             if (existingCall) {
-              console.log("App: Adding local stream to existing call with:", peerIdToCall);
+              console.log("App: Adicionando stream local à chamada existente com:", peerIdToCall);
               setActiveCalls(prev =>
                 prev.map(c =>
                   c.peerId === peerIdToCall && c.type === 'video' ? { ...c, localStream: stream } : c
@@ -1765,18 +1872,36 @@
               });
 
               call.on('stream', (remoteStream) => {
-                console.log(`App: Received remote video stream response from:`, peerIdToCall);
+                console.log(`App: Recebido stream de resposta de vídeo de:`, peerIdToCall);
+                if (remoteStream.getTracks().length === 0) {
+                  console.warn(`Stream de vídeo de ${peerIdToCall} não contém tracks válidos`);
+                  call.close();
+                  return;
+                }
+                setRemoteStreams(prev => [
+                  ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
+                  {
+                    peerId: peerIdToCall,
+                    originalPeer: peerIdToCall,
+                    stream: remoteStream,
+                    type: 'video',
+                    streamId: `${peerIdToCall}_${peerIdToCall}_video`
+                  }
+                ]);
               });
 
               call.on('close', () => {
-                console.log("App: Outgoing video stream call closed with:", peerIdToCall);
+                console.log("App: Chamada de vídeo de saída encerrada com:", peerIdToCall);
+                endCall(peerIdToCall, 'video', peerIdToCall);
               });
 
               call.on('error', (err) => {
-                console.error('App: Error inHf outgoing video stream call:', err);
+                console.error('App: Erro na chamada de vídeo de saída:', err);
+                alert('Erro na chamada de vídeo: ' + err.message);
+                endCall(peerIdToCall, 'video', peerIdToCall);
               });
             } else {
-              console.log("App: Starting new video call with:", peerIdToCall);
+              console.log("App: Iniciando nova chamada de vídeo com:", peerIdToCall);
               const call = peerInstance.current.call(peerIdToCall, stream, {
                 metadata: { type: 'video', original: peerId }
               });
@@ -1795,7 +1920,12 @@
               ]);
 
               call.on('stream', (remoteStream) => {
-                console.log(`App: Received remote video stream from:`, peerIdToCall);
+                console.log(`App: Recebido stream remoto de vídeo de:`, peerIdToCall);
+                if (remoteStream.getTracks().length === 0) {
+                  console.warn(`Stream de vídeo de ${peerIdToCall} não contém tracks válidos`);
+                  call.close();
+                  return;
+                }
                 setRemoteStreams(prev => [
                   ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
                   {
@@ -1809,36 +1939,46 @@
               });
 
               call.on('close', () => {
-                console.log("App: Video call closed with:", peerIdToCall);
+                console.log("App: Chamada de vídeo encerrada com:", peerIdToCall);
                 endCall(peerIdToCall, 'video', peerIdToCall);
               });
 
               call.on('error', (err) => {
-                console.error('App: Error in video call:', err);
-                alert('Erro chamada de vídeo: ' + err.message);
+                console.error('App: Erro na chamada de vídeo:', err);
+                alert('Erro na chamada de vídeo: ' + err.message);
                 endCall(peerIdToCall, 'video', peerIdToCall);
               });
             }
           } catch (err) {
-            console.error('App: Error starting video call:', err);
+            console.error('App: Erro ao iniciar chamada de vídeo:', err);
             alert('Erro ao acessar câmera/microfone: ' + err.message);
+            if (stream) {
+              stream.getTracks().forEach(track => track.stop());
+            }
           }
         }
       };
 
       const endCall = (peerIdToEnd, callType, originalPeer = peerIdToEnd) => {
-        console.log(`App: Ending ${callType} call with: ${peerIdToEnd} (origem: ${originalPeer})`);
+        console.log(`App: Encerrando chamada ${callType} com: ${peerIdToEnd} (origem: ${originalPeer})`);
         const callData = activeCalls.find(c =>
           c.peerId === peerIdToEnd && c.type === callType && c.originalPeer === originalPeer
         );
 
         if (callData) {
-          if (callData.call) {
-            callData.call.close();
+          if (callData.call && typeof callData.call.close === 'function') {
+            try {
+              callData.call.close();
+              console.log(`App: Chamada ${callType} com ${peerIdToEnd} fechada`);
+            } catch (e) {
+              console.error(`App: Erro ao fechar chamada ${callType} com ${peerIdToEnd}:`, e);
+            }
           }
           if (callData.localStream) {
-            callData.localStream.getTracks().forEach(track => track.stop());
-            console.log(`App: Stopped local stream tracks for ${callType} call with ${peerIdToEnd}`);
+            callData.localStream.getTracks().forEach(track => {
+              track.stop();
+              console.log(`App: Track ${track.kind} parado para chamada ${callType} com ${peerIdToEnd}`);
+            });
             stopAndRemoveLocalStream(peerIdToEnd + '_' + callType);
           }
         }
@@ -1855,177 +1995,207 @@
         );
         if (!anyLocalVideoActive) {
           setIsLocalVideoVisible(false);
-          if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          if (localVideoRef.current) {
+            localVideoRef.current.srcObject = null;
+            localVideoRef.current.pause();
+         
+
+
+  console.log("App: Cleared local video element srcObject após encerrar chamada");
+          }
         } else if (
           isLocalVideoVisible &&
           (!localVideoRef.current?.srcObject?.active || localVideoRef.current?.srcObject === callData?.localStream)
         ) {
           const firstActiveStream = localStreamsRef.current.values().next().value;
-          if (localVideoRef.current && firstActiveStream) {
-          
+          if (firstActiveStream) {
+            localVideoRef.current.srcObject = firstActiveStream;
+            localVideoRef.current.playsInline = true;
+            localVideoRef.current.play().catch(e => console.warn("Local video play failed after call end:", e));
+            console.log("App: Reassigned first active stream to local video element after call end");
+          } else {
+            setIsLocalVideoVisible(false);
+            localVideoRef.current.srcObject = null;
+            localVideoRef.current.pause();
+            console.log("App: No active streams, cleared local video element");
+          }
+        }
 
-  localVideoRef.current.srcObject = firstActiveStream;
+        // Limpar referências de áudio e vídeo associadas
+        if (callType === 'voice') {
+          const audioElement = audioRefs.current[peerIdToEnd];
+          if (audioElement) {
+            audioElement.srcObject = null;
+            audioElement.pause();
+            delete audioRefs.current[peerIdToEnd];
+            console.log(`App: Cleared audio element for ${peerIdToEnd}`);
+          }
+        } else if (callType === 'video') {
+          const streamKey = `${peerIdToEnd}_${originalPeer}_video`;
+          const videoElement = videoRefs.current[streamKey];
+          if (videoElement) {
+            videoElement.srcObject = null;
+            videoElement.pause();
+            delete videoRefs.current[streamKey];
+            console.log(`App: Cleared video element for ${streamKey}`);
           }
         }
       };
 
       const populateEmojiPanel = () => {
-        const emojis = [
-          "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
-          "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
-          "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
-          "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
-          "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
-          "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
-          "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
-          "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳",
-          "👨‍🦲", "👩‍🦲", "👩", "👨", "🧓", "👴", "👵", "🙍‍♂️", "🙍‍♀️", "🙎‍♂️",
-          "🙎‍♀️", "🙅‍♂️", "🙅‍♀️", "🙆‍♂️", "🙆‍♀️", "💁‍♂️", "💁‍♀️", "🙋‍♂️", "🙋‍♀️", "🧏‍♂️",
-          "🧏‍♀️", "🙇‍♂️", "🙇‍♀️", "🤦‍♂️", "🤦‍♀️", "🤷‍♂️", "🤷‍♀️", "🧑‍⚕️", "👨‍⚕️", "👩‍⚕️",
-          "🧑‍🎓", "👨‍🎓", "👩‍🎓", "🧑‍🏫", "👨‍🏫", "👩‍🏫", "🧑‍⚖️", "👨‍⚖️", "👩‍⚖️", "🧑‍🌾",
-          "👨‍🌾", "👩‍🌾", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍🔧", "👨‍🔧", "👩‍🔧", "🧑‍🏭", "👨‍🏭",
-          "👩‍🏭", "🧑‍💼", "👨‍💼", "👩‍💼", "🧑‍🔬", "👨‍🔬", "👩‍🔬", "🧑‍💻", "👨‍💻", "👩‍💻",
-          "🧑‍🎤", "👨‍🎤", "👩‍🎤", "🧑‍🎨", "👨‍🎨", "👩‍🎨", "🧑‍✈️", "👨‍✈️", "👩‍✈️", "🧑‍🚀",
-          "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
-          "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
-          "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
-          "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂️", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
-          "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨"
+        const emojis = ['😀', '😂', '😊', '👍', '❤️', '🚀', '🎉', '🔥', '😎', '🙌'];
+        return (
+          <div className="emoji-panel">
+            <div className="emoji-panel-header">Emojis</div>
+            <div className="emoji-panel-content">
+              {emojis.map((emoji, index) => (
+                <span
+                  key={index}
+                  className="emoji-item"
+                  onClick={() => {
+                    setNewMessage(prev => prev + emoji);
+                    setShowEmojiPanel(false);
+                  }}
+                >
+                  {emoji}
+                </span>
+              ))}
+            </div>
+            <div className="emoji-panel-footer">
+              <span className="barra-rolagem-label">Role para mais</span>
+            </div>
+          </div>
+        );
+      };
 
- ];
+      const copyPeerIdToClipboard = () => {
+        navigator.clipboard.writeText(peerId).then(() => {
+          alert('ID copiado para a área de transferência!');
+        }).catch(err => {
+          console.error("App: Error copying peer ID:", err);
+          alert('Erro ao copiar ID: ' + err.message);
+        });
+      };
+
+      if (error) {
+        return (
+          <div className="error-message">
+            <h1>Erro</h1>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>
+              Tentar novamente
+            </button>
+          </div>
+        );
+      }
+
       return (
-        <div className="emoji-panel">
-          <div className="emoji-panel-header">Emojis</div>
-          <div className="emoji-panel-content">
-            {emojis.map((emoji, index) => (
-              <span
-                key={index}
-                className="emoji-item"
-                onClick={() => setNewMessage(prev => prev + emoji)}
-              >
-                {emoji}
-              </span>
-            ))}
+        <ErrorBoundary>
+          <div>
+            <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+            <div className="app-header">
+              <h1 className="app-title">Chat P2P</h1>
+              <div className="header-buttons">
+                <button
+                  className="header-button"
+                  onClick={() => setShowContacts(true)}
+                  title="Gerenciar contatos"
+                >
+                  <i className="fas fa-users"></i>
+                </button>
+              </div>
+            </div>
+
+            {showContacts ? (
+              <ContactsScreen
+                contacts={contacts}
+                setContacts={setContacts}
+                onBack={() => setShowContacts(false)}
+                onSelectContact={(peerId) => {
+                  setSelectedContact(peerId);
+                  connectToPeer(peerId);
+                  setShowContacts(false);
+                }}
+              />
+            ) : (
+              <>
+                <div className="user-info-container">
+                  {editingName ? (
+                    <form
+                      className="user-name-form"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        saveUserName();
+                      }}
+                    >
+                      <input
+                        type="text"
+                        value={userName}
+                        onChange={(e) => setUserName(e.target.value)}
+                        placeholder="Digite seu nome"
+                        autoFocus
+                      />
+                      <button type="submit" disabled={!userName.trim()}>
+                        Salvar
+                      </button>
+                    </form>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span className="username">Bem-vindo, {userName}</span>
+                      <button
+                        className="user-edit-button"
+                        onClick={() => setEditingName(true)}
+                      >
+                        Editar
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="peer-id-container">
+                  <span>Seu ID: <strong>{peerId}</strong></span>
+                  <button onClick={copyPeerIdToClipboard}>
+                    Copiar ID
+                  </button>
+                </div>
+
+                <UpdatedChatManager
+                  connections={connections}
+                  messages={messages}
+                  setMessages={setMessages}
+                  contacts={contacts}
+                  userName={userName}
+                  peerId={peerId}
+                  activeCalls={activeCalls}
+                  endCall={endCall}
+                  startVoiceCall={startVoiceCall}
+                  toggleVideoCall={toggleVideoCall}
+                  remoteStreams={remoteStreams}
+                  audioRefs={audioRefs}
+                  videoRefs={videoRefs}
+                  handleFileChange={handleFileChange}
+                  fileInputRef={fileInputRef}
+                  handleAudioRecording={handleAudioRecording}
+                  newMessage={newMessage}
+                  setNewMessage={setNewMessage}
+                  showEmojiPanel={showEmojiPanel}
+                  setShowEmojiPanel={setShowEmojiPanel}
+                  populateEmojiPanel={populateEmojiPanel}
+                  getContactName={getContactName}
+                  selectedContact={selectedContact}
+                  setSelectedContact={setSelectedContact}
+                  localVideoRef={localVideoRef}
+                />
+              </>
+            )}
           </div>
-          <div className="emoji-panel-footer">
-            <span className="barra-rolagem-label">Role para mais</span>
-          </div>
-        </div>
+        </ErrorBoundary>
       );
     };
 
-    if (error) {
-      return (
-        <div className="error-message">
-          <h1>Erro na aplicação</h1>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>
-            Tentar novamente
-          </button>
-        </div>
-      );
-    }
-
-    return (
-      <ErrorBoundary>
-        <div>
-          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-          {showContacts ? (
-            <ContactsScreen
-              contacts={contacts}
-              setContacts={setContacts}
-              onBack={() => setShowContacts(false)}
-              onSelectContact={(peerId) => {
-                connectToPeer(peerId);
-                setShowContacts(false);
-                setSelectedContact(peerId);
-              }}
-            />
-          ) : (
-            <>
-              <div className="app-header">
-                <h1 className="app-title">Chat P2P</h1>
-                <div className="header-buttons">
-                  <button
-                    className="header-button"
-                    onClick={() => setShowContacts(true)}
-                    title="Gerenciar contatos"
-                  >
-                    <i className="fas fa-users"></i>
-                  </button>
-                </div>
-              </div>
-              <div className="user-info-container">
-                {editingName ? (
-                  <form className="user-name-form" onSubmit={(e) => { e.preventDefault(); saveUserName(); }}>
-                    <input
-                      type="text"
-                      value={userName}
-                      onChange={(e) => setUserName(e.target.value)}
-                      placeholder="Seu nome"
-                      maxLength={50}
-                      autoFocus
-                    />
-                    <button type="submit" disabled={!userName.trim()}>
-                      Salvar
-                    </button>
-                  </form>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span className="username">Bem-vindo, {userName}!</span>
-                    <button className="user-edit-button" onClick={() => setEditingName(true)}>
-                      Editar Nome
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="peer-id-container">
-                <span>Seu ID: <strong>{peerId}</strong></span>
-                <button onClick={() => {
-                  const newId = generateNewId();
-                  localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
-                  window.location.reload();
-                }}>
-                  Gerar Novo ID
-                </button>
-              </div>
-              <UpdatedChatManager
-                connections={connections}
-                messages={messages}
-                setMessages={setMessages}
-                contacts={contacts}
-                userName={userName}
-                peerId={peerId}
-                activeCalls={activeCalls}
-                endCall={endCall}
-                startVoiceCall={startVoiceCall}
-                toggleVideoCall={toggleVideoCall}
-                remoteStreams={remoteStreams}
-                audioRefs={audioRefs}
-                videoRefs={videoRefs}
-                handleFileChange={handleFileChange}
-                fileInputRef={fileInputRef}
-                handleAudioRecording={handleAudioRecording}
-                newMessage={newMessage}
-                setNewMessage={setNewMessage}
-                showEmojiPanel={showEmojiPanel}
-                setShowEmojiPanel={setShowEmojiPanel}
-                populateEmojiPanel={populateEmojiPanel}
-                getContactName={getContactName}
-                selectedContact={selectedContact}
-                setSelectedContact={setSelectedContact}
-                localVideoRef={localVideoRef}
-              />
-            </>
-          )}
-        </div>
-      </ErrorBoundary>
-    );
-  };
-
-  // Renderização do App
-  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    // Renderizar a aplicação
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
-         
