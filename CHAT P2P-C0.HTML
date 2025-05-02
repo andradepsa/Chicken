@@ -446,32 +446,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
 
   <script type="text/babel">
-    // ### 1. Estrutura HTML e Estilização CSS
-    // **Descrição Geral**: Esta seção contém o código HTML que define a estrutura da página e o CSS que estiliza a interface do aplicativo de chat P2P. Inclui a importação de bibliotecas externas e os estilos para os componentes visuais.
-    //
-    // - **Tópico: Estrutura HTML**
-    //   - **Descrição**: Define a estrutura básica da página com um contêiner principal (`div#root`) onde o aplicativo React será renderizado. Inclui meta tags para responsividade e codificação UTF-8, além de links para bibliotecas externas (Font Awesome, React, PeerJS).
-    //
-    // - **Tópico: Estilização CSS**
-    //   - **Descrição**: Contém regras CSS para estilizar a interface, incluindo layout, cores, sombras, animações (como o efeito de pulsar no botão de gravação) e responsividade. Estiliza componentes como cabeçalho, lista de contatos, área de mensagens, botões, e players de mídia.
-    //
-    // - **Tópico: Importação de Dependências**
-    //   - **Descrição**: Inclui scripts para React, ReactDOM, Babel (para transpilar JSX), e PeerJS (para comunicação P2P). Esses scripts são carregados via CDN para habilitar as funcionalidades do aplicativo.
-    //
-    // FIM
-
-    // ### 2. Configuração Inicial e Gerenciamento de Erros
-    // **Descrição Geral**: Esta seção inicializa o script React e define o componente `ErrorBoundary` para capturar erros na renderização, além de implementar o gerenciamento de identificadores persistentes para conexões P2P.
-    //
-    // - **Tópico: Inicialização do Script**
-    //   - **Descrição**: Inicia o script com um log de depuração e importa hooks do React (`useState`, `useEffect`, `useRef`, `useMemo`) necessários para o gerenciamento de estado e efeitos colaterais.
-    //
-    // - **Tópico: Componente ErrorBoundary**
-    //   - **Descrição**: Um componente React que captura erros durante a renderização e exibe uma mensagem de erro amigável com a opção de recarregar a página. Usa `getDerivedStateFromError` para atualizar o estado com o erro capturado.
-    //
-    // - **Tópico: Gerenciamento de Identificadores Persistentes**
-    //   - **Descrição**: Implementa o hook `usePersistentId` para gerar ou carregar um ID único de 6 caracteres armazenado no `localStorage`. O ID é usado para identificar o usuário na rede PeerJS.
-    //
     console.log("Script started loading");
 
     const { useState, useEffect, useRef, useMemo } = React;
@@ -498,15 +472,6 @@
         return this.props.children;
       }
     }
-
-
-
-
-
-
-
-
-
 
     const PEER_ID_STORAGE_KEY = 'p2pChatClientId';
     const MESSAGES_STORAGE_KEY = 'p2pChatMessages';
@@ -543,34 +508,6 @@
       return [peerId, setPeerId];
     };
 
-
-
-
-
-
-
-
-
-
-
-    //
-    // FIM
-
-    // ### 3. Componente de Gravação de Voz
-    // **Descrição Geral**: Esta seção define o componente `VoiceRecorder`, responsável por gravar áudio do microfone do usuário e enviar o arquivo gravado para o contato selecionado.
-    //
-    // - **Tópico: Estado e Referências**
-    //   - **Descrição**: Usa `useState` para gerenciar o estado de gravação (`isRecording`) e `useRef` para armazenar o objeto `MediaRecorder` e os fragmentos de áudio coletados (`audioChunksRef`).
-    //
-    // - **Tópico: Início da Gravação**
-    //   - **Descrição**: A função `startRecording` solicita acesso ao microfone via `navigator.mediaDevices.getUserMedia`, inicializa o `MediaRecorder`, e configura eventos para coletar dados de áudio e processar o arquivo final.
-    //
-    // - **Tópico: Parada da Gravação**
-    //   - **Descrição**: A função `stopRecording` interrompe a gravação, cria um `Blob` com os fragmentos de áudio coletados, e chama a função de callback `onRecordingComplete` com o arquivo resultante.
-    //
-    // - **Tópico: Interface do Usuário**
-    //   - **Descrição**: Renderiza um botão circular que alterna entre os estados de gravação e parada, com animação de pulsar durante a gravação e desativação quando não permitido.
-    //
     // PARTE 2: Componente para gravação de voz
     const VoiceRecorder = ({ onRecordingComplete, disabled, selectedContact }) => {
       const [isRecording, setIsRecording] = useState(false);
@@ -643,24 +580,7 @@
         </button>
       );
     };
-    //
-    // FIM
 
-    // ### 4. Tela de Gerenciamento de Contatos
-    // **Descrição Geral**: Esta seção define o componente `ContactsScreen`, que permite ao usuário adicionar, remover e selecionar contatos para iniciar conversas.
-    //
-    // - **Tópico: Estado e Validação**
-    //   - **Descrição**: Gerencia estados para nome e ID do novo contato, além de mensagens de erro para validação. A função `validateForm` verifica se os campos estão preenchidos antes de adicionar um contato.
-    //
-    // - **Tópico: Adição de Contatos**
-    //   - **Descrição**: A função `handleAddContact` adiciona um novo contato à lista e ao `localStorage` após validação, limpando os campos do formulário.
-    //
-    // - **Tópico: Remoção de Contatos**
-    //   - **Descrição**: A função `handleRemoveContact` remove um contato da lista e atualiza o `localStorage`, garantindo que a interface reflita a mudança.
-    //
-    // - **Tópico: Interface do Usuário**
-    //   - **Descrição**: Renderiza um formulário para adicionar contatos e uma lista de contatos existentes, com botões para remover e selecionar contatos. Inclui navegação para voltar à tela principal.
-    //
     // PARTE 3: Tela de gerenciamento de contatos
     const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
       const [newName, setNewName] = useState('');
@@ -775,24 +695,7 @@
         </div>
       );
     };
-    //
-    // FIM
 
-    // ### 5. Gerenciador de Chat
-    // **Descrição Geral**: Esta seção define o componente `UpdatedChatManager`, responsável por exibir e gerenciar as conversas, incluindo mensagens de texto, arquivos, áudios, chamadas de voz e vídeo.
-    //
-    // - **Tópico: Filtragem e Formatação**
-    //   - **Descrição**: Usa `useMemo` para filtrar mensagens do contato selecionado e formata timestamps para exibição. Garante que apenas mensagens relevantes sejam mostradas.
-    //
-    // - **Tópico: Envio de Mensagens**
-    //   - **Descrição**: A função `sendDirectMessage` envia mensagens de texto para o contato selecionado via PeerJS, atualizando o estado e o `localStorage`. Verifica se o contato está conectado.
-    //
-    // - **Tópico: Gerenciamento de Mídia**
-    //   - **Descrição**: Gerencia streams de áudio e vídeo, atualizando referências para elementos de mídia (`audioRefs`, `videoRefs`) e garantindo reprodução automática.
-    //
-    // - **Tópico: Interface do Usuário**
-    //   - **Descrição**: Renderiza a lista de conversas, área de mensagens, e controles para envio de mensagens, arquivos, áudios, e chamadas. Inclui botões para apagar mensagens e iniciar/encerrar chamadas.
-    //
     // PARTE 4: Gerenciador de chat (UpdatedChatManager)
     const UpdatedChatManager = ({
       connections,
@@ -930,7 +833,7 @@
       }, [filteredMessages]);
 
       useEffect(() => {
-        remoteStreams.forEach(({ peerId, stream, type }) => {
+        remoteStreams.forEach(({ peerId, stream, type, originalPeer }) => {
           if (type === 'voice') {
             const audioElement = audioRefs.current[peerId];
             if (audioElement && audioElement.srcObject !== stream) {
@@ -939,22 +842,68 @@
               audioElement.play().catch(e => console.warn("Audio play failed:", e));
             }
           } else if (type === 'video') {
-            const videoElement = videoRefs.current[peerId];
+            const streamKey = `${peerId}_${originalPeer || 'direct'}_${type}`;
+            const videoElement = videoRefs.current[streamKey];
             if (videoElement && videoElement.srcObject !== stream) {
-              console.log("UpdatedChatManager: Assigning video stream for peer:", peerId);
+              console.log("UpdatedChatManager: Assigning video stream for key:", streamKey);
               videoElement.srcObject = stream;
               videoElement.play().catch(e => console.warn("Video play failed:", e));
             }
           }
         });
         return () => {
-          Object.values(audioRefs.current).forEach(audio => { if (audio) audio.srcObject = null; });
-          Object.values(videoRefs.current).forEach(video => { if (video) video.srcObject = null; });
+          Object.values(audioRefs.current).forEach(audio => {
+            if (audio) audio.srcObject = null;
+          });
+          Object.values(videoRefs.current).forEach(video => {
+            if (video) video.srcObject = null;
+          });
         };
       }, [remoteStreams]);
 
       return (
         <div>
+          {(remoteStreams.length > 0 || localVideoRef.current?.srcObject) && (
+            <div className="video-container">
+              {localVideoRef.current?.srcObject && (
+                <div>
+                  <div className="video-label">Você</div>
+                  <video
+                    className="local-video-player"
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                  ></video>
+                </div>
+              )}
+              {remoteStreams.map((streamData, index) => {
+                const streamKey = `${streamData.peerId}_${streamData.originalPeer || 'direct'}_${streamData.type}_${index}`;
+                return streamData.type === 'video' && (
+                  <div key={streamKey}>
+                    <div className="video-label">
+                      {getContactName(streamData.originalPeer || streamData.peerId)}
+                      {streamData.originalPeer !== streamData.peerId &&
+                        ` (via ${getContactName(streamData.peerId)})`}
+                    </div>
+                    <video
+                      className="video-player"
+                      ref={el => {
+                        if (el) {
+                          videoRefs.current[streamKey] = el;
+                          if (el.srcObject !== streamData.stream) {
+                            console.log(`Atribuindo stream para ${streamKey}`);
+                            el.srcObject = streamData.stream;
+                            el.play().catch(e => console.warn(`Falha ao reproduzir vídeo ${streamKey}:`, e));
+                          }
+                        }
+                      }}
+                      autoPlay
+                    ></video>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className="chat-main-container">
             <div className="conversations-list">
               <h4 style={{ padding: '10px', margin: '0', borderBottom: '1px solid #eee' }}>Conversas</h4>
@@ -986,7 +935,7 @@
                     <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
                       {hasActiveVoiceCallWithPeer ? (
                         <button
-                          onClick={(e) => { e.stopPropagation(); endCall(conn.peer, 'voice'); }}
+                          onClick={(e) => { e.stopPropagation(); endCall(conn.peer, 'voice', conn.peer); }}
                           style={{ padding: '4px', background: '#ff5722', width: '30px', height: '30px', borderRadius: '50%' }}
                           title="Encerrar chamada de voz"
                         >
@@ -1147,27 +1096,7 @@
         </div>
       );
     };
-    //
-    // FIM
 
-    // ### 6. Componente Principal App
-    // **Descrição Geral**: Esta seção define o componente principal `App`, que integra todos os outros componentes e gerencia o estado geral do aplicativo, incluindo conexões PeerJS, mensagens, contatos, e chamadas.
-    //
-    // - **Tópico: Inicialização PeerJS**
-    //   - **Descrição**: Configura a conexão PeerJS com um ID persistente, tratando eventos como conexão, erro, e chamadas recebidas. Gerencia streams locais e remotos para chamadas de voz e vídeo.
-    //
-    // - **Tópico: Gerenciamento de Estado**
-    //   - **Descrição**: Gerencia estados para nome do usuário, contatos, mensagens, conexões, chamadas ativas, e streams de mídia. Usa `localStorage` para persistência de dados.
-    //
-    // - **Tópico: Envio e Recebimento de Dados**
-    //   - **Descrição**: Implementa funções para enviar mensagens, arquivos, e áudios em pedaços (`sendChunkedData`), e para processar dados recebidos (`handleIncomingData`), incluindo mensagens, arquivos, e áudios.
-    //
-    // - **Tópico: Chamadas de Voz e Vídeo**
-    //   - **Descrição**: Inclui funções para iniciar e encerrar chamadas de voz (`startVoiceCall`, `endCall`) e alternar chamadas de vídeo (`toggleVideoCall`), gerenciando streams de mídia e atualizando a interface.
-    //
-    // - **Tópico: Interface do Usuário**
-    //   - **Descrição**: Renderiza o cabeçalho, informações do usuário, ID do peer, contêiner de vídeo, chamadas de voz ativas, e alterna entre a tela de chat e a tela de contatos.
-    //
     // PARTE 5: Componente Principal App
     const App = () => {
       console.log("App: Component rendering");
@@ -1210,12 +1139,12 @@
       const localStreamsRef = useRef(new Map());
       const CHUNK_SIZE = 16 * 1024;
 
-      const stopAndRemoveLocalStream = (peerId) => {
-        const stream = localStreamsRef.current.get(peerId);
+      const stopAndRemoveLocalStream = (key) => {
+        const stream = localStreamsRef.current.get(key);
         if (stream) {
           stream.getTracks().forEach(track => track.stop());
-          localStreamsRef.current.delete(peerId);
-          console.log(`App: Stopped and removed local stream for call with ${peerId}`);
+          localStreamsRef.current.delete(key);
+          console.log(`App: Stopped and removed local stream for key ${key}`);
           if (localStreamsRef.current.size === 0) {
             setIsLocalVideoVisible(false);
             if (localVideoRef.current) localVideoRef.current.srcObject = null;
@@ -1232,133 +1161,46 @@
         if (!peerId) return;
         console.log("App: Initializing PeerJS with ID:", peerId);
         const peer = new Peer(peerId, {
-  host: '0.peerjs.com', 
-  port: 443, 
-  secure: true,
-  config: { 
-    iceServers: [
-      // Google STUN servers
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-      
-      // Mais servidores Google
-      { urls: 'stun:stun.google.com:19302' },
-      { urls: 'stun:stun-1.google.com:19302' },
-      { urls: 'stun:stun-2.google.com:19302' },
-      { urls: 'stun:stun-3.google.com:19302' },
-      { urls: 'stun:stun-4.google.com:19302' },
-      
-      // Servidores Google regionais
-      { urls: 'stun:stun-us-west-1.google.com:19302' },
-      { urls: 'stun:stun-us-east-1.google.com:19302' },
-      { urls: 'stun:stun-us-central-1.google.com:19302' },
-      { urls: 'stun:stun-us-south-1.google.com:19302' },
-      { urls: 'stun:stun-eu-west-1.google.com:19302' },
-      { urls: 'stun:stun-eu-central-1.google.com:19302' },
-      { urls: 'stun:stun-asia-east-1.google.com:19302' },
-      { urls: 'stun:stun-asia-northeast-1.google.com:19302' },
-      { urls: 'stun:stun-asia-south-1.google.com:19302' },
-      { urls: 'stun:stun-asia-southeast-1.google.com:19302' },
-      
-      // Mais variações de servidores Google
-      { urls: 'stun:stun.goog:19302' },
-      { urls: 'stun:stun-1.goog:19302' },
-      { urls: 'stun:stun-2.goog:19302' },
-      { urls: 'stun:stun-3.goog:19302' },
-      { urls: 'stun:stun-4.goog:19302' },
-      
-      // Serviços Google
-      { urls: 'stun:stun.meet.google.com:19302' },
-      { urls: 'stun:stun.hangouts.google.com:19302' },
-      { urls: 'stun:stun.chrome.google.com:19302' },
-      { urls: 'stun:stun.gmail.google.com:19302' },
-      { urls: 'stun:stun.youtube.google.com:19302' },
-      { urls: 'stun:stun.drive.google.com:19302' },
-      { urls: 'stun:stun.docs.google.com:19302' },
-      { urls: 'stun:stun.play.google.com:19302' },
-      
-      // Variações adicionais de Google
-      { urls: 'stun:stun1.corp.google.com:19302' },
-      { urls: 'stun:stun2.corp.google.com:19302' },
-      { urls: 'stun:stun3.corp.google.com:19302' },
-      { urls: 'stun:stun4.corp.google.com:19302' },
-      { urls: 'stun:stun5.corp.google.com:19302' },
-      { urls: 'stun:stun6.corp.google.com:19302' },
-      { urls: 'stun:stun.px.google.com:19302' },
-      { urls: 'stun:stun.gl.google.com:19302' },
-      { urls: 'stun:stun.gvt1.com:19302' },
-      { urls: 'stun:stun.gvt2.com:19302' },
-      { urls: 'stun:stun.gvt3.com:19302' },
-      
-      // Mais servidores regionais do Google
-      { urls: 'stun:stun-na-east.google.com:19302' },
-      { urls: 'stun:stun-na-west.google.com:19302' },
-      { urls: 'stun:stun-sa-east.google.com:19302' },
-      { urls: 'stun:stun-eu-west.google.com:19302' },
-      { urls: 'stun:stun-eu-east.google.com:19302' },
-      { urls: 'stun:stun-asia-east.google.com:19302' },
-      { urls: 'stun:stun-asia-west.google.com:19302' },
-      { urls: 'stun:stun-asia-south.google.com:19302' },
-      { urls: 'stun:stun-asia-north.google.com:19302' },
-      { urls: 'stun:stun-australia.google.com:19302' },
-      { urls: 'stun:stun-africa.google.com:19302' },
-      
-      // Mais variações de Google
-      { urls: 'stun:stun.voice.google.ca:19302' },
-      { urls: 'stun:stun.voice.google.mx:19302' },
-      { urls: 'stun:stun.voice.google.co.uk:19302' },
-      { urls: 'stun:stun.voice.google.de:19302' },
-      { urls: 'stun:stun.voice.google.fr:19302' },
-      { urls: 'stun:stun.voice.google.ru:19302' },
-      { urls: 'stun:stun.voice.google.jp:19302' },
-      { urls: 'stun:stun.voice.google.cn:19302' },
-      { urls: 'stun:stun.voice.google.in:19302' },
-      { urls: 'stun:stun.voice.google.com.br:19302' },
-      
-      // Mais servidores regionais do Google
-      { urls: 'stun:stun.google.com.ar:19302' },
-      { urls: 'stun:stun.google.com.au:19302' },
-      { urls: 'stun:stun.google.co.jp:19302' },
-      { urls: 'stun:stun.google.co.kr:19302' },
-      { urls: 'stun:stun.google.co.nz:19302' },
-      { urls: 'stun:stun.google.co.th:19302' },
-      { urls: 'stun:stun.google.co.za:19302' },
-      { urls: 'stun:stun.google.com.sg:19302' },
-      { urls: 'stun:stun.google.com.tw:19302' },
-      
-      // Servidores STUN não-Google
-      { urls: 'stun:stun.ekiga.net:3478' },
-      { urls: 'stun:stun.ideasip.com:3478' },
-      { urls: 'stun:stun.schlund.de:3478' },
-      { urls: 'stun:stun.voiparound.com:3478' },
-      { urls: 'stun:stun.voipbuster.com:3478' },
-      { urls: 'stun:stun.voipstunt.com:3478' },
-      { urls: 'stun:stun.voxgratia.org:3478' },
-      { urls: 'stun:stun.services.mozilla.com:3478' },
-      { urls: 'stun:stun.stunprotocol.org:3478' },
-      { urls: 'stun:stun.counterpath.com:3478' },
-      { urls: 'stun:stun.12connect.com:3478' },
-      { urls: 'stun:stun.callwithus.com:3478' },
-      { urls: 'stun:stun.sipgate.net:3478' },
-      { urls: 'stun:stun.sipgate.net:10000' },
-      { urls: 'stun:stun.1und1.de:3478' },
-      { urls: 'stun:stun.gmx.net:3478' },
-      { urls: 'stun:stun.xten.com:3478' },
-      { urls: 'stun:stun.nextcloud.com:3478' },
-      { urls: 'stun:stun.sip.us:3478' },
-      { urls: 'stun:stun.twt.it:3478' }
-    ],
-    sdpSemantics: 'unified-plan',
-    iceTransportPolicy: 'all',
-    bundlePolicy: 'max-bundle',
-    rtcpMuxPolicy: 'require',
-    iceCandidatePoolSize: 10
-  },
-  debug: 2
-});
+          host: '0.peerjs.com',
+          port: 443,
+          secure: true,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' },
+              { urls: 'stun:stun4.l.google.com:19302' },
+              { urls: 'stun:stun.ekiga.net:3478' },
+              { urls: 'stun:stun.ideasip.com:3478' },
+              { urls: 'stun:stun.schlund.de:3478' },
+              { urls: 'stun:stun.voiparound.com:3478' },
+              { urls: 'stun:stun.voipbuster.com:3478' },
+              { urls: 'stun:stun.voipstunt.com:3478' },
+              { urls: 'stun:stun.voxgratia.org:3478' },
+              { urls: 'stun:stun.services.mozilla.com:3478' },
+              { urls: 'stun:stun.stunprotocol.org:3478' },
+              { urls: 'stun:stun.counterpath.com:3478' },
+              { urls: 'stun:stun.12connect.com:3478' },
+              { urls: 'stun:stun.callwithus.com:3478' },
+              { urls: 'stun:stun.sipgate.net:3478' },
+              { urls: 'stun:stun.sipgate.net:10000' },
+              { urls: 'stun:stun.1und1.de:3478' },
+              { urls: 'stun:stun.gmx.net:3478' },
+              { urls: 'stun:stun.xten.com:3478' },
+              { urls: 'stun:stun.nextcloud.com:3478' },
+              { urls: 'stun:stun.sip.us:3478' },
+              { urls: 'stun:stun.twt.it:3478' }
+            ],
+            sdpSemantics: 'unified-plan',
+            iceTransportPolicy: 'all',
+            bundlePolicy: 'max-bundle',
+            rtcpMuxPolicy: 'require',
+            iceCandidatePoolSize: 10
+          },
+          debug: 2
+        });
+
         peer.on('open', (id) => {
           console.log("PeerJS: Connected with ID:", id);
           setIsPeerInitialized(true);
@@ -1400,60 +1242,103 @@
           conn.on('close', () => {
             console.log("PeerJS: Data connection closed with:", conn.peer);
             setConnections(prev => prev.filter(c => c.peer !== conn.peer));
-            endCall(conn.peer, 'video');
-            endCall(conn.peer, 'voice');
+            endCall(conn.peer, 'video', conn.peer);
+            endCall(conn.peer, 'voice', conn.peer);
           });
 
           conn.on('error', (err) => {
             console.error("PeerJS: Data connection error with:", conn.peer, err);
             setConnections(prev => prev.filter(c => c.peer !== conn.peer));
-            endCall(conn.peer, 'video');
-            endCall(conn.peer, 'voice');
+            endCall(conn.peer, 'video', conn.peer);
+            endCall(conn.peer, 'voice', conn.peer);
           });
         });
 
         peer.on('call', async (call) => {
           const callType = call.metadata?.type || 'video';
-          console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
+          const originPeer = call.metadata?.original || call.peer;
+
+          console.log(`PeerJS: Recebendo chamada ${callType} de: ${call.peer} (origem: ${originPeer})`);
+          console.log(`Chamadas ativas atuais: ${activeCalls.length}`);
 
           try {
-            console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
+            console.log(`Respondendo chamada ${callType} de: ${call.peer} sem stream local`);
             call.answer(null);
 
-            setActiveCalls(prev => [
-              ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
-              {
-                peerId: call.peer,
-                call,
-                localStream: null,
-                type: callType,
-                direction: 'incoming',
-                isTemporaryStream: false
+            const callId = `${call.peer}_${originPeer}_${callType}`;
+            console.log(`ID da chamada: ${callId}`);
+
+            setActiveCalls(prev => {
+              const existingCall = prev.find(c =>
+                c.peerId === call.peer && c.type === callType && c.originalPeer === originPeer
+              );
+
+              if (existingCall) {
+                console.log(`Chamada de ${callType} de ${call.peer} (origem: ${originPeer}) já existe, atualizando`);
+                return prev.map(c =>
+                  c === existingCall ? { ...c, call, direction: 'incoming' } : c
+                );
+              } else {
+                console.log(`Adicionando nova chamada de ${callType} de ${call.peer} (origem: ${originPeer})`);
+                return [
+                  ...prev,
+                  {
+                    peerId: call.peer,
+                    originalPeer: originPeer,
+                    call,
+                    localStream: null,
+                    type: callType,
+                    direction: 'incoming',
+                    isTemporaryStream: false
+                  }
+                ];
               }
-            ]);
+            });
 
             call.on('stream', (remoteStream) => {
-              console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
-              setRemoteStreams(prev => [
-                ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
-                { peerId: call.peer, stream: remoteStream, type: callType }
-              ]);
+              console.log(`PeerJS: Recebido stream remoto de ${callType} de: ${call.peer} (origem: ${originPeer})`);
+              console.log(`Stream tem ${remoteStream.getTracks().length} tracks: Video=${remoteStream.getVideoTracks().length}, Audio=${remoteStream.getAudioTracks().length}`);
+
+              setRemoteStreams(prev => {
+                const streamId = `${call.peer}_${originPeer}_${callType}`;
+                const existingStream = prev.find(s =>
+                  s.peerId === call.peer && s.type === callType && s.originalPeer === originPeer
+                );
+
+                if (existingStream) {
+                  console.log(`Stream de ${callType} de ${call.peer} (origem: ${originPeer}) já existe, atualizando`);
+                  return prev.map(s =>
+                    s === existingStream ? { ...s, stream: remoteStream, streamId } : s
+                  );
+                } else {
+                  console.log(`Adicionando novo stream de ${callType} de ${call.peer} (origem: ${originPeer})`);
+                  return [
+                    ...prev,
+                    {
+                      peerId: call.peer,
+                      originalPeer: originPeer,
+                      stream: remoteStream,
+                      type: callType,
+                      streamId
+                    }
+                  ];
+                }
+              });
             });
 
             call.on('close', () => {
-              console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
-              endCall(call.peer, callType);
+              console.log(`PeerJS: Incoming ${callType} call closed with: ${call.peer} (origem: ${originPeer})`);
+              endCall(call.peer, callType, originPeer);
             });
 
             call.on('error', (err) => {
               console.error(`PeerJS: Error in incoming ${callType} call:`, err);
-              endCall(call.peer, callType);
+              endCall(call.peer, callType, originPeer);
             });
-
           } catch (err) {
-            console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
+            console.error(`PeerJS: Erro processando chamada ${callType}:`, err);
             call.close();
-            alert('Erro ao acessar câmera/microfone: ' + err.message);
+            alert(`Erro ao processar chamada ${callType}: ${err.message}`);
           }
         });
 
@@ -1465,9 +1350,9 @@
             peerInstance.current.destroy();
             peerInstance.current = null;
           }
-          localStreamsRef.current.forEach((stream, peerId) => {
+          localStreamsRef.current.forEach((stream, key) => {
             stream.getTracks().forEach(track => track.stop());
-            console.log(`App Cleanup: Stopped local stream for ${peerId}`);
+            console.log(`App Cleanup: Stopped local stream for ${key}`);
           });
           localStreamsRef.current.clear();
           setActiveCalls([]);
@@ -1575,7 +1460,7 @@
             setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, progress } : msg));
             if (fileData.receivedBytes === fileData.totalSize) {
               const blob = new Blob([fileData.chunks], { type: fileData.fileType || 'application/octet-stream' });
-              const url = URL.createObjectURL(blob);
+              const url =衍URL.createObjectURL(blob);
               setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, fileData: url, receiving: false, progress: 100 } : msg));
               delete pendingFiles.current[data.fileId];
             }
@@ -1765,12 +1650,15 @@
           if (!stream) return;
 
           localStreamsRef.current.set(peerIdToCall + '_voice', stream);
-          const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'voice' } });
+          const call = peerInstance.current.call(peerIdToCall, stream, {
+            metadata: { type: 'voice', original: peerId }
+          });
 
           setActiveCalls(prev => [
             ...prev,
             {
               peerId: peerIdToCall,
+              originalPeer: peerId,
               call,
               localStream: stream,
               type: 'voice',
@@ -1783,17 +1671,23 @@
             console.log(`App: Received remote audio stream from:`, peerIdToCall);
             setRemoteStreams(prev => [
               ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'voice')),
-              { peerId: peerIdToCall, stream: remoteStream, type: 'voice' }
+              {
+                peerId: peerIdToCall,
+                originalPeer: peerIdToCall,
+                stream: remoteStream,
+                type: 'voice',
+                streamId: `${peerIdToCall}_${peerIdToCall}_voice`
+              }
             ]);
           });
           call.on('close', () => {
             console.log("App: Voice call closed with:", peerIdToCall);
-            endCall(peerIdToCall, 'voice');
+            endCall(peerIdToCall, 'voice', peerIdToCall);
           });
           call.on('error', (err) => {
             console.error('App: Error in voice call:', err);
             alert('Erro chamada de voz: ' + err.message);
-            endCall(peerIdToCall, 'voice');
+            endCall(peerIdToCall, 'voice', peerIdToCall);
           });
         } catch (err) {
           console.error('App: Error starting voice call:', err);
@@ -1822,18 +1716,16 @@
             localStreamsRef.current.delete(peerIdToCall + '_video');
           }
 
-          setActiveCalls(prev => prev.map(c => {
-            if (c.peerId === peerIdToCall && c.type === 'video') {
-              return { ...c, localStream: null };
-            }
-            return c;
-          }));
+          setActiveCalls(prev =>
+            prev.map(c =>
+              c.peerId === peerIdToCall && c.type === 'video' ? { ...c, localStream: null } : c
+            )
+          );
 
           if (localStreamsRef.current.size === 0) {
             setIsLocalVideoVisible(false);
             if (localVideoRef.current) localVideoRef.current.srcObject = null;
           }
-
         } else {
           if (!conn || !conn.open) {
             alert(`Contato ${getContactName(peerIdToCall)} offline.`);
@@ -1842,7 +1734,18 @@
 
           try {
             console.log("App: Getting video stream for:", peerIdToCall);
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const activeVideoStreams = remoteStreams.filter(s => s.type === 'video').length;
+            const videoConstraints = {
+              width: activeVideoStreams >= 2 ? 320 : 640,
+              height: activeVideoStreams >= 2 ? 240 : 480,
+              frameRate: activeVideoStreams >= 2 ? 15 : 30
+            };
+            console.log(`Iniciando chamada com restrições de vídeo:`, videoConstraints);
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: videoConstraints,
+              audio: true
+            });
             if (!stream) return;
 
             localStreamsRef.current.set(peerIdToCall + '_video', stream);
@@ -1851,15 +1754,15 @@
 
             if (existingCall) {
               console.log("App: Adding local stream to existing call with:", peerIdToCall);
+              setActiveCalls(prev =>
+                prev.map(c =>
+                  c.peerId === peerIdToCall && c.type === 'video' ? { ...c, localStream: stream } : c
+                )
+              );
 
-              setActiveCalls(prev => prev.map(c => {
-                if (c.peerId === peerIdToCall && c.type === 'video') {
-                  return { ...c, localStream: stream };
-                }
-                return c;
-              }));
-
-              const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+              const call = peerInstance.current.call(peerIdToCall, stream, {
+                metadata: { type: 'video', original: peerId }
+              });
 
               call.on('stream', (remoteStream) => {
                 console.log(`App: Received remote video stream response from:`, peerIdToCall);
@@ -1870,17 +1773,19 @@
               });
 
               call.on('error', (err) => {
-                console.error('App: Error in outgoing video stream call:', err);
+                console.error('App: Error inHf outgoing video stream call:', err);
               });
-
             } else {
               console.log("App: Starting new video call with:", peerIdToCall);
-              const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+              const call = peerInstance.current.call(peerIdToCall, stream, {
+                metadata: { type: 'video', original: peerId }
+              });
 
               setActiveCalls(prev => [
                 ...prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')),
                 {
                   peerId: peerIdToCall,
+                  originalPeer: peerId,
                   call,
                   localStream: stream,
                   type: 'video',
@@ -1893,19 +1798,25 @@
                 console.log(`App: Received remote video stream from:`, peerIdToCall);
                 setRemoteStreams(prev => [
                   ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
-                  { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
+                  {
+                    peerId: peerIdToCall,
+                    originalPeer: peerIdToCall,
+                    stream: remoteStream,
+                    type: 'video',
+                    streamId: `${peerIdToCall}_${peerIdToCall}_video`
+                  }
                 ]);
               });
 
               call.on('close', () => {
                 console.log("App: Video call closed with:", peerIdToCall);
-                endCall(peerIdToCall, 'video');
+                endCall(peerIdToCall, 'video', peerIdToCall);
               });
 
               call.on('error', (err) => {
                 console.error('App: Error in video call:', err);
                 alert('Erro chamada de vídeo: ' + err.message);
-                endCall(peerIdToCall, 'video');
+                endCall(peerIdToCall, 'video', peerIdToCall);
               });
             }
           } catch (err) {
@@ -1915,9 +1826,11 @@
         }
       };
 
-      const endCall = (peerIdToEnd, callType) => {
-        console.log(`App: Ending ${callType} call with:`, peerIdToEnd);
-        const callData = activeCalls.find(c => c.peerId === peerIdToEnd && c.type === callType);
+      const endCall = (peerIdToEnd, callType, originalPeer = peerIdToEnd) => {
+        console.log(`App: Ending ${callType} call with: ${peerIdToEnd} (origem: ${originalPeer})`);
+        const callData = activeCalls.find(c =>
+          c.peerId === peerIdToEnd && c.type === callType && c.originalPeer === originalPeer
+        );
 
         if (callData) {
           if (callData.call) {
@@ -1930,8 +1843,12 @@
           }
         }
 
-        setActiveCalls(prev => prev.filter(c => !(c.peerId === peerIdToEnd && c.type === callType)));
-        setRemoteStreams(prev => prev.filter(s => !(s.peerId === peerIdToEnd && s.type === callType)));
+        setActiveCalls(prev =>
+          prev.filter(c => !(c.peerId === peerIdToEnd && c.type === callType && c.originalPeer === originalPeer))
+        );
+        setRemoteStreams(prev =>
+          prev.filter(s => !(s.peerId === peerIdToEnd && s.type === callType && s.originalPeer === originalPeer))
+        );
 
         const anyLocalVideoActive = Array.from(localStreamsRef.current.values()).some(
           stream => stream.getVideoTracks().some(t => t.readyState === 'live')
@@ -1945,259 +1862,170 @@
         ) {
           const firstActiveStream = localStreamsRef.current.values().next().value;
           if (localVideoRef.current && firstActiveStream) {
-            localVideoRef.current.srcObject = firstActiveStream;
+          
+
+  localVideoRef.current.srcObject = firstActiveStream;
           }
         }
       };
 
       const populateEmojiPanel = () => {
-    const emojis = [
-      "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
-      "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
-      "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
-      "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
-      "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
-      "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
-      "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
-      "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳",
-      "👨‍🦲", "👩‍🦲", "👩", "👨", "🧓", "👴", "👵", "🙍‍♂️", "🙍‍♀️", "🙎‍♂️",
-      "🙎‍♀️", "🙅‍♂️", "🙅‍♀️", "🙆‍♂️", "🙆‍♀️", "💁‍♂️", "💁‍♀️", "🙋‍♂️", "🙋‍♀️", "🧏‍♂️",
-      "🧏‍♀️", "🙇‍♂️", "🙇‍♀️", "🤦‍♂️", "🤦‍♀️", "🤷‍♂️", "🤷‍♀️", "🧑‍⚕️", "👨‍⚕️", "👩‍⚕️",
-      "🧑‍🎓", "👨‍🎓", "👩‍🎓", "🧑‍🏫", "👨‍🏫", "👩‍🏫", "🧑‍⚖️", "👨‍⚖️", "👩‍⚖️", "🧑‍🌾",
-      "👨‍🌾", "👩‍🌾", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍🔧", "👨‍🔧", "👩‍🔧", "🧑‍🏭", "👨‍🏭",
-      "👩‍🏭", "🧑‍💼", "👨‍💼", "👩‍💼", "🧑‍🔬", "👨‍🔬", "👩‍🔬", "🧑‍💻", "👨‍💻", "👩‍💻",
-      "🧑‍🎤", "👨‍🎤", "👩‍🎤", "🧑‍🎨", "👨‍🎨", "👩‍🎨", "🧑‍✈️", "👨‍✈️", "👩‍✈️", "🧑‍🚀",
-      "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
-      "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
-      "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
-      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
-      "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨",
-      "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🙈", "🙉", "🙊",
-      "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉",
-      "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐌", "🐞",
-      "🐜", "🦗", "🕷️", "🕸️", "🦂", "🐢", "🐍", "🦎", "🦖", "🦕",
-      "🐙", "🦑", "🦐", "🦞", "🦀", "🐡", "🐠", "🐟", "🐬", "🐳",
-      "🐋", "🦈", "🐊", "🐅", "🐆", "🦒", "🐘", "🦏", "🦛", "🐪",
-      "🐫", "🦘", "🦙", "🦜", "🦚", "🦢", "🦩", "🕊️", "🐇", "🦝",
-      "🦡", "🦦", "🦥", "🦨", "🦔", "🦧", "🦣", "🦤", "🦥", "🦬",
-      "🍇", "🍈", "🍉", "🍊", "🍋", "🍌", "🍍", "🥭", "🍎", "🍏",
-      "🍐", "🍑", "🍒", "🍓", "🥝", "🍅", "🥥", "🥑", "🍆", "🥔",
-      "🥕", "🌽", "🌶️", "🥒", "🥬", "🥦", "🧄", "🧅", "🍄", "🥜",
-      "🌰", "🍞", "🥐", "🥖", "🥨", "🥯", "🥞", "🧇", "🧀", "🍖",
-      "🍗", "🥩", "🥓", "🍔", "🍟", "🍕", "🌭", "🥪", "🌮", "🌯",
-      "🥙", "🧆", "🥚", "🍳", "🥘", "🍲", "🥣", "🥗", "🍿", "🧈",
-      "🧂", "🍱", "🍘", "🍙", "🍚", "🍛", "🍜", "🍝", "🍠", "🍢",
-      "🍣", "🍤", "🍥", "🥮", "🍡", "🥟", "🥠", "🥡", "🦪", "🍦",
-      "🍧", "🍨", "🍩", "🍪", "🎂", "🍰", "🧁", "🥧", "🍫", "🍬",
-      "🍭", "🍮", "🍯", "🍼", "🥛", "☕", "🍵", "🍶", "🍾", "🍷",
-      "🍸", "🍹", "🍺", "🍻", "🥂", "🥃", "🥤", "🧃", "🧉", "🧊",
-      "🥢", "🍽️", "🍴", "🥄", "🔪", "🏺", "🌍", "🌎", "🌏", "🗺️",
-      "🗾", "🧭", "🏔️", "⛰️", "🌋", "🗻", "🏕️", "🏖️", "🏜️", "🏝️",
-      "🏞️", "🏟️", "🏛️", "🏗️", "🧱", "🏘️", "🏚️", "🏠", "🏡", "🏢",
-      "🏣", "🏤", "🏥", "🏦", "🏨", "🏩", "🏪", "🏫", "🏬", "🏭",
-      "🏯", "🏰", "💒", "🗼", "🗽", "⛪", "🕌", "🛕", "🕍", "⛩️",
-      "🕋", "⛲", "⛺", "🌁", "🌃", "🏙️", "🌄", "🌅", "🌆", "🌇",
-      "🌉", "♨️", "🎠", "🎡", "🎢", "💈", "🎪", "🚂", "🚃", "🚄",
-      "🚅", "🚆", "🚇", "🚈", "🚉", "🚊", "🚝", "🚞", "🚋", "🚌",
-      "🚍", "🚎", "🚐", "🚑", "🚒", "🚓", "🚔", "🚕", "🚖", "🚗",
-      "🚘", "🚙", "🛻", "🚚", "🚛", "🚜", "🏎️", "🏍️", "🛵", "🚲",
-      "🛴", "🛹", "🛺", "🚍", "🛸", "🚁", "🛩️", "✈️", "🪂", "💺",
-      "🚤", "🛥️", "🛳️", "⛴️", "⚓", "⛽", "🚨", "🚥", "🚦", "🛑",
-      "🚧", "🗿", "🗽", "🗼", "🏰", "🏯", "🏟️", "🎡", "🎢", "🎠",
-      "⛲", "⛱️", "🏖️", "🏝️", "🏜️", "🌋", "⛰️", "🏔️", "🗻", "🏕️",
-      "🛖", "🏠", "🏡", "🏘️", "🏚️", "🏢", "🏬", "🏣", "🏤", "🏥",
-      "🏦", "🏨", "🏪", "🏫", "🏩", "💒", "🏛️", "⛪", "🕌", "🕍",
-      "🛕", "⛩️", "🕋", "🛝", "🛗", "🪞", "🪟", "🪚", "🪤", "🪓",
-     
-    ];
+        const emojis = [
+          "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
+          "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
+          "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
+          "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
+          "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
+          "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
+          "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
+          "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳",
+          "👨‍🦲", "👩‍🦲", "👩", "👨", "🧓", "👴", "👵", "🙍‍♂️", "🙍‍♀️", "🙎‍♂️",
+          "🙎‍♀️", "🙅‍♂️", "🙅‍♀️", "🙆‍♂️", "🙆‍♀️", "💁‍♂️", "💁‍♀️", "🙋‍♂️", "🙋‍♀️", "🧏‍♂️",
+          "🧏‍♀️", "🙇‍♂️", "🙇‍♀️", "🤦‍♂️", "🤦‍♀️", "🤷‍♂️", "🤷‍♀️", "🧑‍⚕️", "👨‍⚕️", "👩‍⚕️",
+          "🧑‍🎓", "👨‍🎓", "👩‍🎓", "🧑‍🏫", "👨‍🏫", "👩‍🏫", "🧑‍⚖️", "👨‍⚖️", "👩‍⚖️", "🧑‍🌾",
+          "👨‍🌾", "👩‍🌾", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍🔧", "👨‍🔧", "👩‍🔧", "🧑‍🏭", "👨‍🏭",
+          "👩‍🏭", "🧑‍💼", "👨‍💼", "👩‍💼", "🧑‍🔬", "👨‍🔬", "👩‍🔬", "🧑‍💻", "👨‍💻", "👩‍💻",
+          "🧑‍🎤", "👨‍🎤", "👩‍🎤", "🧑‍🎨", "👨‍🎨", "👩‍🎨", "🧑‍✈️", "👨‍✈️", "👩‍✈️", "🧑‍🚀",
+          "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
+          "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
+          "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
+          "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂️", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
+          "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨"
+
+ ];
+      return (
+        <div className="emoji-panel">
+          <div className="emoji-panel-header">Emojis</div>
+          <div className="emoji-panel-content">
+            {emojis.map((emoji, index) => (
+              <span
+                key={index}
+                className="emoji-item"
+                onClick={() => setNewMessage(prev => prev + emoji)}
+              >
+                {emoji}
+              </span>
+            ))}
+          </div>
+          <div className="emoji-panel-footer">
+            <span className="barra-rolagem-label">Role para mais</span>
+          </div>
+        </div>
+      );
+    };
+
+    if (error) {
+      return (
+        <div className="error-message">
+          <h1>Erro na aplicação</h1>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>
+            Tentar novamente
+          </button>
+        </div>
+      );
+    }
 
     return (
-      <div className="emoji-panel">
-        <div className="emoji-panel-header">Emojis</div>
-        <div className="emoji-panel-content">
-          {emojis.map((emoji, index) => (
-            <span
-              key={index}
-              className="emoji-item"
-              onClick={() => setNewMessage(prev => prev + emoji)}
-            >
-              {emoji}
-            </span>
-          ))}
+      <ErrorBoundary>
+        <div>
+          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+          {showContacts ? (
+            <ContactsScreen
+              contacts={contacts}
+              setContacts={setContacts}
+              onBack={() => setShowContacts(false)}
+              onSelectContact={(peerId) => {
+                connectToPeer(peerId);
+                setShowContacts(false);
+                setSelectedContact(peerId);
+              }}
+            />
+          ) : (
+            <>
+              <div className="app-header">
+                <h1 className="app-title">Chat P2P</h1>
+                <div className="header-buttons">
+                  <button
+                    className="header-button"
+                    onClick={() => setShowContacts(true)}
+                    title="Gerenciar contatos"
+                  >
+                    <i className="fas fa-users"></i>
+                  </button>
+                </div>
+              </div>
+              <div className="user-info-container">
+                {editingName ? (
+                  <form className="user-name-form" onSubmit={(e) => { e.preventDefault(); saveUserName(); }}>
+                    <input
+                      type="text"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                      placeholder="Seu nome"
+                      maxLength={50}
+                      autoFocus
+                    />
+                    <button type="submit" disabled={!userName.trim()}>
+                      Salvar
+                    </button>
+                  </form>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="username">Bem-vindo, {userName}!</span>
+                    <button className="user-edit-button" onClick={() => setEditingName(true)}>
+                      Editar Nome
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="peer-id-container">
+                <span>Seu ID: <strong>{peerId}</strong></span>
+                <button onClick={() => {
+                  const newId = generateNewId();
+                  localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+                  window.location.reload();
+                }}>
+                  Gerar Novo ID
+                </button>
+              </div>
+              <UpdatedChatManager
+                connections={connections}
+                messages={messages}
+                setMessages={setMessages}
+                contacts={contacts}
+                userName={userName}
+                peerId={peerId}
+                activeCalls={activeCalls}
+                endCall={endCall}
+                startVoiceCall={startVoiceCall}
+                toggleVideoCall={toggleVideoCall}
+                remoteStreams={remoteStreams}
+                audioRefs={audioRefs}
+                videoRefs={videoRefs}
+                handleFileChange={handleFileChange}
+                fileInputRef={fileInputRef}
+                handleAudioRecording={handleAudioRecording}
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                showEmojiPanel={showEmojiPanel}
+                setShowEmojiPanel={setShowEmojiPanel}
+                populateEmojiPanel={populateEmojiPanel}
+                getContactName={getContactName}
+                selectedContact={selectedContact}
+                setSelectedContact={setSelectedContact}
+                localVideoRef={localVideoRef}
+              />
+            </>
+          )}
         </div>
-        <div className="emoji-panel-footer">
-          <span className="barra-rolagem-label">Role para ver mais</span>
-        </div>
-      </div>
+      </ErrorBoundary>
     );
   };
 
-  if (error) {
-    return (
-      <div className="error-message">
-        <h1>Erro</h1>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Tentar novamente</button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-      <div className="app-header">
-        <h1 className="app-title">Chat P2P</h1>
-        <div className="header-buttons">
-          <button
-            className="header-button"
-            onClick={() => setShowContacts(!showContacts)}
-            title="Gerenciar contatos"
-          >
-            <i className="fas fa-users"></i>
-          </button>
-        </div>
-      </div>
-
-      <div className="user-info-container">
-        {editingName ? (
-          <div className="user-name-form">
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Digite seu nome"
-              autoFocus
-            />
-            <button
-              onClick={saveUserName}
-              disabled={!userName.trim()}
-            >
-              Salvar
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span className="username">{userName}</span>
-            <button
-              className="user-edit-button"
-              onClick={() => setEditingName(true)}
-            >
-              Editar
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="peer-id-container">
-        <span>Seu ID: {peerId}</span>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(peerId);
-            alert('ID copiado para a área de transferência!');
-          }}
-        >
-          Copiar
-        </button>
-      </div>
-
-      {(remoteStreams.length > 0 || isLocalVideoVisible) && (
-        <div className="video-container">
-          {isLocalVideoVisible && (
-            <div>
-              <div className="video-label">Você</div>
-              <video
-                className="local-video-player"
-                ref={localVideoRef}
-                autoPlay
-                muted
-              ></video>
-            </div>
-          )}
-          {remoteStreams.map((streamData, index) => (
-            streamData.type === 'video' && (
-              <div key={index}>
-                <div className="video-label">{getContactName(streamData.peerId)}</div>
-                <video
-                  className="video-player"
-                  ref={el => videoRefs.current[streamData.peerId] = el}
-                  autoPlay
-                ></video>
-              </div>
-            )
-          ))}
-        </div>
-      )}
-
-      {activeCalls.map((call, index) => (
-        call.type === 'voice' && (
-          <div key={index} className="audio-call-container">
-            <span>Chamada de voz com {getContactName(call.peerId)}</span>
-            <button
-              className="call-end-button"
-              onClick={() => endCall(call.peerId, 'voice')}
-            >
-              Encerrar
-            </button>
-            <audio
-              ref={el => audioRefs.current[call.peerId] = el}
-              autoPlay
-            ></audio>
-          </div>
-        )
-      ))}
-
-      {showContacts ? (
-        <ContactsScreen
-          contacts={contacts}
-          setContacts={setContacts}
-          onBack={() => setShowContacts(false)}
-          onSelectContact={(peerId) => {
-            connectToPeer(peerId);
-            setSelectedContact(peerId);
-            setShowContacts(false);
-          }}
-        />
-      ) : (
-        <UpdatedChatManager
-          connections={connections}
-          messages={messages}
-          setMessages={setMessages}
-          contacts={contacts}
-          userName={userName}
-          peerId={peerId}
-          activeCalls={activeCalls}
-          endCall={endCall}
-          startVoiceCall={startVoiceCall}
-          toggleVideoCall={toggleVideoCall}
-          remoteStreams={remoteStreams}
-          audioRefs={audioRefs}
-          videoRefs={videoRefs}
-          handleFileChange={handleFileChange}
-          fileInputRef={fileInputRef}
-          handleAudioRecording={handleAudioRecording}
-          newMessage={newMessage}
-          setNewMessage={setNewMessage}
-          showEmojiPanel={showEmojiPanel}
-          setShowEmojiPanel={setShowEmojiPanel}
-          populateEmojiPanel={populateEmojiPanel}
-          getContactName={getContactName}
-          selectedContact={selectedContact}
-          setSelectedContact={setSelectedContact}
-          localVideoRef={localVideoRef}
-        />
-      )}
-    </div>
-  );
-};
-
-// Renderização do aplicativo
-ReactDOM.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
-  document.getElementById('root')
-);
-
-</script>
+  // Renderização do App
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
+         
