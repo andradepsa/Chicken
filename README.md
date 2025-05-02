@@ -20,4 +20,4 @@ Acessando o Aplicativo
 
 2.Servidor cria uma sala compartilhada
 
-3.Chat P2P + Servidor = comunicação em grupo
+3.Chat P2P + Servidor = Comunicação em Grupo
