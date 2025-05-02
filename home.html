@@ -4,71 +4,65 @@
   <meta charset="UTF-8">
   <title>Menu de Acesso - Chat P2P</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
       background-color: #eef2f5;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      margin: 0;
-      padding: 20px;
+      justify-content: space-between;
     }
 
     h1 {
-      margin-bottom: 30px;
+      margin: 10px 0;
+      font-size: 22px;
       color: #333;
     }
 
-    .choice-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 40px;
-    }
-
-    .choice-section h2 {
-      color: #333;
-      margin-bottom: 20px;
-    }
-
-    .choice-buttons {
-      display: flex;
-      gap: 30px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .choice-buttons a {
-      padding: 15px 30px;
-      background-color: #28a745;
-      color: white;
-      text-decoration: none;
+    .instructions {
+      background-color: #f8f9fa;
       border-radius: 8px;
-      font-size: 18px;
-      transition: background-color 0.3s;
+      text-align: center;
+      padding: 10px;
+      width: 95%;
+      max-width: 600px;
+      font-size: 14px;
     }
 
-    .choice-buttons a:hover {
-      background-color: #1e7e34;
+    .instructions h2 {
+      font-size: 16px;
+      margin: 5px 0;
+      color: #333;
+    }
+
+    .instructions ol {
+      padding-left: 20px;
+      text-align: left;
+      margin: 5px 0;
     }
 
     .menu {
       display: flex;
-      gap: 30px;
-      margin-bottom: 40px;
+      gap: 15px;
       flex-wrap: wrap;
       justify-content: center;
+      margin: 5px 0;
     }
 
     .menu a {
-      padding: 15px 30px;
+      padding: 10px 20px;
       background-color: #007bff;
       color: white;
       text-decoration: none;
       border-radius: 8px;
-      font-size: 18px;
-      transition: background-color 0.3s;
+      font-size: 14px;
     }
 
     .menu a:hover {
@@ -76,22 +70,27 @@
     }
 
     .links-container {
-      margin-top: 20px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
+      gap: 8px;
       align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .links-container p {
+      margin: 0;
+      font-weight: bold;
+      font-size: 14px;
     }
 
     .links-container a {
-      color: #007bff;
-      text-decoration: none;
-      font-weight: bold;
-      padding: 10px 20px;
       background-color: #f1f1f1;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-      width: 260px;
+      color: #007bff;
+      padding: 8px 12px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 220px;
       text-align: center;
     }
 
@@ -99,47 +98,28 @@
       background-color: #007bff;
       color: white;
     }
-
-    .instructions {
-      margin-top: 40px;
-      padding: 20px;
-      background-color: #f8f9fa;
-      border-radius: 8px;
-      text-align: center;
-      width: 90%;
-      max-width: 600px;
-    }
-
-    .instructions ol {
-      text-align: left;
-      padding-left: 20px;
-      list-style-type: decimal;
-    }
-
-    .instructions h2 {
-      color: #333;
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
   <h1>Bem-vindo ao Sistema de Chat P2P</h1>
+
   <div class="instructions">
     <h2>✅ Como usar:</h2>
     <ol>
-      <li>Baixe o arquivo ou use direto no navegador</li>
+      <li>Baixe ou use direto no navegador</li>
       <li>Compartilhe seu ID com um contato</li>
       <li>Pronto! Comece a usar imediatamente</li>
-      <li>Converse e envie arquivos com segurança!</li>
+      <li>Converse e envie arquivos com segurança</li>
     </ol>
 
     <h2>✅ Dica:</h2>
     <ol>
-      <li>Chat P2P conecta diretamente a outro Chat P2P.</li>
-      <li>Servidor cria uma sala compartilhada para múltiplos usuários.</li>
-      <li>Chat P2P + Servidor = comunicação em grupo descentralizada.</li>
+      <li>Chat P2P conecta-se diretamente a outro Chat P2P</li>
+      <li>Servidor cria uma sala compartilhada</li>
+      <li>Chat P2P + Servidor = comunicação em grupo</li>
     </ol>
   </div>
+
   <div class="menu">
     <a href="CHAT P2P-C0.HTML">🗨️ Abrir Chat</a>
     <a href="SERVIDOR CHAT P2P-CO.html">📡 Abrir Servidor</a>
@@ -151,7 +131,5 @@
     <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank">📦 Baixar Servidor</a>
     <a href="https://github.com/andradepsa/Chicken" target="_blank">💻 Projeto no GitHub</a>
   </div>
-
-
 </body>
 </html>
