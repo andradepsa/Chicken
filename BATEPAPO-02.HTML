@@ -203,8 +203,6 @@
       background-color: white;
     }
     
-    /* Removida a classe .message-time que exibia o horário */
-    
     .empty-message {
       text-align: center;
       color: var(--text-light);
@@ -380,6 +378,110 @@
       color: white;
     }
     
+    /* Estilos para o seletor de emojis */
+    .emoji-button {
+      background-color: var(--secondary-color);
+      color: var(--primary-color);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(74, 118, 253, 0.1);
+    }
+    
+    .emoji-button:hover {
+      background-color: #d9e6ff;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(74, 118, 253, 0.2);
+    }
+    
+    .emoji-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    .emoji-button:disabled {
+      background-color: #eeeeee;
+      color: #bbbbbb;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .emoji-button i {
+      font-size: 18px;
+    }
+    
+    .emoji-picker {
+      position: absolute;
+      bottom: 70px;
+      left: 10px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      max-width: 300px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.3s ease;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .emoji-item {
+      font-size: 20px;
+      padding: 5px;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 5px;
+      transition: all 0.2s ease;
+    }
+    
+    .emoji-item:hover {
+      background-color: var(--secondary-color);
+      transform: scale(1.2);
+    }
+    
+    .emoji-categories {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--secondary-color);
+    }
+    
+    .emoji-category {
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      transition: all 0.2s ease;
+    }
+    
+    .emoji-category:hover,
+    .emoji-category.active {
+      background-color: var(--secondary-color);
+    }
+    
     @media (max-width: 600px) {
       body {
         padding: 5px;
@@ -396,6 +498,11 @@
       .message {
         max-width: 90%;
       }
+      
+      .emoji-picker {
+        grid-template-columns: repeat(6, 1fr);
+        max-width: 240px;
+      }
     }
   </style>
 
@@ -406,6 +513,114 @@
 
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
+
+    // Lista de emojis populares por categoria
+    const emojiData = {
+      smileys: ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '🥰', '😘', '😗', '😙', '😚', '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥', '😮', '🤐', '😯', '😪', '😫', '🥱', '😴', '😌', '😛', '😜', '😝', '🤤', '😒', '😓', '😔', '😕', '🙃', '🤑', '😲', '☹️', '🙁', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '🥶', '😳'],
+      gestures: ['👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👊', '✊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🙏', '✍️', '💪', '🤳', '💅', '🤝', '🤦‍♂️', '🤦‍♀️', '🤷‍♂️', '🤷‍♀️'],
+      love: ['💋', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍'],
+      celebration: ['🎉', '🎊', '🎂', '🍰', '🧁', '🍾', '🥂', '🎈', '🎁', '🎀', '✨', '🎇', '🎆'],
+      animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞'],
+      food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🧆', '🌮', '🌯', '🥙', '🍜', '🍲', '🥘', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊'],
+      objects: ['⌚', '📱', '💻', '⌨️', '🖥️', '🖱️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '💰', '💳', '💎', '⚖️', '🧰', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🔩', '⚙️', '🧱', '⛓️', '🧲', '🔫', '🧨', '💣', '🧹', '🧺', '🧻', '🚿', '🛁', '🛀'],
+      other: ['🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽', '⛪', '🕌', '🕍', '⛩️', '🏛️', '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛴', '🚲', '🛵', '🏍️', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🚢', '✈️', '🛩️', '🛫', '🛬', '🚁', '🚀', '🛸']
+    };
+
+    // Componente de seletor de emojis
+    const EmojiPicker = ({ onSelectEmoji, isOpen, onClose }) => {
+      const [category, setCategory] = useState('smileys');
+      const pickerRef = useRef(null);
+      
+      // Fechar o seletor ao clicar fora dele
+      useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (pickerRef.current && !pickerRef.current.contains(event.target) && isOpen) {
+            onClose();
+          }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+          document.removeEventListener('mousedown', handleClickOutside);
+        };
+      }, [isOpen, onClose]);
+      
+      if (!isOpen) return null;
+      
+      return (
+        <div className="emoji-picker" ref={pickerRef}>
+          <div className="emoji-categories">
+            <div 
+              className={`emoji-category ${category === 'smileys' ? 'active' : ''}`} 
+              onClick={() => setCategory('smileys')}
+              title="Sorrisos"
+            >
+              😀
+            </div>
+            <div 
+              className={`emoji-category ${category === 'gestures' ? 'active' : ''}`} 
+              onClick={() => setCategory('gestures')}
+              title="Gestos"
+            >
+              👍
+            </div>
+            <div 
+              className={`emoji-category ${category === 'love' ? 'active' : ''}`} 
+              onClick={() => setCategory('love')}
+              title="Amor"
+            >
+              ❤️
+            </div>
+            <div 
+              className={`emoji-category ${category === 'celebration' ? 'active' : ''}`} 
+              onClick={() => setCategory('celebration')}
+              title="Celebração"
+            >
+              🎉
+            </div>
+            <div 
+              className={`emoji-category ${category === 'animals' ? 'active' : ''}`} 
+              onClick={() => setCategory('animals')}
+              title="Animais"
+            >
+              🐶
+            </div>
+            <div 
+              className={`emoji-category ${category === 'food' ? 'active' : ''}`} 
+              onClick={() => setCategory('food')}
+              title="Comida"
+            >
+              🍔
+            </div>
+            <div 
+              className={`emoji-category ${category === 'objects' ? 'active' : ''}`} 
+              onClick={() => setCategory('objects')}
+              title="Objetos"
+            >
+              💻
+            </div>
+            <div 
+              className={`emoji-category ${category === 'other' ? 'active' : ''}`} 
+              onClick={() => setCategory('other')}
+              title="Outros"
+            >
+              🏠
+            </div>
+          </div>
+          <div>
+            {emojiData[category].map((emoji, index) => (
+              <span 
+                key={index} 
+                className="emoji-item" 
+                onClick={() => onSelectEmoji(emoji)}
+              >
+                {emoji}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    };
 
     // Gerenciador de ID de cliente aleatório
     const useClientId = () => {
@@ -430,12 +645,14 @@
       const [messages, setMessages] = useState([]);
       const [newMessage, setNewMessage] = useState('');
       const [isConnected, setIsConnected] = useState(false);
+      const [showEmojiPicker, setShowEmojiPicker] = useState(false);
       
       // Refs
       const connectionRef = useRef(null);
       const peerRef = useRef(null);
       const messagesEndRef = useRef(null);
       const messageContainerRef = useRef(null);
+      const messageInputRef = useRef(null);
 
       // Auto-rolagem de mensagens
       useEffect(() => {
@@ -519,7 +736,7 @@
             // Enviar mensagem de saudação
             const welcomeMsg = {
               type: 'message',
-              message: `${username} entrou no chat`,
+              message: `${username} entrou no chat 👋`,
               sender: username,
               timestamp: new Date().toISOString(),
               system: true
@@ -558,7 +775,7 @@
             // Enviar mensagem de despedida
             const goodbyeMsg = {
               type: 'message',
-              message: `${username} saiu do chat`,
+              message: `${username} saiu do chat 👋`,
               sender: username,
               timestamp: new Date().toISOString(),
               system: true
@@ -614,6 +831,18 @@
         }
       };
 
+      // Lidar com seleção de emoji
+      const handleEmojiSelect = (emoji) => {
+        setNewMessage(prev => prev + emoji);
+        setShowEmojiPicker(false);
+        // Focar no input após selecionar um emoji
+        setTimeout(() => {
+          if (messageInputRef.current) {
+            messageInputRef.current.focus();
+          }
+        }, 100);
+      };
+
       // Enviar mensagem
       const sendMessage = () => {
         if (!connectionRef.current || !newMessage.trim()) return;
@@ -645,8 +874,6 @@
         }
       };
 
-      // Função formatTime removida, já que não é mais necessária
-
       // Renderizar link de arquivo
       const renderFileLink = (message) => {
         const handleFileDownload = () => {
@@ -676,7 +903,7 @@
       return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div className="header">
-            <h1>Chat P2P BATE PAPO</h1>
+            <h1>Chat P2P BATE PAPO 💬</h1>
             <div className="connection-status">
               <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
               {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
@@ -720,7 +947,7 @@
           <div className="message-container" ref={messageContainerRef}>
             {messages.length === 0 ? (
               <div className="empty-message">
-                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá!' : 'Conecte-se ao distribuidor para iniciar o chat'}
+                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá! 👋' : 'Conecte-se ao distribuidor para iniciar o chat 🚀'}
               </div>
             ) : (
               messages.map((msg) => (
@@ -736,7 +963,6 @@
                   ) : (
                     <div>{msg.text}</div>
                   )}
-                  {/* Elemento para exibir a hora foi removido */}
                 </div>
               ))
             )}
@@ -744,6 +970,15 @@
           </div>
 
           <div className="input-container">
+            <button 
+              className="emoji-button" 
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              disabled={!isConnected}
+              title="Inserir emoji"
+            >
+              <i className="far fa-smile"></i>
+            </button>
+
             <input
               type="text"
               className="message-input"
@@ -752,6 +987,7 @@
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               disabled={!isConnected}
+              ref={messageInputRef}
             />
             <button 
               className="send-button" 
@@ -760,6 +996,12 @@
             >
               <i className="fas fa-paper-plane"></i>
             </button>
+
+            <EmojiPicker 
+              isOpen={showEmojiPicker} 
+              onSelectEmoji={handleEmojiSelect}
+              onClose={() => setShowEmojiPicker(false)}
+            />
           </div>
         </div>
       );
