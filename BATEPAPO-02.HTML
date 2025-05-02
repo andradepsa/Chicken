@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat P2P Cliente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4a76fd;
+      --secondary-color: #e8f0ff;
+      --accent-color: #74b9ff;
+      --sent-message: #e2f2ff;
+      --received-message: #ffffff;
+      --background: #f0f5ff;
+      --text-dark: #2c3e50;
+      --text-light: #7f8c8d;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --border-radius: 16px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 10px;
+      background-color: var(--background);
+      color: var(--text-dark);
+      line-height: 1.5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+    }
+    
+    #root {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 16px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 12px;
+    }
+    
+    .header h1 {
+      font-size: 22px;
+      color: var(--primary-color);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .connection-status {
+      display: flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 24px;
+      background-color: var(--secondary-color);
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .status-connected {
+      background-color: #4CAF50;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    }
+    
+    .status-disconnected {
+      background-color: #f44336;
+      box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+    }
+    
+    .status-connecting {
+      background-color: #FFC107;
+      animation: pulse 1.5s infinite;
+      box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(0.8); opacity: 0.7; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(0.8); opacity: 0.7; }
+    }
+    
+    .message-container {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: var(--border-radius);
+      padding: 12px;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8faff;
+      border: 1px solid rgba(74, 118, 253, 0.1);
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) transparent;
+      min-height: 200px;
+    }
+    
+    .message-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .message-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .message-container::-webkit-scrollbar-thumb {
+      background-color: var(--accent-color);
+      border-radius: 20px;
+    }
+    
+    .message-container::-webkit-scrollbar-thumb:hover {
+      background-color: var(--primary-color);
+    }
+    
+    .message {
+      margin-bottom: 12px;
+      padding: 10px 16px;
+      border-radius: 16px;
+      max-width: 80%;
+      word-break: break-word;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      animation: messageAppear 0.3s ease-out;
+      line-height: 1.4;
+      font-size: 14px;
+    }
+    
+    @keyframes messageAppear {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .message.sent {
+      align-self: flex-end;
+      background-color: var(--primary-color);
+      color: white;
+      border-bottom-right-radius: 5px;
+      margin-left: auto;
+    }
+    
+    .message.received {
+      align-self: flex-start;
+      background-color: var(--received-message);
+      border-bottom-left-radius: 5px;
+      margin-right: auto;
+      border-left: 4px solid var(--accent-color);
+    }
+    
+    .message-sender {
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+    }
+    
+    .message.sent .message-sender {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    
+    .message-sender::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: var(--accent-color);
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    
+    .message.sent .message-sender::before {
+      background-color: white;
+    }
+    
+    .message-time {
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.5);
+      position: absolute;
+      bottom: 6px;
+      right: 8px;
+      font-weight: 500;
+    }
+    
+    .message.sent .message-time {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .empty-message {
+      text-align: center;
+      color: var(--text-light);
+      margin-top: 20px;
+      font-style: italic;
+      animation: fadeIn 1s ease;
+      font-size: 14px;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .system-message {
+      align-self: center;
+      background-color: rgba(232, 240, 255, 0.8);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-style: italic;
+      color: var(--text-dark);
+      font-size: 13px;
+      box-shadow: none;
+      max-width: 90%;
+      margin: 8px 0;
+      text-align: center;
+      border: 1px dashed rgba(74, 118, 253, 0.3);
+    }
+    
+    .connection-form {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      background-color: var(--secondary-color);
+      padding: 10px;
+      border-radius: var(--border-radius);
+    }
+    
+    .connection-form input {
+      flex-grow: 1;
+      padding: 8px 12px;
+      border: 1px solid rgba(74, 118, 253, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+    
+    .connection-form input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
+    }
+    
+    .connection-button {
+      padding: 8px 16px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .connection-button:hover {
+      background-color: #3764e6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(74, 118, 253, 0.3);
+    }
+    
+    .connection-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    .connection-button.disconnect {
+      background-color: #f44336;
+    }
+    
+    .connection-button.disconnect:hover {
+      background-color: #d32f2f;
+      box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+    }
+    
+    .input-container {
+      display: flex;
+      background-color: var(--secondary-color);
+      padding: 10px;
+      border-radius: var(--border-radius);
+      position: relative;
+      margin-top: 0;
+    }
+    
+    .message-input {
+      flex-grow: 1;
+      padding: 10px 14px;
+      border: 1px solid rgba(74, 118, 253, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+    
+    .message-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
+    }
+    
+    .send-button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-left: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(74, 118, 253, 0.3);
+    }
+    
+    .send-button:hover {
+      background-color: #3764e6;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(74, 118, 253, 0.4);
+    }
+    
+    .send-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    .send-button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .send-button i {
+      font-size: 16px;
+    }
+    
+    .username-input {
+      padding: 8px 12px;
+      border: 1px solid rgba(74, 118, 253, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      width: 180px;
+      background-color: white;
+    }
+    
+    .file-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .file-link {
+      color: var(--primary-color);
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    
+    .message.sent .file-link {
+      color: white;
+    }
+    
+    @media (max-width: 600px) {
+      body {
+        padding: 5px;
+      }
+      
+      .connection-form {
+        flex-direction: column;
+      }
+      
+      .username-input {
+        width: 100%;
+      }
+      
+      .message {
+        max-width: 90%;
+      }
+    }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Gerenciador de ID de cliente aleatório
+    const useClientId = () => {
+      const [clientId, setClientId] = useState(null);
+
+      useEffect(() => {
+        // Gerar ID de cliente aleatório (sem usar localStorage)
+        const newId = 'client-' + Math.random().toString(36).substring(2, 10);
+        setClientId(newId);
+      }, []);
+
+      return clientId;
+    };
+
+    // Componente principal do cliente
+    const ChatClient = () => {
+      // Estado do cliente
+      const clientId = useClientId();
+      const [username, setUsername] = useState('');
+      const [distributorId, setDistributorId] = useState('AAAAAA'); // ID padrão do distribuidor
+      const [connectionStatus, setConnectionStatus] = useState('desconectado');
+      const [messages, setMessages] = useState([]);
+      const [newMessage, setNewMessage] = useState('');
+      const [isConnected, setIsConnected] = useState(false);
+      
+      // Refs
+      const connectionRef = useRef(null);
+      const peerRef = useRef(null);
+      const messagesEndRef = useRef(null);
+      const messageContainerRef = useRef(null);
+
+      // Auto-rolagem de mensagens
+      useEffect(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, [messages]);
+
+      // Inicializar peer quando o ID do cliente estiver disponível
+      useEffect(() => {
+        if (!clientId) return;
+
+        const initPeer = () => {
+          if (peerRef.current) {
+            try {
+              peerRef.current.destroy();
+            } catch (err) {
+              console.error("Erro ao destruir peer existente:", err);
+            }
+          }
+
+          const peer = new Peer(clientId, {
+            host: '0.peerjs.com',
+            port: 443,
+            secure: true,
+            config: {
+              iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+              ]
+            },
+            debug: 1
+          });
+
+          peer.on('open', (id) => {
+            console.log("Peer inicializado com ID:", id);
+          });
+
+          peer.on('error', (err) => {
+            console.error("Erro no peer:", err);
+            setConnectionStatus('erro');
+            setIsConnected(false);
+          });
+
+          peerRef.current = peer;
+        };
+
+        initPeer();
+
+        return () => {
+          if (peerRef.current) {
+            try {
+              peerRef.current.destroy();
+            } catch (e) {
+              console.error("Erro ao destruir peer:", e);
+            }
+          }
+        };
+      }, [clientId]);
+
+      // Conectar ao distribuidor
+      const connectToDistributor = () => {
+        if (!peerRef.current || !distributorId || !username.trim()) {
+          alert("Preencha seu nome de usuário e o ID do distribuidor!");
+          return;
+        }
+
+        setConnectionStatus('conectando');
+
+        try {
+          const conn = peerRef.current.connect(distributorId, {
+            reliable: true
+          });
+
+          conn.on('open', () => {
+            console.log("Conectado ao distribuidor:", distributorId);
+            setConnectionStatus('conectado');
+            setIsConnected(true);
+            connectionRef.current = conn;
+
+            // Enviar mensagem de saudação
+            const welcomeMsg = {
+              type: 'message',
+              message: `${username} entrou no chat`,
+              sender: username,
+              timestamp: new Date().toISOString(),
+              system: true
+            };
+            conn.send(welcomeMsg);
+          });
+
+          conn.on('data', (data) => {
+            console.log("Dados recebidos:", data);
+            handleIncomingData(data);
+          });
+
+          conn.on('close', () => {
+            console.log("Conexão fechada com o distribuidor");
+            setConnectionStatus('desconectado');
+            setIsConnected(false);
+            connectionRef.current = null;
+          });
+
+          conn.on('error', (err) => {
+            console.error("Erro na conexão:", err);
+            setConnectionStatus('erro');
+            setIsConnected(false);
+          });
+        } catch (err) {
+          console.error("Erro ao conectar:", err);
+          setConnectionStatus('erro');
+          setIsConnected(false);
+        }
+      };
+
+      // Desconectar do distribuidor
+      const disconnectFromDistributor = () => {
+        if (connectionRef.current) {
+          try {
+            // Enviar mensagem de despedida
+            const goodbyeMsg = {
+              type: 'message',
+              message: `${username} saiu do chat`,
+              sender: username,
+              timestamp: new Date().toISOString(),
+              system: true
+            };
+            connectionRef.current.send(goodbyeMsg);
+            
+            // Fechar conexão
+            connectionRef.current.close();
+            connectionRef.current = null;
+            setConnectionStatus('desconectado');
+            setIsConnected(false);
+          } catch (err) {
+            console.error("Erro ao desconectar:", err);
+          }
+        }
+      };
+
+      // Processar dados recebidos
+      const handleIncomingData = (data) => {
+        if (data.type === 'message') {
+          // Não mostrar mensagens próprias recebidas de volta do distribuidor
+          const isSelfMessage = data.sender === username && !data.system;
+          
+          if (!isSelfMessage) {
+            const newMsg = {
+              id: Date.now() + Math.random().toString(36).substr(2, 9),
+              text: data.message,
+              sender: data.sender,
+              isSystem: data.system,
+              timestamp: data.timestamp || new Date().toISOString(),
+              isSelf: false
+            };
+            
+            setMessages(prev => [...prev, newMsg]);
+          }
+        } else if (data.type === 'file') {
+          // Manipular arquivo recebido
+          if (data.sender !== username) {
+            const newFileMsg = {
+              id: Date.now() + Math.random().toString(36).substr(2, 9),
+              isFile: true,
+              fileName: data.fileName,
+              fileSize: data.fileSize,
+              fileType: data.fileType,
+              fileData: data.fileData,
+              sender: data.sender,
+              timestamp: data.timestamp || new Date().toISOString(),
+              isSelf: false
+            };
+            
+            setMessages(prev => [...prev, newFileMsg]);
+          }
+        }
+      };
+
+      // Enviar mensagem
+      const sendMessage = () => {
+        if (!connectionRef.current || !newMessage.trim()) return;
+
+        const messageData = {
+          type: 'message',
+          message: newMessage.trim(),
+          sender: username,
+          timestamp: new Date().toISOString()
+        };
+
+        try {
+          connectionRef.current.send(messageData);
+          
+          // Adicionar à lista de mensagens local
+          const newMsg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            text: newMessage.trim(),
+            sender: username,
+            timestamp: new Date().toISOString(),
+            isSelf: true
+          };
+          
+          setMessages(prev => [...prev, newMsg]);
+          setNewMessage('');
+        } catch (err) {
+          console.error("Erro ao enviar mensagem:", err);
+          alert("Não foi possível enviar a mensagem. Verifique sua conexão.");
+        }
+      };
+
+      // Formatar horário
+      const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      };
+
+      // Renderizar link de arquivo
+      const renderFileLink = (message) => {
+        const handleFileDownload = () => {
+          const link = document.createElement('a');
+          link.href = message.fileData;
+          link.download = message.fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        };
+
+        return (
+          <div className="file-message">
+            <i className="file-icon fas fa-file"></i>
+            <div>
+              <div onClick={handleFileDownload} className="file-link">
+                {message.fileName}
+              </div>
+              <div style={{ fontSize: '12px', color: '#757575' }}>
+                {(message.fileSize / 1024).toFixed(1)} KB
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div className="header">
+            <h1>Chat P2P BATE PAPO</h1>
+            <div className="connection-status">
+              <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
+              {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
+            </div>
+          </div>
+
+          <div className="connection-form">
+            <input
+              type="text"
+              className="username-input"
+              placeholder="Seu nome"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={isConnected}
+            />
+            <input
+              type="text"
+              placeholder="ID do distribuidor"
+              value={distributorId}
+              onChange={(e) => setDistributorId(e.target.value)}
+              disabled={isConnected}
+            />
+            {!isConnected ? (
+              <button 
+                className="connection-button" 
+                onClick={connectToDistributor}
+                disabled={!username.trim() || connectionStatus === 'conectando'}
+              >
+                Conectar
+              </button>
+            ) : (
+              <button 
+                className="connection-button disconnect" 
+                onClick={disconnectFromDistributor}
+              >
+                Desconectar
+              </button>
+            )}
+          </div>
+
+          <div className="message-container" ref={messageContainerRef}>
+            {messages.length === 0 ? (
+              <div className="empty-message">
+                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá!' : 'Conecte-se ao distribuidor para iniciar o chat'}
+              </div>
+            ) : (
+              messages.map((msg) => (
+                <div 
+                  key={msg.id} 
+                  className={msg.isSystem ? "system-message" : `message ${msg.isSelf ? 'sent' : 'received'}`}
+                >
+                  {!msg.isSystem && !msg.isSelf && (
+                    <div className="message-sender">{msg.sender}</div>
+                  )}
+                  {msg.isFile ? (
+                    renderFileLink(msg)
+                  ) : (
+                    <div>{msg.text}</div>
+                  )}
+                  {!msg.isSystem && (
+                    <span className="message-time">{formatTime(msg.timestamp)}</span>
+                  )}
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="input-container">
+            <input
+              type="text"
+              className="message-input"
+              placeholder={isConnected ? "Digite sua mensagem..." : "Conecte-se para enviar mensagens"}
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+              disabled={!isConnected}
+            />
+            <button 
+              className="send-button" 
+              onClick={sendMessage}
+              disabled={!isConnected || !newMessage.trim()}
+            >
+              <i className="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<ChatClient />, document.getElementById('root'));
+  </script>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
