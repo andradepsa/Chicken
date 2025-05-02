@@ -203,18 +203,7 @@
       background-color: white;
     }
     
-    .message-time {
-      font-size: 10px;
-      color: rgba(0, 0, 0, 0.5);
-      position: absolute;
-      bottom: 6px;
-      right: 8px;
-      font-weight: 500;
-    }
-    
-    .message.sent .message-time {
-      color: rgba(255, 255, 255, 0.7);
-    }
+    /* Removida a classe .message-time que exibia o horário */
     
     .empty-message {
       text-align: center;
@@ -656,11 +645,7 @@
         }
       };
 
-      // Formatar horário
-      const formatTime = (timestamp) => {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      };
+      // Função formatTime removida, já que não é mais necessária
 
       // Renderizar link de arquivo
       const renderFileLink = (message) => {
@@ -751,9 +736,7 @@
                   ) : (
                     <div>{msg.text}</div>
                   )}
-                  {!msg.isSystem && (
-                    <span className="message-time">{formatTime(msg.timestamp)}</span>
-                  )}
+                  {/* Elemento para exibir a hora foi removido */}
                 </div>
               ))
             )}
