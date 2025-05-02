@@ -533,6 +533,8 @@
               (callType === 'video' && remoteStream.getTracks().length > 0);
             if (!hasValidTracks) {
               console.warn(`Stream recebido de ${call.peer} não tem trilhas válidas para ${callType}`);
+              call.close();
+              return;
             }
             handleIncomingMediaStream(call, remoteStream, callType);
           });
@@ -544,6 +546,7 @@
 
           call.on('error', (err) => {
             console.error(`Erro na chamada de ${callType} com ${call.peer}:`, err);
+            cleanupCallsForPeer(call.peer, call);
           });
         });
 
@@ -620,6 +623,8 @@
             if (track.enabled && track.readyState === 'live') {
               console.log(`Adicionando track ${track.kind} (${track.id}) ao stream redistribuído atualizado`);
               newRedistStream.addTrack(track.clone());
+            } else {
+              console.warn(`Track ${track.kind} (${track.id}) não está ativo (enabled=${track.enabled}, readyState=${track.readyState}), ignorando`);
             }
           });
 
@@ -802,6 +807,12 @@
                 }
               });
               callData.redistributedCalls.clear();
+              if (callData.stream) {
+                callData.stream.getTracks().forEach(track => {
+                  track.stop();
+                  console.log(`Track ${track.kind} parado para chamada de ${peerId}`);
+                });
+              }
               calls.splice(callIndex, 1);
             }
           } else {
@@ -821,6 +832,12 @@
                 }
               });
               callData.redistributedCalls.clear();
+              if (callData.stream) {
+                callData.stream.getTracks().forEach(track => {
+                  track.stop();
+                  console.log(`Track ${track.kind} parado para chamada de ${peerId}`);
+                });
+              }
             });
             activeCallsRef.current.delete(peerId);
           }
@@ -847,6 +864,9 @@
                 conn.send({ type: 'heartbeat', timestamp: Date.now() });
               } catch (e) {
                 console.error(`Erro ao enviar heartbeat para ${peerId}:`, e);
+                activeConnectionsRef.current.delete(peerId);
+                setConnections(Array.from(activeConnectionsRef.current.keys()));
+                cleanupCallsForPeer(peerId);
               }
             }
           });
@@ -963,7 +983,22 @@
           }
         }
 
+        // Adicionar timeout para conexões que não se abrem
+        const connectionTimeout = setTimeout(() => {
+          if (!conn.open) {
+            console.warn(`Timeout: Conexão com ${conn.peer} não foi estabelecida em 10 segundos`);
+            conn.close();
+            activeConnectionsRef.current.delete(conn.peer);
+            setConnections(Array.from(activeConnectionsRef.current.keys()));
+            setStats(prev => ({
+              ...prev,
+              activeConnections: activeConnectionsRef.current.size
+            }));
+          }
+        }, 10000);
+
         conn.on('open', () => {
+          clearTimeout(connectionTimeout);
           console.log(`Conexão estabelecida com ${conn.peer}`);
           activeConnectionsRef.current.set(conn.peer, conn);
           setConnections(Array.from(activeConnectionsRef.current.keys()));
@@ -978,6 +1013,7 @@
         });
 
         conn.on('close', () => {
+          clearTimeout(connectionTimeout);
           console.log(`Conexão fechada com ${conn.peer}`);
           activeConnectionsRef.current.delete(conn.peer);
           setConnections(Array.from(activeConnectionsRef.current.keys()));
@@ -985,9 +1021,11 @@
             ...prev,
             activeConnections: activeConnectionsRef.current.size
           }));
+          cleanupCallsForPeer(conn.peer);
         });
 
         conn.on('error', (err) => {
+          clearTimeout(connectionTimeout);
           console.error(`Erro na conexão com ${conn.peer}:`, err);
           activeConnectionsRef.current.delete(conn.peer);
           setConnections(Array.from(activeConnectionsRef.current.keys()));
@@ -995,6 +1033,7 @@
             ...prev,
             activeConnections: activeConnectionsRef.current.size
           }));
+          cleanupCallsForPeer(conn.peer);
         });
       };
 
@@ -1045,7 +1084,7 @@
             ) : (
               <div>
                 {connections.map((peerId, index) => (
-                 <div key={index} className="peer-item">
+                  <div key={index} className="peer-item">
                     <span className="status-indicator status-online"></span>
                     {peerId}
                     {activeCallsRef.current.has(peerId) && activeCallsRef.current.get(peerId).map((callData, callIndex) => (
