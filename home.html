@@ -40,12 +40,15 @@
       background-color: #0056b3;
     }
 
-    .download-link, .github-link {
+    .links-container {
       margin-top: 30px;
-      font-size: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      align-items: center;
     }
 
-    .download-link a, .github-link a {
+    .links-container a {
       color: #007bff;
       text-decoration: none;
       font-weight: bold;
@@ -54,13 +57,14 @@
       background-color: #f1f1f1;
       border-radius: 8px;
       transition: background-color 0.3s;
+      width: 250px;
+      text-align: center;
     }
 
-    .download-link a:hover, .github-link a:hover {
+    .links-container a:hover {
       background-color: #007bff;
       color: white;
     }
-
   </style>
 </head>
 <body>
@@ -70,17 +74,10 @@
     <a href="CHAT P2P-C0.HTML">🗨️ Abrir Chat</a>
     <a href="SERVIDOR CHAT P2P-CO.html">📡 Abrir Servidor</a>
   </div>
-  <div class="download-link">
-    <p>Baixe o instalador do Chat P2P:</p>
-    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank">Clique aqui para baixar Chat P2P</a>
-  </div>
-  <div class="download-link">
-    <p>Baixe o instalador do Servidor:</p>
-    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank">Clique aqui para baixar Servidor</a>
-  </div>
-  <div class="github-link">
-    <p>Acesse o projeto no GitHub:</p>
-    <a href="https://github.com/andradepsa/Chicken" target="_blank">Clique aqui para acessar o projeto no GitHub</a>
+  <div class="links-container">
+    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank">Baixar Chat P2P</a>
+    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank">Baixar Servidor</a>
+    <a href="https://github.com/andradepsa/Chicken" target="_blank">Projeto no GitHub</a>
   </div>
 </body>
 </html>
