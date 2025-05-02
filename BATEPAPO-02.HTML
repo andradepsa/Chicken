@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat P2P Cliente</title>
+  <title>Bate Papo P2P</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     :root {
@@ -553,25 +553,28 @@
       );
     };
 
-    // Gerenciador de ID de cliente aleatório
-    const useClientId = () => {
-      const [clientId, setClientId] = useState(null);
-
-      useEffect(() => {
-        // Gerar ID de cliente aleatório (sem usar localStorage)
-        const newId = 'client-' + Math.random().toString(36).substring(2, 10);
-        setClientId(newId);
-      }, []);
-
-      return clientId;
+    // Função para gerar um ID aleatório para o peer
+    const generatePeerId = () => {
+      const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+      const length = 6; // Comprimento igual aos IDs do Chat P2P
+      let result = '';
+      
+      const randomValues = new Uint8Array(length);
+      window.crypto.getRandomValues(randomValues);
+      
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(randomValues[i] % chars.length);
+      }
+      
+      return result;
     };
 
-    // Componente principal do cliente
+    // Componente principal do chat
     const ChatClient = () => {
       // Estado do cliente
-      const clientId = useClientId();
       const [username, setUsername] = useState('');
-      const [distributorId, setDistributorId] = useState('AAAAAA'); // ID padrão do distribuidor
+      const [peerId, setPeerId] = useState('');
+      const [targetPeerId, setTargetPeerId] = useState('');
       const [connectionStatus, setConnectionStatus] = useState('desconectado');
       const [messages, setMessages] = useState([]);
       const [newMessage, setNewMessage] = useState('');
@@ -585,6 +588,24 @@
       const messageContainerRef = useRef(null);
       const messageInputRef = useRef(null);
 
+      // Carregar ou gerar um ID de peer ao iniciar
+      useEffect(() => {
+        const savedPeerId = localStorage.getItem('batepapo-peer-id');
+        if (savedPeerId) {
+          setPeerId(savedPeerId);
+        } else {
+          const newId = generatePeerId();
+          localStorage.setItem('batepapo-peer-id', newId);
+          setPeerId(newId);
+        }
+        
+        // Carregar nome do usuário se existir
+        const savedUsername = localStorage.getItem('batepapo-username');
+        if (savedUsername) {
+          setUsername(savedUsername);
+        }
+      }, []);
+
       // Auto-rolagem de mensagens
       useEffect(() => {
         if (messagesEndRef.current) {
@@ -594,7 +615,7 @@
 
       // Inicializar peer quando o ID do cliente estiver disponível
       useEffect(() => {
-        if (!clientId) return;
+        if (!peerId) return;
 
         const initPeer = () => {
           if (peerRef.current) {
@@ -605,7 +626,7 @@
             }
           }
 
-          const peer = new Peer(clientId, {
+          const peer = new Peer(peerId, {
             host: '0.peerjs.com',
             port: 443,
             secure: true,
@@ -620,6 +641,61 @@
 
           peer.on('open', (id) => {
             console.log("Peer inicializado com ID:", id);
+          });
+
+          peer.on('connection', (conn) => {
+            console.log("Conexão recebida de:", conn.peer);
+            
+            // Configurar a nova conexão recebida
+            conn.on('open', () => {
+              console.log("Conexão aberta com:", conn.peer);
+              setConnectionStatus('conectado');
+              setIsConnected(true);
+              connectionRef.current = conn;
+              
+              // Adicionar mensagem de sistema
+              const welcomeMsg = {
+                id: Date.now(),
+                text: `${conn.peer} conectou ao chat 👋`,
+                isSystem: true,
+                timestamp: new Date().toISOString()
+              };
+              
+              setMessages(prev => [...prev, welcomeMsg]);
+            });
+            
+            conn.on('data', (data) => {
+              console.log("Dados recebidos:", data);
+              handleIncomingData(data, conn.peer);
+            });
+            
+            conn.on('close', () => {
+              console.log("Conexão fechada com:", conn.peer);
+              if (connectionRef.current && connectionRef.current.peer === conn.peer) {
+                setConnectionStatus('desconectado');
+                setIsConnected(false);
+                connectionRef.current = null;
+                
+                // Adicionar mensagem de sistema
+                const goodbyeMsg = {
+                  id: Date.now(),
+                  text: `${conn.peer} desconectou do chat 👋`,
+                  isSystem: true,
+                  timestamp: new Date().toISOString()
+                };
+                
+                setMessages(prev => [...prev, goodbyeMsg]);
+              }
+            });
+            
+            conn.on('error', (err) => {
+              console.error("Erro na conexão:", err);
+              if (connectionRef.current && connectionRef.current.peer === conn.peer) {
+                setConnectionStatus('erro');
+                setIsConnected(false);
+                connectionRef.current = null;
+              }
+            });
           });
 
           peer.on('error', (err) => {
@@ -642,24 +718,27 @@
             }
           }
         };
-      }, [clientId]);
+      }, [peerId]);
 
-      // Conectar ao distribuidor
-      const connectToDistributor = () => {
-        if (!peerRef.current || !distributorId || !username.trim()) {
-          alert("Preencha seu nome de usuário e o ID do distribuidor!");
+      // Conectar ao peer
+      const connectToPeer = () => {
+        if (!peerRef.current || !targetPeerId || !username.trim()) {
+          alert("Preencha seu nome de usuário e o ID do contato!");
           return;
         }
+
+        // Salvar nome do usuário
+        localStorage.setItem('batepapo-username', username);
 
         setConnectionStatus('conectando');
 
         try {
-          const conn = peerRef.current.connect(distributorId, {
+          const conn = peerRef.current.connect(targetPeerId, {
             reliable: true
           });
 
           conn.on('open', () => {
-            console.log("Conectado ao distribuidor:", distributorId);
+            console.log("Conectado ao peer:", targetPeerId);
             setConnectionStatus('conectado');
             setIsConnected(true);
             connectionRef.current = conn;
@@ -673,34 +752,58 @@
               system: true
             };
             conn.send(welcomeMsg);
+            
+            // Adicionar mensagem local
+            setMessages(prev => [
+              ...prev,
+              {
+                id: Date.now(),
+                text: `Conectado a ${targetPeerId} 👋`,
+                isSystem: true,
+                timestamp: new Date().toISOString()
+              }
+            ]);
           });
 
           conn.on('data', (data) => {
             console.log("Dados recebidos:", data);
-            handleIncomingData(data);
+            handleIncomingData(data, targetPeerId);
           });
 
           conn.on('close', () => {
-            console.log("Conexão fechada com o distribuidor");
+            console.log("Conexão fechada");
             setConnectionStatus('desconectado');
             setIsConnected(false);
             connectionRef.current = null;
+            
+            // Adicionar mensagem de sistema
+            setMessages(prev => [
+              ...prev,
+              {
+                id: Date.now(),
+                text: `Desconectado de ${targetPeerId} 👋`,
+                isSystem: true,
+                timestamp: new Date().toISOString()
+              }
+            ]);
           });
 
           conn.on('error', (err) => {
             console.error("Erro na conexão:", err);
             setConnectionStatus('erro');
             setIsConnected(false);
+            connectionRef.current = null;
           });
         } catch (err) {
           console.error("Erro ao conectar:", err);
           setConnectionStatus('erro');
           setIsConnected(false);
+          alert(`Erro ao conectar: ${err.message}`);
         }
       };
 
-      // Desconectar do distribuidor
-      const disconnectFromDistributor = () => {
+      // Desconectar do peer
+      const disconnectFromPeer = () => {
         if (connectionRef.current) {
           try {
             // Enviar mensagem de despedida
@@ -725,40 +828,37 @@
       };
 
       // Processar dados recebidos
-      const handleIncomingData = (data) => {
+      const handleIncomingData = (data, senderId) => {
         if (data.type === 'message') {
-          // Não mostrar mensagens próprias recebidas de volta do distribuidor
-          const isSelfMessage = data.sender === username && !data.system;
+          // Adicionar mensagem recebida
+          const newMsg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            text: data.message || data.text,
+            sender: data.sender || data.senderName,
+            isSystem: data.system,
+            timestamp: data.timestamp || new Date().toISOString(),
+            isSelf: false
+          };
           
-          if (!isSelfMessage) {
-            const newMsg = {
-              id: Date.now() + Math.random().toString(36).substr(2, 9),
-              text: data.message,
-              sender: data.sender,
-              isSystem: data.system,
-              timestamp: data.timestamp || new Date().toISOString(),
-              isSelf: false
-            };
-            
-            setMessages(prev => [...prev, newMsg]);
-          }
-        } else if (data.type === 'file') {
-          // Manipular arquivo recebido
-          if (data.sender !== username) {
-            const newFileMsg = {
-              id: Date.now() + Math.random().toString(36).substr(2, 9),
-              isFile: true,
-              fileName: data.fileName,
-              fileSize: data.fileSize,
-              fileType: data.fileType,
-              fileData: data.fileData,
-              sender: data.sender,
-              timestamp: data.timestamp || new Date().toISOString(),
-              isSelf: false
-            };
-            
-            setMessages(prev => [...prev, newFileMsg]);
-          }
+          setMessages(prev => [...prev, newMsg]);
+        } else if (data.type === 'file-start' || data.type === 'audio-start') {
+          // Para simplificar, apenas mostramos uma mensagem sobre o arquivo/áudio
+          const format = data.type === 'file-start' ? 'arquivo' : 'áudio';
+          const fileName = data.fileName || `${format}.dat`;
+          
+          const newMsg = {
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            text: `Enviou um ${format}${data.fileName ? `: ${data.fileName}` : ''}`,
+            sender: data.sender || data.senderName,
+            isSystem: false,
+            timestamp: data.timestamp || new Date().toISOString(),
+            isSelf: false
+          };
+          
+          setMessages(prev => [...prev, newMsg]);
+        } else if (data.type === 'file-chunk' || data.type === 'audio-chunk') {
+          // Ignorar chunks de dados, já exibimos a mensagem inicial
+          return;
         }
       };
 
@@ -805,36 +905,10 @@
         }
       };
 
-      // Renderizar link de arquivo
-      const renderFileLink = (message) => {
-        const handleFileDownload = () => {
-          const link = document.createElement('a');
-          link.href = message.fileData;
-          link.download = message.fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        };
-
-        return (
-          <div className="file-message">
-            <i className="file-icon fas fa-file"></i>
-            <div>
-              <div onClick={handleFileDownload} className="file-link">
-                {message.fileName}
-              </div>
-              <div style={{ fontSize: '12px', color: '#757575' }}>
-                {(message.fileSize / 1024).toFixed(1)} KB
-              </div>
-            </div>
-          </div>
-        );
-      };
-
       return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <div className="header">
-            <h1>Chat P2P BATE PAPO 💬</h1>
+            <h1>Bate Papo P2P 💬</h1>
             <div className="connection-status">
               <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
               {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
@@ -842,43 +916,51 @@
           </div>
 
           <div className="connection-form">
-            <input
-              type="text"
-              className="username-input"
-              placeholder="Seu nome"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={isConnected}
-            />
-            <input
-              type="text"
-              placeholder="ID do distribuidor"
-              value={distributorId}
-              onChange={(e) => setDistributorId(e.target.value)}
-              disabled={isConnected}
-            />
-            {!isConnected ? (
-              <button 
-                className="connection-button" 
-                onClick={connectToDistributor}
-                disabled={!username.trim() || connectionStatus === 'conectando'}
-              >
-                Conectar
-              </button>
-            ) : (
-              <button 
-                className="connection-button disconnect" 
-                onClick={disconnectFromDistributor}
-              >
-                Desconectar
-              </button>
-            )}
+            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', width: '100%'}}>
+              <div style={{display: 'flex', gap: '8px', width: '100%'}}>
+                <input
+                  type="text"
+                  className="username-input"
+                  placeholder="Seu nome"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isConnected}
+                />
+                <span style={{padding: '8px', fontWeight: 'bold'}}>Seu ID: {peerId}</span>
+              </div>
+              <div style={{display: 'flex', gap: '8px', width: '100%'}}>
+                <input
+                  type="text"
+                  placeholder="ID do contato P2P"
+                  value={targetPeerId}
+                  onChange={(e) => setTargetPeerId(e.target.value)}
+                  disabled={isConnected}
+                  style={{flex: 1}}
+                />
+                {!isConnected ? (
+                  <button 
+                    className="connection-button" 
+                    onClick={connectToPeer}
+                    disabled={!username.trim() || !targetPeerId.trim() || connectionStatus === 'conectando'}
+                  >
+                    Conectar
+                  </button>
+                ) : (
+                  <button 
+                    className="connection-button disconnect" 
+                    onClick={disconnectFromPeer}
+                  >
+                    Desconectar
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="message-container" ref={messageContainerRef}>
             {messages.length === 0 ? (
               <div className="empty-message">
-                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá! 👋' : 'Conecte-se ao distribuidor para iniciar o chat 🚀'}
+                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá! 👋' : 'Conecte-se a um contato P2P para iniciar o chat 🚀'}
               </div>
             ) : (
               messages.map((msg) => (
@@ -889,11 +971,7 @@
                   {!msg.isSystem && !msg.isSelf && (
                     <div className="message-sender">{msg.sender}</div>
                   )}
-                  {msg.isFile ? (
-                    renderFileLink(msg)
-                  ) : (
-                    <div>{msg.text}</div>
-                  )}
+                  <div>{msg.text}</div>
                 </div>
               ))
             )}
@@ -934,6 +1012,15 @@
                 onSelectEmoji={handleEmojiSelect}
                 onClose={() => setShowEmojiPicker(false)}
               />
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<ChatClient />, document.getElementById('root'));
+
+/>
             )}
           </div>
         </div>
