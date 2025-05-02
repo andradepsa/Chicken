@@ -16,8 +16,10 @@ Acessando o Aplicativo
 
 ✅ Dica:
 
-1.Chat P2P conecta-se diretamente a outro Chat P2P
+1. Chat P2P + Chat P2P= Comunicação Privada
 
-2.Servidor cria uma sala compartilhada
+2. Servidor cria uma sala compartilhada
 
-3.Chat P2P + Servidor = Comunicação em Grupo
+3. Chat P2P + Servidor = Comunicação em Grupo
+
+4. Bate Papo + Servidor = comunicação em grupo
