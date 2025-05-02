@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat P2P Distribuidor (Sem Áudio/Vídeo)</title>
+  <title>Chat P2P Distribuidor</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body {
@@ -93,6 +93,10 @@
       gap: 10px;
       margin-top: 10px;
     }
+    .audio-player {
+      margin-top: 5px;
+      width: 100%;
+    }
     .contact-form {
       display: flex;
       flex-direction: column;
@@ -169,14 +173,6 @@
       background-color: #e8f5e9;
       border-radius: 5px;
       border: 1px solid #c8e6c9;
-    }
-    .warning-banner {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ffeeba;
-      margin-bottom: 15px;
     }
   </style>
 
@@ -382,12 +378,6 @@
           setupConnection(conn);
         });
 
-        peer.on('call', (call) => {
-          // Rejeitar todas as chamadas de voz/vídeo
-          console.log(`Chamada recebida de ${call.peer} - REJEITADA (chamadas não suportadas)`);
-          call.close();
-        });
-
         peer.on('error', (err) => {
           console.error("Erro no peer:", err);
           setConnectionStatus('erro');
@@ -448,6 +438,10 @@
         }
         else if (data.type === 'file-start' || data.type === 'file-chunk') {
           console.log("Arquivo recebido, redistribuindo...");
+          distributeMessage(data, sourceConn.peer);
+        }
+        else if (data.type === 'audio-start' || data.type === 'audio-chunk') {
+          console.log("Áudio recebido, redistribuindo...");
           distributeMessage(data, sourceConn.peer);
         }
       };
@@ -513,10 +507,7 @@
 
       return (
         <div>
-          <h1>P2P Message Distributor (Text Only)</h1>
-          <div className="warning-banner">
-            <strong>Note:</strong> This distributor does not support audio or video calls. Only text messages will be distributed.
-          </div>
+          <h1>P2P Message Distributor</h1>
           <p>The ID consists of 6 alphanumeric characters.</p>
           <p>More specifically:</p>
           <p>Letters: A to Z (uppercase and lowercase)</p>
@@ -557,7 +548,7 @@
             ) : (
               <div>
                 {connections.map((peerId, index) => (
-                  <div key={index} className="peer-item">
+                 <div key={index} className="peer-item">
                     <span className="status-indicator status-online"></span>
                     {peerId}
                   </div>
