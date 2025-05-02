@@ -829,6 +829,8 @@
 
       // Processar dados recebidos
       const handleIncomingData = (data, senderId) => {
+        console.log("Processando dados recebidos:", data);
+        
         if (data.type === 'message') {
           // Adicionar mensagem recebida
           const newMsg = {
@@ -864,6 +866,7 @@
 
       // Lidar com seleção de emoji
       const handleEmojiSelect = (emoji) => {
+        console.log("Emoji selecionado:", emoji);
         setNewMessage(prev => prev + emoji);
         setShowEmojiPicker(false);
         // Focar no input após selecionar um emoji
@@ -878,14 +881,19 @@
       const sendMessage = () => {
         if (!connectionRef.current || !newMessage.trim()) return;
 
+        // Importante: a formatação da mensagem deve ser compatível com o CHAT P2P
         const messageData = {
           type: 'message',
-          message: newMessage.trim(),
+          text: newMessage.trim(), // Usar 'text' como key principal
+          message: newMessage.trim(), // Manter 'message' para compatibilidade
           sender: username,
-          timestamp: new Date().toISOString()
+          senderName: username, // Adicionar senderName para compatibilidade
+          timestamp: new Date().toISOString(),
+          direct: true // Indicar que é uma mensagem direta
         };
 
         try {
+          console.log("Enviando mensagem:", messageData);
           connectionRef.current.send(messageData);
           
           // Adicionar à lista de mensagens local
@@ -1011,7 +1019,7 @@
                 isOpen={showEmojiPicker} 
                 onSelectEmoji={handleEmojiSelect}
                 onClose={() => setShowEmojiPicker(false)}
-            />
+              />
             )}
           </div>
         </div>
