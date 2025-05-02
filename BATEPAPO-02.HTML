@@ -426,11 +426,8 @@
       border-radius: 12px;
       box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
       padding: 10px;
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 5px;
-      max-width: 300px;
-      max-height: 200px;
+      width: 320px;
+      max-height: 250px;
       overflow-y: auto;
       z-index: 100;
       transition: all 0.3s ease;
@@ -448,9 +445,19 @@
       }
     }
     
+    .emoji-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+    
     .emoji-item {
-      font-size: 20px;
-      padding: 5px;
+      font-size: 24px;
+      height: 36px;
+      width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
       text-align: center;
       border-radius: 5px;
@@ -460,26 +467,6 @@
     .emoji-item:hover {
       background-color: var(--secondary-color);
       transform: scale(1.2);
-    }
-    
-    .emoji-categories {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--secondary-color);
-    }
-    
-    .emoji-category {
-      cursor: pointer;
-      padding: 5px;
-      border-radius: 5px;
-      transition: all 0.2s ease;
-    }
-    
-    .emoji-category:hover,
-    .emoji-category.active {
-      background-color: var(--secondary-color);
     }
     
     @media (max-width: 600px) {
@@ -514,21 +501,23 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Lista de emojis populares por categoria
-    const emojiData = {
-      smileys: ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '😋', '😎', '😍', '🥰', '😘', '😗', '😙', '😚', '🙂', '🤗', '🤩', '🤔', '🤨', '😐', '😑', '😶', '🙄', '😏', '😣', '😥', '😮', '🤐', '😯', '😪', '😫', '🥱', '😴', '😌', '😛', '😜', '😝', '🤤', '😒', '😓', '😔', '😕', '🙃', '🤑', '😲', '☹️', '🙁', '😖', '😞', '😟', '😤', '😢', '😭', '😦', '😧', '😨', '😩', '🤯', '😬', '😰', '😱', '🥵', '🥶', '😳'],
-      gestures: ['👍', '👎', '👌', '✌️', '🤞', '🤟', '🤘', '👊', '✊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🙏', '✍️', '💪', '🤳', '💅', '🤝', '🤦‍♂️', '🤦‍♀️', '🤷‍♂️', '🤷‍♀️'],
-      love: ['💋', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🤎', '🖤', '🤍'],
-      celebration: ['🎉', '🎊', '🎂', '🍰', '🧁', '🍾', '🥂', '🎈', '🎁', '🎀', '✨', '🎇', '🎆'],
-      animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🙈', '🙉', '🙊', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🪱', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞'],
-      food: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🥑', '🥦', '🥬', '🥒', '🌶️', '🌽', '🥕', '🥔', '🍠', '🥐', '🥯', '🍞', '🥖', '🥨', '🧀', '🥚', '🥞', '🧇', '🥓', '🥩', '🍗', '🍖', '🦴', '🌭', '🍔', '🍟', '🍕', '🥪', '🧆', '🌮', '🌯', '🥙', '🍜', '🍲', '🥘', '🍛', '🍣', '🍱', '🥟', '🦪', '🍤', '🍙', '🍚', '🍘', '🍥', '🥠', '🥮', '🍢', '🍡', '🍧', '🍨', '🍦', '🥧', '🧁', '🍰', '🎂', '🍮', '🍭', '🍬', '🍫', '🍿', '🍩', '🍪', '🌰', '🥜', '☕', '🍵', '🧃', '🥤', '🍶', '🍺', '🍻', '🥂', '🍷', '🥃', '🍸', '🍹', '🧉', '🍾', '🧊'],
-      objects: ['⌚', '📱', '💻', '⌨️', '🖥️', '🖱️', '💽', '💾', '💿', '📀', '📼', '📷', '📸', '📹', '🎥', '📽️', '🎞️', '📞', '☎️', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '🕰️', '⌛', '⏳', '📡', '🔋', '🔌', '💡', '🔦', '🕯️', '🧯', '🛢️', '💸', '💵', '💴', '💶', '💷', '💰', '💳', '💎', '⚖️', '🧰', '🔧', '🔨', '⚒️', '🛠️', '⛏️', '🔩', '⚙️', '🧱', '⛓️', '🧲', '🔫', '🧨', '💣', '🧹', '🧺', '🧻', '🚿', '🛁', '🛀'],
-      other: ['🏠', '🏡', '🏢', '🏣', '🏤', '🏥', '🏦', '🏨', '🏩', '🏪', '🏫', '🏬', '🏭', '🏯', '🏰', '💒', '🗼', '🗽', '⛪', '🕌', '🕍', '⛩️', '🏛️', '🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜', '🛴', '🚲', '🛵', '🏍️', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡', '🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂', '⛵', '🛶', '🚤', '🛳️', '⛴️', '🚢', '✈️', '🛩️', '🛫', '🛬', '🚁', '🚀', '🛸']
-    };
+    // Lista simplificada de emojis frequentemente usados
+    const emojiList = [
+      '😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '😎', '🙂', '😉', 
+      '😢', '😭', '😡', '🤬', '😱', '😰', '😨', '😳', '🤔', '🤗',
+      '👍', '👎', '👌', '✌️', '🤞', '👊', '✊', '🙌', '👏', '🤝',
+      '❤️', '💋', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💔',
+      '🎂', '🎉', '🎊', '🎁', '✨', '🌟', '💫', '⭐', '🎯', '🏆',
+      '🐶', '🐱', '🐭', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐮',
+      '🍎', '🍕', '🍔', '🌮', '🍰', '🍦', '🍩', '🍫', '☕', '🍺',
+      '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸',
+      '🎵', '🎸', '🎹', '🎷', '🎺', '🎤', '🎧', '🎬', '🎭', '🎮',
+      '🚗', '🚕', '🚙', '🚌', '🚑', '🚒', '✈️', '🚀', '🚁', '⛵',
+      '💼', '💻', '📱', '📷', '🔋', '💡', '🔍', '🔑', '💰', '💳'
+    ];
 
-    // Componente de seletor de emojis
+    // Componente de seletor de emojis simplificado
     const EmojiPicker = ({ onSelectEmoji, isOpen, onClose }) => {
-      const [category, setCategory] = useState('smileys');
       const pickerRef = useRef(null);
       
       // Fechar o seletor ao clicar fora dele
@@ -549,73 +538,15 @@
       
       return (
         <div className="emoji-picker" ref={pickerRef}>
-          <div className="emoji-categories">
-            <div 
-              className={`emoji-category ${category === 'smileys' ? 'active' : ''}`} 
-              onClick={() => setCategory('smileys')}
-              title="Sorrisos"
-            >
-              😀
-            </div>
-            <div 
-              className={`emoji-category ${category === 'gestures' ? 'active' : ''}`} 
-              onClick={() => setCategory('gestures')}
-              title="Gestos"
-            >
-              👍
-            </div>
-            <div 
-              className={`emoji-category ${category === 'love' ? 'active' : ''}`} 
-              onClick={() => setCategory('love')}
-              title="Amor"
-            >
-              ❤️
-            </div>
-            <div 
-              className={`emoji-category ${category === 'celebration' ? 'active' : ''}`} 
-              onClick={() => setCategory('celebration')}
-              title="Celebração"
-            >
-              🎉
-            </div>
-            <div 
-              className={`emoji-category ${category === 'animals' ? 'active' : ''}`} 
-              onClick={() => setCategory('animals')}
-              title="Animais"
-            >
-              🐶
-            </div>
-            <div 
-              className={`emoji-category ${category === 'food' ? 'active' : ''}`} 
-              onClick={() => setCategory('food')}
-              title="Comida"
-            >
-              🍔
-            </div>
-            <div 
-              className={`emoji-category ${category === 'objects' ? 'active' : ''}`} 
-              onClick={() => setCategory('objects')}
-              title="Objetos"
-            >
-              💻
-            </div>
-            <div 
-              className={`emoji-category ${category === 'other' ? 'active' : ''}`} 
-              onClick={() => setCategory('other')}
-              title="Outros"
-            >
-              🏠
-            </div>
-          </div>
-          <div>
-            {emojiData[category].map((emoji, index) => (
-              <span 
+          <div className="emoji-grid">
+            {emojiList.map((emoji, index) => (
+              <div 
                 key={index} 
                 className="emoji-item" 
                 onClick={() => onSelectEmoji(emoji)}
               >
                 {emoji}
-              </span>
+              </div>
             ))}
           </div>
         </div>
@@ -997,11 +928,13 @@
               <i className="fas fa-paper-plane"></i>
             </button>
 
-            <EmojiPicker 
-              isOpen={showEmojiPicker} 
-              onSelectEmoji={handleEmojiSelect}
-              onClose={() => setShowEmojiPicker(false)}
-            />
+            {showEmojiPicker && (
+              <EmojiPicker 
+                isOpen={showEmojiPicker} 
+                onSelectEmoji={handleEmojiSelect}
+                onClose={() => setShowEmojiPicker(false)}
+              />
+            )}
           </div>
         </div>
       );
