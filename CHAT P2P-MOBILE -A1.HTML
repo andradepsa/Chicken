@@ -1739,11 +1739,11 @@
             )}
           </div>
 
-        <div className="peer-id-container">
-  <span>
-    Seu ID: {peerId}
-    {selectedContact && ` | Conversando com: ${getContactName(selectedContact)}`}
-  </span>
+<div className="peer-id-container">
+  <div>Seu ID: {peerId}</div>
+  {selectedContact && (
+    <div>Conversando com: {getContactName(selectedContact)}</div>
+  )}
   <button
     onClick={() => {
       navigator.clipboard.writeText(peerId);
@@ -1753,6 +1753,8 @@
     Copiar
   </button>
 </div>
+
+
 
           {(remoteStreams.length > 0 || isLocalVideoVisible) && (
             <div className="video-container">
