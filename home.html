@@ -1,1 +1,1059 @@
 
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WWW.MATEMATICO10.COM.BR - Prof. Paulo Sérgio de Andrade</title>
+    <style>
+        :root {
+            --primary: #2d5d7b;
+            --secondary: #45b6fe;
+            --accent: #ff7e5f;
+            --light: #f5f5f5;
+            --dark: #333;
+            --text: #4a4a4a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: repeating-linear-gradient(
+                45deg,
+                rgba(255, 255, 255, 0.05),
+                rgba(255, 255, 255, 0.05) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+            z-index: 1;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .logo p {
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 30px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-bottom: 5px;
+        }
+        
+        nav ul li a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        nav ul li a:hover:after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            padding: 60px 0;
+            background-color: white;
+        }
+        
+        .hero-content {
+            flex: 1;
+            padding-right: 40px;
+        }
+        
+        .hero h2 {
+            font-size: 2.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: #e86a4d;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Course Section */
+        .course {
+            padding: 80px 0;
+            background-color: #f9f9f9;
+            background-image: linear-gradient(to bottom right, rgba(45, 93, 123, 0.05), rgba(69, 182, 254, 0.05));
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .section-header h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-header h2:after {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent);
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .section-header p {
+            font-size: 1.2rem;
+            color: var(--text);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .course-features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            flex: 0 0 calc(33.333% - 30px);
+            min-width: 300px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .feature-card p {
+            color: var(--text);
+        }
+        
+        /* Books Section */
+        .books {
+            padding: 80px 0;
+            background-color: white;
+        }
+        
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .book-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .book-img {
+            width: 100%;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .book-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .book-card:hover .book-img img {
+            transform: scale(1.05);
+        }
+        
+        .book-content {
+            padding: 20px;
+        }
+        
+        .book-card h3 {
+            font-size: 1.3rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .book-card p {
+            color: var(--text);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .book-link {
+            display: inline-block;
+            color: var(--secondary);
+            font-weight: 600;
+            text-decoration: none;
+            position: relative;
+        }
+        
+        .book-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            bottom: -2px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+        
+        .book-link:hover:after {
+            width: 100%;
+        }
+        
+        /* App Section */
+        .app {
+            padding: 80px 0;
+            background-color: #f0f8ff;
+        }
+        
+        .app-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .app-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .app-info h3 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .app-info p {
+            margin-bottom: 15px;
+        }
+        
+        .app-info h4 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .app-info ol, .app-info ul {
+            padding-left: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .app-info li {
+            margin-bottom: 8px;
+        }
+        
+        .app-links {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .app-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+        
+        .app-card h3 {
+            font-size: 1.5rem;
+            color: var(--dark);
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .app-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .app-divider {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .app-downloads {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .app-download-link {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .app-download-link:hover {
+            background-color: rgba(45, 93, 123, 0.1);
+        }
+        
+        .app-download-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* About Section */
+        .about {
+            padding: 80px 0;
+            background-color: #f9f9f9;
+            background-image: linear-gradient(135deg, rgba(255, 126, 95, 0.05), rgba(45, 93, 123, 0.05));
+        }
+        
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+        
+        .about-img {
+            flex: 0 0 40%;
+        }
+        
+        .about-img img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .about-text {
+            flex: 0 0 60%;
+        }
+        
+        .about-text h2 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+        
+        .about-text ul {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .about-text ul li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .about-text ul li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        /* Contact Section */
+        .contact {
+            padding: 80px 0;
+            background-color: white;
+        }
+        
+        .contact-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+        }
+        
+        .contact-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .contact-info h3 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            margin-bottom: 20px;
+        }
+        
+        .contact-links {
+            margin-top: 30px;
+        }
+        
+        .contact-link {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-link:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .contact-icon {
+            margin-right: 15px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .contact-form {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(69, 182, 254, 0.1);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 40px 0 20px;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-column h3:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 2px;
+            background-color: var(--accent);
+            bottom: 0;
+            left: 0;
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-links a {
+            color: #bbb;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media screen and (max-width: 992px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 20px;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 0 15px;
+            }
+            
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .hero-content {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+            
+            .about-content {
+                flex-direction: column;
+            }
+            
+            .about-img, .about-text {
+                flex: 0 0 100%;
+            }
+            
+            .app-content {
+                flex-direction: column;
+            }
+        }
+        
+        @media screen and (max-width: 768px) {
+            .feature-card {
+                flex: 0 0 100%;
+            }
+            
+            .contact-content {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+</head>
+<body>
+    <!-- Header Section -->
+    <header>
+        <div class="header-pattern"></div>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="https://i.ibb.co/CXgmX10/Simbolo-Matem-tico-10.jpg" alt="Logo Matemático 10" style="height: 80px; margin-right: 20px; border-radius: 50%;">
+                    <div>
+                        <h4>WWW.MATEMATICO10.COM.BR</h4>
+                        <p>Prof. Paulo Sérgio de Andrade</p>
+                    </div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#inicio">Início</a></li>
+                        <li><a href="#curso">Curso</a></li>
+                        <li><a href="#livros">Livros</a></li>
+                        <li><a href="#app">Aplicativo</a></li>
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#contato">Redes Sociais</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="inicio">
+        <div class="container">
+            <div class="hero-content">
+                <h2>Uma explanação completa sobre as diversas áreas da matemática!</h2>
+                <p>Aprenda matemática com diferentes recursos que auxiliam na compreensão do conteúdo. Conteúdos estruturados para um aprendizado contínuo e progressivo, incluindo 200 podcasts exclusivos e material de apoio para todos os níveis.</p>
+                <a href="#curso" class="btn">Conhecer o Curso</a>
+            </div>
+            <div class="hero-image">
+                <img src="https://i.ibb.co/nSMKTds/1743420579748.jpg" alt="Música - Aos Professores" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+            </div>
+        </div>
+    </section>
+
+    <!-- Course Section -->
+    <section class="course" id="curso">
+        <div class="container">
+            <div class="section-header">
+                <h2>O Curso</h2>
+                <p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p>
+            </div>
+            <div class="course-features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Conteúdo Estruturado</h3>
+                    <p>Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-podcast"></i>
+                    </div>
+                    <h3>200 Podcasts Exclusivos</h3>
+                    <p>Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível, onde e quando você quiser.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Material de Apoio</h3>
+                    <p>Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível a todos os estudantes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h3>Certificado de Conclusão</h3>
+                    <p>Ao finalizar o curso, receba um certificado que comprova seu aprendizado e dedicação aos estudos matemáticos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>Acesso Multiplataforma</h3>
+                    <p>Estude em qualquer dispositivo, com acesso total e vitalício ao conteúdo, inclusive pelo celular e TV.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Para Todos os Públicos</h3>
+                    <p>Indicado para estudantes, professores, gestores educacionais e entusiastas da matemática de diferentes formações.</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="https://www.udemy.com/course/mundodamatematica" target="_blank" class="btn">Matricule-se Agora</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Books Section -->
+    <section class="books" id="livros">
+        <div class="container">
+            <div class="section-header">
+                <h2>Livros Publicados</h2>
+                <p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática através de diferentes perspectivas.</p>
+            </div>
+            <div style="text-align: center; margin-bottom: 30px;">
+                <p style="font-style: italic; color: #666;">Clique nas capas para ver mais detalhes</p>
+            </div>
+            <div class="books-grid">
+                <div class="book-card">
+                    <div class="book-img">
+                        <img src="https://i.ibb.co/v62ngMTF/81im-RMD50-RL-SY342.jpg" alt="Caleidoscópio da Matemática">
+                    </div>
+                    <div class="book-content">
+                        <h3>Caleidoscópio da Matemática</h3>
+                        <p>Uma fascinante junção de arte e ciência, onde os princípios matemáticos se entrelaçam para criar padrões infinitamente complexos e belos.</p>
+                        <a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" class="book-link">Ver na Amazon</a>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-img">
+                        <img src="https://i.ibb.co/C37gBdyR/71-SQ0-Q0-J7-HL-SY425.jpg" alt="Código Matemático">
+                    </div>
+                    <div class="book-content">
+                        <h3>Código Matemático</h3>
+                        <p>Uma exploração da matemática como linguagem universal, desvendando o conjunto de regras e símbolos que nos permite compreender e descrever o mundo.</p>
+                        <a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" class="book-link">Ver na Amazon</a>
+                    </div>
+                </div>
+                <div class="book-card">
+                    <div class="book-img">
+                        <img src="https://i.ibb.co/G4rd2dmJ/81-WE0t-A6-VAL-SY385.jpg" alt="Leviatã da Matemática">
+                    </div>
+                    <div class="book-content">
+                        <h3>Leviatã da Matemática</h3>
+                        <p>Uma metáfora poderosa que evoca a ideia de uma força imponente e dominante no universo matemático, explorando conceitos fundamentais.</p>
+                        <a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" class="book-link">Ver na Amazon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Section -->
+    <section class="app" id="app">
+        <div class="container">
+            <div class="section-header">
+                <h2>Chat P2P - Aplicativo de Comunicação</h2>
+                <p>Um sistema de chat peer-to-peer seguro e privado desenvolvido pelo Prof. Paulo Sérgio</p>
+            </div>
+            
+            <div class="app-content">
+                <div class="app-info">
+                    <h3>Sistema de Chat P2P</h3>
+                    <p>Desenvolvido para comunicação privada e segura entre usuários, sem intermediários. O sistema funciona tanto em modo peer-to-peer direto quanto com servidor para grupos.</p>
+                    
+                    <div style="margin-top: 30px;">
+                        <h4>✅ Como usar:</h4>
+                        <ol>
+                            <li>Baixe ou use direto no navegador</li>
+                            <li>Compartilhe seu ID com um contato</li>
+                            <li>Pronto! Comece a usar imediatamente</li>
+                            <li>Converse e envie arquivos com segurança</li>
+                        </ol>
+                        
+                        <h4>✅ Modos de operação:</h4>
+                        <ul style="list-style-type: none;">
+                            <li><strong>1.Chat P2P + Chat P2P</strong> = Comunicação Privada</li>
+                            <li><strong>2.Servidor</strong> cria uma Sala Compartilhada</li>
+                            <li><strong>3.Chat P2P + Servidor</strong> = Comunicação em Grupo</li>
+                            <li><strong>4.Bate Papo + Servidor</strong> = Comunicação em Grupo</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="app-links">
+                    <div class="app-card">
+                        <h3>Acesse o Chat</h3>
+                        
+                        <div class="app-buttons">
+                            <a href="CHAT P2P-C0.HTML" target="_blank" class="btn" style="text-align: center; background-color: var(--primary);">
+                                <i class="fas fa-desktop" style="margin-right: 10px;"></i> Abrir Chat Desktop
+                            </a>
+                            
+                            <a href="BATEPAPO-02.HTML" target="_blank" class="btn" style="text-align: center; background-color: var(--secondary);">
+                                <i class="fas fa-comments" style="margin-right: 10px;"></i> Abrir Bate Papo
+                            </a>
+                            
+                            <a href="SERVIDOR CHAT P2P-CO.html" target="_blank" class="btn" style="text-align: center; background-color: var(--accent);">
+                                <i class="fas fa-server" style="margin-right: 10px;"></i> Abrir Servidor
+                            </a>
+                        </div>
+                        
+                        <div class="app-divider">
+                            <h4>Downloads e código fonte:</h4>
+                            <div class="app-downloads">
+                                <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank" class="app-download-link">
+                                    <i class="fas fa-download"></i> Baixar Chat P2P
+                                </a>
+                                <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank" class="app-download-link">
+                                    <i class="fas fa-download"></i> Baixar Servidor
+                                </a>
+                                <a href="https://github.com/andradepsa/Chicken" target="_blank" class="app-download-link">
+                                    <i class="fab fa-github"></i> Projeto no GitHub
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="sobre">
+        <div class="container">
+            <div class="section-header">
+                <h2>Sobre o Professor</h2>
+            </div>
+            <div class="about-content">
+                <div class="about-img">
+                    <img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);">
+                </div>
+                <div class="about-text">
+                    <h2>Prof. Paulo Sérgio de Andrade</h2>
+<p>Licenciado em Matemática pelas Faculdades Integradas de Ciências Humanas, Saúde e Educação de Guarulhos, onde concluiu sua graduação em 2010. Em 2021, ampliou sua formação com duas especializações pela Descomplica Faculdade Digital: uma em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem, e outra em Educação 4.0, com ênfase no protagonismo do aluno.</p>
+
+<p>Em 2024, concluiu uma especialização em Matemática, Suas Tecnologias e o Mundo do Trabalho pela Universidade Federal do Piauí (UFPI). No mesmo ano, iniciou uma nova especialização na UFPI, em Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental, com previsão de término em 2025.</p>
+
+<p>Ao longo de sua trajetória, o professor Paulo tem se dedicado à busca por metodologias inovadoras no ensino da matemática, priorizando sempre a participação ativa dos estudantes e o uso de estratégias que valorizem a construção do conhecimento de forma significativa.</p>
+
+<h3>Formação Acadêmica</h3>
+<ul>
+  <li><strong>Universidade Federal do Piauí (UFPI)</strong><br>
+      Especialização em Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental (2024 – 2025)</li>
+  <li><strong>Universidade Federal do Piauí (UFPI)</strong><br>
+      Especialização em Matemática, Suas Tecnologias e o Mundo do Trabalho (2024)</li>
+  <li><strong>Descomplica Faculdade Digital</strong><br>
+      Especialização em Educação 4.0: Aluno como Protagonista (2021)</li>
+  <li><strong>Descomplica Faculdade Digital</strong><br>
+      Especialização em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem (2021)</li>
+  <li><strong>Faculdades Integradas de Ciências Humanas, Saúde e Educação de Guarulhos</strong><br>
+      Licenciatura em Matemática (2008 – 2010)</li>
+</ul>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contato">
+        <div class="container">
+            <div class="section-header">
+                <h2>Redes Sociais</h2>
+                <p>Siga-me nas redes sociais pelos links abaixo.</p>
+            </div>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-links">
+                        <a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" class="contact-link">
+                            <span class="contact-icon"><i class="fab fa-youtube"></i></span>
+                            Canal no YouTube
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=100076371970723" target="_blank" class="contact-link">
+                            <span class="contact-icon"><i class="fab fa-facebook-f"></i></span>
+                            Facebook
+                        </a>
+                        <a href="https://x.com/SergioPaul97880" target="_blank" class="contact-link">
+                            <span class="contact-icon"><i class="fab fa-twitter"></i></span>
+                            X (Twitter)
+                        </a>
+                        <a href="https://www.soundon.global/bio/andradepsa" target="_blank" class="contact-link">
+                            <span class="contact-icon"><i class="fas fa-music"></i></span>
+                            SoundOn (Músicas)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4>WWW.MATEMATICO10.COM.BR</h4>
+                    <p>Uma explanação completa sobre as diversas áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p>
+                    <div class="social-links">
+                        <a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="https://www.facebook.com/profile.php?id=100076371970723" target="_blank" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://x.com/SergioPaul97880" target="_blank" class="social-link"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Links Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#inicio">Início</a></li>
+                        <li><a href="#curso">Curso</a></li>
+                        <li><a href="#livros">Livros</a></li>
+                        <li><a href="#app">Aplicativo</a></li>
+                        <li><a href="#sobre">Sobre</a></li>
+                        <li><a href="#contato">Redes Sociais</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Livros</h3>
+                    <ul class="footer-links">
+                        <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank">Caleidoscópio da Matemática</a></li>
+                        <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank">Código Matemático</a></li>
+                        <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank">Leviatã da Matemática</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    
+ <h3>Redes Sociais</h3>
+                    <ul class="footer-links">
+                        <li><a href="www.linkedin.com/in/geral10" target="_blank">LinkedIn </a></li>
+                        <li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank">YouTube</a></li>
+                        <li><a href="https://x.com/SergioPaul97880" target="_blank">X (Twitter)</a></li>
+                        <li><a href="https://www.facebook.com/profile.php?id=100076371970723" target="_blank">Facebook</a></li>
+                        <li><a href="https://www.soundon.global/bio/andradepsa" target="_blank">Músicas</a></li>
+                    </ul>
+
+                    
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2024 O Mundo da Matemática - Prof. Paulo Sérgio de Andrade. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
