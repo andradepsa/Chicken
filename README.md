@@ -22,4 +22,4 @@ Acessando o Aplicativo
 
 3. Chat P2P + Servidor = Comunicação em Grupo
 
-4. Bate Papo + Servidor = Comunicação em Grupo
+
