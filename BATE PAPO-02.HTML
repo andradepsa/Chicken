@@ -27,7 +27,6 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      padding: 10px;
       background-color: var(--background);
       color: var(--text-dark);
       line-height: 1.5;
@@ -35,10 +34,12 @@
       display: flex;
       flex-direction: column;
       margin: 0;
+      padding: 0; /* Removido padding para evitar faixa branca */
     }
     
     #root {
-      max-width: 800px;
+      width: 100%; /* Ocupar toda a largura */
+      max-width: 800px; /* Limite máximo */
       margin: 0 auto;
       background: white;
       padding: 16px;
@@ -107,7 +108,7 @@
     @keyframes pulse {
       0% { transform: scale(0.8); opacity: 0.7; }
       50% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(0.8); opacity: 0.7; }
+      100% { transform: scale(0.8); opacity: 0Sustainable Development Goals.7; }
     }
     
     .message-container {
@@ -120,26 +121,12 @@
       flex-direction: column;
       background-color: #f8faff;
       border: 1px solid rgba(74, 118, 253, 0.1);
-      scrollbar-width: thin;
-      scrollbar-color: var(--accent-color) transparent;
+      scrollbar-width: none; /* Esconder scrollbar no Firefox */
       min-height: 200px;
     }
     
     .message-container::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .message-container::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    
-    .message-container::-webkit-scrollbar-thumb {
-      background-color: var(--accent-color);
-      border-radius: 20px;
-    }
-    
-    .message-container::-webkit-scrollbar-thumb:hover {
-      background-color: var(--primary-color);
+      display: none; /* Esconder scrollbar no Chrome/Safari */
     }
     
     .message {
@@ -378,7 +365,6 @@
       color: white;
     }
     
-    /* Estilos para o seletor de emojis */
     .emoji-button {
       background-color: var(--secondary-color);
       color: var(--primary-color);
@@ -429,7 +415,7 @@
       width: 320px;
       max-height: 250px;
       overflow-y: auto;
-      z-index: 100;
+      z-index: 1000; /* Aumentado para evitar sobreposição */
       transition: all 0.3s ease;
       animation: fadeInUp 0.3s ease;
     }
@@ -469,12 +455,273 @@
       transform: scale(1.2);
     }
     
+    .nav-tabs {
+      display: flex;
+      border-bottom: 2px solid var(--secondary-color);
+      margin-bottom: 12px;
+    }
+    
+    .nav-tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .nav-tab:hover {
+      color: var(--primary-color);
+      background-color: rgba(232, 240, 255, 0.5);
+    }
+    
+    .nav-tab.active {
+      color: var(--primary-color);
+      border-bottom-color: var(--primary-color);
+    }
+    
+    .contacts-container {
+      flex: 1;
+      overflow-y: auto;
+      border-radius: var(--border-radius);
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8faff;
+      border: 1px solid rgba(74, 118, 253, 0.1);
+      scrollbar-width: none; /* Esconder scrollbar no Firefox */
+    }
+    
+    .contacts-container::-webkit-scrollbar {
+      display: none; /* Esconder scrollbar no Chrome/Safari */
+    }
+    
+    .contact-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .contact-status {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .contact-status i {
+      font-size: 12px;
+      color: #ccc;
+    }
+    
+    .contact-status.online i {
+      color: #4CAF50;
+      text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+    }
+    
+    .contact-item {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background-color: white;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(74, 118, 253, 0.1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .contact-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      border-color: rgba(74, 118, 253, 0.3);
+    }
+    
+    .contact-item:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background-color: transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .contact-item:hover:after {
+      background-color: var(--primary-color);
+    }
+    
+    .contact-item .status-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: all 0.3s ease;
+      color: white;
+      font-weight: bold;
+      border-radius: 12px;
+      pointer-events: none;
+    }
+    
+    .contact-item.checking .status-overlay {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .contact-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      font-weight: bold;
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+    
+    .contact-info {
+      flex: 1;
+    }
+    
+    .contact-name {
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+    
+    .contact-id {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    
+    .contact-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .contact-action {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .contact-action:hover {
+      background-color: var(--primary-color);
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .contact-action.delete:hover {
+      background-color: #f44336;
+    }
+    
+    .add-contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background-color: var(--secondary-color);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .add-contact-form input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid rgba(74, 118, 253, 0.2);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+    
+    .add-contact-form input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
+    }
+    
+    .add-contact-button {
+      padding: 10px 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .add-contact-button:hover {
+      background-color: #3764e6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(74, 118, 253, 0.3);
+    }
+    
+    .add-contact-button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    .empty-contacts {
+      text-align: center;
+      color: var(--text-light);
+      margin: 32px 0;
+      font-style: italic;
+      animation: fadeIn 1s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .empty-illustration {
+      font-size: 48px;
+      color: var(--accent-color);
+      opacity: 0.7;
+    }
+    
     @media (max-width: 600px) {
-      body {
-        padding: 5px;
+      #root {
+        padding: 8px;
       }
       
-      .connection-form {
+      .connection-form, .form-row {
         flex-direction: column;
       }
       
@@ -490,6 +737,19 @@
         grid-template-columns: repeat(6, 1fr);
         max-width: 240px;
       }
+      
+      .nav-tab {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+    }
+    
+    @media (min-width: 800px) {
+      #root {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
     }
   </style>
 
@@ -501,7 +761,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Lista simplificada de emojis frequentemente usados
     const emojiList = [
       '😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '😎', '🙂', '😉', 
       '😢', '😭', '😡', '🤬', '😱', '😰', '😨', '😳', '🤔', '🤗',
@@ -516,11 +775,9 @@
       '💼', '💻', '📱', '📷', '🔋', '💡', '🔍', '🔑', '💰', '💳'
     ];
 
-    // Componente de seletor de emojis simplificado
     const EmojiPicker = ({ onSelectEmoji, isOpen, onClose }) => {
       const pickerRef = useRef(null);
       
-      // Fechar o seletor ao clicar fora dele
       useEffect(() => {
         const handleClickOutside = (event) => {
           if (pickerRef.current && !pickerRef.current.contains(event.target) && isOpen) {
@@ -553,10 +810,9 @@
       );
     };
 
-    // Função para gerar um ID aleatório para o peer
     const generatePeerId = () => {
       const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-      const length = 6; // Comprimento igual aos IDs do Chat P2P
+      const length = 6;
       let result = '';
       
       const randomValues = new Uint8Array(length);
@@ -569,9 +825,320 @@
       return result;
     };
 
-    // Componente principal do chat
+    const getInitials = (name) => {
+      if (!name) return '?';
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    };
+
+    const App = () => {
+      const [activeTab, setActiveTab] = useState('contacts');
+      
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <div className="header">
+            <h1>Bate Papo P2P 💬</h1>
+          </div>
+          
+          <div className="nav-tabs">
+            <div 
+              className={`nav-tab ${activeTab === 'contacts' ? 'active' : ''}`}
+              onClick={() => setActiveTab('contacts')}
+            >
+              <i className="fas fa-address-book"></i> Contatos
+            </div>
+            <div 
+              className={`nav-tab ${activeTab === 'chat' ? 'active' : ''}`}
+              onClick={() => setActiveTab('chat')}
+            >
+              <i className="fas fa-comments"></i> Chat
+            </div>
+          </div>
+          
+          {activeTab === 'contacts' ? <ContactsList setActiveTab={setActiveTab} /> : <ChatClient />}
+        </div>
+      );
+    };
+
+    const ContactsList = ({ setActiveTab }) => {
+      const [contacts, setContacts] = useState([]);
+      const [newContactName, setNewContactName] = useState('');
+      const [newContactId, setNewContactId] = useState('');
+      const [contactsStatus, setContactsStatus] = useState({});
+      const [checkingStatus, setCheckingStatus] = useState(null);
+      
+      useEffect(() => {
+        const savedContacts = localStorage.getItem('batepapo-contacts');
+        if (savedContacts) {
+          try {
+            const parsedContacts = JSON.parse(savedContacts);
+            setContacts(parsedContacts);
+            const initialStatus = {};
+            parsedContacts.forEach(contact => {
+              initialStatus[contact.id] = 'unknown';
+            });
+            setContactsStatus(initialStatus);
+          } catch (err) {
+            console.error("Erro ao carregar contatos:", err);
+            setContacts([]);
+          }
+        }
+        
+        const savedPeerId = localStorage.getItem('batepapo-peer-id');
+        if (!savedPeerId) {
+          const newId = generatePeerId();
+          localStorage.setItem('batepapo-peer-id', newId);
+        }
+      }, []);
+      
+      useEffect(() => {
+        localStorage.setItem('batepapo-contacts', JSON.stringify(contacts));
+      }, [contacts]);
+      
+      const addContact = () => {
+        if (!newContactName.trim() || !newContactId.trim()) {
+          alert("Preencha o nome e o ID do contato!");
+          return;
+        }
+        
+        if (contacts.some(contact => contact.peerId === newContactId.trim())) {
+          alert("Já existe um contato com este ID!");
+          return;
+        }
+        
+        const newContact = {
+          id: Date.now().toString(),
+          name: newContactName.trim(),
+          peerId: newContactId.trim(),
+          createdAt: new Date().toISOString()
+        };
+        
+        setContacts(prev => [...prev, newContact]);
+        setNewContactName('');
+        setNewContactId('');
+      };
+      
+      const removeContact = (contactId) => {
+        if (confirm("Tem certeza que deseja remover este contato?")) {
+          setContacts(prev => prev.filter(contact => contact.id !== contactId));
+        }
+      };
+      
+      const startChat = (contactId) => {
+        const contact = contacts.find(c => c.id === contactId);
+        if (!contact) return;
+        
+        setCheckingStatus(contactId);
+        
+        checkContactStatus(contact.peerId, (isOnline) => {
+          setCheckingStatus(null);
+          
+          setContactsStatus(prev => ({
+            ...prev,
+            [contactId]: isOnline ? 'online' : 'offline'
+          }));
+          
+          if (isOnline) {
+            localStorage.setItem('batepapo-target-peer-id', contact.peerId);
+            setActiveTab('chat');
+          } else {
+            alert(`${contact.name} está offline no momento. Tente novamente mais tarde.`);
+          }
+        });
+      };
+      
+      const checkContactStatus = (contactPeerId, callback) => {
+        if (!peerRef.current) {
+          const tempPeerId = localStorage.getItem('batepapo-peer-id');
+          if (!tempPeerId) {
+            const newId = generatePeerId();
+            localStorage.setItem('batepapo-peer-id', newId);
+          }
+          
+          initPeer(() => {
+            checkConnectionStatus(contactPeerId, callback);
+          });
+        } else {
+          checkConnectionStatus(contactPeerId, callback);
+        }
+      };
+      
+      const peerRef = useRef(null);
+      
+      const initPeer = (callback) => {
+        const tempPeerId = localStorage.getItem('batepapo-peer-id');
+        
+        const peer = new Peer(tempPeerId, {
+          host: '0.peerjs.com',
+          port: 443,
+          secure: true,
+          config: {
+            iceServers: [
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+          },
+          debug: 1
+        });
+        
+        peer.on('open', (id) => {
+          console.log("Peer inicializado com ID:", id);
+          peerRef.current = peer;
+          
+          if (callback) callback();
+        });
+        
+        peer.on('error', (err) => {
+          console.error("Erro no peer:", err);
+          if (callback) callback();
+        });
+      };
+      
+      const checkConnectionStatus = (contactPeerId, callback) => {
+        try {
+          console.log("Verificando status do contato:", contactPeerId);
+          
+          const connectionTimeout = setTimeout(() => {
+            console.log("Timeout na conexão, contato offline");
+            if (callback) callback(false);
+          }, 5000);
+          
+          const conn = peerRef.current.connect(contactPeerId, {
+            reliable: true
+          });
+          
+          conn.on('open', () => {
+            console.log("Conexão estabelecida, contato online");
+            clearTimeout(connectionTimeout);
+            
+            setTimeout(() => {
+              conn.close();
+            }, 500);
+            
+            if (callback) callback(true);
+          });
+          
+          conn.on('error', (err) => {
+            console.error("Erro na conexão:", err);
+            clearTimeout(connectionTimeout);
+            if (callback) callback(false);
+          });
+        } catch (err) {
+          console.error("Erro ao verificar status:", err);
+          if (callback) callback(false);
+        }
+      };
+      
+      useEffect(() => {
+        if (!peerRef.current) {
+          initPeer();
+        }
+        
+        return () => {
+          if (peerRef.current) {
+            try {
+              peerRef.current.destroy();
+            } catch (e) {
+              console.error("Erro ao destruir peer:", e);
+            }
+          }
+        };
+      }, []);
+      
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div className="add-contact-form">
+            <h3 style={{margin: '0 0 8px 0', fontSize: '16px'}}>
+              <i className="fas fa-user-plus"></i> Adicionar Novo Contato
+            </h3>
+            <div className="form-row">
+              <input
+                type="text"
+                placeholder="Nome do contato"
+                value={newContactName}
+                onChange={(e) => setNewContactName(e.target.value)}
+              />
+              <input
+                type="text"
+                placeholder="ID P2P do contato"
+                value={newContactId}
+                onChange={(e) => setNewContactId(e.target.value)}
+              />
+            </div>
+            <div className="form-row">
+              <button 
+                className="add-contact-button" 
+                onClick={addContact}
+                disabled={!newContactName.trim() || !newContactId.trim()}
+              >
+                <i className="fas fa-plus-circle"></i> Adicionar Contato
+              </button>
+            </div>
+          </div>
+          
+          <div className="contacts-container" style={{maxHeight: 'calc(100vh - 250px)', overflowY: 'auto'}}>
+            <h3 style={{margin: '0 0 12px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', position: 'sticky', top: 0, background: '#f8faff', padding: '5px 0', zIndex: 1}}>
+              <i className="fas fa-address-book"></i> Meus Contatos ({contacts.length})
+            </h3>
+            
+            {contacts.length === 0 ? (
+              <div className="empty-contacts">
+                <div className="empty-illustration">
+                  <i className="far fa-address-book"></i>
+                </div>
+                <div>Você ainda não tem contatos</div>
+                <div style={{fontSize: '13px', maxWidth: '300px', margin: '0 auto'}}>
+                  Adicione contatos usando o ID P2P deles para começar a conversar!
+                </div>
+              </div>
+            ) : (
+              <div className="contact-list">
+                {contacts.map(contact => (
+                  <div 
+                    className={`contact-item ${checkingStatus === contact.id ? 'checking' : ''}`} 
+                    key={contact.id} 
+                    onClick={() => startChat(contact.id)}
+                  >
+                    <div className="contact-avatar">
+                      {getInitials(contact.name)}
+                    </div>
+                    <div className="contact-info">
+                      <div className="contact-name">{contact.name}</div>
+                      <div className="contact-id">{contact.peerId}</div>
+                    </div>
+                    <div className="contact-actions">
+                      <div 
+                        className={`contact-status ${contactsStatus[contact.id] === 'online' ? 'online' : ''}`}
+                        title={`Status: ${contactsStatus[contact.id] === 'online' ? 'Online' : contactsStatus[contact.id] === 'offline' ? 'Offline' : 'Desconhecido'}`}
+                      >
+                        <i className="fas fa-circle"></i>
+                      </div>
+                      <div 
+                        className="contact-action delete" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeContact(contact.id);
+                        }}
+                        title="Remover contato"
+                      >
+                        <i className="fas fa-trash-alt"></i>
+                      </div>
+                    </div>
+                    
+                    {checkingStatus === contact.id && (
+                      <div className="status-overlay">
+                        <div>Verificando status...</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
     const ChatClient = () => {
-      // Estado do cliente
       const [username, setUsername] = useState('');
       const [peerId, setPeerId] = useState('');
       const [targetPeerId, setTargetPeerId] = useState('');
@@ -581,14 +1148,12 @@
       const [isConnected, setIsConnected] = useState(false);
       const [showEmojiPicker, setShowEmojiPicker] = useState(false);
       
-      // Refs
       const connectionRef = useRef(null);
       const peerRef = useRef(null);
       const messagesEndRef = useRef(null);
       const messageContainerRef = useRef(null);
       const messageInputRef = useRef(null);
 
-      // Carregar ou gerar um ID de peer ao iniciar
       useEffect(() => {
         const savedPeerId = localStorage.getItem('batepapo-peer-id');
         if (savedPeerId) {
@@ -599,21 +1164,23 @@
           setPeerId(newId);
         }
         
-        // Carregar nome do usuário se existir
         const savedUsername = localStorage.getItem('batepapo-username');
         if (savedUsername) {
           setUsername(savedUsername);
         }
+        
+        const savedTargetPeerId = localStorage.getItem('batepapo-target-peer-id');
+        if (savedTargetPeerId) {
+          setTargetPeerId(savedTargetPeerId);
+        }
       }, []);
 
-      // Auto-rolagem de mensagens
       useEffect(() => {
         if (messagesEndRef.current) {
           messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, [messages]);
 
-      // Inicializar peer quando o ID do cliente estiver disponível
       useEffect(() => {
         if (!peerId) return;
 
@@ -646,14 +1213,12 @@
           peer.on('connection', (conn) => {
             console.log("Conexão recebida de:", conn.peer);
             
-            // Configurar a nova conexão recebida
             conn.on('open', () => {
               console.log("Conexão aberta com:", conn.peer);
               setConnectionStatus('conectado');
               setIsConnected(true);
               connectionRef.current = conn;
               
-              // Adicionar mensagem de sistema
               const welcomeMsg = {
                 id: Date.now(),
                 text: `${conn.peer} conectou ao chat 👋`,
@@ -676,7 +1241,6 @@
                 setIsConnected(false);
                 connectionRef.current = null;
                 
-                // Adicionar mensagem de sistema
                 const goodbyeMsg = {
                   id: Date.now(),
                   text: `${conn.peer} desconectou do chat 👋`,
@@ -720,14 +1284,12 @@
         };
       }, [peerId]);
 
-      // Conectar ao peer
       const connectToPeer = () => {
         if (!peerRef.current || !targetPeerId || !username.trim()) {
           alert("Preencha seu nome de usuário e o ID do contato!");
           return;
         }
 
-        // Salvar nome do usuário
         localStorage.setItem('batepapo-username', username);
 
         setConnectionStatus('conectando');
@@ -743,7 +1305,6 @@
             setIsConnected(true);
             connectionRef.current = conn;
 
-            // Enviar mensagem de saudação
             const welcomeMsg = {
               type: 'message',
               message: `${username} entrou no chat 👋`,
@@ -753,7 +1314,6 @@
             };
             conn.send(welcomeMsg);
             
-            // Adicionar mensagem local
             setMessages(prev => [
               ...prev,
               {
@@ -776,7 +1336,6 @@
             setIsConnected(false);
             connectionRef.current = null;
             
-            // Adicionar mensagem de sistema
             setMessages(prev => [
               ...prev,
               {
@@ -802,11 +1361,9 @@
         }
       };
 
-      // Desconectar do peer
       const disconnectFromPeer = () => {
         if (connectionRef.current) {
           try {
-            // Enviar mensagem de despedida
             const goodbyeMsg = {
               type: 'message',
               message: `${username} saiu do chat 👋`,
@@ -816,7 +1373,6 @@
             };
             connectionRef.current.send(goodbyeMsg);
             
-            // Fechar conexão
             connectionRef.current.close();
             connectionRef.current = null;
             setConnectionStatus('desconectado');
@@ -827,12 +1383,10 @@
         }
       };
 
-      // Processar dados recebidos
       const handleIncomingData = (data, senderId) => {
         console.log("Processando dados recebidos:", data);
         
         if (data.type === 'message') {
-          // Adicionar mensagem recebida
           const newMsg = {
             id: Date.now() + Math.random().toString(36).substr(2, 9),
             text: data.message || data.text,
@@ -844,7 +1398,6 @@
           
           setMessages(prev => [...prev, newMsg]);
         } else if (data.type === 'file-start' || data.type === 'audio-start') {
-          // Para simplificar, apenas mostramos uma mensagem sobre o arquivo/áudio
           const format = data.type === 'file-start' ? 'arquivo' : 'áudio';
           const fileName = data.fileName || `${format}.dat`;
           
@@ -859,17 +1412,14 @@
           
           setMessages(prev => [...prev, newMsg]);
         } else if (data.type === 'file-chunk' || data.type === 'audio-chunk') {
-          // Ignorar chunks de dados, já exibimos a mensagem inicial
           return;
         }
       };
 
-      // Lidar com seleção de emoji
       const handleEmojiSelect = (emoji) => {
         console.log("Emoji selecionado:", emoji);
         setNewMessage(prev => prev + emoji);
         setShowEmojiPicker(false);
-        // Focar no input após selecionar um emoji
         setTimeout(() => {
           if (messageInputRef.current) {
             messageInputRef.current.focus();
@@ -877,26 +1427,23 @@
         }, 100);
       };
 
-      // Enviar mensagem
       const sendMessage = () => {
         if (!connectionRef.current || !newMessage.trim()) return;
 
-        // Importante: a formatação da mensagem deve ser compatível com o CHAT P2P
         const messageData = {
           type: 'message',
-          text: newMessage.trim(), // Usar 'text' como key principal
-          message: newMessage.trim(), // Manter 'message' para compatibilidade
+          text: newMessage.trim(),
+          message: newMessage.trim(),
           sender: username,
-          senderName: username, // Adicionar senderName para compatibilidade
+          senderName: username,
           timestamp: new Date().toISOString(),
-          direct: true // Indicar que é uma mensagem direta
+          direct: true
         };
 
         try {
           console.log("Enviando mensagem:", messageData);
           connectionRef.current.send(messageData);
           
-          // Adicionar à lista de mensagens local
           const newMsg = {
             id: Date.now() + Math.random().toString(36).substr(2, 9),
             text: newMessage.trim(),
@@ -915,12 +1462,9 @@
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div className="header">
-            <h1>Bate Papo P2P 💬</h1>
-            <div className="connection-status">
-              <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
-              {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
-            </div>
+          <div className="connection-status">
+            <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
+            {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
           </div>
 
           <div className="connection-form">
@@ -1026,7 +1570,7 @@
       );
     };
 
-    ReactDOM.render(<ChatClient />, document.getElementById('root'));
+    ReactDOM.render(<App />, document.getElementById('root'));
   </script>
 </head>
 <body>
