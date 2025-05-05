@@ -424,17 +424,26 @@
         }));
 
         if (data.type === 'message') {
+          const senderName = data.senderName || sourceConn.peer;
+          
+          // CHANGE HERE: Modify the message text to include sender name at the beginning
+          const modifiedData = {
+            ...data,
+            text: `${senderName}: ${data.text}`
+          };
+          
           const newMessage = {
             id: Date.now() + Math.random().toString(36).substring(7),
-            text: data.text,
-            sender: data.senderName || sourceConn.peer,
+            text: modifiedData.text,
+            sender: senderName,
             timestamp: new Date().toISOString(),
             source: sourceConn.peer
           };
           
           setMessages(prev => [...prev, newMessage]);
           
-          distributeMessage(data, sourceConn.peer);
+          // Distribute the modified message that includes the sender name
+          distributeMessage(modifiedData, sourceConn.peer);
         }
         else if (data.type === 'file-start' || data.type === 'file-chunk') {
           console.log("Arquivo recebido, redistribuindo...");
@@ -566,7 +575,7 @@
                 <div>
                   {messages.map((msg, index) => (
                     <div key={index} className={`message other`}>
-                      <strong>{msg.sender || msg.source}:</strong> {msg.text}
+                      <div>{msg.text}</div>
                       <div className="message-source">
                         Origem: {msg.source} | {new Date(msg.timestamp).toLocaleTimeString()}
                       </div>
