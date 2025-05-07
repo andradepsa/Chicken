@@ -12,11 +12,11 @@ Acessando o Aplicativo
 https://k10.netlify.app/#app
 
 ✅ Dica:
-1. Chat P2P + Chat P2P= Comunicação Privada
-2. Chat P2P + Bate Papo= Comunicação Privada
+1. Chat K10 + Chat K10= Comunicação Privada
+2. Chat K10 + Bate Papo= Comunicação Privada
 3. Bate Papo + Bate Papo= Comunicação Privada
 
 ✅Servidor cria uma sala compartilhada
-1. Chat P2P + Servidor = Comunicação em Grupo
+1. Chat K10 + Servidor = Comunicação em Grupo
 2. Bate Papo + Servidor = Comunicação em Grupo
 
