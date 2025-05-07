@@ -435,7 +435,45 @@
       border-radius: 3px;
       cursor: pointer;
     }
-  </style>
+  
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-mode .app-header {
+  background-color: #1f1f1f;
+}
+
+.dark-mode .user-info-container,
+.dark-mode .peer-id-container,
+.dark-mode .contact-form,
+.dark-mode .connected-peers,
+.dark-mode .chat-messages-container,
+.dark-mode .conversations-list,
+.dark-mode .audio-call-container,
+.dark-mode .video-container {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.dark-mode .message-bubble.received {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+}
+
+.dark-mode .message-input {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.dark-mode .emoji-panel {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+</style>
 </head>
 <body>
   <div id="root"></div>
@@ -1170,6 +1208,22 @@
     //
     // PARTE 5: Componente Principal App
     const App = () => {
+useEffect(() => {
+  if (localStorage.getItem('modo') === 'dark') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+}, []);
+
+const toggleDarkMode = () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('modo', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('darkModeBtn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+};
+
       console.log("App: Component rendering");
       const [peerId, setPeerId] = usePersistentId();
       const [userName, setUserName] = useState(() => localStorage.getItem('p2pUserName') || '');
@@ -2047,15 +2101,16 @@
       <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
       <div className="app-header">
         <h1 className="app-title">Chat P2P</h1>
-        <div className="header-buttons">
-          <button
-            className="header-button"
-            onClick={() => setShowContacts(!showContacts)}
-            title="Gerenciar contatos"
-          >
-            <i className="fas fa-users"></i>
-          </button>
-        </div>
+        
+<div className="header-buttons">
+  <button onClick={() => setShowContacts(true)} className="header-button" title="Contatos">
+    <i className="fas fa-address-book"></i>
+  </button>
+  <button onClick={toggleDarkMode} className="header-button" title="Modo Noturno" id="darkModeBtn">
+    🌙
+  </button>
+</div>
+
       </div>
 
       <div className="user-info-container">
