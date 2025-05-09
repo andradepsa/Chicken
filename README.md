@@ -5,6 +5,7 @@ Acessando o Aplicativo
 ✅ Como usar:
 
 1.Baixe o app:
+
  📦 .exe para computador
  
  📱 .apk para celular
