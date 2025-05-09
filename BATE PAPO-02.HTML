@@ -561,6 +561,17 @@
       50% { opacity: 0.5; }
       100% { opacity: 1; }
     }
+    
+    /* Novo indicador de modo servidor */
+    .server-mode-indicator {
+      display: inline-block;
+      background-color: #ff9800;
+      color: white;
+      font-size: 11px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      margin-left: 5px;
+    }
   </style>
 </head>
 <body>
@@ -857,7 +868,9 @@
       localVideoRef,
       unreadMessages,
       setUnreadMessages,
-      setShowContacts
+      setShowContacts,
+      connectedToServer,
+      serverPeerId  // Importante: recebendo serverPeerId como prop
     }) => {
       const messagesEndRef = useRef(null);
 
@@ -925,7 +938,7 @@
           setNewMessage('');
         } catch (err) {
           console.error("UpdatedChatManager: Error sending direct message:", err);
-          alert(`Erro ao enviar mensagem: ${err.message}`);
+alert(`Erro ao enviar mensagem: ${err.message}`);
         }
       };
 
@@ -1032,6 +1045,9 @@
                               <div>
                                 <span className="online-indicator online"></span>
                                 {getContactName(conn.peer)}
+                                {conn.peer === serverPeerId && (
+                                  <span className="server-mode-indicator">SERVIDOR</span>
+                                )}
                               </div>
                               {hasUnread && (
                                 <span 
@@ -1090,6 +1106,9 @@
               <div className="chat-header-title">
                 <span className={`online-indicator ${isContactOnline ? 'online' : 'offline'}`}></span>
                 {getContactName(selectedContact)} {isContactOnline ? "(online)" : "(offline)"}
+                {connectedToServer && selectedContact === serverPeerId && (
+                  <span className="server-mode-indicator">SERVIDOR</span>
+                )}
               </div>
               <div className="chat-header-actions">
                 {hasActiveVoiceCallWithPeer ? (
@@ -1321,6 +1340,10 @@
       const [reconnecting, setReconnecting] = useState({});
       // Estado para mostrar conexões ativas
       const [activeConnections, setActiveConnections] = useState({});
+      
+      // NOVOS ESTADOS para gerenciar conexão com servidor
+      const [connectedToServer, setConnectedToServer] = useState(false);
+      const [serverPeerId, setServerPeerId] = useState(null);
 
       const peerInstance = useRef(null);
       const fileInputRef = useRef(null);
@@ -1369,6 +1392,83 @@
             }
           }
         }
+      };
+
+      // Função para tratar a configuração de conexões recebidas
+      const setupConnectionHandlers = (conn) => {
+        conn.on('open', () => {
+          console.log("PeerJS: Data connection opened with:", conn.peer);
+          setConnections(prev => [...prev.filter(c => c.peer !== conn.peer), conn]);
+          setReconnecting(prev => ({ ...prev, [conn.peer]: false }));
+          setActiveConnections(prev => ({ ...prev, [conn.peer]: true }));
+          
+          // Só selecionar o contato automaticamente se for o servidor ou se nenhum contato estiver selecionado
+          if (!selectedContact) {
+            setSelectedContact(conn.peer);
+            setShowContacts(false);
+          }
+        });
+
+        conn.on('data', (data) => {
+          console.log("PeerJS: Received data from:", conn.peer, data);
+          
+          // Verificar se é uma mensagem de informação do servidor
+          if (data.type === 'server-info' && data.isServer) {
+            console.log("Connected to a K10 server in pure server mode");
+            setConnectedToServer(true);
+            setServerPeerId(conn.peer);
+          }
+          
+          // Marcar mensagens como não lidas quando o remetente não é o contato selecionado
+          if (data.type === 'message' && selectedContact !== conn.peer) {
+            setUnreadMessages(prev => ({
+              ...prev,
+              [conn.peer]: (prev[conn.peer] || 0) + 1
+            }));
+          }
+          
+          handleIncomingData(data, conn.peer);
+        });
+
+        conn.on('close', () => {
+          console.log("PeerJS: Data connection closed with:", conn.peer);
+          setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+          setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
+          
+          // Se esta era nossa conexão com o servidor, atualizar o estado
+          if (serverPeerId === conn.peer) {
+            setConnectedToServer(false);
+            setServerPeerId(null);
+          }
+          
+          endCall(conn.peer, 'video');
+          endCall(conn.peer, 'voice');
+          
+          // Se o contato fechado for o selecionado, limpar a seleção
+          if (selectedContact === conn.peer) {
+            setSelectedContact(null);
+          }
+        });
+
+        conn.on('error', (err) => {
+          console.error("PeerJS: Data connection error with:", conn.peer, err);
+          setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+          setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
+          
+          // Se esta era nossa conexão com o servidor, atualizar o estado
+          if (serverPeerId === conn.peer) {
+            setConnectedToServer(false);
+            setServerPeerId(null);
+          }
+          
+          endCall(conn.peer, 'video');
+          endCall(conn.peer, 'voice');
+          
+          // Se o contato com erro for o selecionado, limpar a seleção
+          if (selectedContact === conn.peer) {
+            setSelectedContact(null);
+          }
+        });
       };
 
       useEffect(() => {
@@ -1455,68 +1555,38 @@
           }
         });
 
-        // Melhorado: Event handler de conexão atualizado
+        // MODIFICAÇÃO IMPORTANTE: Gerenciador de conexão atualizado para lidar com modo servidor
         peer.on('connection', (conn) => {
           console.log("PeerJS: Incoming data connection from:", conn.peer);
-          if (connections.some(c => c.peer === conn.peer)) {
-            console.log("App: Connection handler already set up for", conn.peer);
-            setConnections(prev => prev.map(c => c.peer === conn.peer ? conn : c));
-            return;
+          
+          // Só aceitar conexões do servidor ou se não estiver conectado a um servidor
+          if (serverPeerId === conn.peer || !connectedToServer) {
+            console.log("App: Connection is from our server or we're not connected to a server yet");
+            setupConnectionHandlers(conn);
+          } else {
+            console.log("App: Rejecting connection from " + conn.peer + " because we're in server mode");
+            
+            // Notificar o peer que estamos rejeitando a conexão
+            try {
+              conn.on('open', () => {
+                conn.send({
+                  type: 'message',
+                  text: 'Conexão rejeitada: Este cliente está em modo servidor e só aceita conexões do servidor',
+                  senderName: userName || 'Sistema',
+                  direct: true,
+                  time: formatTime(new Date())
+                });
+                
+                // Fechar a conexão após enviar a mensagem
+                setTimeout(() => {
+                  conn.close();
+                }, 1000);
+              });
+            } catch (err) {
+              console.error("Error notifying rejected connection:", err);
+              conn.close();
+            }
           }
-
-          conn.on('open', () => {
-            console.log("PeerJS: Data connection opened with:", conn.peer);
-            setConnections(prev => [...prev.filter(c => c.peer !== conn.peer), conn]);
-            setReconnecting(prev => ({ ...prev, [conn.peer]: false }));
-            setActiveConnections(prev => ({ ...prev, [conn.peer]: true }));
-            
-            // MELHORIA: Selecionar automaticamente o contato quando uma conexão é estabelecida
-            // Se não houver contato selecionado ou estiver na tela de contatos
-            if (!selectedContact || showContacts) {
-              setSelectedContact(conn.peer);
-              setShowContacts(false); // Sair da tela de contatos se estiver nela
-            }
-          });
-
-          conn.on('data', (data) => {
-            console.log("PeerJS: Received data from:", conn.peer, data.type);
-            
-            // MELHORIA: Marcar mensagens como não lidas quando o remetente não é o contato selecionado
-            if (data.type === 'message' && selectedContact !== conn.peer) {
-              setUnreadMessages(prev => ({
-                ...prev,
-                [conn.peer]: (prev[conn.peer] || 0) + 1
-              }));
-            }
-            
-            handleIncomingData(data, conn.peer);
-          });
-
-          conn.on('close', () => {
-            console.log("PeerJS: Data connection closed with:", conn.peer);
-            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
-            setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
-            endCall(conn.peer, 'video');
-            endCall(conn.peer, 'voice');
-            
-            // Se o contato fechado for o selecionado, limpar a seleção
-            if (selectedContact === conn.peer) {
-              setSelectedContact(null);
-            }
-          });
-
-          conn.on('error', (err) => {
-            console.error("PeerJS: Data connection error with:", conn.peer, err);
-            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
-            setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
-            endCall(conn.peer, 'video');
-            endCall(conn.peer, 'voice');
-            
-            // Se o contato com erro for o selecionado, limpar a seleção
-            if (selectedContact === conn.peer) {
-              setSelectedContact(null);
-            }
-          });
         });
 
         // CORREÇÃO: Event handler de chamada atualizado para funcionar como o Chat K10
@@ -1524,50 +1594,56 @@
           const callType = call.metadata?.type || 'video';
           console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
 
-          try {
-            console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
-            call.answer(null);
+          // Só aceitar chamadas do servidor ou de contatos permitidos no modo sem servidor
+          if (serverPeerId === call.peer || !connectedToServer) {
+            try {
+              console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
+              call.answer(null);
 
-            // Selecionar automaticamente o contato que está chamando
-            if (selectedContact !== call.peer) {
-              setSelectedContact(call.peer);
-              setShowContacts(false);
-            }
-
-            setActiveCalls(prev => [
-              ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
-              {
-                peerId: call.peer,
-                call,
-                localStream: null,
-                type: callType,
-                direction: 'incoming',
-                isTemporaryStream: false
+              // Selecionar automaticamente o contato que está chamando
+              if (selectedContact !== call.peer) {
+                setSelectedContact(call.peer);
+                setShowContacts(false);
               }
-            ]);
 
-            call.on('stream', (remoteStream) => {
-              console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
-              setRemoteStreams(prev => [
-                ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
-                { peerId: call.peer, stream: remoteStream, type: call.Type }
+              setActiveCalls(prev => [
+                ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
+                {
+                  peerId: call.peer,
+                  call,
+                  localStream: null,
+                  type: callType,
+                  direction: 'incoming',
+                  isTemporaryStream: false
+                }
               ]);
-            });
 
-            call.on('close', () => {
-              console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
-              endCall(call.peer, callType);
-            });
+              call.on('stream', (remoteStream) => {
+                console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
+                setRemoteStreams(prev => [
+                  ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
+                  { peerId: call.peer, stream: remoteStream, type: call.Type }
+                ]);
+              });
 
-            call.on('error', (err) => {
-              console.error(`PeerJS: Error in incoming ${callType} call:`, err);
-              endCall(call.peer, callType);
-            });
+              call.on('close', () => {
+                console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
+                endCall(call.peer, callType);
+              });
 
-          } catch (err) {
-            console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
+              call.on('error', (err) => {
+                console.error(`PeerJS: Error in incoming ${callType} call:`, err);
+                endCall(call.peer, callType);
+              });
+
+            } catch (err) {
+              console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
+              call.close();
+              alert('Erro ao acessar câmera/microfone: ' + err.message);
+            }
+          } else {
+            console.log(`App: Rejecting ${callType} call from ${call.peer} because we're in server mode`);
             call.close();
-            alert('Erro ao acessar câmera/microfone: ' + err.message);
           }
         });
 
@@ -1589,6 +1665,10 @@
           setIsLocalVideoVisible(false);
           if (localVideoRef.current) localVideoRef.current.srcObject = null;
           setIsPeerInitialized(false);
+          
+          // Limpar estado de conexão com servidor
+          setConnectedToServer(false);
+          setServerPeerId(null);
         };
       }, [peerId]);
 
@@ -1632,46 +1712,8 @@
             throw new Error("Não foi possível criar a conexão");
           }
 
-          conn.on('open', () => {
-            console.log("PeerJS: Connection opened with:", peerIdToConnect);
-            setConnections(prev => [...prev.filter(c => c.peer !== peerIdToConnect), conn]);
-            setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
-            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: true }));
-            setSelectedContact(peerIdToConnect);
-          });
-
-          conn.on('error', (err) => {
-            console.error("PeerJS: Connection error with:", peerIdToConnect, err);
-            setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
-            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: false }));
-            setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
-            if (!silent) {
-              alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
-            }
-          });
-
-          conn.on('close', () => {
-            console.log("PeerJS: Connection closed with:", peerIdToConnect);
-            setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
-            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: false }));
-            if (selectedContact === peerIdToConnect) {
-              setSelectedContact(null);
-            }
-          });
-
-          conn.on('data', (data) => {
-            console.log("PeerJS: Received data from:", peerIdToConnect, data);
-            
-            // Se receber mensagem e o remetente não for o selecionado, marcar como não lida
-            if (data.type === 'message' && selectedContact !== peerIdToConnect) {
-              setUnreadMessages(prev => ({
-                ...prev,
-                [peerIdToConnect]: (prev[peerIdToConnect] || 0) + 1
-              }));
-            }
-            
-            handleIncomingData(data, peerIdToConnect);
-          });
+          // Estamos iniciando esta conexão, então tratar através de nosso handler de conexão
+          setupConnectionHandlers(conn);
         } catch (err) {
           console.error("App: Error establishing data connection:", err);
           setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
@@ -2094,162 +2136,16 @@
 
       const populateEmojiPanel = () => {
         const emojis = [
-        "😀", "😁", "😂", "🤣", "😃", "😄",
-"😅", "😆", "😉", "😊", "😋", "😎",
-"😍", "😘", "🥰", "😗", "😙", "😚",
-"☺️", "🙂", "🤗", "🤩", "🤔", "🤨",
-"😐", "😑", "😶", "🙄", "😏", "😣",
-"😥", "😮", "🤐", "😯", "😪", "😫",
-"😴", "😌", "😛", "😜", "😝", "🤤",
-"😒", "😓", "😔", "😕", "🙃", "🤑",
-"😲", "☹️", "🙁", "😖", "😞", "😟",
-"😤", "😢", "😭", "😦", "😧", "😨",
-"😩", "🤯", "😬", "😰", "😱", "🥵",
-"🥶", "😳", "🤪", "😵", "😡", "😠",
-"🤬", "😷", "🤒", "🤕", "🤢", "🤮",
-"🤧", "😇", "🥳", "🥴", "🥺", "🤠",
-"🤡", "🤥", "🤫", "🤭", "🧐", "🤓",
-"😈", "👿", "👹", "👺", "💀", "👻",
-"👽", "🤖", "💩", "😺", "😸", "😹",
-"😻", "😼", "😽", "🙀", "😿", "😾",
-"👶", "👧", "🧒", "👦", "👩", "🧑",
-"👨", "👵", "🧓", "👴", "👲", "👳‍♀️",
-"👳‍♂️", "🧕", "🧔", "👱‍♂️", "👱‍♀️", "👮‍♀️",
-"👮‍♂️", "👷‍♀️", "👷‍♂️", "💂‍♀️", "💂‍♂️", "🕵️‍♀️",
-"🕵️‍♂️", "👩‍⚕️", "👨‍⚕️", "👩‍🌾", "👨‍🌾", "👩‍🍳",
-"👨‍🍳", "👩‍🎓", "👨‍🎓", "👩‍🎤", "👨‍🎤", "👩‍🏫",
-"👨‍🏫", "👩‍🏭", "👨‍🏭", "👩‍💻", "👨‍💻", "👩‍💼",
-"👨‍💼", "👩‍🔧", "👨‍🔧", "👩‍🔬", "👨‍🔬", "👩‍🎨",
-"👨‍🎨", "👩‍🚒", "👨‍🚒", "👩‍✈️", "👨‍✈️", "👩‍🚀",
-"👨‍🚀", "👩‍⚖️", "👨‍⚖️", "👰", "🤵", "👸",
-"🤴", "🦸‍♀️", "🦸‍♂️", "🦹‍♀️", "🦹‍♂️", "🤶",
-"🎅", "🧙‍♀️", "🧙‍♂️", "🧝‍♀️", "🧝‍♂️", "🧛‍♀️",
-"🧛‍♂️", "🧟‍♀️", "🧟‍♂️", "🧞‍♀️", "🧞‍♂️", "🧜‍♀️",
-"🧜‍♂️", "🧚‍♀️", "🧚‍♂️", "👼", "🤰", "🤱",
-"🙇‍♀️", "🙇‍♂️", "💁‍♀️", "💁‍♂️", "🙅‍♀️", "🙅‍♂️",
-"🙆‍♀️", "🙆‍♂️", "🙋‍♀️", "🙋‍♂️", "🤦‍♀️", "🤦‍♂️",
-"🤷‍♀️", "🤷‍♂️", "🙎‍♀️", "🙎‍♂️", "🙍‍♀️", "🙍‍♂️",
-"💇‍♀️", "💇‍♂️", "💆‍♀️", "💆‍♂️", "🧖‍♀️", "🧖‍♂️",
-"💅", "🤳", "💃", "🕺", "👯‍♀️", "👯‍♂️",
-"🕴", "🚶‍♀️", "🚶‍♂️", "🏃‍♀️", "🏃‍♂️", "👫",
-"👨‍👧‍👦", "👨‍👦‍👦", "👨‍👧‍👧", "🤲", "👐", "🙌",
-"👏", "🤝", "👍", "👎", "👊", "✊",
-"🤛", "🤜", "🤞", "✌️", "🤟", "🤘",
-"👌", "👈", "👉", "👆", "👇", "☝️",
-"✋", "🤚", "🖐", "🖖", "👋", "🤙",
-"💪", "🦵", "🦶", "🖕", "✍️", "🙏",
-"💍", "💄", "💋", "👄", "👅", "👂",
-"👃", "👣", "👁", "👀", "🧠", "🦴",
-"🦷", "🗣", "👤", "👥", "🧥", "👚",
-"👕", "👖", "👔", "👗", "👙", "👘",
-"👠", "👡", "👢", "👞", "👟", "🥾",
-"🥿", "🧦", "🧤", "🧣", "🎩", "🧢",
-"👒", "🎓", "⛑", "👑", "👝", "👛",
-"👜", "💼", "🎒", "👓", "🕶", "🥽",
-"🥼", "🌂", "🧵", "🧶", "👋", "🎪", 
-"🎭", "🎨", "🎬", "🎤", "🎧", "🎼", 
-"🎹", "🥁", "🎷", "🎺", "🎸", "🎻", 
-"🎲", "♟", "🎯", "🎳", "🎮", "🎰",
-"🧩", "🚗", "🚕", "🚙", "🚌", "🚎", 
-"🏎", "🚓", "🚑", "🚒", "🚐", "🚚", 
-"🚛", "🚜", "🛴", "🚲", "🛵", "🏍", 
-"🚨", "🚔", "🚍", "🚘", "🚖", "🚡",
-"🚠", "🚟", "🚃", "🚋", "🚞", "🚝", 
-"🚄", "🚅", "🚈", "🚂", "🚆", "🚇", 
-"🚊", "🚉", "✈️", "🛫", "🛬", "🛩", 
-"💺", "🛰", "🚀", "🛸", "🚁", "🛶",
-"⛵️", "🚤", "🛥", "🛳", "⛴", "🚢", 
-"⚓️", "⛽️", "🚧", "🚦", "🚥", "🚏", 
-"🗺", "🗿", "🗽", "🗼", "🏰", "🏯", 
-"🏟", "🎡", "🎢", "🎠", "⛲️", "⛱",
-"🏖", "🏝", "🏜", "🌋", "⛰", "🏔", 
-"🗻", "🏕", "⛺️", "🏠", "🏡", "🏘", 
-"🏚", "🏗", "🏭", "🏢", "🏬", "🏣", 
-"🏤", "🏥", "🏦", "🏨", "🏪", "🏫",
-"🏩", "💒", "🏛", "⛪️", "🕌", "🕍", 
-"🕋", "⛩", "🛤", "🛣", "🗾", "🎑", 
-"🏞", "🌅", "🌄", "🌠", "🎇", "🎆", 
-"🌇", "🌆", "🏙", "🌃", "🌌", "🌉",
-"🌁", "⌚️", "📱", "📲", "💻", "⌨️", 
-"🖥", "🖨", "🖱", "🖲", "🕹", "🗜", 
-"💽", "💾", "💿", "📀", "📼", "📷", 
-"📸", "📹", "🎥", "📽", "🎞", "📞",
-"☎️", "📟", "📠", "📺", "📻", "🎙", 
-"🎚", "🎛", "⏱", "⏲", "⏰", "🕰", 
-"⌛️", "⏳", "📡", "🔋", "🔌", "💡", 
-"🔦", "🕯", "🗑", "🛢", "💸", "💵",
-"💴", "💶", "💷", "💰", "💳", "🧾", 
-"💎", "⚖️", "🔧", "🔨", "⚒", "🛠", 
-"⛏", "🔩", "⚙️", "⛓", "🔫", "💣", 
-"🔪", "🗡", "⚔️", "🛡", "🚬", "⚰️",
-"⚱️", "🏺", "🧭", "🧱", "🔮", "🧿", 
-"🧸", "📿", "💈", "⚗️", "🔭", "🧰", 
-"🧲", "🧪", "🧫", "🧬", "🧯", "🔬", 
-"🕳", "💊", "💉", "🌡", "🚽", "🚰",
-"🚿", "🛁", "🛀", "🛀🏻", "🛀🏼", "🛀🏽", 
-"🛀🏾", "🛀🏿", "🧴", "🧵", "🧶", "🧷", 
-"🧹", "🧺", "🧻", "🧼", "🧽", "🛎", 
-"🔑", "🗝", "🚪", "🛋", "🛏", "🛌",
-"🖼", "🛍", "🧳", "🛒", "🎁", "🎈", 
-"🎏", "🎀", "🎊", "🎉", "🧨", "🎎", 
-"🏮", "🎐", "🧧", "✉️", "📩", "📨", 
-"📧", "💌", "📥", "📤", "📦", "🏷",
-"📪", "📫", "📬", "📭", "📮", "📯", 
-"📜", "📃", "📄", "📑", "📊", "📈", 
-"📉", "🗒", "🗓", "📆", "📅", "📇", 
-"🗃", "🗳", "🗄", "📋", "📁", "📂",
-"🗂", "🗞", "📰", "📓", "📔", "📒", 
-"📕", "📗", "📘", "📙", "📚", "📖", 
-"🔖", "🔗", "📎", "🖇", "📐", "📏", 
-"📌", "📍", "✂️", "🖊", "🖋", "✒️",
-"🖌", "🖍", "📝", "✏️", "🔍", "🔎", 
-"🔏", "🔐", "🔒", "🔓", "❤️", "🧡", 
-"💛", "💚", "💙", "💜", "🖤", "💔", 
-"❣️", "💕", "💞", "💓", "💗", "💖",
-"💘", "💝", "💟", "☮️", "✝️", "☪️", 
-"🕉", "☸️", "✡️", "🔯", "🕎", "☯️", 
-"☦️", "🛐", "⛎", "♈️", "♉️", "♊️", 
-"♋️", "♌️", "♍️", "♎️", "♏️", "♐️",
-"♑️", "♒️", "♓️", "🆔", "⚛️", "🉑", 
-"☢️", "☣️", "📴", "📳", "🈶", "🈚️", 
-"🈸", "🈺", "🈷️", "✴️", "🆚", "💮", 
-"🉐", "㊙️", "㊗️", "🈴", "🈵", "🈹",
-"🈲", "🅰️", "🅱️", "🆎", "🆑", "🅾️", 
-"🆘", "❌", "⭕️", "🛑", "⛔️", "📛", 
-"🚫", "💯", "💢", "♨️", "🚷", "🚯", 
-"🚳", "🚱", "🔞", "📵", "🚭", "❗️",
-"❕", "❓", "❔", "‼️", "⁉️", "🔅", 
-"🔆", "〽️", "⚠️", "🚸", "🔱", "⚜️", 
-"🔰", "♻️", "✅", "🈯️", "💹", "❇️", 
-"✳️", "❎", "🌐", "💠", "Ⓜ️", "🌀",
-"💤", "🏧", "🚾", "♿️", "🅿️", "🈳", 
-"🈂️", "🛂", "🛃", "🛄", "🛅", "🚹", 
-"🚺", "🚼", "🚻", "🚮", "🎦", "📶", 
-"🈁", "🔣", "ℹ️", "🔤", "🔡", "🔠",
-"🆖", "🆗", "🆙", "🆒", "🆕", "🆓", 
-"0️⃣", "1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣",
-"6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟", "🔢", 
-"#️⃣", "*️⃣", "⏏️", "▶️", "⏸", "⏯",
-"⏹", "⏺", "⏭", "⏮", "⏩", "⏪", 
-"⏫", "⏬", "◀️", "🔼", "🔽", "➡️", 
-"⬅️", "⬆️", "⬇️", "↗️", "↘️", "↙️", 
-"↖️", "↕️", "↔️", "↪️", "↩️", "⤴️",
-"⤵️", "🔀", "🔁", "🔂", "🔄", "🔃", 
-"🎵", "🎶", "➕", "➖", "➗", "✖️", 
-"♾", "💲", "💱", "™️", "©️", "®️", 
-"〰️", "➰", "➿", "🔚", "🔙", "🔛",
-"🔝", "🔜", "✔️", "☑️", "🔘", "⚪️", 
-"⚫️", "🔴", "🔵", "🔺", "🔻", "🔸", 
-"🔹", "🔶", "🔷", "🔳", "🔲", "▪️", 
-"▫️", "◾️", "◽️", "◼️", "◻️", "⬛️",
-"⬜️", "🔈", "🔇", "🔉", "🔊", "🔔", 
-"🔕", "📣", "📢", "👁‍🗨", "💬", "💭", 
-"🗯", "♠️", "♣️", "♥️", "♦️", "🃏", 
-"🎴", "🀄️", "🕐", "🕑", "🕒", "🕓",
-"🕔", "🕕", "🕖", "🕗", "🕘", "🕙", 
-"🕚", "🕛", "🕜", "🕝", "🕞", "🕟", 
-"🕠", "🕡", "🕢", "🕣", "🕤", "🕥", 
-
+          "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", 
+          "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗", 
+          "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥", 
+          "😮", "🤐", "😯", "😪", "😫", "😴", "😌", "😛", "😜", "😝", 
+          "🤤", "😒", "😓", "😔", "😕", "🙃", "🤑", "😲", "☹️", "🙁", 
+          "😖", "😞", "😟", "😤", "😢", "😭", "😦", "😧", "😨", "😩", 
+          "🤯", "😬", "😰", "😱", "🥵", "🥶", "😳", "🤪", "😵", "😡", 
+          "😠", "🤬", "😷", "🤒", "🤕", "🤢", "🤮", "🤧", "😇", "🥳", 
+          "🥴", "🥺", "🤠", "🤡", "🤥", "🤫", "🤭", "🧐", "🤓", "😈", 
+          "👿", "👹", "👺", "💀", "👻", "👽", "🤖", "💩", "😺", "😸"
         ];
 
         return (
@@ -2301,6 +2197,7 @@
                 const isConnected = connections.some(c => c.peer === contact.peerId && c.open);
                 const isReconnecting = reconnecting[contact.peerId];
                 const unreadCount = unreadMessages[contact.peerId] || 0;
+                const isServer = contact.peerId === serverPeerId;
                 
                 return (
                   <option 
@@ -2311,7 +2208,7 @@
                       color: isConnected ? '#4CAF50' : (isReconnecting ? '#ff9800' : '#999')
                     }}
                   >
-                    {contact.name} {unreadCount > 0 ? `(${unreadCount})` : ''} {isConnected ? '✓' : (isReconnecting ? '⟳' : '')}
+                    {contact.name} {isServer ? "[SERVIDOR]" : ""} {unreadCount > 0 ? `(${unreadCount})` : ''} {isConnected ? '✓' : (isReconnecting ? '⟳' : '')}
                   </option>
                 );
               })}
@@ -2340,7 +2237,14 @@
         <div>
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
           <div className="app-header">
-            <h1 className="app-title">k10</h1>
+            <h1 className="app-title">
+              k10
+              {connectedToServer && (
+                <span className="server-mode-indicator" style={{ fontSize: '12px', marginLeft: '5px' }}>
+                  MODO SERVIDOR
+                </span>
+              )}
+            </h1>
             
             <div className="header-buttons">
               <button 
@@ -2409,6 +2313,31 @@
             </button>
           </div>
 
+          {/* Status da conexão com o servidor */}
+          {connectedToServer && (
+            <div className="peer-id-container" style={{ backgroundColor: '#e8f5e9' }}>
+              <span>
+                <span className="online-indicator online"></span>
+                Conectado ao servidor: {getContactName(serverPeerId)}
+              </span>
+              <button
+                onClick={() => {
+                  const conn = connections.find(c => c.peer === serverPeerId);
+                  if (conn) {
+                    if (confirm("Desconectar do servidor?")) {
+                      conn.close();
+                      setConnectedToServer(false);
+                      setServerPeerId(null);
+                    }
+                  }
+                }}
+                style={{ backgroundColor: '#dc3545' }}
+              >
+                Desconectar
+              </button>
+            </div>
+          )}
+
           {/* Contact selector only when not in contacts screen */}
           {!showContacts && contacts.length > 0 && 
             <ContactSelector 
@@ -2432,7 +2361,7 @@
                     muted
                     playsInline
                   ></video>
-                </div>
+</div>
               )}
               {remoteStreams.map((streamData, index) => (
                 streamData.type === 'video' && (
@@ -2517,6 +2446,8 @@
               unreadMessages={unreadMessages}
               setUnreadMessages={setUnreadMessages}
               setShowContacts={setShowContacts}
+              connectedToServer={connectedToServer}
+              serverPeerId={serverPeerId}
             />
           )}
         </div>
@@ -2534,3 +2465,4 @@
   </script>
 </body>
 </html>
+
