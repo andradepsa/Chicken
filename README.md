@@ -6,11 +6,11 @@ Acessando o Aplicativo
 
 1.Baixe o app:
 
-    📦 .exe para computador
+   📦 .exe para computador
   
-    📱 .apk para celular
+   📱 .apk para celular
  
-    🌐Ou use direto no navegador
+   🌐  Ou use direto no navegador
  
 2.Compartilhe seu ID com um contato 🔐
 
