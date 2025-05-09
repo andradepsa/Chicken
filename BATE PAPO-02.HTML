@@ -3,790 +3,508 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bate Papo K10</title>
+  <title>K10</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
-
-    :root {
-      --primary-color: #4a76fd;
-      --secondary-color: #e8f0ff;
-      --accent-color: #74b9ff;
-      --sent-message: #e2f2ff;
-      --received-message: #ffffff;
-      --background: #f0f5ff;
-      --text-dark: #2c3e50;
-      --text-light: #7f8c8d;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --border-radius: 16px;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--background);
-      color: var(--text-dark);
-      line-height: 1.5;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
+      background-color: #f4f4f4;
     }
-    
     #root {
-      width: 100%;
-      max-width: 800px;
+      max-width: 1200px;
       margin: 0 auto;
-      background: white;
-      padding: 16px;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      position: relative;
-      overflow: hidden;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+      padding: 20px;
     }
-    
-    .header {
+    .app-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      border-bottom: 2px solid var(--secondary-color);
-      padding-bottom: 12px;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
     }
-    
-    .header h1 {
-      font-size: 22px;
-      color: var(--primary-color);
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    .app-title {
+      margin: 0;
+      font-size: 24px;
     }
-    
-    .connection-status {
+    .header-buttons {
       display: flex;
+      gap: 10px;
+    }
+    .header-button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .user-info-container {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .username {
+      font-weight: bold;
+      color: #333;
+    }
+    .user-edit-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .user-name-form {
+      display: flex;
+      gap: 10px;
       align-items: center;
-      padding: 6px 12px;
-      border-radius: 24px;
-      background-color: var(--secondary-color);
-      font-size: 13px;
-      font-weight: 600;
-      transition: all 0.3s ease;
     }
-    
-    .status-indicator {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      margin-right: 8px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
+    .user-name-form input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      width: 200px;
     }
-    
-    .status-connected {
-      background-color: #4CAF50;
-      box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    .user-name-form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
     }
-    
-    .status-disconnected {
-      background-color: #f44336;
-      box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+    .user-name-form button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
-    
-    .status-connecting {
-      background-color: #FFC107;
-      animation: pulse 1.5s infinite;
-      box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+    .peer-id-container {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    
-    @keyframes pulse {
-      0% { transform: scale(0.8); opacity: 0.7; }
-      50% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(0.8); opacity: 0.7; }
+    .peer-id-container button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
     }
-    
-    .message-container {
-      flex: 1;
-      overflow-y: auto;
-      border-radius: var(--border-radius);
-      padding: 12px;
-      margin-bottom: 12px; /* Adicionado margin-bottom para espaço adequado */
+    .chat-main-container {
+      height: calc(100vh - 300px);
+    }
+    .chat-messages-container {
       display: flex;
       flex-direction: column;
-      background-color: #f8faff;
-      border: 1px solid rgba(74, 118, 253, 0.1);
-      min-height: 200px;
-      max-height: calc(100vh - 300px); /* Ajustado para garantir espaço para a caixa de entrada */
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary-color) rgba(0, 0, 0, 0.1);
-    }
-    
-    .message-container::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    .message-container::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
-      border-radius: 10px;
-    }
-    
-    .message-container::-webkit-scrollbar-thumb {
-      background: var(--primary-color);
-      border-radius: 10px;
-    }
-    
-    .message-container::-webkit-scrollbar-thumb:hover {
-      background: #3764e6;
-    }
-    
-    .message {
-      margin-bottom: 12px;
-      padding: 10px 16px;
-      border-radius: 16px;
-      max-width: 80%;
-      word-break: break-word;
-      position: relative;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      animation: messageAppear 0.3s ease-out;
-      line-height: 1.4;
-      font-size: 14px;
-    }
-    
-    @keyframes messageAppear {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .message.sent {
-      align-self: flex-end;
-      background-color: var(--primary-color);
-      color: white;
-      border-bottom-right-radius: 5px;
-      margin-left: auto;
-    }
-    
-    .message.received {
-      align-self: flex-start;
-      background-color: var(--received-message);
-      border-bottom-left-radius: 5px;
-      margin-right: auto;
-      border-left: 4px solid var(--accent-color);
-    }
-    
-    .message-sender {
-      font-weight: 600;
-      margin-bottom: 3px;
-      color: var(--primary-color);
-      display: flex;
-      align-items: center;
-      font-size: 13px;
-    }
-    
-    .message.sent .message-sender {
-      color: rgba(255, 255, 255, 0.85);
-    }
-    
-    .message-sender::before {
-      content: '';
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      background-color: var(--accent-color);
-      border-radius: 50%;
-      margin-right: 6px;
-    }
-    
-    .message.sent .message-sender::before {
       background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      height: 100%;
     }
-    
-    .empty-message {
-      text-align: center;
-      color: var(--text-light);
-      margin-top: 20px;
-      font-style: italic;
-      animation: fadeIn 1s ease;
-      font-size: 14px;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    .system-message {
-      align-self: center;
-      background-color: rgba(232, 240, 255, 0.8);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-style: italic;
-      color: var(--text-dark);
-      font-size: 13px;
-      box-shadow: none;
-      max-width: 90%;
-      margin: 8px 0;
-      text-align: center;
-      border: 1px dashed rgba(74, 118, 253, 0.3);
-    }
-    
-    .connection-form {
-      margin-bottom: 12px;
+    .chat-header {
+      padding: 10px 15px;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #eee;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
       display: flex;
-      gap: 8px;
+      justify-content: space-between;
       align-items: center;
-      background-color: var(--secondary-color);
-      padding: 10px;
-      border-radius: var(--border-radius);
     }
-    
-    .connection-form input {
-      flex-grow: 1;
-      padding: 8px 12px;
-      border: 1px solid rgba(74, 118, 253, 0.2);
-      border-radius: 10px;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-      background-color: white;
-    }
-    
-    .connection-form input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
-    }
-    
-    .connection-button {
-      padding: 8px 16px;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      font-size: 14px;
-    }
-    
-    .connection-button:hover {
-      background-color: #3764e6;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(74, 118, 253, 0.3);
-    }
-    
-    .connection-button:active {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-    
-    .connection-button.disconnect {
-      background-color: #f44336;
-    }
-    
-    .connection-button.disconnect:hover {
-      background-color: #d32f2f;
-      box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
-    }
-    
-    .input-container {
-      display: flex;
-      background-color: var(--secondary-color);
-      padding: 10px;
-      border-radius: var(--border-radius);
-      position: relative;
-      margin-top: 0;
-      /* Estas propriedades garantem que a caixa de entrada permanecerá fixada na parte inferior */
-      min-height: 60px;
-      width: 100%;
-      z-index: 2;
-      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-    }
-    
-    .message-input {
-      flex-grow: 1;
-      padding: 10px 14px;
-      border: 1px solid rgba(74, 118, 253, 0.2);
-      border-radius: 10px;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-      background-color: white;
-    }
-    
-    .message-input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
-    }
-    
-    .send-button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-left: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      box-shadow: 0 3px 6px rgba(74, 118, 253, 0.3);
-    }
-    
-    .send-button:hover {
-      background-color: #3764e6;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 10px rgba(74, 118, 253, 0.4);
-    }
-    
-    .send-button:active {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-    
-    .send-button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
-    
-    .send-button i {
+    .chat-header-title {
+      font-weight: bold;
       font-size: 16px;
     }
-    
-    .username-input {
-      padding: 8px 12px;
-      border: 1px solid rgba(74, 118, 253, 0.2);
-      border-radius: 10px;
-      font-size: 14px;
-      width: 180px;
-      background-color: white;
+    .chat-header-actions {
+      display: flex;
+      gap: 10px;
     }
-    
-    .file-message {
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .message-bubble {
+      max-width: 70%;
+      padding: 10px;
+      border-radius: 10px;
+      position: relative;
+      word-wrap: break-word;
+    }
+    .message-bubble.sent {
+      background-color: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+    .message-bubble.received {
+      background-color: #e9ecef;
+      color: #333;
+      align-self: flex-start;
+    }
+    .chat-user-bubble {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .message-timestamp {
+      font-size: 10px;
+      color: #999;
+      margin-top: 5px;
+      text-align: right;
+    }
+    .file-link {
+      color: inherit;
+      text-decoration: underline;
+    }
+    .audio-player {
+      width: 200px;
+      margin-top: 5px;
+    }
+    .reply-private-button {
+      font-size: 10px;
+      background: none;
+      border: none;
+      color: #007bff;
+      cursor: pointer;
+      margin-top: 5px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
     }
-    
-    .file-link {
-      color: var(--primary-color);
-      text-decoration: underline;
-      cursor: pointer;
+    .chat-input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #eee;
+      gap: 10px;
+      align-items: center;
     }
-    
-    .message.sent .file-link {
+    .voice-button {
+      padding: 8px;
+      background-color: #4CAF50;
       color: white;
-    }
-    
-    .emoji-button {
-      background-color: var(--secondary-color);
-      color: var(--primary-color);
       border: none;
+      border-radius: 50%;
+      cursor: pointer;
       width: 40px;
       height: 40px;
-      border-radius: 50%;
-      margin-right: 10px;
-      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s ease;
-      box-shadow: 0 3px 6px rgba(74, 118, 253, 0.1);
     }
-    
-    .emoji-button:hover {
-      background-color: #d9e6ff;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 10px rgba(74, 118, 253, 0.2);
+    .voice-button.recording {
+      background-color: #ff5722;
+      animation: pulse 1s infinite;
     }
-    
-    .emoji-button:active {
-      transform: translateY(0);
-      box-shadow: none;
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
-    
-    .emoji-button:disabled {
-      background-color: #eeeeee;
-      color: #bbbbbb;
+    .voice-button:disabled {
+      background-color: #ccc;
       cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
     }
-    
-    .emoji-button i {
-      font-size: 18px;
-    }
-    
-    .emoji-picker {
-      position: absolute;
-      bottom: 70px;
-      left: 10px;
-      background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-      padding: 10px;
-      width: 320px;
-      max-height: 250px;
-      overflow-y: auto;
-      z-index: 1000;
-      transition: all 0.3s ease;
-      animation: fadeInUp 0.3s ease;
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    .emoji-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-    }
-    
-    .emoji-item {
-      font-size: 24px;
-      height: 36px;
-      width: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      text-align: center;
-      border-radius: 5px;
-      transition: all 0.2s ease;
-    }
-    
-    .emoji-item:hover {
-      background-color: var(--secondary-color);
-      transform: scale(1.2);
-    }
-    
-    .nav-tabs {
-      display: flex;
-      border-bottom: 2px solid var(--secondary-color);
-      margin-bottom: 12px;
-    }
-    
-    .nav-tab {
-      padding: 10px 20px;
-      cursor: pointer;
-      font-weight: 600;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s ease;
-      color: var(--text-light);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .nav-tab:hover {
-      color: var(--primary-color);
-      background-color: rgba(232, 240, 255, 0.5);
-    }
-    
-    .nav-tab.active {
-      color: var(--primary-color);
-      border-bottom-color: var(--primary-color);
-    }
-    
-    .contacts-container {
-      flex: 1;
-      overflow-y: auto;
-      border-radius: var(--border-radius);
-      padding: 12px;
-      margin-bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      background-color: #f8faff;
-      border: 1px solid rgba(74, 118, 253, 0.1);
-      scrollbar-width: none;
-    }
-    
-    .contacts-container::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .contact-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .contact-status {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .contact-status i {
-      font-size: 12px;
-      color: #ccc;
-    }
-    
-    .contact-status.online i {
-      color: #4CAF50;
-      text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-    }
-    
-    .contact-item {
-      display: flex;
-      align-items: center;
-      padding: 12px;
-      border-radius: 12px;
-      background-color: white;
-      transition: all 0.3s ease;
-      border: 1px solid rgba(74, 118, 253, 0.1);
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .contact-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-      border-color: rgba(74, 118, 253, 0.3);
-    }
-    
-    .contact-item:after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background-color: transparent;
-      transition: all 0.3s ease;
-    }
-    
-    .contact-item:hover:after {
-      background-color: var(--primary-color);
-    }
-    
-    .contact-item .status-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: all 0.3s ease;
-      color: white;
-      font-weight: bold;
-      border-radius: 12px;
-      pointer-events: none;
-    }
-    
-    .contact-item.checking .status-overlay {
-      opacity: 1;
-      pointer-events: all;
-    }
-    
-    .contact-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background-color: var(--secondary-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 12px;
-      font-weight: bold;
-      color: var(--primary-color);
-      font-size: 18px;
-    }
-    
-    .contact-info {
-      flex: 1;
-    }
-    
-    .contact-name {
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 4px;
-    }
-    
-    .contact-id {
-      font-size: 13px;
-      color: var(--text-light);
-    }
-    
-    .contact-actions {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .contact-action {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: var(--secondary-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .contact-action:hover {
-      background-color: var(--primary-color);
-      color: white;
-      transform: translateY(-2px);
-    }
-    
-    .contact-action.delete:hover {
-      background-color: #f44336;
-    }
-    
-    .add-contact-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background-color: var(--secondary-color);
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .form-row {
-      display: flex;
-      gap: 8px;
-    }
-    
-    .add-contact-form input {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1px solid rgba(74, 118, 253, 0.2);
-      border-radius: 10px;
-      font-size: 14px;
-      outline: none;
-      transition: all 0.3s ease;
-      background-color: white;
-    }
-    
-    .add-contact-form input:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(74, 118, 253, 0.2);
-    }
-    
-    .add-contact-button {
-      padding: 10px 20px;
-      background-color: var(--primary-color);
+    .chat-input-container button {
+      padding: 8px;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 10px;
+      border-radius: 50%;
       cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-      font-size: 14px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
     }
-    
-    .add-contact-button:hover {
-      background-color: #3764e6;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(74, 118, 253, 0.3);
+    .chat-input-container button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
-    
-    .add-contact-button:active {
-      transform: translateY(0);
-      box-shadow: none;
+    .message-input-container {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
     }
-    
-    .empty-contacts {
+    .emoji-button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 5px;
+    }
+    .message-input {
+      width: 100%;
+      padding: 8px 40px 8px 40px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      outline: none;
+    }
+    .message-input:disabled {
+      background-color: #f4f4f4;
+      cursor: not-allowed;
+    }
+    .emoji-panel {
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      width: 300px;
+      max-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+    .emoji-panel-header {
+      background-color: #007bff;
+      color: white;
+      padding: 5px 10px;
+      font-weight: bold;
+    }
+    .emoji-panel-content {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .emoji-item {
+      font-size: 24px;
+      padding: 5px;
+      cursor: pointer;
+    }
+    .emoji-panel-footer {
+      padding: 5px 10px;
+      border-top: 1px solid #ddd;
+    }
+    .barra-rolagem-label {
+      font-size: 12px;
+      color: #666;
+    }
+    .contact-form {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .contact-form-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .contact-form input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      flex: 1;
+    }
+    .contact-form button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .connected-peers {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .peer-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .peer-item:last-child {
+      border-bottom: none;
+    }
+    .peer-item button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 20px;
+      border-radius: 5px;
       text-align: center;
-      color: var(--text-light);
-      margin: 32px 0;
-      font-style: italic;
-      animation: fadeIn 1s ease;
+      margin: 20px;
+    }
+    .error-message button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .progress-container {
+      margin-top: 5px;
+    }
+    .progress-bar {
+      width: 100%;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .progress {
+      height: 5px;
+      background-color: #007bff;
+      transition: width: 0.3s ease;
+    }
+    .green-delete-icon {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      color: #28a745;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .green-delete-icon:hover {
+      color: #218838;
+    }
+    .video-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .video-player, .local-video-player {
+      width: 320px;
+      height: 240px;
+      background-color: #000;
+      border-radius: 5px;
+    }
+    .local-video-player {
+      border: 2px solid #007bff;
+    }
+    .video-label {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .audio-call-container {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .call-end-button {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .no-contact-selected {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 16px;
-    }
-    
-    .empty-illustration {
-      font-size: 48px;
-      color: var(--accent-color);
-      opacity: 0.7;
-    }
-    
-    /* Adicionado: estilos para o componente do chat para garantir que o layout seja preservado */
-    .chat-wrapper {
-      display: flex;
-      flex-direction: column;
+      justify-content: center;
+      text-align: center;
       height: 100%;
-      min-height: 0; /* Importante para que o flex funcione corretamente */
+      color: #6c757d;
     }
-    
-    @media (max-width: 600px) {
-      #root {
-        padding: 8px;
-      }
-      
-      .connection-form, .form-row {
-        flex-direction: column;
-      }
-      
-      .username-input {
-        width: 100%;
-      }
-      
-      .message {
-        max-width: 90%;
-      }
-      
-      .emoji-picker {
-        grid-template-columns: repeat(6, 1fr);
-        max-width: 240px;
-      }
-      
-      .nav-tab {
-        padding: 10px 12px;
-        font-size: 13px;
-      }
-      
-      /* Ajustes para mobile */
-      .message-container {
-        max-height: calc(100vh - 350px);
-      }
+    .no-contact-selected i {
+      font-size: 48px;
+      margin-bottom: 10px;
     }
-    
-    @media (min-width: 800px) {
-      #root {
-        width: 100%;
-        max-width: 800px;
-        margin: 0 auto;
-      }
+    .contact-selector {
+      background-color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
     }
-  </style>
+    .contact-selector select {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      margin-right: 10px;
+    }
+    .contact-selector button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-mode .app-header {
+  background-color: #1f1f1f;
+}
+
+.dark-mode .user-info-container,
+.dark-mode .peer-id-container,
+.dark-mode .contact-form,
+.dark-mode .connected-peers,
+.dark-mode .chat-messages-container,
+.dark-mode .contact-selector,
+.dark-mode .audio-call-container,
+.dark-mode .video-container,
+.dark-mode .chat-header {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.dark-mode .message-bubble.received {
+  background-color: #2e2e2e;
+  color: #e0e0e0;
+}
+
+.dark-mode .message-input {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.dark-mode .emoji-panel {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+
+</style>
+</head>
+<body>
+  <div id="root"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -794,822 +512,1656 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.1/peerjs.min.js"></script>
 
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+    console.log("Script started loading");
 
-    const emojiList = [
-      '😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '😎', '🙂', '😉', 
-      '😢', '😭', '😡', '🤬', '😱', '😰', '😨', '😳', '🤔', '🤗',
-      '👍', '👎', '👌', '✌️', '🤞', '👊', '✊', '🙌', '👏', '🤝',
-      '❤️', '💋', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💔',
-      '🎂', '🎉', '🎊', '🎁', '✨', '🌟', '💫', '⭐', '🎯', '🏆',
-      '🐶', '🐱', '🐭', '🐰', '🦊', '🐻', '🐼', '🐨', '🦁', '🐮',
-      '🍎', '🍕', '🍔', '🌮', '🍰', '🍦', '🍩', '🍫', '☕', '🍺',
-      '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸',
-      '🎵', '🎸', '🎹', '🎷', '🎺', '🎤', '🎧', '🎬', '🎭', '🎮',
-      '🚗', '🚕', '🚙', '🚌', '🚑', '🚒', '✈️', '🚀', '🚁', '⛵',
-      '💼', '💻', '📱', '📷', '🔋', '💡', '🔍', '🔑', '💰', '💳'
-    ];
+    const { useState, useEffect, useRef, useMemo } = React;
 
-    const EmojiPicker = ({ onSelectEmoji, isOpen, onClose }) => {
-      const pickerRef = useRef(null);
-      
-      useEffect(() => {
-        const handleClickOutside = (event) => {
-          if (pickerRef.current && !pickerRef.current.contains(event.target) && isOpen) {
-            onClose();
-          }
-        };
-        
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-          document.removeEventListener('mousedown', handleClickOutside);
-        };
-      }, [isOpen, onClose]);
-      
-      if (!isOpen) return null;
-      
-      return (
-        <div className="emoji-picker" ref={pickerRef}>
-          <div className="emoji-grid">
-            {emojiList.map((emoji, index) => (
-              <div 
-                key={index} 
-                className="emoji-item" 
-                onClick={() => onSelectEmoji(emoji)}
-              >
-                {emoji}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    };
+    // PARTE 1: ErrorBoundary e gerenciamento de identificadores persistentes
+    class ErrorBoundary extends React.Component {
+      state = { error: null };
 
-    const generatePeerId = () => {
-      const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-      const length = 6;
-      let result = '';
-      
-      const randomValues = new Uint8Array(length);
-      window.crypto.getRandomValues(randomValues);
-      
-      for (let i = 0; i < length; i++) {
-        result += chars.charAt(randomValues[i] % chars.length);
+      static getDerivedStateFromError(error) {
+        console.error("ErrorBoundary caught error:", error);
+        return { error };
       }
-      
-      return result;
-    };
 
-    const getInitials = (name) => {
-      if (!name) return '?';
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    };
+      render() {
+        if (this.state.error) {
+          return (
+            <div className="error-message">
+              <h1>Erro na aplicação</h1>
+              <p>{this.state.error.message}</p>
+              <p>Verifique o console do navegador para mais detalhes.</p>
+            </div>
+          );
+        }
+        return this.props.children;
+      }
+    }
 
-    const App = () => {
-      const [activeTab, setActiveTab] = useState('contacts');
-      
-      return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <div className="header">
-            <h1>Bate Papo K10 💬</h1>
-          </div>
-          
-          <div className="nav-tabs">
-            <div 
-              className={`nav-tab ${activeTab === 'contacts' ? 'active' : ''}`}
-              onClick={() => setActiveTab('contacts')}
-            >
-              <i className="fas fa-address-book"></i> Contatos
-            </div>
-            <div 
-              className={`nav-tab ${activeTab === 'chat' ? 'active' : ''}`}
-              onClick={() => setActiveTab('chat')}
-            >
-              <i className="fas fa-comments"></i> Chat
-            </div>
-          </div>
-          
-          {activeTab === 'contacts' ? <ContactsList setActiveTab={setActiveTab} /> : <ChatClient />}
-        </div>
-      );
-    };
+    const PEER_ID_STORAGE_KEY = 'p2pChatClientId';
+    const MESSAGES_STORAGE_KEY = 'p2pChatMessages';
 
-    const ContactsList = ({ setActiveTab }) => {
-      const [contacts, setContacts] = useState([]);
-      const [newContactName, setNewContactName] = useState('');
-      const [newContactId, setNewContactId] = useState('');
-      const [contactsStatus, setContactsStatus] = useState({});
-      const [checkingStatus, setCheckingStatus] = useState(null);
-      
-      useEffect(() => {
-        const savedContacts = localStorage.getItem('batepapo-contacts');
-        if (savedContacts) {
-          try {
-            const parsedContacts = JSON.parse(savedContacts);
-            setContacts(parsedContacts);
-            const initialStatus = {};
-            parsedContacts.forEach(contact => {
-              initialStatus[contact.id] = 'unknown';
-            });
-            setContactsStatus(initialStatus);
-          } catch (err) {
-            console.error("Erro ao carregar contatos:", err);
-            setContacts([]);
-          }
-        }
-        
-        const savedPeerId = localStorage.getItem('batepapo-peer-id');
-        if (!savedPeerId) {
-          const newId = generatePeerId();
-          localStorage.setItem('batepapo-peer-id', newId);
-        }
-      }, []);
-      
-      useEffect(() => {
-        localStorage.setItem('batepapo-contacts', JSON.stringify(contacts));
-      }, [contacts]);
-      
-      const addContact = () => {
-        if (!newContactName.trim() || !newContactId.trim()) {
-          alert("Preencha o nome e o ID do contato!");
-          return;
-        }
-        
-        if (contacts.some(contact => contact.peerId === newContactId.trim())) {
-          alert("Já existe um contato com este ID!");
-          return;
-        }
-        
-        const newContact = {
-          id: Date.now().toString(),
-          name: newContactName.trim(),
-          peerId: newContactId.trim(),
-          createdAt: new Date().toISOString()
-        };
-        
-        setContacts(prev => [...prev, newContact]);
-        setNewContactName('');
-        setNewContactId('');
-      };
-      
-      const removeContact = (contactId) => {
-        if (confirm("Tem certeza que deseja remover este contato?")) {
-          setContacts(prev => prev.filter(contact => contact.id !== contactId));
-        }
-      };
-      
-      const startChat = (contactId) => {
-        const contact = contacts.find(c => c.id === contactId);
-        if (!contact) return;
-        
-        setCheckingStatus(contactId);
-        
-        checkContactStatus(contact.peerId, (isOnline) => {
-          setCheckingStatus(null);
-          
-          setContactsStatus(prev => ({
-            ...prev,
-            [contactId]: isOnline ? 'online' : 'offline'
-          }));
-          
-          if (isOnline) {
-            localStorage.setItem('batepapo-target-peer-id', contact.peerId);
-            setActiveTab('chat');
-          } else {
-            alert(`${contact.name} está offline no momento. Tente novamente mais tarde.`);
-          }
-        });
-      };
-      
-      const checkContactStatus = (contactPeerId, callback) => {
-        if (!peerRef.current) {
-          const tempPeerId = localStorage.getItem('batepapo-peer-id');
-          if (!tempPeerId) {
-            const newId = generatePeerId();
-            localStorage.setItem('batepapo-peer-id', newId);
-          }
-          
-          initPeer(() => {
-            checkConnectionStatus(contactPeerId, callback);
-          });
-        } else {
-          checkConnectionStatus(contactPeerId, callback);
-        }
-      };
-      
-      const peerRef = useRef(null);
-      
-      const initPeer = (callback) => {
-        const tempPeerId = localStorage.getItem('batepapo-peer-id');
-        
-        const peer = new Peer(tempPeerId, {
-          host: '0.peerjs.com',
-          port: 443,
-          secure: true,
-          config: {
-            iceServers: [
-              { urls: 'stun:stun.l.google.com:19302' },
-              { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-          },
-          debug: 1
-        });
-        
-        peer.on('open', (id) => {
-          console.log("Peer inicializado com ID:", id);
-          peerRef.current = peer;
-          
-          if (callback) callback();
-        });
-        
-        peer.on('error', (err) => {
-          console.error("Erro no peer:", err);
-          if (callback) callback();
-        });
-      };
-      
-      const checkConnectionStatus = (contactPeerId, callback) => {
-        try {
-          console.log("Verificando status do contato:", contactPeerId);
-          
-          const connectionTimeout = setTimeout(() => {
-            console.log("Timeout na conexão, contato offline");
-            if (callback) callback(false);
-          }, 5000);
-          
-          const conn = peerRef.current.connect(contactPeerId, {
-            reliable: true
-          });
-          
-          conn.on('open', () => {
-            console.log("Conexão estabelecida, contato online");
-            clearTimeout(connectionTimeout);
-            
-            setTimeout(() => {
-              conn.close();
-            }, 500);
-            
-            if (callback) callback(true);
-          });
-          
-          conn.on('error', (err) => {
-            console.error("Erro na conexão:", err);
-            clearTimeout(connectionTimeout);
-            if (callback) callback(false);
-          });
-        } catch (err) {
-          console.error("Erro ao verificar status:", err);
-          if (callback) callback(false);
-        }
-      };
-      
-      useEffect(() => {
-        if (!peerRef.current) {
-          initPeer();
-        }
-        
-        return () => {
-          if (peerRef.current) {
-            try {
-              peerRef.current.destroy();
-            } catch (e) {
-              console.error("Erro ao destruir peer:", e);
-            }
-          }
-        };
-      }, []);
-      
-      return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-          <div className="add-contact-form">
-            <h3 style={{margin: '0 0 8px 0', fontSize: '16px'}}>
-              <i className="fas fa-user-plus"></i> Adicionar Novo Contato
-            </h3>
-            <div className="form-row">
-              <input
-                type="text"
-                placeholder="Nome do contato"
-                value={newContactName}
-                onChange={(e) => setNewContactName(e.target.value)}
-              />
-              <input
-                type="text"
-                placeholder="ID P2P do contato"
-                value={newContactId}
-                onChange={(e) => setNewContactId(e.target.value)}
-              />
-            </div>
-            <div className="form-row">
-              <button 
-                className="add-contact-button" 
-                onClick={addContact}
-                disabled={!newContactName.trim() || !newContactId.trim()}
-              >
-                <i className="fas fa-plus-circle"></i> Adicionar Contato
-              </button>
-            </div>
-          </div>
-          
-          <div className="contacts-container" style={{maxHeight: 'calc(100vh - 250px)', overflowY: 'auto'}}>
-            <h3 style={{margin: '0 0 12px 0', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px', position: 'sticky', top: 0, background: '#f8faff', padding: '5px 0', zIndex: 1}}>
-              <i className="fas fa-address-book"></i> Meus Contatos ({contacts.length})
-            </h3>
-            
-            {contacts.length === 0 ? (
-              <div className="empty-contacts">
-                <div className="empty-illustration">
-                  <i className="far fa-address-book"></i>
-                </div>
-                <div>Você ainda não tem contatos</div>
-                <div style={{fontSize: '13px', maxWidth: '300px', margin: '0 auto'}}>
-                  Adicione contatos usando o ID P2P deles para começar a conversar!
-                </div>
-              </div>
-            ) : (
-              <div className="contact-list">
-                {contacts.map(contact => (
-                  <div 
-                    className={`contact-item ${checkingStatus === contact.id ? 'checking' : ''}`} 
-                    key={contact.id} 
-                    onClick={() => startChat(contact.id)}
-                  >
-                    <div className="contact-avatar">
-                      {getInitials(contact.name)}
-                    </div>
-                    <div className="contact-info">
-                      <div className="contact-name">{contact.name}</div>
-                      <div className="contact-id">{contact.peerId}</div>
-                    </div>
-                    <div className="contact-actions">
-                      <div 
-                        className={`contact-status ${contactsStatus[contact.id] === 'online' ? 'online' : ''}`}
-                        title={`Status: ${contactsStatus[contact.id] === 'online' ? 'Online' : contactsStatus[contact.id] === 'offline' ? 'Offline' : 'Desconhecido'}`}
-                      >
-                        <i className="fas fa-circle"></i>
-                      </div>
-                      <div 
-                        className="contact-action delete" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeContact(contact.id);
-                        }}
-                        title="Remover contato"
-                      >
-                        <i className="fas fa-trash-alt"></i>
-                      </div>
-                    </div>
-                    
-                    {checkingStatus === contact.id && (
-                      <div className="status-overlay">
-                        <div>Verificando status...</div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    };
-
-    const ChatClient = () => {
-      const [username, setUsername] = useState('');
+    const usePersistentId = () => {
       const [peerId, setPeerId] = useState('');
-      const [targetPeerId, setTargetPeerId] = useState('');
-      const [connectionStatus, setConnectionStatus] = useState('desconectado');
-      const [messages, setMessages] = useState([]);
-      const [newMessage, setNewMessage] = useState('');
-      const [isConnected, setIsConnected] = useState(false);
-      const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-      
-      const connectionRef = useRef(null);
-      const peerRef = useRef(null);
-      const messagesEndRef = useRef(null);
-      const messageContainerRef = useRef(null);
-      const messageInputRef = useRef(null);
+
+      const generateId = () => {
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        const buffer = new Uint8Array(6);
+        crypto.getRandomValues(buffer);
+        return Array.from(buffer)
+          .map(b => chars[b % chars.length])
+          .join('');
+      };
 
       useEffect(() => {
-        const savedPeerId = localStorage.getItem('batepapo-peer-id');
-        if (savedPeerId) {
-          setPeerId(savedPeerId);
-        } else {
-          const newId = generatePeerId();
-          localStorage.setItem('batepapo-peer-id', newId);
-          setPeerId(newId);
-        }
-        
-        const savedUsername = localStorage.getItem('batepapo-username');
-        if (savedUsername) {
-          setUsername(savedUsername);
-        }
-        
-        const savedTargetPeerId = localStorage.getItem('batepapo-target-peer-id');
-        if (savedTargetPeerId) {
-          setTargetPeerId(savedTargetPeerId);
-        }
+        console.log("usePersistentId: Loading or generating ID");
+        const loadOrGenerateId = () => {
+          const savedId = localStorage.getItem(PEER_ID_STORAGE_KEY);
+          if (savedId) {
+            console.log("usePersistentId: Loaded saved ID:", savedId);
+            setPeerId(savedId);
+          } else {
+            const newId = generateId();
+            console.log("usePersistentId: Generated new ID:", newId);
+            localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+            setPeerId(newId);
+          }
+        };
+        loadOrGenerateId();
       }, []);
 
-      useEffect(() => {
-        if (messageContainerRef.current) {
-          messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
-        }
-      }, [messages]);
+      return [peerId, setPeerId];
+    };
 
-      useEffect(() => {
-        if (!peerId) return;
+    // PARTE 2: Componente para gravação de voz
+    const VoiceRecorder = ({ onRecordingComplete, disabled, selectedContact }) => {
+      const [isRecording, setIsRecording] = useState(false);
+      const mediaRecorderRef = useRef(null);
+      const audioChunksRef = useRef([]);
 
-        const initPeer = () => {
-          if (peerRef.current) {
-            try {
-              peerRef.current.destroy();
-            } catch (err) {
-              console.error("Erro ao destruir peer existente:", err);
-            }
-          }
-
-          const peer = new Peer(peerId, {
-            host: '0.peerjs.com',
-            port: 443,
-            secure: true,
-            config: {
-              iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-              ]
-            },
-            debug: 1
-          });
-
-          peer.on('open', (id) => {
-            console.log("Peer inicializado com ID:", id);
-          });
-
-          peer.on('connection', (conn) => {
-            console.log("Conexão recebida de:", conn.peer);
-            
-            conn.on('open', () => {
-              console.log("Conexão aberta com:", conn.peer);
-              setConnectionStatus('conectado');
-              setIsConnected(true);
-              connectionRef.current = conn;
-              
-              const welcomeMsg = {
-                id: Date.now(),
-                text: `${conn.peer} conectou ao chat 👋`,
-                isSystem: true,
-                timestamp: new Date().toISOString()
-              };
-              
-              setMessages(prev => [...prev, welcomeMsg]);
-            });
-            
-            conn.on('data', (data) => {
-              console.log("Dados recebidos:", data);
-              handleIncomingData(data, conn.peer);
-            });
-            
-            conn.on('close', () => {
-              console.log("Conexão fechada com:", conn.peer);
-              if (connectionRef.current && connectionRef.current.peer === conn.peer) {
-                setConnectionStatus('desconectado');
-                setIsConnected(false);
-                connectionRef.current = null;
-                
-                const goodbyeMsg = {
-                  id: Date.now(),
-                  text: `${conn.peer} desconectou do chat 👋`,
-                  isSystem: true,
-                  timestamp: new Date().toISOString()
-                };
-                
-                setMessages(prev => [...prev, goodbyeMsg]);
-              }
-            });
-            
-            conn.on('error', (err) => {
-              console.error("Erro na conexão:", err);
-              if (connectionRef.current && connectionRef.current.peer === conn.peer) {
-                setConnectionStatus('erro');
-                setIsConnected(false);
-                connectionRef.current = null;
-              }
-            });
-          });
-
-          peer.on('error', (err) => {
-            console.error("Erro no peer:", err);
-            setConnectionStatus('erro');
-            setIsConnected(false);
-          });
-
-          peerRef.current = peer;
-        };
-
-        initPeer();
-
-        return () => {
-          if (peerRef.current) {
-            try {
-              peerRef.current.destroy();
-            } catch (e) {
-              console.error("Erro ao destruir peer:", e);
-            }
-          }
-        };
-      }, [peerId]);
-
-      const connectToPeer = () => {
-        if (!peerRef.current || !targetPeerId || !username.trim()) {
-          alert("Preencha seu nome de usuário e o ID do contato!");
-          return;
-        }
-
-        localStorage.setItem('batepapo-username', username);
-
-        setConnectionStatus('conectando');
-
+      const startRecording = async () => {
         try {
-          const conn = peerRef.current.connect(targetPeerId, {
-            reliable: true
-          });
+          console.log("VoiceRecorder: Starting recording");
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorderRef.current = new MediaRecorder(stream);
 
-          conn.on('open', () => {
-            console.log("Conectado ao peer:", targetPeerId);
-            setConnectionStatus('conectado');
-            setIsConnected(true);
-            connectionRef.current = conn;
+          mediaRecorderRef.current.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
 
-            const welcomeMsg = {
-              type: 'message',
-              message: `${username} entrou no chat 👋`,
-              sender: username,
-              timestamp: new Date().toISOString(),
-              system: true
-            };
-            conn.send(welcomeMsg);
-            
-            setMessages(prev => [
-              ...prev,
-              {
-                id: Date.now(),
-                text: `Conectado a ${targetPeerId} 👋`,
-                isSystem: true,
-                timestamp: new Date().toISOString()
-              }
-            ]);
-          });
+          mediaRecorderRef.current.onstop = () => {
+            if (audioChunksRef.current.length === 0) {
+              console.error("VoiceRecorder: No audio data collected");
+              return;
+            }
 
-          conn.on('data', (data) => {
-            console.log("Dados recebidos:", data);
-            handleIncomingData(data, targetPeerId);
-          });
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            console.log("VoiceRecorder: Recording stopped, blob size:", audioBlob.size);
+            onRecordingComplete(audioBlob, selectedContact);
+            audioChunksRef.current = [];
 
-          conn.on('close', () => {
-            console.log("Conexão fechada");
-            setConnectionStatus('desconectado');
-            setIsConnected(false);
-            connectionRef.current = null;
-            
-            setMessages(prev => [
-              ...prev,
-              {
-                id: Date.now(),
-                text: `Desconectado de ${targetPeerId} 👋`,
-                isSystem: true,
-                timestamp: new Date().toISOString()
-              }
-            ]);
-          });
+            stream.getTracks().forEach(track => track.stop());
+          };
 
-          conn.on('error', (err) => {
-            console.error("Erro na conexão:", err);
-            setConnectionStatus('erro');
-            setIsConnected(false);
-            connectionRef.current = null;
-          });
+          audioChunksRef.current = [];
+          mediaRecorderRef.current.start(200);
+          setIsRecording(true);
         } catch (err) {
-          console.error("Erro ao conectar:", err);
-          setConnectionStatus('erro');
-          setIsConnected(false);
-          alert(`Erro ao conectar: ${err.message}`);
+          console.error("VoiceRecorder: Error accessing microphone:", err);
+          alert('Erro ao acessar o microfone: ' + err.message);
         }
       };
 
-      const disconnectFromPeer = () => {
-        if (connectionRef.current) {
+      const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
           try {
-            const goodbyeMsg = {
-              type: 'message',
-              message: `${username} saiu do chat 👋`,
-              sender: username,
-              timestamp: new Date().toISOString(),
-              system: true
-            };
-            connectionRef.current.send(goodbyeMsg);
-            
-            connectionRef.current.close();
-            connectionRef.current = null;
-            setConnectionStatus('desconectado');
-            setIsConnected(false);
+            mediaRecorderRef.current.stop();
+            console.log("VoiceRecorder: Stopping recording");
           } catch (err) {
-            console.error("Erro ao desconectar:", err);
+            console.error("VoiceRecorder: Error stopping media recorder:", err);
           }
+          setIsRecording(false);
         }
       };
 
-      const handleIncomingData = (data, senderId) => {
-        console.log("Processando dados recebidos:", data);
-        
-        if (data.type === 'message') {
-          const newMsg = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            text: data.message || data.text,
-            sender: data.sender || data.senderName,
-            isSystem: data.system,
-            timestamp: data.timestamp || new Date().toISOString(),
-            isSelf: false
-          };
-          
-          setMessages(prev => [...prev, newMsg]);
-        } else if (data.type === 'file-start' || data.type === 'audio-start') {
-          const format = data.type === 'file-start' ? 'arquivo' : 'áudio';
-          const fileName = data.fileName || `${format}.dat`;
-          
-          const newMsg = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            text: `Enviou um ${format}${data.fileName ? `: ${data.fileName}` : ''}`,
-            sender: data.sender || data.senderName,
-            isSystem: false,
-            timestamp: data.timestamp || new Date().toISOString(),
-            isSelf: false
-          };
-          
-          setMessages(prev => [...prev, newMsg]);
-        } else if (data.type === 'file-chunk' || data.type === 'audio-chunk') {
-          return;
+      const toggleRecording = () => {
+        if (isRecording) {
+          stopRecording();
+        } else {
+          startRecording();
         }
       };
 
-      const handleEmojiSelect = (emoji) => {
-        console.log("Emoji selecionado:", emoji);
-        setNewMessage(prev => prev + emoji);
-        setShowEmojiPicker(false);
-        setTimeout(() => {
-          if (messageInputRef.current) {
-            messageInputRef.current.focus();
-          }
-        }, 100);
-      };
-
-      const sendMessage = () => {
-        if (!connectionRef.current || !newMessage.trim()) return;
-
-        const messageData = {
-          type: 'message',
-          text: newMessage.trim(),
-          message: newMessage.trim(),
-          sender: username,
-          senderName: username,
-          timestamp: new Date().toISOString(),
-          direct: true
-        };
-
-        try {
-          console.log("Enviando mensagem:", messageData);
-          connectionRef.current.send(messageData);
-          
-          const newMsg = {
-            id: Date.now() + Math.random().toString(36).substr(2, 9),
-            text: newMessage.trim(),
-            sender: username,
-            timestamp: new Date().toISOString(),
-            isSelf: true
-          };
-          
-          setMessages(prev => [...prev, newMsg]);
-          setNewMessage('');
-        } catch (err) {
-          console.error("Erro ao enviar mensagem:", err);
-          alert("Não foi possível enviar a mensagem. Verifique sua conexão.");
-        }
-      };
-
-      // Modificado para usar a classe chat-wrapper
       return (
-        <div className="chat-wrapper">
-          <div className="connection-status">
-            <span className={`status-indicator status-${isConnected ? 'connected' : connectionStatus === 'conectando' ? 'connecting' : 'disconnected'}`}></span>
-            {isConnected ? 'Conectado' : connectionStatus === 'conectando' ? 'Conectando...' : 'Desconectado'}
-          </div>
+        <button
+          className={`voice-button ${isRecording ? 'recording' : ''}`}
+          onClick={toggleRecording}
+          disabled={disabled}
+          title="Gravar áudio"
+        >
+          <i className="fas fa-microphone button-icon"></i>
+        </button>
+      );
+    };
 
-          <div className="connection-form">
-            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', width: '100%'}}>
-              <div style={{display: 'flex', gap: '8px', width: '100%'}}>
+    // PARTE 3: Tela de gerenciamento de contatos
+    const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
+      const [newName, setNewName] = useState('');
+      const [newPeerId, setNewPeerId] = useState('');
+      const [nameError, setNameError] = useState('');
+      const [idError, setIdError] = useState('');
+
+      const validateForm = () => {
+        let isValid = true;
+
+        if (!newName.trim()) {
+          setNameError('Nome é obrigatório');
+          isValid = false;
+        } else {
+          setNameError('');
+        }
+
+        if (!newPeerId.trim()) {
+          setIdError('ID é obrigatório');
+          isValid = false;
+        } else {
+          setIdError('');
+        }
+
+        return isValid;
+      };
+
+      const handleAddContact = (e) => {
+        e.preventDefault();
+
+        if (validateForm()) {
+          const newContact = { name: newName, peerId: newPeerId };
+          console.log("ContactsScreen: Adding contact:", newContact);
+          setContacts(prev => {
+            const updated = [...prev, newContact];
+            localStorage.setItem('p2pContacts', JSON.stringify(updated));
+            return updated;
+          });
+          setNewName('');
+          setNewPeerId('');
+        }
+      };
+
+      const handleRemoveContact = (peerId, e) => {
+        e.stopPropagation();
+        console.log("ContactsScreen: Removing contact with peerId:", peerId);
+        setContacts(prev => {
+          const updated = prev.filter(c => c.peerId !== peerId);
+          localStorage.setItem('p2pContacts', JSON.stringify(updated));
+          return updated;
+        });
+      };
+
+      return (
+        <div>
+          <button onClick={onBack} style={{ marginBottom: '20px' }}>
+            ← Voltar
+          </button>
+          <h2>Lista de Contatos</h2>
+
+          <form className="contact-form" onSubmit={handleAddContact}>
+            <div className="contact-form-row">
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <input
                   type="text"
-                  className="username-input"
-                  placeholder="Seu nome"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isConnected}
+                  placeholder="Nome do contato"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  style={{ borderColor: nameError ? 'red' : '#ddd' }}
                 />
-                <span style={{padding: '8px', fontWeight: 'bold'}}>Seu ID: {peerId}</span>
+                {nameError && <span style={{ color: 'red', fontSize: '12px' }}>{nameError}</span>}
               </div>
-              <div style={{display: 'flex', gap: '8px', width: '100%'}}>
+
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <input
                   type="text"
-                  placeholder="ID do contato P2P"
-                  value={targetPeerId}
-                  onChange={(e) => setTargetPeerId(e.target.value)}
-                  disabled={isConnected}
-                  style={{flex: 1}}
+                  placeholder="ID do contato"
+                  value={newPeerId}
+                  onChange={(e) => setNewPeerId(e.target.value)}
+                  style={{ borderColor: idError ? 'red' : '#ddd' }}
                 />
-                {!isConnected ? (
-                  <button 
-                    className="connection-button" 
-                    onClick={connectToPeer}
-                    disabled={!username.trim() || !targetPeerId.trim() || connectionStatus === 'conectando'}
-                  >
-                    Conectar
-                  </button>
-                ) : (
-                  <button 
-                    className="connection-button disconnect" 
-                    onClick={disconnectFromPeer}
-                  >
-                    Desconectar
-                  </button>
-                )}
+                {idError && <span style={{ color: 'red', fontSize: '12px' }}>{idError}</span>}
               </div>
+
+              <button type="submit">Adicionar</button>
             </div>
-          </div>
+          </form>
 
-          <div className="message-container" ref={messageContainerRef}>
-            {messages.length === 0 ? (
-              <div className="empty-message">
-                {isConnected ? 'Sem mensagens. Seja o primeiro a dizer olá! 👋' : 'Conecte-se a um contato P2P para iniciar o chat 🚀'}
-              </div>
+          <div className="connected-peers contacts-list">
+            {contacts.length === 0 ? (
+              <p>Nenhum contato adicionado ainda.</p>
             ) : (
-              messages.map((msg) => (
-                <div 
-                  key={msg.id} 
-                  className={msg.isSystem ? "system-message" : `message ${msg.isSelf ? 'sent' : 'received'}`}
+              contacts.map((contact, i) => (
+                <div
+                  key={i}
+                  className="peer-item"
+                  onClick={() => onSelectContact(contact.peerId)}
                 >
-                  {!msg.isSystem && !msg.isSelf && (
-                    <div className="message-sender">{msg.sender}</div>
-                  )}
-                  <div>{msg.text}</div>
+                  <span style={{ flex: 1 }}>
+                    {contact.name} - {contact.peerId}
+                  </span>
+                  <button
+                    onClick={(e) => handleRemoveContact(contact.peerId, e)}
+                    style={{ marginLeft: '10px' }}
+                  >
+                    🗑️
+                  </button>
                 </div>
               ))
             )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="input-container">
-            <button 
-              className="emoji-button" 
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              disabled={!isConnected}
-              title="Inserir emoji"
-            >
-              <i className="far fa-smile"></i>
-            </button>
-
-            <input
-              type="text"
-              className="message-input"
-              placeholder={isConnected ? "Digite sua mensagem..." : "Conecte-se para enviar mensagens"}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-              disabled={!isConnected}
-              ref={messageInputRef}
-            />
-            <button 
-              className="send-button" 
-              onClick={sendMessage}
-              disabled={!isConnected || !newMessage.trim()}
-            >
-              <i className="fas fa-paper-plane"></i>
-            </button>
-
-            {showEmojiPicker && (
-              <EmojiPicker 
-                isOpen={showEmojiPicker} 
-                onSelectEmoji={handleEmojiSelect}
-                onClose={() => setShowEmojiPicker(false)}
-              />
-            )}
           </div>
         </div>
       );
     };
 
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
-</head>
-<body>
-  <div id="root"></div>
+    // PARTE 4: Gerenciador de chat (Modified version without conversation list)
+    const UpdatedChatManager = ({
+      connections,
+      messages,
+      setMessages,
+      contacts,
+      userName,
+      peerId,
+      activeCalls,
+      endCall,
+      startVoiceCall,
+      toggleVideoCall,
+      remoteStreams,
+      audioRefs,
+      videoRefs,
+      handleFileChange,
+      fileInputRef,
+      handleAudioRecording,
+      newMessage,
+      setNewMessage,
+      showEmojiPanel,
+      setShowEmojiPanel,
+      populateEmojiPanel,
+      getContactName,
+      selectedContact,
+      setSelectedContact,
+      localVideoRef
+    }) => {
+      const messagesEndRef = useRef(null);
+
+      const formatTime = (date) => {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+      };
+
+      const filteredMessages = useMemo(() => {
+        if (selectedContact) {
+          return messages.filter(msg =>
+            (msg.sender === selectedContact && msg.recipient === 'you') ||
+            (msg.sender === 'you' && msg.recipient === selectedContact)
+          );
+        }
+        return [];
+      }, [messages, selectedContact]);
+
+      const sendDirectMessage = () => {
+        if (!userName.trim()) {
+          alert('Por favor, defina seu nome antes de enviar mensagens');
+          return;
+        }
+
+        if (!newMessage.trim() || !selectedContact) {
+          console.log("UpdatedChatManager: Cannot send message: no text or no selected contact");
+          return;
+        }
+
+        const conn = connections.find(c => c.peer === selectedContact);
+        if (!conn) {
+          alert(`Contato ${getContactName(selectedContact)} não está conectado no momento.`);
+          return;
+        }
+
+        try {
+          const timestamp = new Date();
+          conn.send({
+            type: 'message',
+            text: newMessage,
+            senderName: userName,
+            direct: true,
+            time: formatTime(timestamp)
+          });
+
+          const newMessageObj = {
+            text: newMessage,
+            sender: 'you',
+            recipient: selectedContact,
+            senderName: userName,
+            time: formatTime(timestamp),
+            type: 'text',
+            direct: true,
+            timestamp: timestamp.getTime()
+          };
+
+          setMessages(prev => {
+            const updated = [...prev, newMessageObj];
+            localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+          });
+
+          setNewMessage('');
+        } catch (err) {
+          console.error("UpdatedChatManager: Error sending direct message:", err);
+          alert(`Erro ao enviar mensagem: ${err.message}`);
+        }
+      };
+
+      const handleSendMessage = () => {
+        if (selectedContact) {
+          sendDirectMessage();
+        }
+      };
+
+      const deleteMessage = (messageTimestamp) => {
+        setMessages(prev => {
+          const updated = prev.filter(msg => msg.timestamp !== messageTimestamp);
+          localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      };
+
+      const deleteMessagesByContact = (peerId) => {
+        setMessages(prev => {
+          const updated = prev.filter(
+            msg =>
+              !(
+                (msg.sender === peerId && msg.recipient === 'you') ||
+                (msg.sender === 'you' && msg.recipient === peerId)
+              )
+          );
+          localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+      };
+
+      useEffect(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      }, [filteredMessages]);
+
+      useEffect(() => {
+        remoteStreams.forEach(({ peerId, stream, type }) => {
+          if (type === 'voice') {
+            const audioElement = audioRefs.current[peerId];
+            if (audioElement && audioElement.srcObject !== stream) {
+              console.log("UpdatedChatManager: Assigning audio stream for peer:", peerId);
+              audioElement.srcObject = stream;
+              audioElement.play().catch(e => console.warn("Audio play failed:", e));
+            }
+          } else if (type === 'video') {
+            const videoElement = videoRefs.current[peerId];
+            if (videoElement && videoElement.srcObject !== stream) {
+              console.log("UpdatedChatManager: Assigning video stream for peer:", peerId);
+              videoElement.srcObject = stream;
+              videoElement.play().catch(e => console.warn("Video play failed:", e));
+            }
+          }
+        });
+        return () => {
+          Object.values(audioRefs.current).forEach(audio => { if (audio) audio.srcObject = null; });
+          Object.values(videoRefs.current).forEach(video => { if (video) video.srcObject = null; });
+        };
+      }, [remoteStreams]);
+
+      // If no contact is selected, show a message
+      if (!selectedContact) {
+        return (
+          <div className="chat-main-container">
+            <div className="chat-messages-container">
+              <div className="no-contact-selected">
+                <i className="fas fa-comments"></i>
+                <p>Selecione um contato para iniciar uma conversa</p>
+                <div>
+                  <select 
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setSelectedContact(e.target.value);
+                      }
+                    }}
+                    value=""
+                  >
+                    <option value="" disabled>Selecione um contato</option>
+                    {connections.map((conn, i) => (
+                      <option key={i} value={conn.peer}>
+                        {getContactName(conn.peer)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Contact selector component for active chat
+      const hasActiveVoiceCallWithPeer = activeCalls.some(c => c.peerId === selectedContact && c.type === 'voice');
+      const hasActiveVideoCallWithPeer = activeCalls.some(c => c.peerId === selectedContact && c.type === 'video' && c.localStream);
+
+      return (
+        <div className="chat-main-container">
+          <div className="chat-messages-container">
+            <div className="chat-header">
+              <div className="chat-header-title">
+                {getContactName(selectedContact)} ({selectedContact})
+              </div>
+              <div className="chat-header-actions">
+                {hasActiveVoiceCallWithPeer ? (
+                  <button
+                    onClick={() => endCall(selectedContact, 'voice')}
+                    style={{ padding: '4px', background: '#ff5722', width: '30px', height: '30px', borderRadius: '50%' }}
+                    title="Encerrar chamada de voz"
+                  >
+                    <i className="fas fa-phone-slash"></i>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => startVoiceCall(selectedContact)}
+                    style={{ padding: '4px', background: '#4CAF50', width: '30px', height: '30px', borderRadius: '50%' }}
+                    title="Iniciar chamada de voz"
+                  >
+                    <i className="fas fa-phone"></i>
+                  </button>
+                )}
+                <button
+                  onClick={() => toggleVideoCall(selectedContact)}
+                  style={{
+                    padding: '4px',
+                    background: hasActiveVideoCallWithPeer ? '#ff5722' : '#4CAF50',
+                    width: '30px',
+                    height: '30px',
+                    borderRadius: '50%',
+                  }}
+                  title={hasActiveVideoCallWithPeer ? "Desligar Câmera" : "Ligar Câmera"}
+                >
+                  <i className={`fas ${hasActiveVideoCallWithPeer ? 'fa-video-slash' : 'fa-video'}`}></i>
+                </button>
+                <button
+                  onClick={() => deleteMessagesByContact(selectedContact)}
+                  style={{ padding: '4px', background: '#28a745', width: '30px', height: '30px', borderRadius: '50%' }}
+                  title="Apagar todas as mensagens"
+                >
+                  <i className="fas fa-trash"></i>
+                </button>
+                <button
+                  onClick={() => setSelectedContact(null)}
+                  style={{ padding: '4px', background: '#6c757d', width: '30px', height: '30px', borderRadius: '50%' }}
+                  title="Voltar à seleção de contatos"
+                >
+                  <i className="fas fa-arrow-left"></i>
+                </button>
+              </div>
+            </div>
+            <div className="chat-messages">
+              {filteredMessages.map((msg, i) => (
+                <div key={msg.timestamp || i} className={`message-bubble ${msg.sender === 'you' ? 'sent' : 'received'}`}>
+                  <div className="chat-user-bubble">
+                    {msg.sender === 'you' ? userName : getContactName(msg.sender)}
+                  </div>
+                  {msg.type === 'text' ? (
+                    <div>{msg.text}</div>
+                  ) : msg.type === 'file' ? (
+                    <div>
+                      {msg.fileData ? (
+                        <a href={msg.fileData} download={msg.fileName} className="file-link">
+                          {msg.fileName}
+                        </a>
+                      ) : (
+                        <span>{msg.fileName}</span>
+                      )}
+                      {(msg.receiving || msg.sending) && (
+                        <div className="progress-container">
+                          <div className="progress-bar">
+                            <div className="progress" style={{ width: `${msg.progress}%` }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : msg.type === 'audio' && (
+                    <div>
+                      {msg.audioData ? (
+                        <audio controls src={msg.audioData} className="audio-player" />
+                      ) : (
+                        <span>Áudio</span>
+                      )}
+                      {(msg.receiving || msg.sending) && (
+                        <div className="progress-container">
+                          <div className="progress-bar">
+                            <div className="progress" style={{ width: `${msg.progress}%` }} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="message-timestamp">{msg.time}</div>
+                  <div
+                    className="green-delete-icon"
+                    onClick={() => deleteMessage(msg.timestamp)}
+                    title="Remover mensagem"
+                  >
+                    <i className="fas fa-trash"></i>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+            <div className="chat-input-container">
+              <VoiceRecorder
+                onRecordingComplete={handleAudioRecording}
+                disabled={!selectedContact || !connections.some(c => c.peer === selectedContact)}
+                selectedContact={selectedContact}
+              />
+              <button
+                onClick={() => fileInputRef.current.click()}
+                disabled={!selectedContact || !connections.some(c => c.peer === selectedContact)}
+                title="Enviar arquivo"
+              >
+                <i className="fas fa-paperclip"></i>
+              </button>
+              <div className="message-input-container">
+                <button
+                  className="emoji-button"
+                  onClick={() => setShowEmojiPanel(!showEmojiPanel)}
+                  title="Emojis"
+                >
+                  😊
+                </button>
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder={
+                    selectedContact
+                      ? `Mensagem para ${getContactName(selectedContact)}...`
+                      : "Selecione um contato..."
+                  }
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && selectedContact) {
+                      handleSendMessage();
+                    }
+                  }}
+                  className="message-input"
+                  disabled={!selectedContact}
+                />
+                {showEmojiPanel && populateEmojiPanel()}
+              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={
+                  !newMessage.trim() ||
+                  !selectedContact ||
+                  !connections.some(c => c.peer === selectedContact)
+                }
+                title="Enviar mensagem"
+              >
+                <i className="fas fa-paper-plane"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // PARTE 5: Componente Principal App
+    const App = () => {
+useEffect(() => {
+  if (localStorage.getItem('modo') === 'dark') {
+    document.body.classList.add('dark-mode');
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+}, []);
+
+const toggleDarkMode = () => {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  localStorage.setItem('modo', isDark ? 'dark' : 'light');
+  const btn = document.getElementById('darkModeBtn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+};
+
+      console.log("App: Component rendering");
+      const [peerId, setPeerId] = usePersistentId();
+      const [userName, setUserName] = useState(() => localStorage.getItem('p2pUserName') || '');
+      const [editingName, setEditingName] = useState(!localStorage.getItem('p2pUserName'));
+      const [connections, setConnections] = useState([]);
+      const [messages, setMessages] = useState(() => {
+        const saved = localStorage.getItem(MESSAGES_STORAGE_KEY);
+        try {
+          const parsed = saved ? JSON.parse(saved) : [];
+          return parsed.map((msg, index) => ({ ...msg, timestamp: msg.timestamp || Date.now() + index }));
+        } catch (err) {
+          console.error("Error parsing saved messages:", err);
+          localStorage.removeItem(MESSAGES_STORAGE_KEY);
+          return [];
+        }
+      });
+      const [newMessage, setNewMessage] = useState('');
+      const [showContacts, setShowContacts] = useState(false);
+      const [contacts, setContacts] = useState(() => {
+        const saved = localStorage.getItem('p2pContacts');
+        try { return saved ? JSON.parse(saved) : []; }
+        catch(e) { return []; }
+      });
+      const [activeCalls, setActiveCalls] = useState([]);
+      const [remoteStreams, setRemoteStreams] = useState([]);
+      const [error, setError] = useState(null);
+      const [isLocalVideoVisible, setIsLocalVideoVisible] = useState(false);
+      const [showEmojiPanel, setShowEmojiPanel] = useState(false);
+      const [selectedContact, setSelectedContact] = useState(null);
+      const [isPeerInitialized, setIsPeerInitialized] = useState(false);
+
+      const peerInstance = useRef(null);
+      const fileInputRef = useRef(null);
+      const pendingFiles = useRef({});
+      const audioRefs = useRef({});
+      const videoRefs = useRef({});
+      const localVideoRef = useRef(null);
+      const localStreamsRef = useRef(new Map());
+      const CHUNK_SIZE = 16 * 1024;
+
+      const stopAndRemoveLocalStream = (peerId) => {
+        const stream = localStreamsRef.current.get(peerId);
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          localStreamsRef.current.delete(peerId);
+          console.log(`App: Stopped and removed local stream for call with ${peerId}`);
+          if (localStreamsRef.current.size === 0) {
+            setIsLocalVideoVisible(false);
+            if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          } else {
+            const firstActiveStream = localStreamsRef.current.values().next().value;
+            if (localVideoRef.current && firstActiveStream) {
+              localVideoRef.current.srcObject = firstActiveStream;
+            }
+          }
+        }
+      };
+
+      useEffect(() => {
+        if (!peerId) return;
+        console.log("App: Initializing PeerJS with ID:", peerId);
+        const peer = new Peer(peerId, {
+  host: '0.peerjs.com', 
+  port: 443, 
+  secure: true,
+  config: { 
+    iceServers: [
+      // Google STUN servers
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' },
+      { urls: 'stun:stun3.l.google.com:19302' },
+      { urls: 'stun:stun4.l.google.com:19302' },
+      
+      // Mais servidores Google
+      { urls: 'stun:stun.google.com:19302' },
+      { urls: 'stun:stun-1.google.com:19302' },
+      { urls: 'stun:stun-2.google.com:19302' },
+      { urls: 'stun:stun-3.google.com:19302' },
+      { urls: 'stun:stun-4.google.com:19302' },
+      
+      // Servidores Google regionais
+      { urls: 'stun:stun-us-west-1.google.com:19302' },
+      { urls: 'stun:stun-us-east-1.google.com:19302' },
+      { urls: 'stun:stun-us-central-1.google.com:19302' },
+      { urls: 'stun:stun-us-south-1.google.com:19302' },
+      { urls: 'stun:stun-eu-west-1.google.com:19302' },
+      { urls: 'stun:stun-eu-central-1.google.com:19302' },
+      { urls: 'stun:stun-asia-east-1.google.com:19302' },
+      { urls: 'stun:stun-asia-northeast-1.google.com:19302' },
+      { urls: 'stun:stun-asia-south-1.google.com:19302' },
+      { urls: 'stun:stun-asia-southeast-1.google.com:19302' },
+      
+      // Mais variações de servidores Google
+      { urls: 'stun:stun.goog:19302' },
+      { urls: 'stun:stun-1.goog:19302' },
+      { urls: 'stun:stun-2.goog:19302' },
+      { urls: 'stun:stun-3.goog:19302' },
+      { urls: 'stun:stun-4.goog:19302' },
+      
+      // Serviços Google
+      { urls: 'stun:stun.meet.google.com:19302' },
+      { urls: 'stun:stun.hangouts.google.com:19302' },
+      { urls: 'stun:stun.chrome.google.com:19302' },
+      { urls: 'stun:stun.gmail.google.com:19302' },
+      { urls: 'stun:stun.youtube.google.com:19302' },
+      { urls: 'stun:stun.drive.google.com:19302' },
+      { urls: 'stun:stun.docs.google.com:19302' },
+      { urls: 'stun:stun.play.google.com:19302' },
+      
+      // Variações adicionais de Google
+      { urls: 'stun:stun1.corp.google.com:19302' },
+      { urls: 'stun:stun2.corp.google.com:19302' },
+      { urls: 'stun:stun3.corp.google.com:19302' },
+      { urls: 'stun:stun4.corp.google.com:19302' },
+      { urls: 'stun:stun5.corp.google.com:19302' },
+      { urls: 'stun:stun6.corp.google.com:19302' },
+      { urls: 'stun:stun.px.google.com:19302' },
+      { urls: 'stun:stun.gl.google.com:19302' },
+      { urls: 'stun:stun.gvt1.com:19302' },
+      { urls: 'stun:stun.gvt2.com:19302' },
+      { urls: 'stun:stun.gvt3.com:19302' },
+      
+      // Mais servidores regionais do Google
+      { urls: 'stun:stun-na-east.google.com:19302' },
+      { urls: 'stun:stun-na-west.google.com:19302' },
+      { urls: 'stun:stun-sa-east.google.com:19302' },
+      { urls: 'stun:stun-eu-west.google.com:19302' },
+      { urls: 'stun:stun-eu-east.google.com:19302' },
+      { urls: 'stun:stun-asia-east.google.com:19302' },
+      { urls: 'stun:stun-asia-west.google.com:19302' },
+      { urls: 'stun:stun-asia-south.google.com:19302' },
+      { urls: 'stun:stun-asia-north.google.com:19302' },
+      { urls: 'stun:stun-australia.google.com:19302' },
+      { urls: 'stun:stun-africa.google.com:19302' },
+      
+      // Mais variações de Google
+      { urls: 'stun:stun.voice.google.ca:19302' },
+      { urls: 'stun:stun.voice.google.mx:19302' },
+      { urls: 'stun:stun.voice.google.co.uk:19302' },
+      { urls: 'stun:stun.voice.google.de:19302' },
+      { urls: 'stun:stun.voice.google.fr:19302' },
+      { urls: 'stun:stun.voice.google.ru:19302' },
+      { urls: 'stun:stun.voice.google.jp:19302' },
+      { urls: 'stun:stun.voice.google.cn:19302' },
+      { urls: 'stun:stun.voice.google.in:19302' },
+      { urls: 'stun:stun.voice.google.com.br:19302' },
+      
+      // Mais servidores regionais do Google
+      { urls: 'stun:stun.google.com.ar:19302' },
+      { urls: 'stun:stun.google.com.au:19302' },
+      { urls: 'stun:stun.google.co.jp:19302' },
+      { urls: 'stun:stun.google.co.kr:19302' },
+      { urls: 'stun:stun.google.co.nz:19302' },
+      { urls: 'stun:stun.google.co.th:19302' },
+      { urls: 'stun:stun.google.co.za:19302' },
+      { urls: 'stun:stun.google.com.sg:19302' },
+      { urls: 'stun:stun.google.com.tw:19302' },
+      
+      // Servidores STUN não-Google
+      { urls: 'stun:stun.ekiga.net:3478' },
+      { urls: 'stun:stun.ideasip.com:3478' },
+      { urls: 'stun:stun.schlund.de:3478' },
+      { urls: 'stun:stun.voiparound.com:3478' },
+      { urls: 'stun:stun.voipbuster.com:3478' },
+      { urls: 'stun:stun.voipstunt.com:3478' },
+      { urls: 'stun:stun.voxgratia.org:3478' },
+      { urls: 'stun:stun.services.mozilla.com:3478' },
+      { urls: 'stun:stun.stunprotocol.org:3478' },
+      { urls: 'stun:stun.counterpath.com:3478' },
+      { urls: 'stun:stun.12connect.com:3478' },
+      { urls: 'stun:stun.callwithus.com:3478' },
+      { urls: 'stun:stun.sipgate.net:3478' },
+      { urls: 'stun:stun.sipgate.net:10000' },
+      { urls: 'stun:stun.1und1.de:3478' },
+      { urls: 'stun:stun.gmx.net:3478' },
+      { urls: 'stun:stun.xten.com:3478' },
+      { urls: 'stun:stun.nextcloud.com:3478' },
+      { urls: 'stun:stun.sip.us:3478' },
+      { urls: 'stun:stun.twt.it:3478' }
+    ],
+    sdpSemantics: 'unified-plan',
+    iceTransportPolicy: 'all',
+    bundlePolicy: 'max-bundle',
+    rtcpMuxPolicy: 'require',
+    iceCandidatePoolSize: 10
+  },
+  debug: 2
+});
+        peer.on('open', (id) => {
+          console.log("PeerJS: Connected with ID:", id);
+          setIsPeerInitialized(true);
+        });
+
+        peer.on('error', (err) => {
+          console.error("PeerJS: Error:", err);
+          if (err.type === 'unavailable-id') {
+            console.log("PeerJS: ID unavailable, generating new ID...");
+            const newId = generateNewId();
+            localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
+            window.location.reload();
+          } else if (err.type === 'peer-unavailable') {
+            console.log("PeerJS: Peer unavailable, user is likely offline");
+            alert("Usuário offline");
+          } else {
+            setError(`Erro PeerJS: ${err.type}`);
+          }
+        });
+
+        peer.on('connection', (conn) => {
+          console.log("PeerJS: Incoming data connection from:", conn.peer);
+          if (connections.some(c => c.peer === conn.peer)) {
+            console.log("App: Connection handler already set up for", conn.peer);
+            setConnections(prev => prev.map(c => c.peer === conn.peer ? conn : c));
+            return;
+          }
+
+          conn.on('open', () => {
+            console.log("PeerJS: Data connection opened with:", conn.peer);
+            setConnections(prev => [...prev.filter(c => c.peer !== conn.peer), conn]);
+          });
+
+          conn.on('data', (data) => {
+            console.log("PeerJS: Received data from:", conn.peer, data.type);
+            handleIncomingData(data, conn.peer);
+          });
+
+          conn.on('close', () => {
+            console.log("PeerJS: Data connection closed with:", conn.peer);
+            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+            endCall(conn.peer, 'video');
+            endCall(conn.peer, 'voice');
+            if (selectedContact === conn.peer) {
+              setSelectedContact(null);
+            }
+          });
+
+          conn.on('error', (err) => {
+            console.error("PeerJS: Data connection error with:", conn.peer, err);
+            setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+            endCall(conn.peer, 'video');
+            endCall(conn.peer, 'voice');
+            if (selectedContact === conn.peer) {
+              setSelectedContact(null);
+            }
+          });
+        });
+
+        peer.on('call', async (call) => {
+          const callType = call.metadata?.type || 'video';
+          console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
+
+          try {
+            console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
+            call.answer(null);
+
+            setActiveCalls(prev => [
+              ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
+              {
+                peerId: call.peer,
+                call,
+                localStream: null,
+                type: callType,
+                direction: 'incoming',
+                isTemporaryStream: false
+              }
+            ]);
+
+            call.on('stream', (remoteStream) => {
+              console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
+              setRemoteStreams(prev => [
+                ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
+                { peerId: call.peer, stream: remoteStream, type: callType }
+              ]);
+            });
+
+            call.on('close', () => {
+              console.log(`PeerJS: Incoming ${callType} call closed with:`, call.peer);
+              endCall(call.peer, callType);
+            });
+
+            call.on('error', (err) => {
+              console.error(`PeerJS: Error in incoming ${callType} call:`, err);
+              endCall(call.peer, callType);
+            });
+
+          } catch (err) {
+            console.error(`PeerJS: Error handling incoming ${callType} call:`, err);
+            call.close();
+            alert('Erro ao acessar câmera/microfone: ' + err.message);
+          }
+        });
+
+        peerInstance.current = peer;
+
+        return () => {
+          console.log("App: Cleaning up PeerJS connection and all streams");
+          if (peerInstance.current) {
+            peerInstance.current.destroy();
+            peerInstance.current = null;
+          }
+          localStreamsRef.current.forEach((stream, peerId) => {
+            stream.getTracks().forEach(track => track.stop());
+            console.log(`App Cleanup: Stopped local stream for ${peerId}`);
+          });
+          localStreamsRef.current.clear();
+          setActiveCalls([]);
+          setRemoteStreams([]);
+          setIsLocalVideoVisible(false);
+          if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          setIsPeerInitialized(false);
+        };
+      }, [peerId]);
+
+      const generateNewId = () => {
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        const buffer = new Uint8Array(6);
+        crypto.getRandomValues(buffer);
+        return Array.from(buffer).map(b => chars[b % chars.length]).join('');
+      };
+
+      const getContactName = (pId) => contacts.find(c => c.peerId === pId)?.name || pId;
+
+      const saveUserName = () => {
+        if (userName.trim()) {
+          localStorage.setItem('p2pUserName', userName);
+          setEditingName(false);
+        }
+      };
+
+      const formatTime = (date) => date.toLocaleTimeString('pt-BR');
+
+      const connectToPeer = (peerIdToConnect) => {
+        if (!peerIdToConnect || !peerInstance.current || !isPeerInitialized) {
+          alert("Erro: Peer não inicializado ou ID inválido");
+          return;
+        }
+        if (connections.some(conn => conn.peer === peerIdToConnect && conn.open)) {
+          console.log("App: Already connected to", peerIdToConnect);
+          setSelectedContact(peerIdToConnect);
+          return;
+        }
+
+        console.log("App: Attempting to connect to peer:", peerIdToConnect);
+        try {
+          const conn = peerInstance.current.connect(peerIdToConnect, { reliable: true });
+          if (!conn) {
+            throw new Error("Não foi possível criar a conexão");
+          }
+
+          conn.on('open', () => {
+            console.log("PeerJS: Connection opened with:", peerIdToConnect);
+            setConnections(prev => [...prev.filter(c => c.peer !== peerIdToConnect), conn]);
+            setSelectedContact(peerIdToConnect);
+          });
+
+          conn.on('error', (err) => {
+            console.error("PeerJS: Connection error with:", peerIdToConnect, err);
+            setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
+            alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+          });
+
+          conn.on('close', () => {
+            console.log("PeerJS: Connection closed with:", peerIdToConnect);
+            setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
+            if (selectedContact === peerIdToConnect) {
+              setSelectedContact(null);
+            }
+          });
+
+          conn.on('data', (data) => {
+            console.log("PeerJS: Received data from:", peerIdToConnect, data);
+            handleIncomingData(data, peerIdToConnect);
+          });
+        } catch (err) {
+          console.error("App: Error establishing data connection:", err);
+          alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+        }
+      };
+
+      const handleIncomingData = (data, pId) => {
+        console.log("App: Processing incoming data of type:", data.type, "from", pId);
+        const timestamp = data.timestamp || Date.now();
+        const messageTime = data.time || formatTime(new Date(timestamp));
+        const baseMessage = {
+          sender: pId,
+          senderName: data.senderName || getContactName(pId),
+          time: messageTime,
+          direct: data.direct || false,
+          timestamp: timestamp,
+          recipient: data.direct ? 'you' : undefined
+        };
+
+        let messageToAdd = null;
+
+        if (data.type === 'message') {
+          messageToAdd = { ...baseMessage, text: data.text, type: 'text' };
+        } else if (data.type === 'file-start') {
+          pendingFiles.current[data.fileId] = {
+            fileName: data.fileName,
+            chunks: new Uint8Array(data.fileSize),
+            receivedBytes: 0,
+            totalSize: data.fileSize,
+            fileType: data.fileType
+          };
+          messageToAdd = { ...baseMessage, fileId: data.fileId, fileName: data.fileName, type: 'file', receiving: true, progress: 0 };
+        } else if (data.type === 'file-chunk') {
+          const fileData = pendingFiles.current[data.fileId];
+          if (fileData) {
+            const chunk = data.chunk instanceof ArrayBuffer ? new Uint8Array(data.chunk) : new Uint8Array(Object.values(data.chunk));
+            fileData.chunks.set(chunk, data.offset);
+            fileData.receivedBytes += chunk.length;
+            const progress = Math.min(100, Math.floor((fileData.receivedBytes / fileData.totalSize) * 100));
+            setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, progress } : msg));
+            if (fileData.receivedBytes === fileData.totalSize) {
+              const blob = new Blob([fileData.chunks], { type: fileData.fileType || 'application/octet-stream' });
+              const url = URL.createObjectURL(blob);
+              setMessages(prev => prev.map(msg => msg.fileId === data.fileId ? { ...msg, fileData: url, receiving: false, progress: 100 } : msg));
+              delete pendingFiles.current[data.fileId];
+            }
+          }
+          return;
+        } else if (data.type === 'audio-start') {
+          pendingFiles.current[data.audioId] = { chunks: new Uint8Array(data.audioSize), receivedBytes: 0, totalSize: data.audioSize };
+          messageToAdd = { ...baseMessage, audioId: data.audioId, type: 'audio', receiving: true, progress: 0 };
+        } else if (data.type === 'audio-chunk') {
+          const audioData = pendingFiles.current[data.audioId];
+          if (audioData) {
+            const chunk = data.chunk instanceof ArrayBuffer ? new Uint8Array(data.chunk) : new Uint8Array(Object.values(data.chunk));
+            audioData.chunks.set(chunk, data.offset);
+            audioData.receivedBytes += chunk.length;
+            const progress = Math.min(100, Math.floor((audioData.receivedBytes / audioData.totalSize) * 100));
+            setMessages(prev => prev.map(msg => msg.audioId === data.audioId ? { ...msg, progress } : msg));
+            if (audioData.receivedBytes === audioData.totalSize) {
+              const blob = new Blob([audioData.chunks], { type: 'audio/webm' });
+              const url = URL.createObjectURL(blob);
+              setMessages(prev => prev.map(msg => msg.audioId === data.audioId ? { ...msg, audioData: url, receiving: false, progress: 100 } : msg));
+              delete pendingFiles.current[data.audioId];
+            }
+          }
+          return;
+        }
+
+        if (messageToAdd) {
+          setMessages(prev => {
+            const updated = [...prev, messageToAdd];
+            if (messageToAdd.type === 'text' || messageToAdd.receiving) {
+              localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+            }
+            return updated;
+          });
+        }
+      };
+
+      const sendChunkedData = (conn, idKey, dataBlob, typePrefix, metaData) => {
+        const id = peerId + `_${typePrefix}_` + Date.now();
+        const reader = new FileReader();
+        let offset = 0;
+        const timestamp = new Date();
+        const formattedTime = formatTime(timestamp);
+        const isFile = typePrefix === 'file';
+        const localUrl = URL.createObjectURL(dataBlob);
+
+        setMessages(prev => {
+          const newMsg = {
+            ...metaData,
+            [idKey]: id,
+            sender: 'you',
+            recipient: conn.peer,
+            senderName: userName,
+            time: formattedTime,
+            type: isFile ? 'file' : 'audio',
+            sending: true,
+            progress: 0,
+            direct: true,
+            timestamp: timestamp.getTime(),
+            [isFile ? 'fileData' : 'audioData']: localUrl
+          };
+          const updated = [...prev, newMsg];
+          localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+          return updated;
+        });
+
+        try {
+          conn.send({
+            type: `${typePrefix}-start`,
+            [idKey]: id,
+            [isFile ? 'fileSize' : 'audioSize']: dataBlob.size,
+            senderName: userName,
+            time: formattedTime,
+            direct: true,
+            timestamp: timestamp.getTime(),
+            ...(isFile && { fileName: metaData.fileName, fileType: dataBlob.type })
+          });
+        } catch (err) {
+          console.error(`App: Error sending ${typePrefix}-start to`, conn.peer, err);
+          alert(`Erro ao iniciar envio: ${err.message}`);
+          setMessages(prev => prev.filter(msg => msg[idKey] !== id));
+          return;
+        }
+
+        const readChunk = () => {
+          const chunk = dataBlob.slice(offset, offset + CHUNK_SIZE);
+          reader.readAsArrayBuffer(chunk);
+        };
+
+        reader.onload = (ev) => {
+          if (!conn || !conn.open) {
+            console.error("App: Connection closed while sending chunk to", conn.peer);
+            alert(`Conexão perdida com ${getContactName(conn.peer)} durante o envio.`);
+            setMessages(prev => prev.map(msg => msg[idKey] === id ? { ...msg, sending: false, progress: -1 } : msg));
+            return;
+          }
+          const chunkBuffer = ev.target.result;
+          try {
+            conn.send({ type: `${typePrefix}-chunk`, [idKey]: id, chunk: chunkBuffer, offset: offset, direct: true });
+            offset += chunkBuffer.byteLength;
+            const progress = Math.min(100, Math.floor((offset / dataBlob.size) * 100));
+            setMessages(prev => prev.map(msg => msg[idKey] === id ? { ...msg, progress } : msg));
+            if (offset < dataBlob.size) {
+              requestAnimationFrame(readChunk);
+            } else {
+              console.log(`App: ${typePrefix} sending complete for id ${id}`);
+              setMessages(prev => {
+                const updated = prev.map(msg => msg[idKey] === id ? { ...msg, sending: false, progress: 100 } : msg);
+                localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(updated));
+                return updated;
+              });
+            }
+          } catch (err) {
+            console.error(`App: Error sending ${typePrefix} chunk to`, conn.peer, err);
+            alert(`Erro ao enviar parte: ${err.message}`);
+            setMessages(prev => prev.map(msg => msg[idKey] === id ? { ...msg, sending: false, progress: -1 } : msg));
+          }
+        };
+        reader.onerror = (err) => {
+          console.error(`App: Error reading ${typePrefix} blob:`, err);
+          alert(`Erro ao ler dados: ${err.message}`);
+          setMessages(prev => prev.map(msg => msg[idKey] === id ? { ...msg, sending: false, progress: -1 } : msg));
+        };
+        readChunk();
+      };
+
+      const handleFileChange = (e) => {
+        if (!userName.trim()) {
+          alert('Defina seu nome.');
+          setEditingName(true);
+          return;
+        }
+        if (!selectedContact) {
+          alert('Selecione um contato.');
+          return;
+        }
+        const file = e.target.files[0];
+        if (!file) return;
+        const conn = connections.find(c => c.peer === selectedContact);
+        if (!conn || !conn.open) {
+          alert(`Contato ${getContactName(selectedContact)} offline.`);
+          return;
+        }
+
+        sendChunkedData(conn, 'fileId', file, 'file', { fileName: file.name });
+        fileInputRef.current.value = '';
+      };
+
+      const handleAudioRecording = (audioBlob, targetContact) => {
+        if (!userName.trim()) {
+          alert('Defina seu nome.');
+          setEditingName(true);
+          return;
+        }
+        if (!targetContact) {
+          alert('Selecione um contato.');
+          return;
+        }
+        const conn = connections.find(c => c.peer === targetContact);
+        if (!conn || !conn.open) {
+          alert(`Contato ${getContactName(targetContact)} offline.`);
+          return;
+        }
+
+        sendChunkedData(conn, 'audioId', audioBlob, 'audio', {});
+      };
+
+      const startVoiceCall = async (peerIdToCall) => {
+        if (!peerInstance.current) {
+          alert('Peer não inicializado');
+          return;
+        }
+        if (!peerIdToCall) {
+          alert('Selecione um contato.');
+          return;
+        }
+        if (activeCalls.some(c => c.peerId === peerIdToCall && c.type === 'voice')) return;
+        const conn = connections.find(c => c.peer === peerIdToCall);
+        if (!conn || !conn.open) {
+          alert(`Contato ${getContactName(peerIdToCall)} offline.`);
+          return;
+        }
+
+        try {
+          console.log("App: Starting voice call with:", peerIdToCall);
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          if (!stream) return;
+
+          localStreamsRef.current.set(peerIdToCall + '_voice', stream);
+          const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'voice' } });
+
+          setActiveCalls(prev => [
+            ...prev,
+            {
+              peerId: peerIdToCall,
+              call,
+              localStream: stream,
+              type: 'voice',
+              direction: 'outgoing',
+              isTemporaryStream: false
+            }
+          ]);
+
+          call.on('stream', (remoteStream) => {
+            console.log(`App: Received remote audio stream from:`, peerIdToCall);
+            setRemoteStreams(prev => [
+              ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'voice')),
+              { peerId: peerIdToCall, stream: remoteStream, type: 'voice' }
+            ]);
+          });
+          call.on('close', () => {
+            console.log("App: Voice call closed with:", peerIdToCall);
+            endCall(peerIdToCall, 'voice');
+          });
+          call.on('error', (err) => {
+            console.error('App: Error in voice call:', err);
+            alert('Erro chamada de voz: ' + err.message);
+            endCall(peerIdToCall, 'voice');
+          });
+        } catch (err) {
+          console.error('App: Error starting voice call:', err);
+          alert('Erro ao acessar microfone: ' + err.message);
+        }
+      };
+
+      const toggleVideoCall = async (peerIdToCall) => {
+        if (!peerInstance.current) {
+          alert('Peer não inicializado');
+          return;
+        }
+        if (!peerIdToCall) {
+          alert('Selecione um contato.');
+          return;
+        }
+
+        const existingCall = activeCalls.find(c => c.peerId === peerIdToCall && c.type === 'video');
+        const isSendingVideo = existingCall && existingCall.localStream;
+        const conn = connections.find(c => c.peer === peerIdToCall);
+
+        if (isSendingVideo) {
+          console.log("App: Stopping local video stream for:", peerIdToCall);
+          if (existingCall && existingCall.localStream) {
+            existingCall.localStream.getTracks().forEach(track => track.stop());
+            localStreamsRef.current.delete(peerIdToCall + '_video');
+          }
+
+          setActiveCalls(prev => prev.map(c => {
+            if (c.peerId === peerIdToCall && c.type === 'video') {
+              return { ...c, localStream: null };
+            }
+            return c;
+          }));
+
+          if (localStreamsRef.current.size === 0) {
+            setIsLocalVideoVisible(false);
+            if (localVideoRef.current) localVideoRef.current.srcObject = null;
+          }
+
+        } else {
+          if (!conn || !conn.open) {
+            alert(`Contato ${getContactName(peerIdToCall)} offline.`);
+            return;
+          }
+
+          try {
+            console.log("App: Getting video stream for:", peerIdToCall);
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            if (!stream) return;
+
+            localStreamsRef.current.set(peerIdToCall + '_video', stream);
+            setIsLocalVideoVisible(true);
+            if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+
+            if (existingCall) {
+              console.log("App: Adding local stream to existing call with:", peerIdToCall);
+
+              setActiveCalls(prev => prev.map(c => {
+                if (c.peerId === peerIdToCall && c.type === 'video') {
+                  return { ...c, localStream: stream };
+                }
+                return c;
+              }));
+
+              const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+
+              call.on('stream', (remoteStream) => {
+                console.log(`App: Received remote video stream response from:`, peerIdToCall);
+              });
+
+              call.on('close', () => {
+                console.log("App: Outgoing video stream call closed with:", peerIdToCall);
+              });
+
+              call.on('error', (err) => {
+                console.error('App: Error in outgoing video stream call:', err);
+              });
+
+            } else {
+              console.log("App: Starting new video call with:", peerIdToCall);
+              const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
+
+              setActiveCalls(prev => [
+                ...prev.filter(c => !(c.peerId === peerIdToCall && c.type === 'video')),
+                {
+                  peerId: peerIdToCall,
+                  call,
+                  localStream: stream,
+                  type: 'video',
+                  direction: 'outgoing',
+                  isTemporaryStream: false
+                }
+              ]);
+
+              call.on('stream', (remoteStream) => {
+                console.log(`App: Received remote video stream from:`, peerIdToCall);
+                setRemoteStreams(prev => [
+                  ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
+                  { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
+                ]);
+              });
+
+              call.on('close', () => {
+                console.log("App: Video call closed with:", peerIdToCall);
+                endCall(peerIdToCall, 'video');
+              });
+
+              call.on('error', (err) => {
+                console.error('App: Error in video call:', err);
+                alert('Erro chamada de vídeo: ' + err.message);
+                endCall(peerIdToCall, 'video');
+              });
+            }
+          } catch (err) {
+            console.error('App: Error starting video call:', err);
+            alert('Erro ao acessar câmera/microfone: ' + err.message);
+          }
+        }
+      };
+
+      const endCall = (peerIdToEnd, callType) => {
+        console.log(`App: Ending ${callType} call with:`, peerIdToEnd);
+        const callData = activeCalls.find(c => c.peerId === peerIdToEnd && c.type === callType);
+
+        if (callData) {
+          if (callData.call) {
+            callData.call.close();
+          }
+          if (callData.localStream) {
+            callData.localStream.getTracks().forEach(track => track.stop());
+            console.log(`App: Stopped local stream tracks for ${callType} call with ${peerIdToEnd}`);
+            stopAndRemoveLocalStream(peerIdToEnd + '_' + callType);
+          }
+        }
+
+        setActiveCalls(prev => prev.filter(c => !(c.peerId === peerIdToEnd && c.type === callType)));
+        setRemoteStreams(prev => prev.filter(s => !(s.peerId === peerIdToEnd && s.type === callType)));
+
+        const anyLocalVideoActive = Array.from(localStreamsRef.current.values()).some(
+          stream => stream.getVideoTracks().some(t => t.readyState === 'live')
+        );
+        if (!anyLocalVideoActive) {
+          setIsLocalVideoVisible(false);
+          if (localVideoRef.current) localVideoRef.current.srcObject = null;
+        } else if (
+          isLocalVideoVisible &&
+          (!localVideoRef.current?.srcObject?.active || localVideoRef.current?.srcObject === callData?.localStream)
+        ) {
+          const firstActiveStream = localStreamsRef.current.values().next().value;
+          if (localVideoRef.current && firstActiveStream) {
+            localVideoRef.current.srcObject = firstActiveStream;
+          }
+        }
+      };
+
+      const populateEmojiPanel = () => {
+    const emojis = [
+      "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
+      "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
+      "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
+      "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
+      "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
+      "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
+      "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
+      "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳"
+    ];
+
+    return (
+      <div className="emoji-panel">
+        <div className="emoji-panel-header">Emojis</div>
+        <div className="emoji-panel-content">
+          {emojis.map((emoji, index) => (
+            <span
+              key={index}
+              className="emoji-item"
+              onClick={() => setNewMessage(prev => prev + emoji)}
+            >
+              {emoji}
+            </span>
+          ))}
+        </div>
+        <div className="emoji-panel-footer">
+          <span className="barra-rolagem-label">Role para ver mais</span>
+        </div>
+      </div>
+    );
+  };
+
+      // Add a contact selector component
+      const ContactSelector = ({ contacts, connections, onSelectContact }) => {
+        return (
+          <div className="contact-selector">
+            <select 
+              onChange={(e) => {
+                if (e.target.value) {
+                  onSelectContact(e.target.value);
+                  connectToPeer(e.target.value);
+                }
+              }}
+              defaultValue=""
+            >
+              <option value="" disabled>Selecione um contato</option>
+              {contacts.map((contact, i) => (
+                <option key={i} value={contact.peerId}>
+                  {contact.name} ({contact.peerId})
+                </option>
+              ))}
+            </select>
+            <button onClick={() => setShowContacts(true)}>
+              <i className="fas fa-plus"></i> Novo Contato
+            </button>
+          </div>
+        );
+      };
+
+  if (error) {
+    return (
+      <div className="error-message">
+        <h1>Erro</h1>
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()}>Tentar novamente</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+      <div className="app-header">
+        <h1 className="app-title">k10</h1>
+        
+<div className="header-buttons">
+  <button onClick={() => setShowContacts(true)} className="header-button" title="Contatos">
+    <i className="fas fa-address-book"></i>
+  </button>
+  <button onClick={toggleDarkMode} className="header-button" title="Modo Noturno" id="darkModeBtn">
+    🌙
+  </button>
+</div>
+
+      </div>
+
+      <div className="user-info-container">
+        {editingName ? (
+          <div className="user-name-form">
+            <input
+              type="text"
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder="Digite seu nome"
+              autoFocus
+            />
+            <button
+              onClick={saveUserName}
+              disabled={!userName.trim()}
+            >
+              Salvar
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span className="username">{userName}</span>
+            <button
+              className="user-edit-button"
+              onClick={() => setEditingName(true)}
+            >
+              Editar
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="peer-id-container">
+        <span>Seu ID: {peerId}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(peerId);
+            alert('ID copiado para a área de transferência!');
+          }}
+        >
+          Copiar
+        </button>
+      </div>
+
+      {/* Contact selector only when not in contacts screen */}
+      {!showContacts && contacts.length > 0 && 
+        <ContactSelector 
+          contacts={contacts} 
+          connections={connections} 
+          onSelectContact={setSelectedContact} 
+        />
+      }
+
+      {(remoteStreams.length > 0 || isLocalVideoVisible) && (
+        <div className="video-container">
+          {isLocalVideoVisible && (
+            <div>
+              <div className="video-label">Você</div>
+              <video
+                className="local-video-player"
+                ref={localVideoRef}
+                autoPlay
+                muted
+              ></video>
+            </div>
+          )}
+          {remoteStreams.map((streamData, index) => (
+            streamData.type === 'video' && (
+              <div key={index}>
+                <div className="video-label">{getContactName(streamData.peerId)}</div>
+                <video
+                  className="video-player"
+                  ref={el => videoRefs.current[streamData.peerId] = el}
+                  autoPlay
+                ></video>
+              </div>
+            )
+          ))}
+        </div>
+      )}
+
+      {activeCalls.map((call, index) => (
+        call.type === 'voice' && (
+          <div key={index} className="audio-call-container">
+            <span>Chamada de voz com {getContactName(call.peerId)}</span>
+            <button
+              className="call-end-button"
+              onClick={() => endCall(call.peerId, 'voice')}
+            >
+              Encerrar
+            </button>
+            <audio
+              ref={el => audioRefs.current[call.peerId] = el}
+              autoPlay
+            ></audio>
+          </div>
+        )
+      ))}
+
+      {showContacts ? (
+        <ContactsScreen
+          contacts={contacts}
+          setContacts={setContacts}
+          onBack={() => setShowContacts(false)}
+          onSelectContact={(peerId) => {
+            connectToPeer(peerId);
+            setSelectedContact(peerId);
+            setShowContacts(false);
+          }}
+        />
+      ) : (
+        <UpdatedChatManager
+          connections={connections}
+          messages={messages}
+          setMessages={setMessages}
+          contacts={contacts}
+          userName={userName}
+          peerId={peerId}
+          activeCalls={activeCalls}
+          endCall={endCall}
+          startVoiceCall={startVoiceCall}
+          toggleVideoCall={toggleVideoCall}
+          remoteStreams={remoteStreams}
+          audioRefs={audioRefs}
+          videoRefs={videoRefs}
+          handleFileChange={handleFileChange}
+          fileInputRef={fileInputRef}
+          handleAudioRecording={handleAudioRecording}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+          showEmojiPanel={showEmojiPanel}
+          setShowEmojiPanel={setShowEmojiPanel}
+          populateEmojiPanel={populateEmojiPanel}
+          getContactName={getContactName}
+          selectedContact={selectedContact}
+          setSelectedContact={setSelectedContact}
+          localVideoRef={localVideoRef}
+        />
+      )}
+    </div>
+  );
+};
+
+// Renderização do aplicativo
+ReactDOM.render(
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>,
+  document.getElementById('root')
+);
+
+</script>
 </body>
 </html>
