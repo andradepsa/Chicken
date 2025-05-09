@@ -1,4 +1,5 @@
 Chat K10
+
 Acessando o Aplicativo
 
 ✅ Como usar:
