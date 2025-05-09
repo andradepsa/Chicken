@@ -41,6 +41,7 @@
       color: white;
       font-size: 18px;
       cursor: pointer;
+      position: relative;
     }
     .user-info-container {
       background-color: white;
@@ -462,46 +463,105 @@
       border-radius: 3px;
       cursor: pointer;
     }
-  
-body.dark-mode {
-  background-color: #121212;
-  color: #e0e0e0;
-}
-
-.dark-mode .app-header {
-  background-color: #1f1f1f;
-}
-
-.dark-mode .user-info-container,
-.dark-mode .peer-id-container,
-.dark-mode .contact-form,
-.dark-mode .connected-peers,
-.dark-mode .chat-messages-container,
-.dark-mode .contact-selector,
-.dark-mode .audio-call-container,
-.dark-mode .video-container,
-.dark-mode .chat-header {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-}
-
-.dark-mode .message-bubble.received {
-  background-color: #2e2e2e;
-  color: #e0e0e0;
-}
-
-.dark-mode .message-input {
-  background-color: #333;
-  color: #fff;
-  border: 1px solid #555;
-}
-
-.dark-mode .emoji-panel {
-  background-color: #2a2a2a;
-  border-color: #444;
-}
-
-</style>
+    
+    /* Novos estilos para melhorar a experiência do usuário */
+    .connected-contact {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    
+    .contact-with-unread {
+      font-weight: bold;
+      color: #007bff;
+    }
+    
+    .chat-notification {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background-color: #f44336;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .online-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border-radius: 50%;
+    }
+    
+    .online-indicator.online {
+      background-color: #4CAF50;
+    }
+    
+    .online-indicator.offline {
+      background-color: #999;
+    }
+    
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    
+    .dark-mode .app-header {
+      background-color: #1f1f1f;
+    }
+    
+    .dark-mode .user-info-container,
+    .dark-mode .peer-id-container,
+    .dark-mode .contact-form,
+    .dark-mode .connected-peers,
+    .dark-mode .chat-messages-container,
+    .dark-mode .contact-selector,
+    .dark-mode .audio-call-container,
+    .dark-mode .video-container,
+    .dark-mode .chat-header {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    
+    .dark-mode .message-bubble.received {
+      background-color: #2e2e2e;
+      color: #e0e0e0;
+    }
+    
+    .dark-mode .message-input {
+      background-color: #333;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    
+    .dark-mode .emoji-panel {
+      background-color: #2a2a2a;
+      border-color: #444;
+    }
+    
+    .connection-status {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #4CAF50;
+    }
+    
+    .reconnecting {
+      color: #ff9800;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
   <div id="root"></div>
@@ -532,6 +592,7 @@ body.dark-mode {
               <h1>Erro na aplicação</h1>
               <p>{this.state.error.message}</p>
               <p>Verifique o console do navegador para mais detalhes.</p>
+              <button onClick={() => window.location.reload()}>Tentar novamente</button>
             </div>
           );
         }
@@ -648,7 +709,7 @@ body.dark-mode {
     };
 
     // PARTE 3: Tela de gerenciamento de contatos
-    const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact }) => {
+    const ContactsScreen = ({ contacts, setContacts, onBack, onSelectContact, connections }) => {
       const [newName, setNewName] = useState('');
       const [newPeerId, setNewPeerId] = useState('');
       const [nameError, setNameError] = useState('');
@@ -707,63 +768,67 @@ body.dark-mode {
           </button>
           <h2>Lista de Contatos</h2>
 
-         <form className="contact-form" onSubmit={handleAddContact}>
-  <div className="contact-form-row" style={{ flexDirection: 'column', gap: '10px' }}>
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <input
-        type="text"
-        placeholder="Nome do contato"
-        value={newName}
-        onChange={(e) => setNewName(e.target.value)}
-        style={{ borderColor: nameError ? 'red' : '#ddd' }}
-      />
-      {nameError && <span style={{ color: 'red', fontSize: '12px' }}>{nameError}</span>}
-    </div>
+          <form className="contact-form" onSubmit={handleAddContact}>
+            <div className="contact-form-row" style={{ flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <input
+                  type="text"
+                  placeholder="Nome do contato"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  style={{ borderColor: nameError ? 'red' : '#ddd' }}
+                />
+                {nameError && <span style={{ color: 'red', fontSize: '12px' }}>{nameError}</span>}
+              </div>
 
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <input
-        type="text"
-        placeholder="ID do contato"
-        value={newPeerId}
-        onChange={(e) => setNewPeerId(e.target.value)}
-        style={{ borderColor: idError ? 'red' : '#ddd' }}
-      />
-      {idError && <span style={{ color: 'red', fontSize: '12px' }}>{idError}</span>}
-    </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <input
+                  type="text"
+                  placeholder="ID do contato"
+                  value={newPeerId}
+                  onChange={(e) => setNewPeerId(e.target.value)}
+                  style={{ borderColor: idError ? 'red' : '#ddd' }}
+                />
+                {idError && <span style={{ color: 'red', fontSize: '12px' }}>{idError}</span>}
+              </div>
 
-    <button type="submit" style={{ marginTop: '10px' }}>Adicionar</button>
-  </div>
-</form>
-
+              <button type="submit" style={{ marginTop: '10px' }}>Adicionar</button>
+            </div>
+          </form>
 
           <div className="connected-peers contacts-list">
             {contacts.length === 0 ? (
               <p>Nenhum contato adicionado ainda.</p>
             ) : (
-              contacts.map((contact, i) => (
-                <div
-                  key={i}
-                  className="peer-item"
-                  onClick={() => onSelectContact(contact.peerId)}
-                >
-                  <span style={{ flex: 1 }}>
-                    {contact.name} - {contact.peerId}
-                  </span>
-                  <button
-                    onClick={(e) => handleRemoveContact(contact.peerId, e)}
-                    style={{ marginLeft: '10px' }}
+              contacts.map((contact, i) => {
+                const isConnected = connections.some(c => c.peer === contact.peerId && c.open);
+                
+                return (
+                  <div
+                    key={i}
+                    className={`peer-item ${isConnected ? 'connected-contact' : ''}`}
+                    onClick={() => onSelectContact(contact.peerId)}
                   >
-                    🗑️
-                  </button>
-                </div>
-              ))
+                    <span style={{ flex: 1 }}>
+                      <span className={`online-indicator ${isConnected ? 'online' : 'offline'}`}></span>
+                      {contact.name} - {contact.peerId} {isConnected && <span style={{ color: '#4CAF50' }}>✓</span>}
+                    </span>
+                    <button
+                      onClick={(e) => handleRemoveContact(contact.peerId, e)}
+                      style={{ marginLeft: '10px' }}
+                    >
+🗑️
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
         </div>
       );
     };
 
-    // PARTE 4: Gerenciador de chat (Modified version without conversation list)
+    // PARTE 4: Gerenciador de chat (Versão modificada sem lista de conversas)
     const UpdatedChatManager = ({
       connections,
       messages,
@@ -789,7 +854,10 @@ body.dark-mode {
       getContactName,
       selectedContact,
       setSelectedContact,
-      localVideoRef
+      localVideoRef,
+      unreadMessages,
+      setUnreadMessages,
+      setShowContacts
     }) => {
       const messagesEndRef = useRef(null);
 
@@ -919,30 +987,90 @@ body.dark-mode {
         };
       }, [remoteStreams]);
 
-      // If no contact is selected, show a message
+      // Se nenhum contato estiver selecionado, mostra uma interface melhorada com lista de contatos online
       if (!selectedContact) {
+        const onlineContacts = connections.filter(conn => conn.open);
+        
         return (
           <div className="chat-main-container">
             <div className="chat-messages-container">
               <div className="no-contact-selected">
                 <i className="fas fa-comments"></i>
-                <p>Selecione um contato para iniciar uma conversa</p>
-                <div>
-                  <select 
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setSelectedContact(e.target.value);
-                      }
+                <p>{onlineContacts.length > 0 ? 'Selecione um contato para iniciar uma conversa' : 'Nenhum contato online no momento'}</p>
+                <div style={{ margin: "20px 0", width: "80%", maxWidth: "400px" }}>
+                  {onlineContacts.length > 0 && (
+                    <>
+                      <h4>Contatos Online</h4>
+                      <div style={{ marginBottom: "20px" }}>
+                        {onlineContacts.map((conn, index) => {
+                          const hasUnread = unreadMessages[conn.peer] && unreadMessages[conn.peer] > 0;
+                          return (
+                            <div 
+                              key={index}
+                              style={{
+                                padding: "10px",
+                                marginBottom: "5px",
+                                borderRadius: "5px",
+                                backgroundColor: "#f8f9fa",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                cursor: "pointer",
+                                position: "relative",
+                                fontWeight: hasUnread ? "bold" : "normal"
+                              }}
+                              onClick={() => {
+                                setSelectedContact(conn.peer);
+                                if (hasUnread) {
+                                  setUnreadMessages(prev => ({
+                                    ...prev,
+                                    [conn.peer]: 0
+                                  }));
+                                }
+                              }}
+                            >
+                              <div>
+                                <span className="online-indicator online"></span>
+                                {getContactName(conn.peer)}
+                              </div>
+                              {hasUnread && (
+                                <span 
+                                  style={{
+                                    backgroundColor: "#f44336",
+                                    color: "white",
+                                    borderRadius: "50%",
+                                    width: "24px",
+                                    height: "24px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px"
+                                  }}
+                                >
+                                  {unreadMessages[conn.peer]}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                  
+                  <button 
+                    onClick={() => setShowContacts(true)} 
+                    style={{ 
+                      marginTop: "10px", 
+                      padding: "8px 15px", 
+                      backgroundColor: "#007bff", 
+                      color: "white", 
+                      border: "none", 
+                      borderRadius: "5px",
+                      width: "100%"
                     }}
-                    value=""
                   >
-                    <option value="" disabled>Selecione um contato</option>
-                    {connections.map((conn, i) => (
-                      <option key={i} value={conn.peer}>
-                        {getContactName(conn.peer)}
-                      </option>
-                    ))}
-                  </select>
+                    Gerenciar Contatos
+                  </button>
                 </div>
               </div>
             </div>
@@ -950,16 +1078,18 @@ body.dark-mode {
         );
       }
 
-      // Contact selector component for active chat
+      // Verifica se há chamadas ativas com o contato selecionado
       const hasActiveVoiceCallWithPeer = activeCalls.some(c => c.peerId === selectedContact && c.type === 'voice');
       const hasActiveVideoCallWithPeer = activeCalls.some(c => c.peerId === selectedContact && c.type === 'video' && c.localStream);
+      const isContactOnline = connections.some(c => c.peer === selectedContact && c.open);
 
       return (
         <div className="chat-main-container">
           <div className="chat-messages-container">
             <div className="chat-header">
               <div className="chat-header-title">
-                {getContactName(selectedContact)} ({selectedContact})
+                <span className={`online-indicator ${isContactOnline ? 'online' : 'offline'}`}></span>
+                {getContactName(selectedContact)} {isContactOnline ? "(online)" : "(offline)"}
               </div>
               <div className="chat-header-actions">
                 {hasActiveVoiceCallWithPeer ? (
@@ -973,8 +1103,15 @@ body.dark-mode {
                 ) : (
                   <button
                     onClick={() => startVoiceCall(selectedContact)}
-                    style={{ padding: '4px', background: '#4CAF50', width: '30px', height: '30px', borderRadius: '50%' }}
-                    title="Iniciar chamada de voz"
+                    style={{ 
+                      padding: '4px', 
+                      background: isContactOnline ? '#4CAF50' : '#ccc', 
+                      width: '30px', 
+                      height: '30px', 
+                      borderRadius: '50%' 
+                    }}
+                    title={isContactOnline ? "Iniciar chamada de voz" : "Contato offline"}
+                    disabled={!isContactOnline}
                   >
                     <i className="fas fa-phone"></i>
                   </button>
@@ -983,12 +1120,17 @@ body.dark-mode {
                   onClick={() => toggleVideoCall(selectedContact)}
                   style={{
                     padding: '4px',
-                    background: hasActiveVideoCallWithPeer ? '#ff5722' : '#4CAF50',
+                    background: hasActiveVideoCallWithPeer ? '#ff5722' : (isContactOnline ? '#4CAF50' : '#ccc'),
                     width: '30px',
                     height: '30px',
                     borderRadius: '50%',
                   }}
-                  title={hasActiveVideoCallWithPeer ? "Desligar Câmera" : "Ligar Câmera"}
+                  title={
+                    hasActiveVideoCallWithPeer 
+                      ? "Desligar Câmera" 
+                      : (isContactOnline ? "Ligar Câmera" : "Contato offline")
+                  }
+                  disabled={!isContactOnline && !hasActiveVideoCallWithPeer}
                 >
                   <i className={`fas ${hasActiveVideoCallWithPeer ? 'fa-video-slash' : 'fa-video'}`}></i>
                 </button>
@@ -1009,68 +1151,74 @@ body.dark-mode {
               </div>
             </div>
             <div className="chat-messages">
-              {filteredMessages.map((msg, i) => (
-                <div key={msg.timestamp || i} className={`message-bubble ${msg.sender === 'you' ? 'sent' : 'received'}`}>
-                  <div className="chat-user-bubble">
-                    {msg.sender === 'you' ? userName : getContactName(msg.sender)}
-                  </div>
-                  {msg.type === 'text' ? (
-                    <div>{msg.text}</div>
-                  ) : msg.type === 'file' ? (
-                    <div>
-                      {msg.fileData ? (
-                        <a href={msg.fileData} download={msg.fileName} className="file-link">
-                          {msg.fileName}
-                        </a>
-                      ) : (
-                        <span>{msg.fileName}</span>
-                      )}
-                      {(msg.receiving || msg.sending) && (
-                        <div className="progress-container">
-                          <div className="progress-bar">
-                            <div className="progress" style={{ width: `${msg.progress}%` }} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : msg.type === 'audio' && (
-                    <div>
-                      {msg.audioData ? (
-                        <audio controls src={msg.audioData} className="audio-player" />
-                      ) : (
-                        <span>Áudio</span>
-                      )}
-                      {(msg.receiving || msg.sending) && (
-                        <div className="progress-container">
-                          <div className="progress-bar">
-                            <div className="progress" style={{ width: `${msg.progress}%` }} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="message-timestamp">{msg.time}</div>
-                  <div
-                    className="green-delete-icon"
-                    onClick={() => deleteMessage(msg.timestamp)}
-                    title="Remover mensagem"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </div>
+              {filteredMessages.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#6c757d', margin: '20px' }}>
+                  <p>Nenhuma mensagem trocada ainda. Envie uma mensagem para iniciar a conversa.</p>
                 </div>
-              ))}
+              ) : (
+                filteredMessages.map((msg, i) => (
+                  <div key={msg.timestamp || i} className={`message-bubble ${msg.sender === 'you' ? 'sent' : 'received'}`}>
+                    <div className="chat-user-bubble">
+                      {msg.sender === 'you' ? userName : getContactName(msg.sender)}
+                    </div>
+                    {msg.type === 'text' ? (
+                      <div>{msg.text}</div>
+                    ) : msg.type === 'file' ? (
+                      <div>
+                        {msg.fileData ? (
+                          <a href={msg.fileData} download={msg.fileName} className="file-link">
+                            {msg.fileName}
+                          </a>
+                        ) : (
+                          <span>{msg.fileName}</span>
+                        )}
+                        {(msg.receiving || msg.sending) && (
+                          <div className="progress-container">
+                            <div className="progress-bar">
+                              <div className="progress" style={{ width: `${msg.progress}%` }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : msg.type === 'audio' && (
+                      <div>
+                        {msg.audioData ? (
+                          <audio controls src={msg.audioData} className="audio-player" />
+                        ) : (
+                          <span>Áudio</span>
+                        )}
+                        {(msg.receiving || msg.sending) && (
+                          <div className="progress-container">
+                            <div className="progress-bar">
+                              <div className="progress" style={{ width: `${msg.progress}%` }} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="message-timestamp">{msg.time}</div>
+                    <div
+                      className="green-delete-icon"
+                      onClick={() => deleteMessage(msg.timestamp)}
+                      title="Remover mensagem"
+                    >
+                      <i className="fas fa-trash"></i>
+                    </div>
+                  </div>
+                ))
+              )}
               <div ref={messagesEndRef} />
             </div>
             <div className="chat-input-container">
               <VoiceRecorder
                 onRecordingComplete={handleAudioRecording}
-                disabled={!selectedContact || !connections.some(c => c.peer === selectedContact)}
+                disabled={!selectedContact || !isContactOnline}
                 selectedContact={selectedContact}
               />
               <button
                 onClick={() => fileInputRef.current.click()}
-                disabled={!selectedContact || !connections.some(c => c.peer === selectedContact)}
-                title="Enviar arquivo"
+                disabled={!selectedContact || !isContactOnline}
+                title={isContactOnline ? "Enviar arquivo" : "Contato offline"}
               >
                 <i className="fas fa-paperclip"></i>
               </button>
@@ -1079,6 +1227,7 @@ body.dark-mode {
                   className="emoji-button"
                   onClick={() => setShowEmojiPanel(!showEmojiPanel)}
                   title="Emojis"
+                  disabled={!selectedContact || !isContactOnline}
                 >
                   😊
                 </button>
@@ -1087,17 +1236,17 @@ body.dark-mode {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={
-                    selectedContact
+                    isContactOnline
                       ? `Mensagem para ${getContactName(selectedContact)}...`
-                      : "Selecione um contato..."
+                      : "Contato offline"
                   }
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter' && selectedContact) {
+                    if (e.key === 'Enter' && selectedContact && isContactOnline) {
                       handleSendMessage();
                     }
                   }}
                   className="message-input"
-                  disabled={!selectedContact}
+                  disabled={!selectedContact || !isContactOnline}
                 />
                 {showEmojiPanel && populateEmojiPanel()}
               </div>
@@ -1106,9 +1255,9 @@ body.dark-mode {
                 disabled={
                   !newMessage.trim() ||
                   !selectedContact ||
-                  !connections.some(c => c.peer === selectedContact)
+                  !isContactOnline
                 }
-                title="Enviar mensagem"
+                title={isContactOnline ? "Enviar mensagem" : "Contato offline"}
               >
                 <i className="fas fa-paper-plane"></i>
               </button>
@@ -1120,21 +1269,21 @@ body.dark-mode {
 
     // PARTE 5: Componente Principal App
     const App = () => {
-useEffect(() => {
-  if (localStorage.getItem('modo') === 'dark') {
-    document.body.classList.add('dark-mode');
-    const btn = document.getElementById('darkModeBtn');
-    if (btn) btn.textContent = '☀️';
-  }
-}, []);
+      useEffect(() => {
+        if (localStorage.getItem('modo') === 'dark') {
+          document.body.classList.add('dark-mode');
+          const btn = document.getElementById('darkModeBtn');
+          if (btn) btn.textContent = '☀️';
+        }
+      }, []);
 
-const toggleDarkMode = () => {
-  document.body.classList.toggle('dark-mode');
-  const isDark = document.body.classList.contains('dark-mode');
-  localStorage.setItem('modo', isDark ? 'dark' : 'light');
-  const btn = document.getElementById('darkModeBtn');
-  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
-};
+      const toggleDarkMode = () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('modo', isDark ? 'dark' : 'light');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+      };
 
       console.log("App: Component rendering");
       const [peerId, setPeerId] = usePersistentId();
@@ -1166,6 +1315,12 @@ const toggleDarkMode = () => {
       const [showEmojiPanel, setShowEmojiPanel] = useState(false);
       const [selectedContact, setSelectedContact] = useState(null);
       const [isPeerInitialized, setIsPeerInitialized] = useState(false);
+      // Novo estado para rastrear mensagens não lidas
+      const [unreadMessages, setUnreadMessages] = useState({});
+      // Estado para reconexões
+      const [reconnecting, setReconnecting] = useState({});
+      // Estado para mostrar conexões ativas
+      const [activeConnections, setActiveConnections] = useState({});
 
       const peerInstance = useRef(null);
       const fileInputRef = useRef(null);
@@ -1175,6 +1330,28 @@ const toggleDarkMode = () => {
       const localVideoRef = useRef(null);
       const localStreamsRef = useRef(new Map());
       const CHUNK_SIZE = 16 * 1024;
+      
+      // Função para verificar e tentar reconectar contatos
+      const checkConnections = () => {
+        if (!peerInstance.current || !isPeerInitialized) return;
+        
+        contacts.forEach(contact => {
+          const conn = connections.find(c => c.peer === contact.peerId);
+          if (!conn || !conn.open) {
+            if (!reconnecting[contact.peerId]) {
+              console.log("App: Attempting to reconnect to:", contact.peerId);
+              setReconnecting(prev => ({ ...prev, [contact.peerId]: true }));
+              connectToPeer(contact.peerId, true);
+            }
+          }
+        });
+      };
+      
+      // Verificar conexões a cada 30 segundos
+      useEffect(() => {
+        const intervalId = setInterval(checkConnections, 30000);
+        return () => clearInterval(intervalId);
+      }, [connections, contacts, reconnecting]);
 
       const stopAndRemoveLocalStream = (peerId) => {
         const stream = localStreamsRef.current.get(peerId);
@@ -1198,136 +1375,66 @@ const toggleDarkMode = () => {
         if (!peerId) return;
         console.log("App: Initializing PeerJS with ID:", peerId);
         const peer = new Peer(peerId, {
-  host: '0.peerjs.com', 
-  port: 443, 
-  secure: true,
-  config: { 
-    iceServers: [
-      // Google STUN servers
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' },
-      { urls: 'stun:stun3.l.google.com:19302' },
-      { urls: 'stun:stun4.l.google.com:19302' },
-      
-      // Mais servidores Google
-      { urls: 'stun:stun.google.com:19302' },
-      { urls: 'stun:stun-1.google.com:19302' },
-      { urls: 'stun:stun-2.google.com:19302' },
-      { urls: 'stun:stun-3.google.com:19302' },
-      { urls: 'stun:stun-4.google.com:19302' },
-      
-      // Servidores Google regionais
-      { urls: 'stun:stun-us-west-1.google.com:19302' },
-      { urls: 'stun:stun-us-east-1.google.com:19302' },
-      { urls: 'stun:stun-us-central-1.google.com:19302' },
-      { urls: 'stun:stun-us-south-1.google.com:19302' },
-      { urls: 'stun:stun-eu-west-1.google.com:19302' },
-      { urls: 'stun:stun-eu-central-1.google.com:19302' },
-      { urls: 'stun:stun-asia-east-1.google.com:19302' },
-      { urls: 'stun:stun-asia-northeast-1.google.com:19302' },
-      { urls: 'stun:stun-asia-south-1.google.com:19302' },
-      { urls: 'stun:stun-asia-southeast-1.google.com:19302' },
-      
-      // Mais variações de servidores Google
-      { urls: 'stun:stun.goog:19302' },
-      { urls: 'stun:stun-1.goog:19302' },
-      { urls: 'stun:stun-2.goog:19302' },
-      { urls: 'stun:stun-3.goog:19302' },
-      { urls: 'stun:stun-4.goog:19302' },
-      
-      // Serviços Google
-      { urls: 'stun:stun.meet.google.com:19302' },
-      { urls: 'stun:stun.hangouts.google.com:19302' },
-      { urls: 'stun:stun.chrome.google.com:19302' },
-      { urls: 'stun:stun.gmail.google.com:19302' },
-      { urls: 'stun:stun.youtube.google.com:19302' },
-      { urls: 'stun:stun.drive.google.com:19302' },
-      { urls: 'stun:stun.docs.google.com:19302' },
-      { urls: 'stun:stun.play.google.com:19302' },
-      
-      // Variações adicionais de Google
-      { urls: 'stun:stun1.corp.google.com:19302' },
-      { urls: 'stun:stun2.corp.google.com:19302' },
-      { urls: 'stun:stun3.corp.google.com:19302' },
-      { urls: 'stun:stun4.corp.google.com:19302' },
-      { urls: 'stun:stun5.corp.google.com:19302' },
-      { urls: 'stun:stun6.corp.google.com:19302' },
-      { urls: 'stun:stun.px.google.com:19302' },
-      { urls: 'stun:stun.gl.google.com:19302' },
-      { urls: 'stun:stun.gvt1.com:19302' },
-      { urls: 'stun:stun.gvt2.com:19302' },
-      { urls: 'stun:stun.gvt3.com:19302' },
-      
-      // Mais servidores regionais do Google
-      { urls: 'stun:stun-na-east.google.com:19302' },
-      { urls: 'stun:stun-na-west.google.com:19302' },
-      { urls: 'stun:stun-sa-east.google.com:19302' },
-      { urls: 'stun:stun-eu-west.google.com:19302' },
-      { urls: 'stun:stun-eu-east.google.com:19302' },
-      { urls: 'stun:stun-asia-east.google.com:19302' },
-      { urls: 'stun:stun-asia-west.google.com:19302' },
-      { urls: 'stun:stun-asia-south.google.com:19302' },
-      { urls: 'stun:stun-asia-north.google.com:19302' },
-      { urls: 'stun:stun-australia.google.com:19302' },
-      { urls: 'stun:stun-africa.google.com:19302' },
-      
-      // Mais variações de Google
-      { urls: 'stun:stun.voice.google.ca:19302' },
-      { urls: 'stun:stun.voice.google.mx:19302' },
-      { urls: 'stun:stun.voice.google.co.uk:19302' },
-      { urls: 'stun:stun.voice.google.de:19302' },
-      { urls: 'stun:stun.voice.google.fr:19302' },
-      { urls: 'stun:stun.voice.google.ru:19302' },
-      { urls: 'stun:stun.voice.google.jp:19302' },
-      { urls: 'stun:stun.voice.google.cn:19302' },
-      { urls: 'stun:stun.voice.google.in:19302' },
-      { urls: 'stun:stun.voice.google.com.br:19302' },
-      
-      // Mais servidores regionais do Google
-      { urls: 'stun:stun.google.com.ar:19302' },
-      { urls: 'stun:stun.google.com.au:19302' },
-      { urls: 'stun:stun.google.co.jp:19302' },
-      { urls: 'stun:stun.google.co.kr:19302' },
-      { urls: 'stun:stun.google.co.nz:19302' },
-      { urls: 'stun:stun.google.co.th:19302' },
-      { urls: 'stun:stun.google.co.za:19302' },
-      { urls: 'stun:stun.google.com.sg:19302' },
-      { urls: 'stun:stun.google.com.tw:19302' },
-      
-      // Servidores STUN não-Google
-      { urls: 'stun:stun.ekiga.net:3478' },
-      { urls: 'stun:stun.ideasip.com:3478' },
-      { urls: 'stun:stun.schlund.de:3478' },
-      { urls: 'stun:stun.voiparound.com:3478' },
-      { urls: 'stun:stun.voipbuster.com:3478' },
-      { urls: 'stun:stun.voipstunt.com:3478' },
-      { urls: 'stun:stun.voxgratia.org:3478' },
-      { urls: 'stun:stun.services.mozilla.com:3478' },
-      { urls: 'stun:stun.stunprotocol.org:3478' },
-      { urls: 'stun:stun.counterpath.com:3478' },
-      { urls: 'stun:stun.12connect.com:3478' },
-      { urls: 'stun:stun.callwithus.com:3478' },
-      { urls: 'stun:stun.sipgate.net:3478' },
-      { urls: 'stun:stun.sipgate.net:10000' },
-      { urls: 'stun:stun.1und1.de:3478' },
-      { urls: 'stun:stun.gmx.net:3478' },
-      { urls: 'stun:stun.xten.com:3478' },
-      { urls: 'stun:stun.nextcloud.com:3478' },
-      { urls: 'stun:stun.sip.us:3478' },
-      { urls: 'stun:stun.twt.it:3478' }
-    ],
-    sdpSemantics: 'unified-plan',
-    iceTransportPolicy: 'all',
-    bundlePolicy: 'max-bundle',
-    rtcpMuxPolicy: 'require',
-    iceCandidatePoolSize: 10
-  },
-  debug: 2
-});
+          host: '0.peerjs.com', 
+          port: 443, 
+          secure: true,
+          config: { 
+            iceServers: [
+              // Google STUN servers
+              { urls: 'stun:stun.l.google.com:19302' },
+              { urls: 'stun:stun1.l.google.com:19302' },
+              { urls: 'stun:stun2.l.google.com:19302' },
+              { urls: 'stun:stun3.l.google.com:19302' },
+              { urls: 'stun:stun4.l.google.com:19302' },
+              
+              // Mais servidores Google
+              { urls: 'stun:stun.google.com:19302' },
+              { urls: 'stun:stun-1.google.com:19302' },
+              { urls: 'stun:stun-2.google.com:19302' },
+              { urls: 'stun:stun-3.google.com:19302' },
+              { urls: 'stun:stun-4.google.com:19302' },
+              
+              // Servidores Google regionais
+              { urls: 'stun:stun-us-west-1.google.com:19302' },
+              { urls: 'stun:stun-us-east-1.google.com:19302' },
+              { urls: 'stun:stun-us-central-1.google.com:19302' },
+              { urls: 'stun:stun-us-south-1.google.com:19302' },
+              { urls: 'stun:stun-eu-west-1.google.com:19302' },
+              { urls: 'stun:stun-eu-central-1.google.com:19302' },
+              { urls: 'stun:stun-asia-east-1.google.com:19302' },
+              { urls: 'stun:stun-asia-northeast-1.google.com:19302' },
+              { urls: 'stun:stun-asia-south-1.google.com:19302' },
+              { urls: 'stun:stun-asia-southeast-1.google.com:19302' },
+              
+              { urls: 'stun:stun.ekiga.net:3478' },
+              { urls: 'stun:stun.ideasip.com:3478' },
+              { urls: 'stun:stun.schlund.de:3478' },
+              { urls: 'stun:stun.voiparound.com:3478' },
+              { urls: 'stun:stun.voipbuster.com:3478' },
+              { urls: 'stun:stun.voipstunt.com:3478' },
+              { urls: 'stun:stun.voxgratia.org:3478' },
+              { urls: 'stun:stun.services.mozilla.com:3478' },
+              { urls: 'stun:stun.stunprotocol.org:3478' },
+              { urls: 'stun:stun.counterpath.com:3478' },
+            ],
+            sdpSemantics: 'unified-plan',
+            iceTransportPolicy: 'all',
+            bundlePolicy: 'max-bundle',
+            rtcpMuxPolicy: 'require',
+            iceCandidatePoolSize: 10
+          },
+          debug: 2
+        });
+        
         peer.on('open', (id) => {
           console.log("PeerJS: Connected with ID:", id);
           setIsPeerInitialized(true);
+          // Tentar conectar com todos os contatos ao inicializar
+          setTimeout(() => {
+            contacts.forEach(contact => {
+              connectToPeer(contact.peerId, true);
+            });
+          }, 1000);
         });
 
         peer.on('error', (err) => {
@@ -1339,12 +1446,16 @@ const toggleDarkMode = () => {
             window.location.reload();
           } else if (err.type === 'peer-unavailable') {
             console.log("PeerJS: Peer unavailable, user is likely offline");
-            alert("Usuário offline");
+            const peerIdFromError = err.message.split(' ')[1]; // Extrai o ID do erro
+            if (peerIdFromError) {
+              setReconnecting(prev => ({ ...prev, [peerIdFromError]: false }));
+            }
           } else {
             setError(`Erro PeerJS: ${err.type}`);
           }
         });
 
+        // Melhorado: Event handler de conexão atualizado
         peer.on('connection', (conn) => {
           console.log("PeerJS: Incoming data connection from:", conn.peer);
           if (connections.some(c => c.peer === conn.peer)) {
@@ -1356,18 +1467,39 @@ const toggleDarkMode = () => {
           conn.on('open', () => {
             console.log("PeerJS: Data connection opened with:", conn.peer);
             setConnections(prev => [...prev.filter(c => c.peer !== conn.peer), conn]);
+            setReconnecting(prev => ({ ...prev, [conn.peer]: false }));
+            setActiveConnections(prev => ({ ...prev, [conn.peer]: true }));
+            
+            // MELHORIA: Selecionar automaticamente o contato quando uma conexão é estabelecida
+            // Se não houver contato selecionado ou estiver na tela de contatos
+            if (!selectedContact || showContacts) {
+              setSelectedContact(conn.peer);
+              setShowContacts(false); // Sair da tela de contatos se estiver nela
+            }
           });
 
           conn.on('data', (data) => {
             console.log("PeerJS: Received data from:", conn.peer, data.type);
+            
+            // MELHORIA: Marcar mensagens como não lidas quando o remetente não é o contato selecionado
+            if (data.type === 'message' && selectedContact !== conn.peer) {
+              setUnreadMessages(prev => ({
+                ...prev,
+                [conn.peer]: (prev[conn.peer] || 0) + 1
+              }));
+            }
+            
             handleIncomingData(data, conn.peer);
           });
 
           conn.on('close', () => {
             console.log("PeerJS: Data connection closed with:", conn.peer);
             setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+            setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
             endCall(conn.peer, 'video');
             endCall(conn.peer, 'voice');
+            
+            // Se o contato fechado for o selecionado, limpar a seleção
             if (selectedContact === conn.peer) {
               setSelectedContact(null);
             }
@@ -1376,14 +1508,18 @@ const toggleDarkMode = () => {
           conn.on('error', (err) => {
             console.error("PeerJS: Data connection error with:", conn.peer, err);
             setConnections(prev => prev.filter(c => c.peer !== conn.peer));
+            setActiveConnections(prev => ({ ...prev, [conn.peer]: false }));
             endCall(conn.peer, 'video');
             endCall(conn.peer, 'voice');
+            
+            // Se o contato com erro for o selecionado, limpar a seleção
             if (selectedContact === conn.peer) {
               setSelectedContact(null);
             }
           });
         });
 
+        // CORREÇÃO: Event handler de chamada atualizado para funcionar como o Chat K10
         peer.on('call', async (call) => {
           const callType = call.metadata?.type || 'video';
           console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
@@ -1391,6 +1527,12 @@ const toggleDarkMode = () => {
           try {
             console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
             call.answer(null);
+
+            // Selecionar automaticamente o contato que está chamando
+            if (selectedContact !== call.peer) {
+              setSelectedContact(call.peer);
+              setShowContacts(false);
+            }
 
             setActiveCalls(prev => [
               ...prev.filter(c => !(c.peerId === call.peer && c.type === callType)),
@@ -1408,7 +1550,7 @@ const toggleDarkMode = () => {
               console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
               setRemoteStreams(prev => [
                 ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
-                { peerId: call.peer, stream: remoteStream, type: callType }
+                { peerId: call.peer, stream: remoteStream, type: call.Type }
               ]);
             });
 
@@ -1468,12 +1610,16 @@ const toggleDarkMode = () => {
 
       const formatTime = (date) => date.toLocaleTimeString('pt-BR');
 
-      const connectToPeer = (peerIdToConnect) => {
+      // Função melhorada para conectar a um peer
+      const connectToPeer = (peerIdToConnect, silent = false) => {
         if (!peerIdToConnect || !peerInstance.current || !isPeerInitialized) {
-          alert("Erro: Peer não inicializado ou ID inválido");
+          if (!silent) alert("Erro: Peer não inicializado ou ID inválido");
           return;
         }
-        if (connections.some(conn => conn.peer === peerIdToConnect && conn.open)) {
+        
+        // Se já estiver conectado, apenas seleciona o contato
+        const existingConn = connections.find(conn => conn.peer === peerIdToConnect && conn.open);
+        if (existingConn) {
           console.log("App: Already connected to", peerIdToConnect);
           setSelectedContact(peerIdToConnect);
           return;
@@ -1489,18 +1635,25 @@ const toggleDarkMode = () => {
           conn.on('open', () => {
             console.log("PeerJS: Connection opened with:", peerIdToConnect);
             setConnections(prev => [...prev.filter(c => c.peer !== peerIdToConnect), conn]);
+            setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
+            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: true }));
             setSelectedContact(peerIdToConnect);
           });
 
           conn.on('error', (err) => {
             console.error("PeerJS: Connection error with:", peerIdToConnect, err);
             setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
-            alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: false }));
+            setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
+            if (!silent) {
+              alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+            }
           });
 
           conn.on('close', () => {
             console.log("PeerJS: Connection closed with:", peerIdToConnect);
             setConnections(prev => prev.filter(c => c.peer !== peerIdToConnect));
+            setActiveConnections(prev => ({ ...prev, [peerIdToConnect]: false }));
             if (selectedContact === peerIdToConnect) {
               setSelectedContact(null);
             }
@@ -1508,11 +1661,23 @@ const toggleDarkMode = () => {
 
           conn.on('data', (data) => {
             console.log("PeerJS: Received data from:", peerIdToConnect, data);
+            
+            // Se receber mensagem e o remetente não for o selecionado, marcar como não lida
+            if (data.type === 'message' && selectedContact !== peerIdToConnect) {
+              setUnreadMessages(prev => ({
+                ...prev,
+                [peerIdToConnect]: (prev[peerIdToConnect] || 0) + 1
+              }));
+            }
+            
             handleIncomingData(data, peerIdToConnect);
           });
         } catch (err) {
           console.error("App: Error establishing data connection:", err);
-          alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+          setReconnecting(prev => ({ ...prev, [peerIdToConnect]: false }));
+          if (!silent) {
+            alert(`Erro ao conectar com ${getContactName(peerIdToConnect)}: ${err.message || 'Contato offline ou ID inválido'}`);
+          }
         }
       };
 
@@ -1730,8 +1895,8 @@ const toggleDarkMode = () => {
           return;
         }
         if (activeCalls.some(c => c.peerId === peerIdToCall && c.type === 'voice')) return;
-        const conn = connections.find(c => c.peer === peerIdToCall);
-        if (!conn || !conn.open) {
+        const conn = connections.find(c => c.peer === peerIdToCall && c.open);
+        if (!conn) {
           alert(`Contato ${getContactName(peerIdToCall)} offline.`);
           return;
         }
@@ -1790,7 +1955,7 @@ const toggleDarkMode = () => {
 
         const existingCall = activeCalls.find(c => c.peerId === peerIdToCall && c.type === 'video');
         const isSendingVideo = existingCall && existingCall.localStream;
-        const conn = connections.find(c => c.peer === peerIdToCall);
+        const conn = connections.find(c => c.peer === peerIdToCall && c.open);
 
         if (isSendingVideo) {
           console.log("App: Stopping local video stream for:", peerIdToCall);
@@ -1812,7 +1977,7 @@ const toggleDarkMode = () => {
           }
 
         } else {
-          if (!conn || !conn.open) {
+          if (!conn) {
             alert(`Contato ${getContactName(peerIdToCall)} offline.`);
             return;
           }
@@ -1928,289 +2093,296 @@ const toggleDarkMode = () => {
       };
 
       const populateEmojiPanel = () => {
-    const emojis = [
-      "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
-      "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
-      "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
-      "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
-      "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
-      "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
-      "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
-      "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳",
-      "👨‍🦲", "👩‍🦲", "👩", "👨", "🧓", "👴", "👵", "🙍‍♂️", "🙍‍♀️", "🙎‍♂️",
-      "🙎‍♀️", "🙅‍♂️", "🙅‍♀️", "🙆‍♂️", "🙆‍♀️", "💁‍♂️", "💁‍♀️", "🙋‍♂️", "🙋‍♀️", "🧏‍♂️",
-      "🧏‍♀️", "🙇‍♂️", "🙇‍♀️", "🤦‍♂️", "🤦‍♀️", "🤷‍♂️", "🤷‍♀️", "🧑‍⚕️", "👨‍⚕️", "👩‍⚕️",
-      "🧑‍🎓", "👨‍🎓", "👩‍🎓", "🧑‍🏫", "👨‍🏫", "👩‍🏫", "🧑‍⚖️", "👨‍⚖️", "👩‍⚖️", "🧑‍🌾",
-      "👨‍🌾", "👩‍🌾", "🧑‍🍳", "👨‍🍳", "👩‍🍳", "🧑‍🔧", "👨‍🔧", "👩‍🔧", "🧑‍🏭", "👨‍🏭",
-      "👩‍🏭", "🧑‍💼", "👨‍💼", "👩‍💼", "🧑‍🔬", "👨‍🔬", "👩‍🔬", "🧑‍💻", "👨‍💻", "👩‍💻",
-      "🧑‍🎤", "👨‍🎤", "👩‍🎤", "🧑‍🎨", "👨‍🎨", "👩‍🎨", "🧑‍✈️", "👨‍✈️", "👩‍✈️", "🧑‍🚀",
-      "👨‍🚀", "👩‍🚀", "🧑‍🚒", "👨‍🚒", "👩‍🚒", "👮‍♂️", "👮‍♀️", "🕵️‍♂️", "🕵️‍♀️", "💂‍♂️",
-      "💂‍♀️", "🥷", "👷‍♂️", "👷‍♀️", "🤴", "👸", "👳‍♂️", "👳‍♀️", "👲", "🧕",
-      "🤵", "👰", "🤰", "🤱", "👩‍🍼", "👨‍🍼", "🧑‍🍼", "🧙‍♂️", "🧙‍♀️", "🧚‍♂️",
-      "🧚‍♀️", "🧛‍♂️", "🧛‍♀️", "🧝‍♂", "🧝‍♀️", "🧞‍♂️", "🧞‍♀️", "🧜‍♂️", "🧜‍♀️", "🧝‍♂️",
-      "🧝‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨",
-      "🐯", "🦁", "🐮", "🐷", "🐽", "🐸", "🐵", "🙈", "🙉", "🙊",
-      "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉",
-      "🦇", "🐺", "🐗", "🐴", "🦄", "🐝", "🐛", "🦋", "🐌", "🐞",
-      "🐜", "🦗", "🕷️", "🕸️", "🦂", "🐢", "🐍", "🦎", "🦖", "🦕",
-      "🐙", "🦑", "🦐", "🦞", "🦀", "🐡", "🐠", "🐟", "🐬", "🐳",
-      "🐋", "🦈", "🐊", "🐅", "🐆", "🦒", "🐘", "🦏", "🦛", "🐪",
-      "🐫", "🦘", "🦙", "🦜", "🦚", "🦢", "🦩", "🕊️", "🐇", "🦝",
-      "🦡", "🦦", "🦥", "🦨", "🦔", "🦧", "🦣", "🦤", "🦥", "🦬",
-      "🍇", "🍈", "🍉", "🍊", "🍋", "🍌", "🍍", "🥭", "🍎", "🍏",
-      "🍐", "🍑", "🍒", "🍓", "🥝", "🍅", "🥥", "🥑", "🍆", "🥔",
-      "🥕", "🌽", "🌶️", "🥒", "🥬", "🥦", "🧄", "🧅", "🍄", "🥜",
-      "🌰", "🍞", "🥐", "🥖", "🥨", "🥯", "🥞", "🧇", "🧀", "🍖",
-      "🍗", "🥩", "🥓", "🍔", "🍟", "🍕", "🌭", "🥪", "🌮", "🌯",
-      "🥙", "🧆", "🥚", "🍳", "🥘", "🍲", "🥣", "🥗", "🍿", "🧈",
-      "🧂", "🍱", "🍘", "🍙", "🍚", "🍛", "🍜", "🍝", "🍠", "🍢",
-      "🍣", "🍤", "🍥", "🥮", "🍡", "🥟", "🥠", "🥡", "🦪", "🍦",
-      "🍧", "🍨", "🍩", "🍪", "🎂", "🍰", "🧁", "🥧", "🍫", "🍬",
-      "🍭", "🍮", "🍯", "🍼", "🥛", "☕", "🍵", "🍶", "🍾", "🍷",
-      "🍸", "🍹", "🍺", "🍻", "🥂", "🥃", "🥤", "🧃", "🧉", "🧊",
-      "🥢", "🍽️", "🍴", "🥄", "🔪", "🏺", "🌍", "🌎", "🌏", "🗺️",
-      "🗾", "🧭", "🏔️", "⛰️", "🌋", "🗻", "🏕️", "🏖️", "🏜️", "🏝️",
-      "🏞️", "🏟️", "🏛️", "🏗️", "🧱", "🏘️", "🏚️", "🏠", "🏡", "🏢",
-      "🏣", "🏤", "🏥", "🏦", "🏨", "🏩", "🏪", "🏫", "🏬", "🏭",
-      "🏯", "🏰", "💒", "🗼", "🗽", "⛪", "🕌", "🛕", "🕍", "⛩️",
-      "🕋", "⛲", "⛺", "🌁", "🌃", "🏙️", "🌄", "🌅", "🌆", "🌇",
-      "🌉", "♨️", "🎠", "🎡", "🎢", "💈", "🎪", "🚂", "🚃", "🚄",
-      "🚅", "🚆", "🚇", "🚈", "🚉", "🚊", "🚝", "🚞", "🚋", "🚌",
-      "🚍", "🚎", "🚐", "🚑", "🚒", "🚓", "🚔", "🚕", "🚖", "🚗",
-      "🚘", "🚙", "🛻", "🚚", "🚛", "🚜", "🏎️", "🏍️", "🛵", "🚲",
-      "🛴", "🛹", "🛺", "🚍", "🛸", "🚁", "🛩️", "✈️", "🪂", "💺",
-      "🚤", "🛥️", "🛳️", "⛴️", "⚓", "⛽", "🚨", "🚥", "🚦", "🛑",
-      "🚧", "🗿", "🗽", "🗼", "🏰", "🏯", "🏟️", "🎡", "🎢", "🎠",
-      "⛲", "⛱️", "🏖️", "🏝️", "🏜️", "🌋", "⛰️", "🏔️", "🗻", "🏕️",
-      "🛖", "🏠", "🏡", "🏘️", "🏚️", "🏢", "🏬", "🏣", "🏤", "🏥",
-      "🏦", "🏨", "🏪", "🏫", "🏩", "💒", "🏛️", "⛪", "🕌", "🕍",
-      "🛕", "⛩️", "🕋", "🛗", "🪞", 
-    ];
+        const emojis = [
+          "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊",
+          "😋", "😎", "😍", "😘", "🥰", "😗", "😙", "😚", "🙂", "🤗",
+          "🤩", "🤔", "🤨", "😐", "😑", "😶", "🙄", "😏", "😣", "😥",
+          "😮", "🤐", "😴", "😪", "😵", "😤", "😭", "😡", "🤯", "🥵",
+          "👍", "👎", "👌", "✌️", "🤞", "👋", "🤚", "🖐️", "👏", "🙌",
+          "👐", "🤲", "🙏", "💪", "🦵", "🦶", "👂", "👃", "🧠", "🫀",
+          "👀", "👁️", "🧑‍🦰", "🧑‍🦱", "🧑‍🦳", "🧑‍🦲", "👶", "🧒", "👦", "👧",
+          "🧑", "👱‍♂️", "👱‍♀️", "🧔", "👨‍🦰", "👩‍🦰", "👨‍🦱", "👩‍🦱", "👨‍🦳", "👩‍🦳"
+        ];
 
-    return (
-      <div className="emoji-panel">
-        <div className="emoji-panel-header">Emojis</div>
-        <div className="emoji-panel-content">
-          {emojis.map((emoji, index) => (
-            <span
-              key={index}
-              className="emoji-item"
-              onClick={() => setNewMessage(prev => prev + emoji)}
-            >
-              {emoji}
-            </span>
-          ))}
-        </div>
-        <div className="emoji-panel-footer">
-          <span className="barra-rolagem-label">Role para ver mais</span>
-        </div>
-      </div>
-    );
-  };
+        return (
+          <div className="emoji-panel">
+            <div className="emoji-panel-header">Emojis</div>
+            <div className="emoji-panel-content">
+              {emojis.map((emoji, index) => (
+                <span
+                  key={index}
+                  className="emoji-item"
+                  onClick={() => setNewMessage(prev => prev + emoji)}
+                >
+                  {emoji}
+                </span>
+              ))}
+            </div>
+            <div className="emoji-panel-footer">
+              <span className="barra-rolagem-label">Role para ver mais</span>
+            </div>
+          </div>
+        );
+      };
 
-      // Add a contact selector component
-      const ContactSelector = ({ contacts, connections, onSelectContact }) => {
+      // Componente melhorado para seleção de contatos com indicadores de status e mensagens não lidas
+      const ContactSelector = ({ contacts, connections, onSelectContact, unreadMessages }) => {
         return (
           <div className="contact-selector">
             <select 
               onChange={(e) => {
                 if (e.target.value) {
-                  onSelectContact(e.target.value);
-                  connectToPeer(e.target.value);
+                  const selectedPeerId = e.target.value;
+                  onSelectContact(selectedPeerId);
+                  connectToPeer(selectedPeerId);
+                  
+                  // Limpar mensagens não lidas ao selecionar o contato
+                  setUnreadMessages(prev => ({
+                    ...prev,
+                    [selectedPeerId]: 0
+                  }));
                 }
               }}
               defaultValue=""
+              style={{ 
+                fontWeight: Object.values(unreadMessages).some(count => count > 0) ? 'bold' : 'normal'
+              }}
             >
               <option value="" disabled>Selecione um contato</option>
-              {contacts.map((contact, i) => (
-                <option key={i} value={contact.peerId}>
-                  {contact.name} ({contact.peerId})
-                </option>
-              ))}
+              {contacts.map((contact, i) => {
+                const isConnected = connections.some(c => c.peer === contact.peerId && c.open);
+                const isReconnecting = reconnecting[contact.peerId];
+                const unreadCount = unreadMessages[contact.peerId] || 0;
+                
+                return (
+                  <option 
+                    key={i} 
+                    value={contact.peerId}
+                    style={{ 
+                      fontWeight: unreadCount > 0 ? 'bold' : 'normal',
+                      color: isConnected ? '#4CAF50' : (isReconnecting ? '#ff9800' : '#999')
+                    }}
+                  >
+                    {contact.name} {unreadCount > 0 ? `(${unreadCount})` : ''} {isConnected ? '✓' : (isReconnecting ? '⟳' : '')}
+                  </option>
+                );
+              })}
             </select>
             <button onClick={() => setShowContacts(true)}>
-              <i className="fas fa-plus"></i> Novo Contato
+              <i className="fas fa-address-book"></i>
             </button>
           </div>
         );
       };
 
-  if (error) {
-    return (
-      <div className="error-message">
-        <h1>Erro</h1>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()}>Tentar novamente</button>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-      <div className="app-header">
-        <h1 className="app-title">k10</h1>
-        
-<div className="header-buttons">
-  <button onClick={() => setShowContacts(true)} className="header-button" title="Contatos">
-    <i className="fas fa-address-book"></i>
-  </button>
-  <button onClick={toggleDarkMode} className="header-button" title="Modo Noturno" id="darkModeBtn">
-    🌙
-  </button>
-</div>
-
-      </div>
-
-      <div className="user-info-container">
-        {editingName ? (
-          <div className="user-name-form">
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Digite seu nome"
-              autoFocus
-            />
-            <button
-              onClick={saveUserName}
-              disabled={!userName.trim()}
-            >
-              Salvar
-            </button>
+      if (error) {
+        return (
+          <div className="error-message">
+            <h1>Erro</h1>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()}>Tentar novamente</button>
           </div>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span className="username">{userName}</span>
-            <button
-              className="user-edit-button"
-              onClick={() => setEditingName(true)}
-            >
-              Editar
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="peer-id-container">
-        <span>Seu ID: {peerId}</span>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(peerId);
-            alert('ID copiado para a área de transferência!');
-          }}
-        >
-          Copiar
-        </button>
-      </div>
-
-      {/* Contact selector only when not in contacts screen */}
-      {!showContacts && contacts.length > 0 && 
-        <ContactSelector 
-          contacts={contacts} 
-          connections={connections} 
-          onSelectContact={setSelectedContact} 
-        />
+        );
       }
 
-      {(remoteStreams.length > 0 || isLocalVideoVisible) && (
-        <div className="video-container">
-          {isLocalVideoVisible && (
-            <div>
-              <div className="video-label">Você</div>
-              <video
-                className="local-video-player"
-                ref={localVideoRef}
-                autoPlay
-                muted
-              ></video>
+      // Calcular o total de mensagens não lidas
+      const totalUnreadMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
+
+      return (
+        <div>
+          <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+          <div className="app-header">
+            <h1 className="app-title">k10</h1>
+            
+            <div className="header-buttons">
+              <button 
+                onClick={() => setShowContacts(true)} 
+                className="header-button" 
+                title="Contatos"
+                style={{ position: 'relative' }}
+              >
+                <i className="fas fa-address-book"></i>
+                {totalUnreadMessages > 0 && (
+                  <span className="chat-notification">
+                    {totalUnreadMessages}
+                  </span>
+                )}
+              </button>
+              <button 
+                onClick={toggleDarkMode} 
+                className="header-button" 
+                title="Modo Noturno" 
+                id="darkModeBtn"
+              >
+                🌙
+              </button>
+            </div>
+          </div>
+
+          <div className="user-info-container">
+            {editingName ? (
+              <div className="user-name-form">
+                <input
+                  type="text"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  placeholder="Digite seu nome"
+                  autoFocus
+                />
+                <button
+                  onClick={saveUserName}
+                  disabled={!userName.trim()}
+                >
+                  Salvar
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className="username">{userName}</span>
+                <button
+                  className="user-edit-button"
+                  onClick={() => setEditingName(true)}
+                >
+                  Editar
+                </button>
+              </div>
+            )}
+</div>
+
+          <div className="peer-id-container">
+            <span>Seu ID: {peerId}</span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(peerId);
+                alert('ID copiado para a área de transferência!');
+              }}
+            >
+              Copiar
+            </button>
+          </div>
+
+          {/* Contact selector only when not in contacts screen */}
+          {!showContacts && contacts.length > 0 && 
+            <ContactSelector 
+              contacts={contacts} 
+              connections={connections} 
+              onSelectContact={setSelectedContact} 
+              unreadMessages={unreadMessages}
+            />
+          }
+
+          {/* Display para chamadas de vídeo */}
+          {(remoteStreams.length > 0 || isLocalVideoVisible) && (
+            <div className="video-container">
+              {isLocalVideoVisible && (
+                <div>
+                  <div className="video-label">Você</div>
+                  <video
+                    className="local-video-player"
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                  ></video>
+                </div>
+              )}
+              {remoteStreams.map((streamData, index) => (
+                streamData.type === 'video' && (
+                  <div key={index}>
+                    <div className="video-label">{getContactName(streamData.peerId)}</div>
+                    <video
+                      className="video-player"
+                      ref={el => videoRefs.current[streamData.peerId] = el}
+                      autoPlay
+                      playsInline
+                    ></video>
+                  </div>
+                )
+              ))}
             </div>
           )}
-          {remoteStreams.map((streamData, index) => (
-            streamData.type === 'video' && (
-              <div key={index}>
-                <div className="video-label">{getContactName(streamData.peerId)}</div>
-                <video
-                  className="video-player"
-                  ref={el => videoRefs.current[streamData.peerId] = el}
+
+          {/* Display para chamadas de áudio */}
+          {activeCalls.map((call, index) => (
+            call.type === 'voice' && (
+              <div key={index} className="audio-call-container">
+                <span>Chamada de voz com {getContactName(call.peerId)}</span>
+                <button
+                  className="call-end-button"
+                  onClick={() => endCall(call.peerId, 'voice')}
+                >
+                  Encerrar
+                </button>
+                <audio
+                  ref={el => audioRefs.current[call.peerId] = el}
                   autoPlay
-                ></video>
+                ></audio>
               </div>
             )
           ))}
+
+          {/* Tela de contatos ou tela de chat */}
+          {showContacts ? (
+            <ContactsScreen
+              contacts={contacts}
+              setContacts={setContacts}
+              onBack={() => setShowContacts(false)}
+              connections={connections}
+              onSelectContact={(peerId) => {
+                connectToPeer(peerId);
+                setSelectedContact(peerId);
+                setShowContacts(false);
+                // Limpar mensagens não lidas quando selecionar um contato
+                setUnreadMessages(prev => ({
+                  ...prev,
+                  [peerId]: 0
+                }));
+              }}
+            />
+          ) : (
+            <UpdatedChatManager
+              connections={connections}
+              messages={messages}
+              setMessages={setMessages}
+              contacts={contacts}
+              userName={userName}
+              peerId={peerId}
+              activeCalls={activeCalls}
+              endCall={endCall}
+              startVoiceCall={startVoiceCall}
+              toggleVideoCall={toggleVideoCall}
+              remoteStreams={remoteStreams}
+              audioRefs={audioRefs}
+              videoRefs={videoRefs}
+              handleFileChange={handleFileChange}
+              fileInputRef={fileInputRef}
+              handleAudioRecording={handleAudioRecording}
+              newMessage={newMessage}
+              setNewMessage={setNewMessage}
+              showEmojiPanel={showEmojiPanel}
+              setShowEmojiPanel={setShowEmojiPanel}
+              populateEmojiPanel={populateEmojiPanel}
+              getContactName={getContactName}
+              selectedContact={selectedContact}
+              setSelectedContact={setSelectedContact}
+              localVideoRef={localVideoRef}
+              unreadMessages={unreadMessages}
+              setUnreadMessages={setUnreadMessages}
+              setShowContacts={setShowContacts}
+            />
+          )}
         </div>
-      )}
+      );
+    };
 
-      {activeCalls.map((call, index) => (
-        call.type === 'voice' && (
-          <div key={index} className="audio-call-container">
-            <span>Chamada de voz com {getContactName(call.peerId)}</span>
-            <button
-              className="call-end-button"
-              onClick={() => endCall(call.peerId, 'voice')}
-            >
-              Encerrar
-            </button>
-            <audio
-              ref={el => audioRefs.current[call.peerId] = el}
-              autoPlay
-            ></audio>
-          </div>
-        )
-      ))}
+    // Renderização do aplicativo
+    ReactDOM.render(
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>,
+      document.getElementById('root')
+    );
 
-      {showContacts ? (
-        <ContactsScreen
-          contacts={contacts}
-          setContacts={setContacts}
-          onBack={() => setShowContacts(false)}
-          onSelectContact={(peerId) => {
-            connectToPeer(peerId);
-            setSelectedContact(peerId);
-            setShowContacts(false);
-          }}
-        />
-      ) : (
-        <UpdatedChatManager
-          connections={connections}
-          messages={messages}
-          setMessages={setMessages}
-          contacts={contacts}
-          userName={userName}
-          peerId={peerId}
-          activeCalls={activeCalls}
-          endCall={endCall}
-          startVoiceCall={startVoiceCall}
-          toggleVideoCall={toggleVideoCall}
-          remoteStreams={remoteStreams}
-          audioRefs={audioRefs}
-          videoRefs={videoRefs}
-          handleFileChange={handleFileChange}
-          fileInputRef={fileInputRef}
-          handleAudioRecording={handleAudioRecording}
-          newMessage={newMessage}
-          setNewMessage={setNewMessage}
-          showEmojiPanel={showEmojiPanel}
-          setShowEmojiPanel={setShowEmojiPanel}
-          populateEmojiPanel={populateEmojiPanel}
-          getContactName={getContactName}
-          selectedContact={selectedContact}
-          setSelectedContact={setSelectedContact}
-          localVideoRef={localVideoRef}
-        />
-      )}
-    </div>
-  );
-};
-
-// Renderização do aplicativo
-ReactDOM.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
-  document.getElementById('root')
-);
-
-</script>
+  </script>
 </body>
 </html>
