@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Servidro K10</title>
+  <title>Servidor K10</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body {
@@ -174,6 +174,15 @@
       border-radius: 5px;
       border: 1px solid #c8e6c9;
     }
+    .server-mode-container {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #e8f5e9;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -286,6 +295,8 @@
         messagesDistributed: 0,
         activeConnections: 0
       });
+      // New state to control the mode
+      const [pureServerMode, setPureServerMode] = useState(true);
       
       const peerInstance = useRef(null);
       const pendingFiles = useRef({});
@@ -426,7 +437,7 @@
         if (data.type === 'message') {
           const senderName = data.senderName || sourceConn.peer;
           
-          // CHANGE HERE: Modify the message text to include sender name at the beginning
+          // Modify the message text to include sender name at the beginning
           const modifiedData = {
             ...data,
             text: `${senderName}: ${data.text}`
@@ -490,6 +501,21 @@
             ...prev,
             activeConnections: activeConnectionsRef.current.size
           }));
+          
+          // Here is the critical change to ensure we operate in pure server mode:
+          // We'll send a special message to mark this as a server connection
+          // when pure server mode is enabled
+          if (pureServerMode) {
+            try {
+              conn.send({
+                type: 'server-info',
+                isServer: true,
+                message: 'Connected to K10 server in pure server mode' 
+              });
+            } catch (err) {
+              console.error(`Erro ao enviar informação de servidor para ${conn.peer}:`, err);
+            }
+          }
         });
 
         conn.on('data', (data) => {
@@ -519,8 +545,8 @@
           <h1>Servidor K10</h1>
           <p>The ID consists of 6 alphanumeric characters.</p>
           <p>More specifically:</p>
-          <p>Letters: A to Z (uppercase and lowercase)</p>
-          <p>Numbers: 0 to 9</p>    
+          <p>Letters: A to Z (uppercase only)</p>
+          <p>Numbers: 2 to 9</p>    
           <div className="peer-id-container">
             <div>
               <span 
@@ -542,6 +568,27 @@
             onSaveId={handleIdChange} 
             isConnected={connectionStatus === 'conectado' || connectionStatus === 'conectando'}
           />
+          
+          {/* New component for controlling server mode */}
+          <div className="server-mode-container">
+            <strong>Pure Server Mode:</strong>
+            <input 
+              type="checkbox" 
+              checked={pureServerMode} 
+              onChange={(e) => {
+                setPureServerMode(e.target.checked);
+                // If we're changing mode while connected, it's best to disconnect and reconnect
+                if (connectionStatus === 'conectado') {
+                  disconnectPeer();
+                  setTimeout(setupPeer, 500);
+                }
+              }} 
+              id="serverModeCheckbox"
+            />
+            <label htmlFor="serverModeCheckbox">
+              Enable pure server mode (prevents clients from connecting to each other)
+            </label>
+          </div>
           
           <div className="distribution-stats">
             <h3>Distribution Statistics</h3>
