@@ -95,12 +95,7 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     .peer-id-container button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 3px;
-      cursor: pointer;
+      display: none;
     }
     .chat-main-container {
       display: flex;
@@ -517,13 +512,32 @@
     const usePersistentId = () => {
       const [peerId, setPeerId] = useState('');
 
-      const generateId = () => {
+      const generateFingerprintId = () => {
+        // Coleta de características do dispositivo/navegador
+        const fingerprintData = [
+          navigator.userAgent,
+          navigator.platform,
+          navigator.language,
+          `${screen.width}x${screen.height}`,
+          new Date().getTimezoneOffset().toString()
+        ].join('|');
+
+        // Função de hash simples para gerar um número
+        let hash = 0;
+        for (let i = 0; i < fingerprintData.length; i++) {
+          hash = ((hash << 5) - hash) + fingerprintData.charCodeAt(i);
+          hash = hash & hash;
+        }
+
+        // Converter o hash em uma string de 6 caracteres usando o alfabeto permitido
         const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-        const buffer = new Uint8Array(6);
-        crypto.getRandomValues(buffer);
-        return Array.from(buffer)
-          .map(b => chars[b % chars.length])
-          .join('');
+        let id = '';
+        let num = Math.abs(hash);
+        for (let i = 0; i < 6; i++) {
+          id += chars[num % chars.length];
+          num = Math.floor(num / chars.length);
+        }
+        return id;
       };
 
       useEffect(() => {
@@ -534,14 +548,14 @@
             console.log("usePersistentId: Loaded saved ID:", savedId);
             setPeerId(savedId);
           } else {
-            const newId = generateId();
-            console.log("usePersistentId: Generated new ID:", newId);
+            const newId = generateFingerprintId();
+            console.log("usePersistentId: Generated fingerprint ID:", newId);
             localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
             setPeerId(newId);
           }
         } catch (err) {
           console.error("usePersistentId: Error:", err);
-          const newId = generateId();
+          const newId = generateFingerprintId();
           localStorage.setItem(PEER_ID_STORAGE_KEY, newId);
           setPeerId(newId);
         }
@@ -1951,6 +1965,9 @@
                   </button>
                 </div>
                 {isLocalVideoVisible && (
+                 
+
+
                   <div className="video-container">
                     <div>
                       <div className="video-label">Câmera Local ({userName || 'Você'})</div>
