@@ -937,7 +937,7 @@
 
           setNewMessage('');
         } catch (err) {
-          console.error("UpdatedChatManager: Error sending direct message:", err);
+        console.error("UpdatedChatManager: Error sending direct message:", err);
 alert(`Erro ao enviar mensagem: ${err.message}`);
         }
       };
@@ -1589,7 +1589,7 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
           }
         });
 
-        // CORREÇÃO: Event handler de chamada atualizado para funcionar como o Chat K10
+        // MODIFICAÇÃO: Código modificado para corrigir a webcam
         peer.on('call', async (call) => {
           const callType = call.metadata?.type || 'video';
           console.log(`PeerJS: Receiving ${callType} call from:`, call.peer);
@@ -1597,8 +1597,39 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
           // Só aceitar chamadas do servidor ou de contatos permitidos no modo sem servidor
           if (serverPeerId === call.peer || !connectedToServer) {
             try {
-              console.log(`PeerJS: Answering ${callType} call from:`, call.peer, "without local stream initially");
-              call.answer(null);
+              console.log(`PeerJS: Answering ${callType} call from:`, call.peer);
+              
+              // Para chamadas de vídeo, solicitamos permissão para acessar a câmera
+              let localStream = null;
+              if (callType === 'video') {
+                try {
+                  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                  if (localStream) {
+                    localStreamsRef.current.set(call.peer + '_' + callType, localStream);
+                    setIsLocalVideoVisible(true);
+                    if (localVideoRef.current) {
+                      localVideoRef.current.srcObject = localStream;
+                      localVideoRef.current.play().catch(e => console.warn("Local video play failed:", e));
+                    }
+                  }
+                } catch (err) {
+                  console.warn("Could not get local camera/mic:", err);
+                  // Still answer the call, but without sending our video
+                }
+              } else if (callType === 'voice') {
+                try {
+                  localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                  if (localStream) {
+                    localStreamsRef.current.set(call.peer + '_' + callType, localStream);
+                  }
+                } catch (err) {
+                  console.warn("Could not get local mic:", err);
+                  // Still answer the call, but without sending our audio
+                }
+              }
+              
+              // Answer the call with our stream (or null if we couldn't get one)
+              call.answer(localStream);
 
               // Selecionar automaticamente o contato que está chamando
               if (selectedContact !== call.peer) {
@@ -1611,7 +1642,7 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                 {
                   peerId: call.peer,
                   call,
-                  localStream: null,
+                  localStream: localStream,
                   type: callType,
                   direction: 'incoming',
                   isTemporaryStream: false
@@ -1622,8 +1653,22 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                 console.log(`PeerJS: Received remote ${callType} stream from:`, call.peer);
                 setRemoteStreams(prev => [
                   ...prev.filter(s => !(s.peerId === call.peer && s.type === callType)),
-                  { peerId: call.peer, stream: remoteStream, type: call.Type }
+                  { peerId: call.peer, stream: remoteStream, type: callType }
                 ]);
+                
+                if (callType === 'video') {
+                  const videoElement = videoRefs.current[call.peer];
+                  if (videoElement) {
+                    videoElement.srcObject = remoteStream;
+                    videoElement.play().catch(e => console.warn("Remote video play failed:", e));
+                  }
+                } else if (callType === 'voice') {
+                  const audioElement = audioRefs.current[call.peer];
+                  if (audioElement) {
+                    audioElement.srcObject = remoteStream;
+                    audioElement.play().catch(e => console.warn("Audio play failed:", e));
+                  }
+                }
               });
 
               call.on('close', () => {
@@ -1985,6 +2030,7 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
         }
       };
 
+      // MODIFICAÇÃO: Função toggleVideoCall corrigida para resolver o problema da webcam
       const toggleVideoCall = async (peerIdToCall) => {
         if (!peerInstance.current) {
           alert('Peer não inicializado');
@@ -2031,7 +2077,10 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
 
             localStreamsRef.current.set(peerIdToCall + '_video', stream);
             setIsLocalVideoVisible(true);
-            if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = stream;
+              localVideoRef.current.play().catch(e => console.warn("Local video play failed:", e));
+            }
 
             if (existingCall) {
               console.log("App: Adding local stream to existing call with:", peerIdToCall);
@@ -2043,19 +2092,43 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                 return c;
               }));
 
+              // Close existing call before creating a new one
+              existingCall.call.close();
+              
+              // Create a new call with the updated stream
               const call = peerInstance.current.call(peerIdToCall, stream, { metadata: { type: 'video' } });
 
               call.on('stream', (remoteStream) => {
                 console.log(`App: Received remote video stream response from:`, peerIdToCall);
+                setRemoteStreams(prev => [
+                  ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
+                  { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
+                ]);
+                
+                const videoElement = videoRefs.current[peerIdToCall];
+                if (videoElement) {
+                  videoElement.srcObject = remoteStream;
+                  videoElement.play().catch(e => console.warn("Remote video play failed:", e));
+                }
               });
 
               call.on('close', () => {
                 console.log("App: Outgoing video stream call closed with:", peerIdToCall);
+                endCall(peerIdToCall, 'video');
               });
 
               call.on('error', (err) => {
                 console.error('App: Error in outgoing video stream call:', err);
+                endCall(peerIdToCall, 'video');
               });
+              
+              // Update active calls with new call object
+              setActiveCalls(prev => prev.map(c => {
+                if (c.peerId === peerIdToCall && c.type === 'video') {
+                  return { ...c, call: call };
+                }
+                return c;
+              }));
 
             } else {
               console.log("App: Starting new video call with:", peerIdToCall);
@@ -2079,6 +2152,12 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                   ...prev.filter(s => !(s.peerId === peerIdToCall && s.type === 'video')),
                   { peerId: peerIdToCall, stream: remoteStream, type: 'video' }
                 ]);
+                
+                const videoElement = videoRefs.current[peerIdToCall];
+                if (videoElement) {
+                  videoElement.srcObject = remoteStream;
+                  videoElement.play().catch(e => console.warn("Remote video play failed:", e));
+                }
               });
 
               call.on('close', () => {
@@ -2233,6 +2312,22 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
       // Calcular o total de mensagens não lidas
       const totalUnreadMessages = Object.values(unreadMessages).reduce((sum, count) => sum + count, 0);
 
+      // MODIFICAÇÃO: Ensure video refs are properly handled
+      const ensureVideoRefs = () => {
+        // Make sure videoRefs and audioRefs are initialized as objects
+        if (!videoRefs.current) videoRefs.current = {};
+        if (!audioRefs.current) audioRefs.current = {};
+        
+        // Log existing refs for debugging
+        console.log("Current video refs:", Object.keys(videoRefs.current));
+        console.log("Current audio refs:", Object.keys(audioRefs.current));
+      };
+
+      // Call ensureVideoRefs when component mounts and when activeCalls changes
+      useEffect(() => {
+        ensureVideoRefs();
+      }, [activeCalls]);
+
       return (
         <div>
           <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
@@ -2299,7 +2394,7 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                 </button>
               </div>
             )}
-</div>
+          </div>
 
           <div className="peer-id-container">
             <span>Seu ID: {peerId}</span>
@@ -2348,8 +2443,8 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
             />
           }
 
-          {/* Display para chamadas de vídeo */}
-          {(remoteStreams.length > 0 || isLocalVideoVisible) && (
+          {/* MODIFICAÇÃO: Renderização aprimorada do contêiner de vídeo */}
+          {(remoteStreams.some(s => s.type === 'video') || isLocalVideoVisible) && (
             <div className="video-container">
               {isLocalVideoVisible && (
                 <div>
@@ -2361,41 +2456,62 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
                     muted
                     playsInline
                   ></video>
-</div>
+                </div>
               )}
-              {remoteStreams.map((streamData, index) => (
-                streamData.type === 'video' && (
-                  <div key={index}>
-                    <div className="video-label">{getContactName(streamData.peerId)}</div>
-                    <video
-                      className="video-player"
-                      ref={el => videoRefs.current[streamData.peerId] = el}
-                      autoPlay
-                      playsInline
-                    ></video>
-                  </div>
-                )
+              {remoteStreams.filter(s => s.type === 'video').map((streamData, index) => (
+                <div key={`video-${streamData.peerId}-${index}`}>
+                  <div className="video-label">{getContactName(streamData.peerId)}</div>
+                  <video
+                    className="video-player"
+                    ref={el => {
+                      if (el) {
+                        videoRefs.current[streamData.peerId] = el;
+                        
+                        // If we have a stream and it's not already assigned to this element
+                        if (streamData.stream && (!el.srcObject || el.srcObject !== streamData.stream)) {
+                          console.log(`Setting stream to video element for ${streamData.peerId}`);
+                          el.srcObject = streamData.stream;
+                          el.play().catch(e => console.warn(`Video play failed for ${streamData.peerId}:`, e));
+                        }
+                      }
+                    }}
+                    autoPlay
+                    playsInline
+                  ></video>
+                </div>
               ))}
             </div>
           )}
 
-          {/* Display para chamadas de áudio */}
-          {activeCalls.map((call, index) => (
-            call.type === 'voice' && (
-              <div key={index} className="audio-call-container">
-                <span>Chamada de voz com {getContactName(call.peerId)}</span>
-                <button
-                  className="call-end-button"
-                  onClick={() => endCall(call.peerId, 'voice')}
-                >
-                  Encerrar
-                </button>
-                <audio
-                  ref={el => audioRefs.current[call.peerId] = el}
-                  autoPlay
-                ></audio>
-              </div>
-            )
+          {/* MODIFICAÇÃO: Renderização aprimorada do contêiner de áudio */}
+          {activeCalls.filter(call => call.type === 'voice').map((call, index) => (
+            <div key={`audio-call-${call.peerId}-${index}`} className="audio-call-container">
+              <span>Chamada de voz com {getContactName(call.peerId)}</span>
+              <button
+                className="call-end-button"
+                onClick={() => endCall(call.peerId, 'voice')}
+              >
+                Encerrar
+              </button>
+              <audio
+                ref={el => {
+                  if (el) {
+                    audioRefs.current[call.peerId] = el;
+                    
+                    // Find matching stream
+                    const audioStream = remoteStreams.find(s => s.peerId === call.peerId && s.type === 'voice');
+                    
+                    // If we have a stream and it's not already assigned to this element
+                    if (audioStream && audioStream.stream && (!el.srcObject || el.srcObject !== audioStream.stream)) {
+                      console.log(`Setting stream to audio element for ${call.peerId}`);
+                      el.srcObject = audioStream.stream;
+                      el.play().catch(e => console.warn(`Audio play failed for ${call.peerId}:`, e));
+                    }
+                  }
+                }}
+                autoPlay
+              ></audio>
+            </div>
           ))}
 
           {/* Tela de contatos ou tela de chat */}
@@ -2465,4 +2581,3 @@ alert(`Erro ao enviar mensagem: ${err.message}`);
   </script>
 </body>
 </html>
-
