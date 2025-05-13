@@ -70,7 +70,7 @@
       padding: 1rem;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      display: none; /* Oculta o formulário inicialmente */
+      display: none;
     }
 
     form input, form button {
@@ -104,12 +104,7 @@
 
   <main>
     <h2>🔗 Links Úteis</h2>
-
-    <!-- A lista de links será aqui -->
-    <div id="links-secoes">
-      <!-- Links e seções serão adicionados aqui -->
-    </div>
-
+    <div id="links-secoes"></div>
     <button id="adicionar-link-btn">Adicionar novo link</button>
 
     <form id="form-link">
@@ -125,44 +120,24 @@
     © 2025 Recursos Educacionais | Desenvolvido por Você
   </footer>
 
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
-    // Configuração do Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBGFOMv8ZyZDrkzCtmC54OO2B-4fNU6MLk",
-      authDomain: "peerlink-wwunk.firebaseapp.com",
-      projectId: "peerlink-wwunk",
-      storageBucket: "peerlink-wwunk.appspot.com",
-      messagingSenderId: "584215657316",
-      appId: "1:584215657316:web:28e1d0ba6962b975ab9871"
-    };
-
-    // Inicializando o Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Referências aos elementos do DOM
+  <script>
     const form = document.getElementById('form-link');
     const linksSecoes = document.getElementById('links-secoes');
     const adicionarLinkBtn = document.getElementById('adicionar-link-btn');
-    const senhaCorreta = "147258369"; // Senha predefinida
 
-    // Função para carregar os links do Firestore
     async function carregarLinks() {
-      linksSecoes.innerHTML = ''; // Limpa a lista antes de carregar
-      const querySnapshot = await getDocs(collection(db, "links"));
+      linksSecoes.innerHTML = '';
+      const response = await fetch('/.netlify/functions/get-links');
+      const data = await response.json();
+
       const secoes = {};
 
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const secaoTitulo = data.titulo || "Sem Título";
+      data.forEach(link => {
+        const secaoTitulo = link.titulo || "Sem Título";
         if (!secoes[secaoTitulo]) {
           secoes[secaoTitulo] = [];
         }
-        secoes[secaoTitulo].push({ id: docSnap.id, nome: data.nome, url: data.url });
+        secoes[secaoTitulo].push(link);
       });
 
       for (const [titulo, links] of Object.entries(secoes)) {
@@ -180,16 +155,15 @@
           a.target = '_blank';
           li.appendChild(a);
 
-          // Botões de editar e excluir
           const editarBtn = document.createElement('span');
           editarBtn.textContent = 'Editar';
           editarBtn.classList.add('editar');
-          editarBtn.addEventListener('click', () => pedirSenha('editar', link.id, li));
+          editarBtn.addEventListener('click', () => editarLink(link.id, li));
 
           const excluirBtn = document.createElement('span');
           excluirBtn.textContent = 'Excluir';
           excluirBtn.classList.add('excluir');
-          excluirBtn.addEventListener('click', () => pedirSenha('excluir', link.id, li));
+          excluirBtn.addEventListener('click', () => excluirLink(link.id, li));
 
           li.appendChild(editarBtn);
           li.appendChild(excluirBtn);
@@ -202,81 +176,54 @@
       }
     }
 
-    // Função para pedir a senha antes de adicionar, editar ou excluir
-    function pedirSenha(acao, id, elemento) {
-      const senha = prompt("Por favor, insira a senha:");
-      if (senha === senhaCorreta) {
-        if (acao === 'editar') {
-          editarLink(id, elemento);
-        } else if (acao === 'excluir') {
-          excluirLink(id, elemento);
-        }
-        else if (acao === 'adicionar') {
-          adicionarLink();
-        }
-      } else {
-        alert("Senha incorreta!");
-      }
-    }
-
-    // Função para adicionar novo link
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      pedirSenha('adicionar');
-    });
-
-    // Função para adicionar o link no Firestore
-    async function adicionarLink() {
       const titulo = document.getElementById('titulo').value.trim();
       const nome = document.getElementById('nome').value.trim();
       const url = document.getElementById('url').value.trim();
 
       if (nome && url) {
-        try {
-          await addDoc(collection(db, "links"), { titulo, nome, url });
-          form.reset();
-          form.style.display = "none";
-          carregarLinks();  // Recarregar a lista de links
-        } catch (error) {
-          alert("Erro ao adicionar link: " + error.message);
-        }
-      } else {
-        alert("Por favor, preencha todos os campos.");
+        await fetch('/.netlify/functions/save-link', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ titulo, nome, url })
+        });
+        form.reset();
+        form.style.display = "none";
+        carregarLinks();
       }
-    }
+    });
 
-    // Função para excluir link
-    async function excluirLink(id, elemento) {
-      if (confirm("Deseja excluir este link?")) {
-        try {
-          await deleteDoc(doc(db, "links", id));
-          elemento.remove();  // Remove o link da interface
-        } catch (error) {
-          alert("Erro ao excluir link: " + error.message);
-        }
-      }
-    }
-
-    // Função para editar link
-    async function editarLink(id, li) {
-      const novoNome = prompt("Novo nome do link:");
-      const novaURL = prompt("Nova URL do link:");
-      if (novoNome && novaURL) {
-        try {
-          await updateDoc(doc(db, "links", id), { nome: novoNome, url: novaURL });
-          carregarLinks();  // Recarregar a lista de links
-        } catch (error) {
-          alert("Erro ao editar link: " + error.message);
-        }
-      }
-    }
-
-    // Botão para mostrar/ocultar o formulário
     adicionarLinkBtn.addEventListener('click', () => {
       form.style.display = form.style.display === 'none' ? 'block' : 'none';
     });
 
-    // Carregar os links ao iniciar
+    async function excluirLink(id, elemento) {
+      if (confirm("Deseja excluir este link?")) {
+        await fetch(`/ .netlify/functions/delete-link?id=${id}`, {
+          method: 'DELETE',
+        });
+        elemento.remove();
+      }
+    }
+
+    async function editarLink(id, li) {
+      const novoNome = prompt("Novo nome do link:");
+      const novaURL = prompt("Nova URL do link:");
+      if (novoNome && novaURL) {
+        await fetch('/.netlify/functions/edit-link', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, nome: novoNome, url: novaURL })
+        });
+        carregarLinks();
+      }
+    }
+
     carregarLinks();
   </script>
 </body>
