@@ -1,8 +1,9 @@
 // .netlify/functions/save-link.js
 
-let links = [];  // Usando memória temporária, ideal para testar
+let links = []; // Usando memória temporária, substitua por banco de dados real
 
 exports.handler = async function(event, context) {
+  // Recebe os dados do formulário
   const { titulo, nome, url } = JSON.parse(event.body);
   
   if (!nome || !url) {
@@ -12,9 +13,9 @@ exports.handler = async function(event, context) {
     };
   }
 
-  // Adicionando novo link à memória (você pode substituir isso por uma base de dados)
+  // Cria o novo link
   const newLink = { id: links.length + 1, titulo, nome, url };
-  links.push(newLink);
+  links.push(newLink);  // Armazena o link na memória (substitua por banco de dados real)
 
   return {
     statusCode: 200,
