@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Média com Meio Ponto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      text-align: center;
+      padding: 40px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      width: 120px;
+    }
+    .resultado {
+      margin-top: 30px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculadora de Média Final</h1>
+  <p>Notas com pesos: 2, 2, 2, 4</p>
+
+  <input type="number" id="nota1" step="0.1" min="0" max="10" placeholder="Nota 1 (peso 2)">
+  <input type="number" id="nota2" step="0.1" min="0" max="10" placeholder="Nota 2 (peso 2)">
+  <input type="number" id="nota3" step="0.1" min="0" max="10" placeholder="Nota 3 (peso 2)">
+  <input type="number" id="notaFinal" step="0.1" min="0" max="10" placeholder="Nota Final (peso 4)">
+  <br>
+  <button onclick="calcularMedia()">Calcular Média</button>
+
+  <div class="resultado" id="resultado"></div>
+
+  <script>
+    function calcularMedia() {
+      const n1 = parseFloat(document.getElementById('nota1').value);
+      const n2 = parseFloat(document.getElementById('nota2').value);
+      const n3 = parseFloat(document.getElementById('nota3').value);
+      const nf = parseFloat(document.getElementById('notaFinal').value);
+
+      if ([n1, n2, n3, nf].some(n => isNaN(n) || n < 0 || n > 10)) {
+        document.getElementById('resultado').innerText = "Por favor, preencha todas as notas entre 0 e 10.";
+        return;
+      }
+
+      const pesos = [2, 2, 2, 4];
+      const somaPesos = pesos.reduce((a, b) => a + b, 0);
+
+      const somaNotas = (n1 * 2) + (n2 * 2) + (n3 * 2) + (nf * 4);
+      const media = somaNotas / somaPesos;
+
+      const mediaComMeio = media + 0.5;
+
+      const mensagem = mediaComMeio >= 6.51
+        ? "✅ Aprovado! Média (com meio ponto) arredondada para 7."
+        : "❌ Reprovado. Média (com meio ponto) ainda abaixo de 6,51.";
+
+      document.getElementById('resultado').innerHTML = `
+        Média antes do meio ponto: <strong>${media.toFixed(2)}</strong><br>
+        Média final com meio ponto: <strong>${mediaComMeio.toFixed(2)}</strong><br>
+        ${mensagem}
+      `;
+    }
+  </script>
+</body>
+</html>
