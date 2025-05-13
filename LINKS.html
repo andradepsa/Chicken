@@ -232,18 +232,28 @@
       const url = document.getElementById('url').value.trim();
 
       if (nome && url) {
-        await addDoc(collection(db, "links"), { titulo, nome, url });
-        form.reset();
-        form.style.display = "none";
-        carregarLinks();
+        try {
+          await addDoc(collection(db, "links"), { titulo, nome, url });
+          form.reset();
+          form.style.display = "none";
+          carregarLinks();  // Recarregar a lista de links
+        } catch (error) {
+          alert("Erro ao adicionar link: " + error.message);
+        }
+      } else {
+        alert("Por favor, preencha todos os campos.");
       }
     }
 
     // Função para excluir link
     async function excluirLink(id, elemento) {
       if (confirm("Deseja excluir este link?")) {
-        await deleteDoc(doc(db, "links", id));
-        elemento.remove();
+        try {
+          await deleteDoc(doc(db, "links", id));
+          elemento.remove();  // Remove o link da interface
+        } catch (error) {
+          alert("Erro ao excluir link: " + error.message);
+        }
       }
     }
 
@@ -252,8 +262,12 @@
       const novoNome = prompt("Novo nome do link:");
       const novaURL = prompt("Nova URL do link:");
       if (novoNome && novaURL) {
-        await updateDoc(doc(db, "links", id), { nome: novoNome, url: novaURL });
-        carregarLinks();
+        try {
+          await updateDoc(doc(db, "links", id), { nome: novoNome, url: novaURL });
+          carregarLinks();  // Recarregar a lista de links
+        } catch (error) {
+          alert("Erro ao editar link: " + error.message);
+        }
       }
     }
 
