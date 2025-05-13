@@ -127,7 +127,6 @@
 
   <!-- Firebase SDKs -->
   <script type="module">
-    // Importando os módulos do Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
@@ -149,8 +148,7 @@
     const form = document.getElementById('form-link');
     const linksSecoes = document.getElementById('links-secoes');
     const adicionarLinkBtn = document.getElementById('adicionar-link-btn');
-    let senhaCorreta = false;
-    let usuarioLogado = null;
+    const senhaCorreta = "147258369"; // Senha predefinida
 
     // Função para carregar os links do Firestore
     async function carregarLinks() {
@@ -186,12 +184,12 @@
           const editarBtn = document.createElement('span');
           editarBtn.textContent = 'Editar';
           editarBtn.classList.add('editar');
-          editarBtn.addEventListener('click', () => editarLink(link.id, li));
+          editarBtn.addEventListener('click', () => pedirSenha('editar', link.id, li));
 
           const excluirBtn = document.createElement('span');
           excluirBtn.textContent = 'Excluir';
           excluirBtn.classList.add('excluir');
-          excluirBtn.addEventListener('click', () => excluirLink(link.id, li));
+          excluirBtn.addEventListener('click', () => pedirSenha('excluir', link.id, li));
 
           li.appendChild(editarBtn);
           li.appendChild(excluirBtn);
@@ -200,16 +198,35 @@
         });
 
         secao.appendChild(ul);
-        linksSecoes.append
-::contentReference[oaicite:0]{index=0}
- 
         linksSecoes.appendChild(secao);
+      }
+    }
+
+    // Função para pedir a senha antes de adicionar, editar ou excluir
+    function pedirSenha(acao, id, elemento) {
+      const senha = prompt("Por favor, insira a senha:");
+      if (senha === senhaCorreta) {
+        if (acao === 'editar') {
+          editarLink(id, elemento);
+        } else if (acao === 'excluir') {
+          excluirLink(id, elemento);
+        }
+        else if (acao === 'adicionar') {
+          adicionarLink();
+        }
+      } else {
+        alert("Senha incorreta!");
       }
     }
 
     // Função para adicionar novo link
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      pedirSenha('adicionar');
+    });
+
+    // Função para adicionar o link no Firestore
+    async function adicionarLink() {
       const titulo = document.getElementById('titulo').value.trim();
       const nome = document.getElementById('nome').value.trim();
       const url = document.getElementById('url').value.trim();
@@ -220,12 +237,7 @@
         form.style.display = "none";
         carregarLinks();
       }
-    });
-
-    // Botão para mostrar/ocultar o formulário
-    adicionarLinkBtn.addEventListener('click', () => {
-      form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
+    }
 
     // Função para excluir link
     async function excluirLink(id, elemento) {
@@ -244,6 +256,11 @@
         carregarLinks();
       }
     }
+
+    // Botão para mostrar/ocultar o formulário
+    adicionarLinkBtn.addEventListener('click', () => {
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
 
     // Carregar os links ao iniciar
     carregarLinks();
