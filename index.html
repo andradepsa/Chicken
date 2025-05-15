@@ -1485,7 +1485,8 @@
                     <a href="#curso" class="btn btn-primary">
                         <i class="fas fa-graduation-cap"></i> Conhecer o Curso
                     </a>
-                    <a href="#curso" class="btn btn-outline" id="cursoLink">
+                   <!-- Link com href="#" para não saltar -->
+<a href="#" class="btn btn-outline" id="cursoLink">
   <i class="fas fa-graduation-cap"></i> Contagem Regressiva
 </a>
 
@@ -1505,7 +1506,7 @@
   z-index: 1000;
 ">
   <div style="text-align: right; padding: 10px;">
-    <button onclick="document.getElementById('modalIframe').style.display='none'" style="padding: 5px 10px;">✖ Fechar</button>
+    <button onclick="fecharModal()" style="padding: 5px 10px;">✖ Fechar</button>
   </div>
   <iframe src="https://matematico10.com.br/contador"
           style="width: 100%; height: 90%; border: none;"></iframe>
@@ -1523,7 +1524,7 @@
 
 <script>
   document.getElementById("cursoLink").addEventListener("click", function(event) {
-    event.preventDefault();
+    event.preventDefault();  // evita o comportamento padrão de saltar ou recarregar
     document.getElementById("modalIframe").style.display = "block";
     document.getElementById("modalBackdrop").style.display = "block";
   });
@@ -1533,6 +1534,8 @@
     document.getElementById("modalBackdrop").style.display = "none";
   }
 </script>
+
+
 
                 </div>
             </div>
