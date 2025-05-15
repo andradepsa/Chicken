@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contagem Regressiva até 14 de Março</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #f5f7fa, #dfe9f3);
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      color: #222;
+      width: 100vw;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 4vw;
+      color: #1a237e;
+      margin-top: 2vw;
+      margin-bottom: 2vw;
+      text-transform: uppercase;
+    }
+
+    p {
+      font-size: 2vw;
+      max-width: 90vw;
+      margin: 0 auto;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .countdown {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2vw;
+      margin-top: 4vw;
+    }
+
+    .countdown-item {
+      background: #283593;
+      color: white;
+      padding: 2vw;
+      border-radius: 1vw;
+      min-width: 10vw;
+      font-size: 3vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.1);
+    }
+
+    .unit {
+      font-size: 1.5vw;
+      margin-top: 1vw;
+      color: #c5cae9;
+      text-transform: uppercase;
+    }
+
+    .message {
+      margin-top: 4vw;
+      font-size: 2.5vw;
+      color: #d32f2f;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>14 de março - Dia Internacional da Matemática</h1>
+
+  <h5>Contagem regressiva para 14 de março: Dia da Matemática e nascimento de Einstein.</h5>
+  <h5>Também é o Dia do Pi, símbolo eterno da matemática e celebrado em todo o planeta.</h5>
+
+  <div class="countdown" aria-live="polite" aria-atomic="true">
+    <div class="countdown-item">
+      <div id="months">0</div>
+      <div class="unit">Meses</div>
+    </div>
+    <div class="countdown-item">
+      <div id="days">0</div>
+      <div class="unit">Dias</div>
+    </div>
+    <div class="countdown-item">
+      <div id="hours">0</div>
+      <div class="unit">Horas</div>
+    </div>
+    <div class="countdown-item">
+      <div id="minutes">0</div>
+      <div class="unit">Minutos</div>
+    </div>
+    <div class="countdown-item">
+      <div id="seconds">0</div>
+      <div class="unit">Segundos</div>
+    </div>
+  </div>
+
+  <div class="message" id="message">&nbsp;</div>
+
+  <script>
+    function updateCountdown() {
+      const now = new Date();
+
+      let targetYear = now.getFullYear();
+      const march14ThisYear = new Date(targetYear, 2, 14);
+      if (now > march14ThisYear) {
+        targetYear++;
+      }
+      const target = new Date(targetYear, 2, 14);
+
+      let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+      if (now.getDate() > target.getDate()) {
+        months--;
+      }
+
+      let adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+
+      if (adjustedDate > target) {
+        months--;
+        adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+      }
+
+      const diffMs = target - adjustedDate;
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 2;
+
+      const totalMs = target - now;
+      const hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((totalMs / (1000 * 60)) % 60);
+      const seconds = Math.floor((totalMs / 1000) % 60);
+
+      document.getElementById('months').textContent = months;
+      document.getElementById('days').textContent = days;
+      document.getElementById('hours').textContent = hours;
+      document.getElementById('minutes').textContent = minutes;
+      document.getElementById('seconds').textContent = seconds;
+
+      if (totalMs <= 0) {
+        document.getElementById('message').textContent = "FELIZ DIA DA MATEMÁTICA!";
+        clearInterval(interval);
+      } else {
+        document.getElementById('message').textContent = "";
+      }
+    }
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+  </script>
+</body>
+</html>
