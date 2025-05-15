@@ -20,8 +20,6 @@
       --button-text: #ffffff;
       --button-hover-bg: #1557b0;
     }
-
-    /* Dark theme variables */
     [data-theme="dark"] {
       --bg-color: #1a1a1a;
       --card-bg: #2d2d2d;
@@ -35,68 +33,50 @@
       --button-bg: #4dabf7;
       --button-hover-bg: #2b8ad6;
     }
-
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg-color);
       color: var(--text-color);
       min-height: 100vh;
       padding: 2rem;
-      transition: background 0.3s, color 0.3s;
     }
-
     .container {
       max-width: 800px;
       margin: 0 auto;
-      position: relative;
     }
-
     .header {
       margin-bottom: 1.5rem;
     }
-
     .header-top {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
     }
-
-    .header h1 {
+    h1 {
       font-size: 1.8rem;
-      font-weight: 600;
-      margin-right: 1rem;
     }
-
     .back-button {
       background: var(--button-bg);
       color: var(--button-text);
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 8px;
-      font-size: 1rem;
       cursor: pointer;
-      transition: background 0.2s;
       text-decoration: none;
-      display: inline-flex;
-      align-items: center;
     }
-
-    .back-button:hover {
-      background: var(--button-hover-bg);
+    .theme-toggle {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-left: 1rem;
     }
-
-    .back-button::before {
-      content: '←';
-      margin-right: 0.5rem;
-    }
-
     .search-bar {
       display: flex;
       align-items: center;
@@ -105,93 +85,26 @@
       border-radius: 8px;
       padding: 0.5rem 1rem;
       box-shadow: var(--shadow);
-      transition: border-color 0.2s;
     }
-
-    .search-bar:focus-within {
-      border-color: var(--link-color);
-    }
-
     .search-bar input {
+      flex: 1;
       border: none;
       background: transparent;
-      flex: 1;
       font-size: 1rem;
-      color: var(--text-color);
       outline: none;
-    }
-
-    .search-bar input::placeholder {
-      color: #636e72;
-    }
-
-    .search-bar .search-icon {
-      font-size: 1.2rem;
-      color: #636e72;
-      margin-right: 0.5rem;
-    }
-
-    .theme-toggle {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
       color: var(--text-color);
-      transition: transform 0.2s;
     }
-
-    .theme-toggle:hover {
-      transform: scale(1.1);
-    }
-
     ul {
       list-style: none;
+      padding: 1rem;
       background: var(--card-bg);
       border-radius: var(--border-radius);
-      padding: 1.5rem;
       box-shadow: var(--shadow);
     }
-
     li {
-      margin: 1rem 0;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      margin: 0.5rem 0;
       padding: 0.5rem;
-      border-radius: 6px;
-      transition: background 0.2s;
     }
-
-    li.highlight {
-      background: var(--highlight-bg);
-    }
-
-    a {
-      color: var(--link-color);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    a:hover {
-      text-decoration: underline;
-      color: #174ea6;
-    }
-
-    .duration {
-      color: #636e72;
-      font-size: 0.9rem;
-    }
-
-    .no-results {
-      text-align: center;
-      color: #636e72;
-      font-size: 1rem;
-      padding: 1rem;
-    }
-
-    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
@@ -203,9 +116,7 @@
       justify-content: center;
       align-items: center;
       z-index: 9999;
-      backdrop-filter: blur(4px);
     }
-
     .modal-content {
       background: var(--card-bg);
       padding: 0;
@@ -213,75 +124,25 @@
       width: 90%;
       max-width: 800px;
       position: relative;
-      box-shadow: var(--shadow);
       overflow: hidden;
     }
-
     iframe {
       width: 100%;
       height: 450px;
       border: none;
-      display: block;
     }
-
     .close {
       position: absolute;
-      top: 12px;
+      top: 10px;
       right: 20px;
       font-size: 1.8rem;
       cursor: pointer;
       color: #999;
-      transition: color 0.2s;
-      font-weight: 600;
     }
-
-    .close:hover {
-      color: var(--text-color);
-    }
-
-    /* Responsive design */
-    @media (max-width: 600px) {
-      body {
-        padding: 1rem;
-      }
-
-      .header h1 {
-        font-size: 1.5rem;
-      }
-
-      .header-top {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-      }
-
-      .back-button {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.9rem;
-      }
-
-      .search-bar {
-        padding: 0.4rem 0.8rem;
-      }
-
-      .search-bar input {
-        font-size: 0.9rem;
-      }
-
-      iframe {
-        height: 300px;
-      }
-
-      ul {
-        padding: 1rem;
-      }
-
-      li {
-        font-size: 1rem;
-      }
-
-      .theme-toggle {
-        font-size: 1.3rem;
-      }
+    .video-count {
+      margin-bottom: 1rem;
+      font-weight: bold;
+      font-size: 1.1rem;
     }
   </style>
 </head>
@@ -291,21 +152,20 @@
       <div class="header-top">
         <h1>Vídeos do K10</h1>
         <div>
-          <a href="Recursos Pedagógicos.html" class="back-button">Voltar</a>
-          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+          <a href="Recursos Pedagógicos.html" class="back-button">← Voltar</a>
+          <button class="theme-toggle" id="themeToggle">🌙</button>
         </div>
       </div>
       <div class="search-bar">
-        <span class="search-icon">🔍</span>
+        <span>🔍</span>
         <input type="text" id="searchInput" placeholder="Pesquisar vídeos..." />
       </div>
     </div>
 
+    <div class="video-count" id="videoCount">Total de vídeos: 0</div>
+
     <ul id="videoList">
-      <!-- Link original, mantido exatamente como fornecido -->
-     <ul>
-
-
+      
 <li><a href="https://www.youtube.com/watch?v=5cMXNfw8E3Y" target="_blank">Algorithm of Mathematical Operations</a> (15:49)</li>
 <li><a href="https://www.youtube.com/watch?v=BIKbptGuC84" target="_blank">Como verificar suas soluções de modo eficiente(WolframAlpha)</a> (15:20)</li>
 <li><a href="https://www.youtube.com/watch?v=sc5dHhUy5VE" target="_blank">Gerador de Tabuada Gratuito!</a> (6:40)</li>
@@ -798,46 +658,55 @@
 <li><a href="https://www.youtube.com/watch?v=Nf6clo_g4D0" target="_blank">Desenho Geométrico - Aula 1 - Visão Geral</a> (8:56)</li>
 <li><a href="https://www.youtube.com/watch?v=uwKzbhil2tk" target="_blank">Debate com os professores Luiz Aquino e Rafael Procopio</a> (170:11)</li>
 <li><a href="https://www.youtube.com/watch?v=087vVFYOcWc" target="_blank">Seja um Produtor do Passei Direto!</a> (?:??)</li>
-</ul>
 
 
-    <!-- Modal escondido -->
-    <div class="modal" id="videoModal">
-      <div class="modal-content">
-        <span class="close" id="closeModal">×</span>
-        <iframe id="videoIframe" allowfullscreen></iframe>
-      </div>
+    </ul>
+  </div>
+
+  <div class="modal" id="videoModal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">×</span>
+      <iframe id="videoIframe" allowfullscreen></iframe>
     </div>
   </div>
 
   <script>
-    // Seleciona todos os <a> que tenham target="_blank"
-    document.querySelectorAll('a[target="_blank"]').forEach(link => {
-      link.addEventListener('click', function(event) {
-        event.preventDefault(); // Impede o navegador de abrir a nova aba
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+      themeToggle.textContent = isDark ? '🌙' : '☀️';
+    });
 
-        const url = this.href;
-        const videoId = new URL(url).searchParams.get('v');
+    const videoList = document.getElementById('videoList');
+    const videoCount = document.getElementById('videoCount');
+
+    function updateVideoCount() {
+      const total = videoList.querySelectorAll('li').length;
+      videoCount.textContent = `Total de vídeos: ${total}`;
+    }
+
+    updateVideoCount();
+
+    // Abrir modal
+    videoList.addEventListener('click', function(e) {
+      if (e.target.tagName === 'A') {
+        e.preventDefault();
+        const url = new URL(e.target.href);
+        const videoId = url.searchParams.get('v');
         const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-
-        // Mostra o modal com o vídeo embedado
-        const modal = document.getElementById('videoModal');
-        const iframe = document.getElementById('videoIframe');
-        iframe.src = embedUrl;
-        modal.style.display = 'flex';
-      });
+        document.getElementById('videoIframe').src = embedUrl;
+        document.getElementById('videoModal').style.display = 'flex';
+      }
     });
 
-    // Fecha o modal
-    document.getElementById('closeModal').addEventListener('click', function() {
-      const modal = document.getElementById('videoModal');
-      const iframe = document.getElementById('videoIframe');
-      modal.style.display = 'none';
-      iframe.src = '';
+    // Fechar modal
+    document.getElementById('closeModal').addEventListener('click', () => {
+      document.getElementById('videoModal').style.display = 'none';
+      document.getElementById('videoIframe').src = '';
     });
 
-    // Fecha ao clicar fora do conteúdo
-    window.addEventListener('click', function(e) {
+    window.addEventListener('click', (e) => {
       const modal = document.getElementById('videoModal');
       if (e.target === modal) {
         modal.style.display = 'none';
@@ -845,47 +714,18 @@
       }
     });
 
-    // Theme toggle functionality
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      if (currentTheme === 'dark') {
-        document.documentElement.removeAttribute('data-theme');
-        themeToggle.textContent = '🌙';
-      } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeToggle.textContent = '☀️';
-      }
-    });
-
-    // Search functionality
-    const searchInput = document.getElementById('searchInput');
-    const videoList = document.getElementById('videoList');
-    const videos = Array.from(videoList.getElementsByTagName('li'));
-
-    searchInput.addEventListener('input', () => {
-      const query = searchInput.value.trim().toLowerCase();
-      let hasResults = false;
-      videos.forEach(video => {
-        const title = video.querySelector('a').textContent.toLowerCase();
-        const matches = query === '' || title.includes(query);
-        video.style.display = matches ? '' : 'none';
-        video.classList.toggle('highlight', matches && query !== '');
-        if (matches) hasResults = true;
+    // Pesquisa
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const items = videoList.querySelectorAll('li');
+      let visibleCount = 0;
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const match = text.includes(searchTerm);
+        item.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
       });
-
-      // Show "No results" message if no videos match
-      let noResults = videoList.querySelector('.no-results');
-      if (!hasResults && query !== '') {
-        if (!noResults) {
-          noResults = document.createElement('li');
-          noResults.className = 'no-results';
-          noResults.textContent = 'Nenhum vídeo encontrado';
-          videoList.appendChild(noResults);
-        }
-      } else if (noResults) {
-        noResults.remove();
-      }
+      videoCount.textContent = `Total de vídeos: ${visibleCount}`;
     });
   </script>
 </body>
