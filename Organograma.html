@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organograma de Páginas- Site Matemático 10</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .header {
+            background-color: #4169E1;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+        
+        .organogram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+        
+        .main-node {
+            background-color: #000;
+            color: white;
+            border-radius: 50%;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            padding: 15px;
+            position: relative;
+        }
+        
+        .resources-node {
+            background-color: #9370DB;
+            color: white;
+            border-radius: 50%;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+            padding: 15px;
+        }
+        
+        .sections {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 300px;
+            max-width: 400px;
+        }
+        
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .link {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-left: 5px solid #4169E1;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
+        
+        .link.social {
+            border-left-color: #1DA1F2;
+        }
+        
+        .link.pedagogic {
+            border-left-color: #9370DB;
+        }
+        
+        .link.chat {
+            border-left-color: #25D366;
+        }
+        
+        .link.additional {
+            border-left-color: #FF7F50;
+        }
+        
+        .section-title {
+            background-color: #4169E1;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+            width: fit-content;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .social .section-title {
+            background-color: #1DA1F2;
+        }
+        
+        .pedagogic .section-title {
+            background-color: #9370DB;
+        }
+        
+        .chat .section-title {
+            background-color: #25D366;
+        }
+        
+        .additional .section-title {
+            background-color: #FF7F50;
+        }
+        
+        .connector {
+            width: 2px;
+            height: 30px;
+            background-color: #ccc;
+        }
+        
+        .level-connectors {
+            display: flex;
+            justify-content: space-around;
+            width: 90%;
+            position: relative;
+        }
+        
+        .level-connectors::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: #ccc;
+        }
+        
+        .vertical-connector {
+            width: 2px;
+            height: 30px;
+            background-color: #ccc;
+        }
+        
+        .url {
+            font-size: 12px;
+            color: #666;
+            display: block;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Mapa do Site Matemático 10</h1>
+    </div>
+    
+    <div class="organogram">
+        <div class="main-node">
+            <div>HOME</div>
+            <div>index.html</div>
+        </div>
+        
+        <div class="connector"></div>
+        
+        <div class="level-connectors">
+            <div class="vertical-connector"></div>
+            <div class="vertical-connector"></div>
+            <div class="vertical-connector"></div>
+            <div class="vertical-connector"></div>
+        </div>
+        
+        <div class="sections">
+            <!-- Seção de Redes Sociais -->
+            <div class="section social">
+                <div class="section-title">Redes Sociais e Canais</div>
+                <div class="links">
+                   <a href="https://www.soundon.global/bio/andradepsa" class="link social">
+                        Músicas
+                        <span class="url">https://www.soundon.global/bio/andradepsa</span>
+                    </a>
+                    <a href="https://x.com/SergioPaul97880" class="link social">
+                        X (Twitter)
+                        <span class="url">https://x.com/SergioPaul97880</span>
+                    </a>
+                    <a href="https://www.youtube.com/@MATEMATICO1O" class="link social">
+                        YouTube
+                        <span class="url">https://www.youtube.com/@MATEMATICO1O</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/geral10" class="link social">
+                        LinkedIn
+                        <span class="url">https://www.linkedin.com/in/geral10</span>
+                    </a>
+                    <a href="http://lattes.cnpq.br/7286865766488458" class="link social">
+                        Currículo Lattes
+                        <span class="url">http://lattes.cnpq.br/7286865766488458</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Recursos Pedagógicos -->
+            <div class="section pedagogic">
+                <div class="resources-node">
+                    <div>Recursos</div>
+                    <div>Pedagógicos</div>
+                </div>
+                <div class="connector"></div>
+                <div class="links">
+                    <a href="Teste BR-EUA.html" class="link pedagogic">
+                        Paradoxo Hiperdimensional
+                        <span class="url">Teste BR-EUA.html</span>
+                    </a>
+                   <a href="Planej. Anuais.html" class="link pedagogic">
+                        Planejamentos Anuais
+                        <span class="url">Planej. Anuais.html</span>
+                    </a>
+                    <a href="Vídeos do K10.html" class="link pedagogic">
+                        Vídeos K10
+                        <span class="url">Vídeos do K10.html</span>
+                    </a>
+                    <a href="Provas OBMEP.html" class="link pedagogic">
+                       Provas OBMEP
+                        <span class="url">Provas OBMEP.html</span>
+                    </a>
+                    <a href="https://chatgpt.com/g/g-6751bf722f24819191d5e300e315b63a-tutor-ia-pia" class="link pedagogic">
+                        Planos de Aula com I.A.
+                        <span class="url">https://chatgpt.com/g/g-6751bf722f24819191d5e300e315b63a-tutor-ia-pia</span>
+                    </a>
+                     <a href="https://theresanaiforthat.com/s/video/" class="link pedagogic">
+                        There’s An AI For That
+                        <span class="url">https://theresanaiforthat.com/s/video/</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Chat e Servidor -->
+            <div class="section chat">
+                <div class="section-title">Chat e Servidor</div>
+                <div class="links">
+                      <a href="Chat Mobile.HTML" class="link pedagogic">
+                      Chat Mobile
+                      <span class="url">Chat Mobile.HTML</span>
+                    </a>
+                    <a href="Chat Desktop.HTML" class="link chat">
+                        Chat  Desktop
+                        <span class="url">Chat Desktop.HTML</span>
+                    </a>
+                     <a href="SERVIDOR CHAT P2P-CO.html" class="link chat">
+                        Servidor
+                        <span class="url">SERVIDOR CHAT P2P-CO.html</span>
+                    </a>
+                    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p " class="link chat">
+                        Baixar Chat P@P  + Servidor
+                        <span class="url">https://paulo-sergio-de-andrade.itch.io/chat-p2p </span>
+                    </a>
+                    <a href="https://github.com/andradepsa/Chicken" class="link chat">
+                        Projeto no Github
+                       <span class="url">https://github.com/andradepsa/Chicken</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Recursos Adicionais -->
+            <div class="section additional">
+                <div class="section-title">Recursos Adicionais</div>
+                <div class="links">
+                    <a href="Contador.html" class="link chat">
+                        Contagem Regressiva
+                       <span class="url">Contador.html</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
