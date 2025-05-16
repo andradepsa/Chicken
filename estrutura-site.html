@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Estrutura do Site</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    ul { list-style-type: none; }
+    li { margin: 5px 0; }
+    .folder { font-weight: bold; color: #e67e22; }
+    .file { color: #2980b9; }
+  </style>
+</head>
+<body>
+  <h1>Estrutura do Site (GitHub)</h1>
+  <div id="estrutura"></div>
+
+  <script>
+    const usuario = "andradepsa";
+    const repo = "Chicken";
+    const branch = "main"; // ou "master"
+
+    async function listarArquivos(path = "") {
+      const url = `https://api.github.com/repos/${usuario}/${repo}/contents/${path}?ref=${branch}`;
+      const res = await fetch(url);
+      const dados = await res.json();
+
+      const ul = document.createElement("ul");
+
+      for (const item of dados) {
+        const li = document.createElement("li");
+
+        if (item.type === "dir") {
+          li.innerHTML = `<span class="folder">📁 ${item.name}</span>`;
+          const sub = await listarArquivos(item.path);
+          li.appendChild(sub);
+        } else {
+          li.innerHTML = `<span class="file">📄 ${item.name}</span>`;
+        }
+
+        ul.appendChild(li);
+      }
+
+      return ul;
+    }
+
+    listarArquivos().then(arvore => {
+      document.getElementById("estrutura").appendChild(arvore);
+    });
+  </script>
+</body>
+</html>
