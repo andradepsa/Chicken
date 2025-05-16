@@ -1,52 +1,90 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Estrutura do Site</title>
-  <style>
-    body { font-family: Arial; padding: 20px; }
-    ul { list-style-type: none; }
-    li { margin: 5px 0; }
-    .folder { font-weight: bold; color: #e67e22; }
-    .file { color: #2980b9; }
-  </style>
+<meta charset="UTF-8" />
+<title>Organograma Drag & Drop Básico</title>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  .tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .node {
+    background: #e67e22;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin: 10px;
+    cursor: grab;
+    user-select: none;
+  }
+  .children {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 40px;
+  }
+  /* Linhas entre nodes */
+  .tree > .children::before {
+    content: '';
+    position: absolute;
+    top: 60px;
+    width: 100%;
+    height: 2px;
+    background: black;
+    left: 0;
+    z-index: -1;
+  }
+  .vertical-line {
+    position: absolute;
+    width: 2px;
+    background: black;
+    top: 0;
+  }
+</style>
 </head>
 <body>
-  <h1>Estrutura do Site (GitHub)</h1>
-  <div id="estrutura"></div>
 
-  <script>
-    const usuario = "andradepsa";
-    const repo = "Chicken";
-    const branch = "main"; // ou "master"
+<div class="tree" id="tree">
+  <div class="node" draggable="true">Home</div>
+  <div class="children" id="children1">
+    <div class="node" draggable="true">Página 1</div>
+    <div class="node" draggable="true">Página 2</div>
+    <div class="node" draggable="true">Página 3</div>
+  </div>
+</div>
 
-    async function listarArquivos(path = "") {
-      const url = `https://api.github.com/repos/${usuario}/${repo}/contents/${path}?ref=${branch}`;
-      const res = await fetch(url);
-      const dados = await res.json();
+<script>
+  // Código simples drag and drop para os nodes
+  const nodes = document.querySelectorAll('.node');
 
-      const ul = document.createElement("ul");
-
-      for (const item of dados) {
-        const li = document.createElement("li");
-
-        if (item.type === "dir") {
-          li.innerHTML = `<span class="folder">📁 ${item.name}</span>`;
-          const sub = await listarArquivos(item.path);
-          li.appendChild(sub);
-        } else {
-          li.innerHTML = `<span class="file">📄 ${item.name}</span>`;
-        }
-
-        ul.appendChild(li);
-      }
-
-      return ul;
-    }
-
-    listarArquivos().then(arvore => {
-      document.getElementById("estrutura").appendChild(arvore);
+  nodes.forEach(node => {
+    node.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', e.target.textContent);
+      e.dataTransfer.effectAllowed = 'move';
+      e.target.style.opacity = '0.5';
     });
-  </script>
+    node.addEventListener('dragend', e => {
+      e.target.style.opacity = '';
+    });
+  });
+
+  const childrenContainer = document.getElementById('children1');
+  childrenContainer.addEventListener('dragover', e => {
+    e.preventDefault();
+  });
+
+  childrenContainer.addEventListener('drop', e => {
+    e.preventDefault();
+    const data = e.dataTransfer.getData('text');
+    const draggedNode = Array.from(nodes).find(n => n.textContent === data);
+    if (draggedNode && draggedNode.parentNode === childrenContainer) {
+      // rearranjar - para simplificar troca de lugar dos filhos
+      childrenContainer.insertBefore(draggedNode, e.target.closest('.node'));
+    }
+  });
+</script>
+
 </body>
 </html>
