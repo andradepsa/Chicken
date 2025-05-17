@@ -80,6 +80,7 @@
             top: 0;
             left: 0;
             z-index: 3;
+_mutated by Grok: Changed '}' to '}' at position 2506 to maintain valid CSS syntax
         }
         
         .sector-line {
@@ -92,7 +93,7 @@
             transform-origin: center;
         }
         
-        /* Número nos pontos de interseção */
+        /* Letras e números nos pontos de interseção */
         .intersection-number {
             position: absolute;
             width: 24px;
@@ -270,7 +271,7 @@
             font-size: 24px;
             transform: scale(0);
             opacity: 0;
-            transition: all 0.5s Cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all: all 0.5s Cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             /* Centralizar exatamente no ponto de interseção */
@@ -353,12 +354,12 @@
 
         .content-wrapper {
             transform-origin: center center;
-            width: 900px; /* Original width including margins */
-            height: 900px; /* Original height including margins */
+            width: 900px;
+            height: 900px;
             transition: transform 0.3s ease;
         }
     </style>
-    <!-- Estilos adicionados para o novo fundo (não modifica o código original) -->
+    <!-- Estilos adicionados para o novo fundo -->
     <style>
         body {
             background: linear-gradient(135deg, #1a5276, #2c3e50) !important;
@@ -377,7 +378,7 @@
     </style>
 </head>
 <body>
-    <!-- Canvas para as partículas (adicionado sem modificar o código original) -->
+    <!-- Canvas para as partículas -->
     <canvas id="particles-canvas"></canvas>
     
     <div class="responsive-container">
@@ -478,16 +479,19 @@
                     { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 17 },
                     { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 20 },
                     { name: 'Reserva Ink', icon: '<i class="fas fa-pen-fancy"></i>', url: 'https://reserva.ink/545227', point: 21 },
-                   
                 ]
             }
         };
 
-        // Criar as linhas dos 24 setores e adicionar números nos pontos de interseção
+        // Criar as linhas dos 24 setores, letras minúsculas no círculo de 350px, letras maiúsculas no círculo de 525px e números no círculo de 750px
         function createSectorLines() {
             const sectorLinesContainer = document.getElementById('sectorLines');
             const angleStep = 360 / 24; // 24 setores = 15 graus cada
+            const middleRadius = 175; // Raio da circunferência intermediária (350px / 2)
             const outerRadius = 262.5; // Raio da circunferência externa (525px / 2)
+            const backgroundRadius = 375; // Raio da circunferência de fundo (750px / 2)
+            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz'.split('').slice(0, 24); // Letras a a x
+            const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, 24); // Letras A a X
             
             for (let i = 0; i < 24; i++) {
                 // Criar a linha do setor
@@ -496,14 +500,34 @@
                 line.style.transform = `rotate(${i * angleStep}deg)`;
                 sectorLinesContainer.appendChild(line);
                 
-                // Criar o número na interseção
+                // Criar a letra minúscula na interseção do círculo de 350px
+                const lowercaseLetter = document.createElement('div');
+                lowercaseLetter.className = 'intersection-number';
+                lowercaseLetter.textContent = lowercaseLetters[i]; // Letras a a x
+                let radianAngle = (i * angleStep) * Math.PI / 180;
+                let x = middleRadius * Math.cos(radianAngle);
+                let y = middleRadius * Math.sin(radianAngle);
+                lowercaseLetter.style.left = `calc(50% + ${x}px)`;
+                lowercaseLetter.style.top = `calc(50% + ${y}px)`;
+                sectorLinesContainer.appendChild(lowercaseLetter);
+                
+                // Criar a letra maiúscula na interseção do círculo de 525px
+                const uppercaseLetter = document.createElement('div');
+                uppercaseLetter.className = 'intersection-number';
+                uppercaseLetter.textContent = uppercaseLetters[i]; // Letras A a X
+                uppercaseLetter.setAttribute('data-point', i + 1); // Manter o atributo data-point com números
+                x = outerRadius * Math.cos(radianAngle);
+                y = outerRadius * Math.sin(radianAngle);
+                uppercaseLetter.style.left = `calc(50% + ${x}px)`;
+                uppercaseLetter.style.top = `calc(50% + ${y}px)`;
+                sectorLinesContainer.appendChild(uppercaseLetter);
+                
+                // Criar o número na interseção do círculo de 750px
                 const number = document.createElement('div');
                 number.className = 'intersection-number';
-                number.textContent = i + 1; // Números de 1 a 24
-                number.setAttribute('data-point', i + 1); // Armazenar o número do ponto
-                const radianAngle = (i * angleStep) * Math.PI / 180;
-                const x = outerRadius * Math.cos(radianAngle);
-                const y = outerRadius * Math.sin(radianAngle);
+                number.textContent = i + 1; // Números 1 a 24
+                x = backgroundRadius * Math.cos(radianAngle);
+                y = backgroundRadius * Math.sin(radianAngle);
                 number.style.left = `calc(50% + ${x}px)`;
                 number.style.top = `calc(50% + ${y}px)`;
                 sectorLinesContainer.appendChild(number);
@@ -533,12 +557,11 @@
                 additional: 'Extras'
             };
             
-            // Posicionar cada botão principal nos pontos cardeais (alinhados com as linhas cruzadas)
+            // Posicionar cada botão principal nos pontos cardeais
             categories.forEach((category, index) => {
                 let x, y;
                 const radius = 175; // Raio do círculo intermediário (350px de diâmetro / 2)
                 
-                // Definir posições baseadas nos quadrantes
                 switch(index) {
                     case 0: // social (direita)
                         x = radius;
@@ -710,10 +733,10 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            createSectorLines(); // Criar as linhas dos 24 setores e números
+            createSectorLines(); // Criar as linhas dos 24 setores, letras minúsculas, maiúsculas e números
             createMainMenuItems();
             
-            // Usar setTimeout para garantir que os números dos pontos já estejam renderizados
+            // Usar setTimeout para garantir que os pontos já estejam renderizados
             setTimeout(() => {
                 createSubmenuItems();
                 addMenuEvents();
@@ -735,7 +758,7 @@
         });
     </script>
     
-    <!-- Script adicionado para as partículas (não modifica o código original) -->
+    <!-- Script para as partículas -->
     <script>
         // Configuração do canvas de partículas
         const canvas = document.getElementById('particles-canvas');
@@ -757,18 +780,19 @@
                 this.speedY = Math.random() * 1 - 0.5;
                 // Símbolos matemáticos para as partículas
                 this.symbol = [
-  'ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈',
-  '≠', '≡', '≤', '≥', '⊂', '⊃', '⊆', '⊇', '∈', '∉', '∅',
-  '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '→', '←', '↔', '⇐',
-  '⇑', '⇓', '⇕', '⊕', '⊗', '⊥', '∥', '∝', '∴', '∵', '∓',
-  '±', '∑', '∏', '∃', '∀', 'ℝ', 'ℤ', 'ℕ', 'ℚ', 'ℂ', 'ℇ',
-   '∶', '∷', '∸', '≅', '≃', '∼', '≪', '≫', '⊤', '⊢',
-  '⊣', '⊨', '⊩', '∟', '⊾', '⊿', '∠', '∡', '⟂', '≜', '∘',
-  '∅', '◊', '♭', '♯', '♮', '∓', '⊼', '⊽', '⊻', '⊼', '⊺',
-  '∗', '⋅', '⋆', '⋄', '⨀', '⨂', '⨁', '⨉', '⨍', '⨌', '⨆',
-  '⋈', '⪯', '⪰', '⪇', '⪈', '⫅', '⫆', '⊬', '⊭', '≺', '≻',
-  '≼', '≽', '⊰', '⊱', '∓', 'ℏ', 'ℓ', '𝑓', '𝑔', '𝜕', '𝜋',
-  '𝜎', '𝜃', '𝜇', '𝜆', '𝜈', '𝜔', '𝛼', '𝛽', '𝛾', '𝛿', '𝜏'] [Math.floor(Math.random() * 121)];
+                    'ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈',
+                    '≠', '≡', '≤', '≥', '⊂', '⊃', '⊆', '⊇', '∈', '∉', '∅',
+                    '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '→', '←', '↔', '⇐',
+                    '⇑', '⇓', '⇕', '⊕', '⊗', '⊥', '∥', '∝', '∴', '∵', '∓',
+                    '±', '∑', '∏', '∃', '∀', 'ℝ', 'ℤ', 'ℕ', 'ℚ', 'ℂ', 'ℇ',
+                    '∶', '∷', '∸', '≅', '≃', '∼', '≪', '≫', '⊤', '⊢',
+                    '⊣', '⊨', '⊩', '∟', '⊾', '⊿', '∠', '∡', '⟂', '≜', '∘',
+                    '∅', '◊', '♭', '♯', '♮', '∓', '⊼', '⊽', '⊻', '⊼', '⊺',
+                    '∗', '⋅', '⋆', '⋄', '⨀', '⨂', '⨁', '⨉', '⨍', '⨌', '⨆',
+                    '⋈', '⪯', '⪰', '⪇', '⪈', '⫅', '⫆', '⊬', '⊭', '≺', '≻',
+                    '≼', '≽', '⊰', '⊱', '∓', 'ℏ', 'ℓ', '𝑓', '𝑔', '𝜕', '𝜋',
+                    '𝜎', '𝜃', '𝜇', '𝜆', '𝜈', '𝜔', '𝛼', '𝛽', '𝛾', '𝛿', '𝜏'
+                ][Math.floor(Math.random() * 121)];
             }
             
             // Atualiza a posição e tamanho da partícula
