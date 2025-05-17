@@ -1,0 +1,759 @@
+import React, { useState, useEffect, useRef } from 'react';
+
+const MenuCircularMatematico10 = () => {
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef(null);
+
+  // Função para ajustar o zoom com base no tamanho da tela
+  const adjustZoom = () => {
+    if (containerRef.current) {
+      const containerWidth = containerRef.current.offsetWidth;
+      const idealWidth = 900; // Tamanho ideal para visualização completa
+      const newScale = Math.min(containerWidth / idealWidth, 1);
+      setScale(newScale);
+    }
+  };
+
+  // Ajustar zoom quando o componente montar e quando o tamanho da janela mudar
+  useEffect(() => {
+    adjustZoom();
+    window.addEventListener('resize', adjustZoom);
+    return () => window.removeEventListener('resize', adjustZoom);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="w-full mb-4 px-4">
+        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+          <h3 className="text-lg font-semibold mb-2 text-blue-800">Visualização Responsiva</h3>
+          <p className="text-sm text-gray-700">
+            Esta é uma simulação do menu circular do Matemático 10. O zoom é ajustado automaticamente 
+            para se adaptar ao tamanho da sua tela, assim como aconteceria em um navegador.
+          </p>
+          <p className="text-sm text-gray-700 mt-2">
+            Escala atual: {Math.round(scale * 100)}%
+          </p>
+        </div>
+      </div>
+      
+      <div 
+        ref={containerRef}
+        className="w-full overflow-hidden bg-gray-100 rounded-lg border border-gray-300 shadow-md"
+        style={{ maxWidth: '900px', maxHeight: '900px' }}
+      >
+        <div 
+          style={{ 
+            transform: `scale(${scale})`, 
+            transformOrigin: 'top center',
+            width: '100%',
+            height: `${900 * scale}px`, // Altura ajustada conforme a escala
+            position: 'relative',
+          }}
+        >
+          <iframe 
+            srcDoc={`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Circular - Matemático 10</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 1000;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #4169E1, #9370DB, #25D366, #FF7F50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 2px;
+        }
+        
+        /* Menu container */
+        .menu-container {
+            position: relative;
+            width: 800px;
+            height: 800px;
+            margin: 50px auto;
+        }
+        
+        /* Círculo de fundo */
+        .background-circle {
+            position: absolute;
+            width: 750px;
+            height: 750px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 40px rgba(65, 105, 225, 0.3);
+        }
+        
+        /* Linhas dos 24 setores */
+        .sector-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 3;
+        }
+        
+        .sector-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.05);
+            top: 50%;
+            left: 0;
+            transform-origin: center;
+        }
+        
+        /* Número nos pontos de interseção */
+        .intersection-number {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(30, 30, 60, 0.5);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            z-index: 4;
+        }
+        
+        /* Círculo intermediário */
+        .middle-circle {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            z-index: 5;
+        }
+        
+        /* Círculo externo */
+        .outer-circle {
+            position: absolute;
+            width: 525px;
+            height: 525px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            z-index: 4;
+        }
+        
+        /* Círculo interno com botões principais */
+        .inner-circle {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(30, 30, 60, 0.9);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Home button */
+        .home-button {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #1a1a2e, #0f3460);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-weight: bold;
+            z-index: 20;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .home-button i {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #4169E1;
+        }
+        
+        .home-button span {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* Botões do menu principal */
+        .main-menu-item {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 15;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+        }
+        
+        .main-menu-item i {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .main-menu-item span {
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+        
+        .main-menu-item.active {
+            transform: scale(1.15) translate(-43%, -43%);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4),
+                        0 0 30px currentColor;
+        }
+        
+        .main-menu-item:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+                      0 0 20px currentColor;
+        }
+        
+        /* Setores externos */
+        .outer-sector {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 4;
+        }
+        
+        .outer-sector.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Submenu items */
+        .submenu-items {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .submenu-item {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 24px;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Centralizar exatamente no ponto de interseção */
+            transform-origin: center;
+            margin-left: -30px;
+            margin-top: -30px;
+        }
+        
+        .outer-sector.active .submenu-item {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .submenu-item.social {
+            background: linear-gradient(145deg, #1DA1F2, #0078d7);
+        }
+        
+        .submenu-item.pedagogic {
+            background: linear-gradient(145deg, #8A2BE2, #6A1ACA);
+        }
+        
+        .submenu-item.chat {
+            background: linear-gradient(145deg, #25D366, #128C7E);
+        }
+        
+        .submenu-item.additional {
+            background: linear-gradient(145deg, #FF6347, #E0442E);
+        }
+        
+        .submenu-item:hover {
+            transform: scale(1.15) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
+                        0 0 15px currentColor;
+        }
+        
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+        
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
+        }
+        
+        .submenu-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Matemático 10</h1>
+    </div>
+    
+    <div class="menu-container">
+        <!-- Círculo de fundo -->
+        <div class="background-circle"></div>
+        
+        <!-- Linhas dos 24 setores -->
+        <div class="sector-lines" id="sectorLines"></div>
+        
+        <!-- Círculo intermediário -->
+        <div class="middle-circle"></div>
+        
+        <!-- Círculo externo -->
+        <div class="outer-circle"></div>
+        
+        <!-- Menu Home central -->
+        <a href="home.html" class="home-button">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        
+        <!-- Círculo interno com os menus principais -->
+        <div class="inner-circle">
+            <!-- Botões do menu principal serão posicionados via JS -->
+        </div>
+        
+        <!-- Setores externos (submenus) -->
+        <div class="outer-sector social">
+            <div class="submenu-items social">
+                <!-- Itens do submenu serão inseridos via JS -->
+            </div>
+        </div>
+        
+        <div class="outer-sector pedagogic">
+            <div class="submenu-items pedagogic">
+                <!-- Itens do submenu serão inseridos via JS -->
+            </div>
+        </div>
+        
+        <div class="outer-sector chat">
+            <div class="submenu-items chat">
+                <!-- Itens do submenu serão inseridos via JS -->
+            </div>
+        </div>
+        
+        <div class="outer-sector additional">
+            <div class="submenu-items additional">
+                <!-- Itens do submenu serão inseridos via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos menus
+        const menuData = {
+            social: {
+                title: 'Redes Sociais',
+                items: [
+                    { name: 'YouTube', icon: '<i class="fab fa-youtube"></i>', url: 'https://www.youtube.com/@MATEMATICO1O', point: 1 },
+                    { name: 'LinkedIn', icon: '<i class="fab fa-linkedin-in"></i>', url: 'https://www.linkedin.com/in/geral10', point: 2 },
+                    { name: 'Currículo Lattes', icon: '<i class="fas fa-file-alt"></i>', url: 'http://lattes.cnpq.br/7286865766488458', point: 3 },
+                    { name: 'X (Twitter)', icon: '<i class="fab fa-twitter"></i>', url: 'https://x.com/SergioPaul97880', point: 24 },
+                    { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 23 }
+                ]
+            },
+            pedagogic: {
+                title: 'Recursos Pedagógicos',
+                items: [
+                    { name: 'Paradoxo Hiperdimensional', icon: '<i class="fas fa-brain"></i>', url: 'Teste BR-EUA.html', point: 5 },
+                    { name: 'Planejamentos Anuais', icon: '<i class="fas fa-calendar-alt"></i>', url: 'Planej. Anuais.html', point: 6 },
+                    { name: 'Vídeos K10', icon: '<i class="fas fa-film"></i>', url: 'Vídeos do K10.html', point: 8 },
+                    { name: 'Provas OBMEP', icon: '<i class="fas fa-file-signature"></i>', url: 'Provas OBMEP.html', point: 9 }
+                ]
+            },
+            chat: {
+                title: 'Chat e Servidor',
+                items: [
+                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat Mobile.HTML', point: 11 },
+                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat Desktop.HTML', point: 12 },
+                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'SERVIDOR CHAT P2P-CO.html', point: 13 },
+                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                    { name: 'Github', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa/Chicken', point: 15 }
+                ]
+            },
+            additional: {
+                title: 'Recursos Adicionais',
+                items: [
+                    { name: 'O Mundo da Matemática', icon: '<i class="fas fa-globe"></i>', url: 'https://www.udemy.com/course/mundodamatematica/', point: 16 },
+                    { name: 'Caleidoscópio da Matemática', icon: '<i class="fas fa-book-open"></i>', url: 'https://www.amazon.com.br/dp/B0CW179J4P', point: 17 },
+                    { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 18 },
+                    { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 20 },
+                    { name: 'Reserva Ink', icon: '<i class="fas fa-pen-fancy"></i>', url: 'https://reserva.ink/545227', point: 21 },
+                    { name: 'Contagem Regressiva', icon: '<i class="fas fa-hourglass-half"></i>', url: 'https://matematico10.com.br/contador', point: 22 }
+                ]
+            }
+        };
+
+        // Criar as linhas dos 24 setores e adicionar números nos pontos de interseção
+        function createSectorLines() {
+            const sectorLinesContainer = document.getElementById('sectorLines');
+            const angleStep = 360 / 24; // 24 setores = 15 graus cada
+            const outerRadius = 262.5; // Raio da circunferência externa (525px / 2)
+            
+            for (let i = 0; i < 24; i++) {
+                // Criar a linha do setor
+                const line = document.createElement('div');
+                line.className = 'sector-line';
+                line.style.transform = \`rotate(\${i * angleStep}deg)\`;
+                sectorLinesContainer.appendChild(line);
+                
+                // Criar o número na interseção
+                const number = document.createElement('div');
+                number.className = 'intersection-number';
+                number.textContent = i + 1; // Números de 1 a 24
+                number.setAttribute('data-point', i + 1); // Armazenar o número do ponto
+                const radianAngle = (i * angleStep) * Math.PI / 180;
+                const x = outerRadius * Math.cos(radianAngle);
+                const y = outerRadius * Math.sin(radianAngle);
+                number.style.left = \`calc(50% + \${x}px)\`;
+                number.style.top = \`calc(50% + \${y}px)\`;
+                sectorLinesContainer.appendChild(number);
+            }
+        }
+
+        // Criar os botões do menu principal distribuídos uniformemente
+        function createMainMenuItems() {
+            const innerCircle = document.querySelector('.inner-circle');
+            const categories = ['social', 'pedagogic', 'chat', 'additional'];
+            const colors = {
+                social: 'linear-gradient(145deg, #1DA1F2, #0078d7)',
+                pedagogic: 'linear-gradient(145deg, #8A2BE2, #6A1ACA)',
+                chat: 'linear-gradient(145deg, #25D366, #128C7E)',
+                additional: 'linear-gradient(145deg, #FF6347, #E0442E)'
+            };
+            const icons = {
+                social: 'fa-share-alt',
+                pedagogic: 'fa-book',
+                chat: 'fa-comments',
+                additional: 'fa-puzzle-piece'
+            };
+            const labels = {
+                social: 'Redes',
+                pedagogic: 'Recursos',
+                chat: 'Chat',
+                additional: 'Extras'
+            };
+            
+            // Posicionar cada botão principal nos pontos cardeais (alinhados com as linhas cruzadas)
+            categories.forEach((category, index) => {
+                let x, y;
+                const radius = 175; // Raio do círculo intermediário (350px de diâmetro / 2)
+                
+                // Definir posições baseadas nos quadrantes
+                switch(index) {
+                    case 0: // social (direita)
+                        x = radius;
+                        y = 0;
+                        break;
+                    case 1: // pedagogic (baixo)
+                        x = 0;
+                        y = radius;
+                        break;
+                    case 2: // chat (esquerda)
+                        x = -radius;
+                        y = 0;
+                        break;
+                    case 3: // additional (cima)
+                        x = 0;
+                        y = -radius;
+                        break;
+                }
+                
+                // Criar o botão do menu principal
+                const menuItem = document.createElement('div');
+                menuItem.className = \`main-menu-item \${category}\`;
+                menuItem.setAttribute('data-section', category);
+                menuItem.style.background = colors[category];
+                menuItem.style.left = \`calc(50% + \${x}px)\`;
+                menuItem.style.top = \`calc(50% + \${y}px)\`;
+                
+                // Adicionar ícone e label
+                menuItem.innerHTML = \`
+                    <i class="fas \${icons[category]}"></i>
+                    <span>\${labels[category]}</span>
+                \`;
+                
+                innerCircle.appendChild(menuItem);
+            });
+        }
+
+        // Criando os itens de submenu para cada setor
+        function createSubmenuItems() {
+            Object.keys(menuData).forEach(key => {
+                const submenuContainer = document.querySelector(\`.submenu-items.\${key}\`);
+                const items = menuData[key].items;
+                
+                items.forEach((item, index) => {
+                    // Encontrar a posição exata do ponto por seu número
+                    const pointNumber = item.point;
+                    const pointElement = document.querySelector(\`.intersection-number[data-point="\${pointNumber}"]\`);
+                    
+                    if (pointElement) {
+                        // Obter as coordenadas do ponto de interseção
+                        const pointRect = pointElement.getBoundingClientRect();
+                        const containerRect = document.querySelector('.menu-container').getBoundingClientRect();
+                        
+                        // Calcular a posição relativa ao contêiner
+                        const x = pointRect.left - containerRect.left + (pointRect.width / 2);
+                        const y = pointRect.top - containerRect.top + (pointRect.height / 2);
+                        
+                        // Criar o item do submenu
+                        const submenuItem = document.createElement('a');
+                        submenuItem.className = \`submenu-item \${key}\`;
+                        submenuItem.href = item.url;
+                        submenuItem.innerHTML = item.icon;
+                        submenuItem.style.left = \`\${x}px\`;
+                        submenuItem.style.top = \`\${y}px\`;
+                        submenuItem.style.transitionDelay = \`\${0.1 + index * 0.05}s\`;
+                        
+                        // Adicionar tooltip
+                        const tooltip = document.createElement('span');
+                        tooltip.className = 'tooltip';
+                        tooltip.textContent = item.name;
+                        
+                        // Calcular ângulo para posicionamento do tooltip
+                        const centerX = containerRect.width / 2;
+                        const centerY = containerRect.height / 2;
+                        const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                        
+                        // Posicionar o tooltip com base no ângulo
+                        if (angle > -45 && angle <= 45) { // direita
+                            tooltip.style.left = '70px';
+                            tooltip.style.top = '50%';
+                            tooltip.style.transform = 'translateY(-50%)';
+                        } else if (angle > 45 && angle <= 135) { // baixo
+                            tooltip.style.top = '70px';
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translateX(-50%)';
+                        } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) { // esquerda
+                            tooltip.style.right = '70px';
+                            tooltip.style.left = 'auto';
+                            tooltip.style.top = '50%';
+                            tooltip.style.transform = 'translateY(-50%)';
+                        } else { // cima
+                            tooltip.style.bottom = '70px';
+                            tooltip.style.top = 'auto';
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translateX(-50%)';
+                        }
+                        
+                        submenuItem.appendChild(tooltip);
+                        submenuContainer.appendChild(submenuItem);
+                    }
+                });
+            });
+        }
+
+        // Adicionar eventos de clique aos botões do menu principal
+        function addMenuEvents() {
+            const mainMenuItems = document.querySelectorAll('.main-menu-item');
+            
+            mainMenuItems.forEach(item => {
+                // Adicionar evento de clique
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    
+                    // Verificar se este menu já está ativo
+                    const isActive = this.classList.contains('active');
+                    
+                    // Remover classe ativa de todos os menus e setores
+                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.outer-sector').forEach(sector => {
+                        sector.classList.remove('active');
+                    });
+                    
+                    // Se não estava ativo, ativá-lo
+                    if (!isActive) {
+                        this.classList.add('active');
+                        document.querySelector(\`.outer-sector.\${section}\`).classList.add('active');
+                    }
+                });
+            });
+            
+            // Fechar os submenus quando clicar fora
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.main-menu-item') && 
+                    !event.target.closest('.submenu-item') &&
+                    !event.target.closest('.home-button')) {
+                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.outer-sector').forEach(sector => {
+                        sector.classList.remove('active');
+                    });
+                }
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            createSectorLines(); // Criar as linhas dos 24 setores e números
+            createMainMenuItems();
+            
+            // Usar setTimeout para garantir que os números dos pontos já estejam renderizados
+            setTimeout(() => {
+                createSubmenuItems();
+                addMenuEvents();
+                
+                // Exibir o primeiro menu automaticamente
+                setTimeout(() => {
+                    const firstMenu = document.querySelector('.main-menu-item');
+                    if (firstMenu) {
+                        firstMenu.click();
+                    }
+                }, 500);
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+            `}
+            style={{
+              width: '100%',
+              height: '100%',
+              border: 'none',
+              overflow: 'hidden'
+            }}
+          />
+        </div>
+      </div>
+      
+      <div className="mt-4 px-4 w-full">
+        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+          <h3 className="text-lg font-semibold mb-2 text-gray-800">Sobre o Menu Circular</h3>
+          <p className="text-sm text-gray-700">
+            Este menu circular do Matemático 10 possui as seguintes características:
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-gray-700 list-disc pl-5">
+            <li>Círculo central com botão home</li>
+            <li>Quatro menus principais nos pontos cardeais (Redes, Recursos, Chat e Extras)</li>
+            <li>24 pontos de interseção numerados no círculo externo</li>
+            <li>Submenus que aparecem nos pontos de interseção quando um menu principal é ativado</li>
+            <li>Tooltips informativos ao passar o mouse sobre cada item</li>
+            <li>Design responsivo que se adapta a diferentes tamanhos de tela</li>
+          </ul>
+          <p className="mt-3 text-sm text-gray-700">
+            O menu usa animações suaves para transições e efeitos visuais que melhoram a experiência do usuário.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MenuCircularMatematico10;
