@@ -357,9 +357,8 @@
             height: 900px;
             transition: transform 0.3s ease;
         }
-    </style>
-    <!-- Estilos adicionados para o novo fundo -->
-    <style>
+
+        /* Estilos adicionados para o novo fundo */
         body {
             background: linear-gradient(135deg, #1a5276, #2c3e50) !important;
             position: relative;
@@ -374,9 +373,8 @@
             z-index: 0;
             pointer-events: none;
         }
-    </style>
-    <!-- Estilos para o contador regressivo -->
-    <style>
+
+        /* Estilos para o contador regressivo */
         .countdown-container {
             position: fixed;
             top: 20px;
@@ -429,9 +427,9 @@
         /* Cores diferentes para cada mostrador */
         .countdown-item:nth-child(1) { border-color: #FF5252; } /* Meses - Vermelho */
         .countdown-item:nth-child(2) { border-color: #FF9800; } /* Dias - Laranja */
-        .countdown-item:nth-child(3) { border-color: #4CAF50; } /* H - Verde */
-        .countdown-item:nth-child(4) { border-color: #2196F3; } /* Min - Azul */
-        .countdown-item:nth-child(5) { border-color: #9C27B0; } /* Seg - Roxo */
+        .countdown-item:nth-child(3) { border-color: #4CAF50; } /* Horas - Verde */
+        .countdown-item:nth-child(4) { border-color: #2196F3; } /* Minutos - Azul */
+        .countdown-item:nth-child(5) { border-color: #9C27B0; } /* Segundos - Roxo */
         
         .countdown-item div:first-child {
             font-size: 12px;
@@ -454,17 +452,23 @@
             text-align: center;
             min-height: 15px;
         }
+
+        /* Esconder o contador em telas pequenas (mobile) */
+        @media (max-width: 768px) {
+            .countdown-container {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Canvas para as partículas -->
     <canvas id="particles-canvas"></canvas>
     
-    <!-- Contador regressivo -->
+    <!-- Contador regressivo (visível apenas em telas grandes) -->
     <div class="countdown-container">
         <div class="countdown-title">14 de março - Dia Internacional da Matemática</div>
-        <div class="countdown-subtitle">Dia da Matemática e nascimento de Einstein</div>       
-           <div class="countdown-subtitle">É dia do Pi também: 3,14 em homenagem a Arquimedes</div>
+        <div class="countdown-subtitle">Dia da Matemática e nascimento de Einstein</div>
         <div class="countdown" aria-live="polite" aria-atomic="true">
             <div class="countdown-item">
                 <div id="months">0</div>
@@ -472,11 +476,11 @@
             </div>
             <div class="countdown-item">
                 <div id="days">0</div>
-                <div class="unit">Dias</div>
+                <div class="unit">Dia</div>
             </div>
             <div class="countdown-item">
                 <div id="hours">0</div>
-                <div class="unit">H</div>
+                <div class="unit">Hora</div>
             </div>
             <div class="countdown-item">
                 <div id="minutes">0</div>
@@ -484,7 +488,7 @@
             </div>
             <div class="countdown-item">
                 <div id="seconds">0</div>
-                <div class="unit">S</div>
+                <div class="unit">Seg</div>
             </div>
         </div>
         <div class="countdown-message" id="message">&nbsp;</div>
@@ -893,7 +897,7 @@
             createMainMenuItems();
             
             // Usar setTimeout para garantir que os pontos já estejam renderizados
-                        setTimeout(() => {
+            setTimeout(() => {
                 createSubmenuItems();
                 addMenuEvents();
                 
@@ -911,9 +915,22 @@
                 // Ajustar o zoom ao redimensionar a janela
                 window.addEventListener('resize', adjustZoom);
                 
-                // Iniciar o contador regressivo
-                updateCountdown();
-                countdownInterval = setInterval(updateCountdown, 1000);
+                // Iniciar o contador regressivo apenas em telas grandes
+                if (window.innerWidth > 768) {
+                    updateCountdown();
+                    countdownInterval = setInterval(updateCountdown, 1000);
+                    
+                    // Adicionar animação de entrada para o contador
+                    const countdownContainer = document.querySelector('.countdown-container');
+                    countdownContainer.style.opacity = '0';
+                    countdownContainer.style.transform = 'translateY(-20px)';
+                    countdownContainer.style.transition = 'all 0.5s ease 0.5s';
+                    
+                    setTimeout(() => {
+                        countdownContainer.style.opacity = '1';
+                        countdownContainer.style.transform = 'translateY(0)';
+                    }, 600);
+                }
                 
                 // Adicionar efeito de hover suave nos itens do menu
                 const menuItems = document.querySelectorAll('.main-menu-item, .submenu-item');
@@ -927,51 +944,42 @@
                     });
                 });
                 
-                // Adicionar animação de entrada para o contador
-                const countdownContainer = document.querySelector('.countdown-container');
-                countdownContainer.style.opacity = '0';
-                countdownContainer.style.transform = 'translateY(-20px)';
-                countdownContainer.style.transition = 'all 0.5s ease 0.5s';
-                
-                setTimeout(() => {
-                    countdownContainer.style.opacity = '1';
-                    countdownContainer.style.transform = 'translateY(0)';
-                }, 600);
-                
                 // Verificar se é 14 de março para exibir mensagem especial
                 const today = new Date();
                 if (today.getMonth() === 2 && today.getDate() === 14) { // Mês 2 = março (0-indexed)
                     const message = document.getElementById('message');
-                    message.textContent = "FELIZ DIA DA MATEMÁTICA!";
-                    message.style.animation = 'pulse 1s infinite alternate';
-                    
-                    // Adicionar estilo de animação para a mensagem
-                    const style = document.createElement('style');
-                    style.textContent = `
-                        @keyframes pulse {
-                            from { transform: scale(1); opacity: 0.8; }
-                            to { transform: scale(1.05); opacity: 1; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                    
-                    // Adicionar efeito especial nos menus
-                    document.querySelectorAll('.main-menu-item').forEach(item => {
-                        item.style.animation = 'rainbowBorder 3s infinite linear';
-                    });
-                    
-                    const rainbowStyle = document.createElement('style');
-                    rainbowStyle.textContent = `
-                        @keyframes rainbowBorder {
-                            0% { box-shadow: 0 0 10px #FF5252; }
-                            20% { box-shadow: 0 0 10px #FF9800; }
-                            40% { box-shadow: 0 0 10px #4CAF50; }
-                            60% { box-shadow: 0 0 10px #2196F3; }
-                            80% { box-shadow: 0 0 10px #9C27B0; }
-                            100% { box-shadow: 0 0 10px #FF5252; }
-                        }
-                    `;
-                    document.head.appendChild(rainbowStyle);
+                    if (message) {
+                        message.textContent = "FELIZ DIA DA MATEMÁTICA!";
+                        message.style.animation = 'pulse 1s infinite alternate';
+                        
+                        // Adicionar estilo de animação para a mensagem
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            @keyframes pulse {
+                                from { transform: scale(1); opacity: 0.8; }
+                                to { transform: scale(1.05); opacity: 1; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        
+                        // Adicionar efeito especial nos menus
+                        document.querySelectorAll('.main-menu-item').forEach(item => {
+                            item.style.animation = 'rainbowBorder 3s infinite linear';
+                        });
+                        
+                        const rainbowStyle = document.createElement('style');
+                        rainbowStyle.textContent = `
+                            @keyframes rainbowBorder {
+                                0% { box-shadow: 0 0 10px #FF5252; }
+                                20% { box-shadow: 0 0 10px #FF9800; }
+                                40% { box-shadow: 0 0 10px #4CAF50; }
+                                60% { box-shadow: 0 0 10px #2196F3; }
+                                80% { box-shadow: 0 0 10px #9C27B0; }
+                                100% { box-shadow: 0 0 10px #FF5252; }
+                            }
+                        `;
+                        document.head.appendChild(rainbowStyle);
+                    }
                 }
                 
                 // Adicionar efeito de rotação suave no círculo de fundo
@@ -986,21 +994,10 @@
                 
                 rotateBackground();
                 
-                // Adicionar efeito de parallax nas partículas matemáticas
-                document.addEventListener('mousemove', (e) => {
-                    const x = e.clientX / window.innerWidth;
-                    const y = e.clientY / window.innerHeight;
-                    
-                    particlesArray.forEach(particle => {
-                        particle.x += (x - 0.5) * 0.5;
-                        particle.y += (y - 0.5) * 0.5;
-                    });
-                });
-                
             }, 100);
         });
         
-                let countdownInterval;
+        let countdownInterval;
     </script>
     
     <!-- Script para as partículas -->
