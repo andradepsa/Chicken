@@ -270,7 +270,7 @@
             font-size: 24px;
             transform: scale(0);
             opacity: 0;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.5s Cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             /* Centralizar exatamente no ponto de interseção */
@@ -338,60 +338,83 @@
             visibility: visible;
             opacity: 1;
         }
+
+        /* Invisible container with auto-zoom */
+        .responsive-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+        }
+
+        .content-wrapper {
+            transform-origin: center center;
+            width: 900px; /* Original width including margins */
+            height: 900px; /* Original height including margins */
+            transition: transform 0.3s ease;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Matemático 10</h1>
-        
-    </div>
-    
-    <div class="menu-container">
-        <!-- Círculo de fundo -->
-        <div class="background-circle"></div>
-        
-        <!-- Linhas dos 24 setores -->
-        <div class="sector-lines" id="sectorLines"></div>
-        
-        <!-- Círculo intermediário -->
-        <div class="middle-circle"></div>
-        
-        <!-- Círculo externo -->
-        <div class="outer-circle"></div>
-        
-        <!-- Menu Home central -->
-        <a href="home.html" class="home-button">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        
-        <!-- Círculo interno com os menus principais -->
-        <div class="inner-circle">
-            <!-- Botões do menu principal serão posicionados via JS -->
-        </div>
-        
-        <!-- Setores externos (submenus) -->
-        <div class="outer-sector social">
-            <div class="submenu-items social">
-                <!-- Itens do submenu serão inseridos via JS -->
+    <div class="responsive-container">
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>Matemático 10</h1>
+                
             </div>
-        </div>
-        
-        <div class="outer-sector pedagogic">
-            <div class="submenu-items pedagogic">
-                <!-- Itens do submenu serão inseridos via JS -->
-            </div>
-        </div>
-        
-        <div class="outer-sector chat">
-            <div class="submenu-items chat">
-                <!-- Itens do submenu serão inseridos via JS -->
-            </div>
-        </div>
-        
-        <div class="outer-sector additional">
-            <div class="submenu-items additional">
-                <!-- Itens do submenu serão inseridos via JS -->
+            
+            <div class="menu-container">
+                <!-- Círculo de fundo -->
+                <div class="background-circle"></div>
+                
+                <!-- Linhas dos 24 setores -->
+                <div class="sector-lines" id="sectorLines"></div>
+                
+                <!-- Círculo intermediário -->
+                <div class="middle-circle"></div>
+                
+                <!-- Círculo externo -->
+                <div class="outer-circle"></div>
+                
+                <!-- Menu Home central -->
+                <a href="home.html" class="home-button">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                
+                <!-- Círculo interno com os menus principais -->
+                <div class="inner-circle">
+                    <!-- Botões do menu principal serão posicionados via JS -->
+                </div>
+                
+                <!-- Setores externos (submenus) -->
+                <div class="outer-sector social">
+                    <div class="submenu-items social">
+                        <!-- Itens do submenu serão inseridos via JS -->
+                    </div>
+                </div>
+                
+                <div class="outer-sector pedagogic">
+                    <div class="submenu-items pedagogic">
+                        <!-- Itens do submenu serão inseridos via JS -->
+                    </div>
+                </div>
+                
+                <div class="outer-sector chat">
+                    <div class="submenu-items chat">
+                        <!-- Itens do submenu serão inseridos via JS -->
+                    </div>
+                </div>
+                
+                <div class="outer-sector additional">
+                    <div class="submenu-items additional">
+                        <!-- Itens do submenu serão inseridos via JS -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -647,6 +670,25 @@
             });
         }
 
+        // Função para ajustar o zoom do conteúdo
+        function adjustZoom() {
+            const container = document.querySelector('.responsive-container');
+            const content = document.querySelector('.content-wrapper');
+            
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            const contentWidth = 900; // Largura original (800px + margens)
+            const contentHeight = 900; // Altura original (800px + margens)
+            
+            // Calcular a proporção de escala para caber no contêiner
+            const scaleX = containerWidth / contentWidth;
+            const scaleY = containerHeight / contentHeight;
+            const scale = Math.min(scaleX, scaleY);
+            
+            // Aplicar a transformação de escala
+            content.style.transform = `scale(${scale})`;
+        }
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             createSectorLines(); // Criar as linhas dos 24 setores e números
@@ -664,6 +706,12 @@
                         firstMenu.click();
                     }
                 }, 500);
+                
+                // Ajustar o zoom inicialmente
+                adjustZoom();
+                
+                // Ajustar o zoom ao redimensionar a janela
+                window.addEventListener('resize', adjustZoom);
             }, 100);
         });
     </script>
