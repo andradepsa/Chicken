@@ -3,347 +3,669 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Organograma de Páginas- Site Matemático 10</title>
+    <title>Menu Circular - Matemático 10</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
         }
         
         .header {
-            background-color: #4169E1;
-            color: white;
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
             text-align: center;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
         
         .header h1 {
-            margin: 0;
-            font-size: 32px;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #4169E1, #9370DB, #25D366, #FF7F50);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            font-weight: 800;
         }
         
-        .organogram {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px;
+        .header p {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 2px;
         }
         
-        .main-node {
-            background-color: #000;
-            color: white;
-            border-radius: 50%;
-            width: 140px;
-            height: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 2;
-            padding: 15px;
+        /* Menu container */
+        .menu-container {
             position: relative;
+            width: 800px;
+            height: 800px;
+            margin: 50px auto;
         }
         
-        .resources-node {
-            background-color: #9370DB;
-            color: white;
+        /* Círculo de fundo */
+        .background-circle {
+            position: absolute;
+            width: 750px;
+            height: 750px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             border-radius: 50%;
-            width: 140px;
-            height: 140px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 40px rgba(65, 105, 225, 0.3);
+        }
+        
+        /* Linhas dos 24 setores */
+        .sector-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 3;
+        }
+        
+        .sector-line {
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.05);
+            top: 50%;
+            left: 0;
+            transform-origin: center;
+        }
+        
+        /* Número nos pontos de interseção */
+        .intersection-number {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(30, 30, 60, 0.5);
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            z-index: 4;
+        }
+        
+        /* Círculo intermediário */
+        .middle-circle {
+            position: absolute;
+            width: 350px;
+            height: 350px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+            z-index: 5;
+        }
+        
+        /* Círculo externo */
+        .outer-circle {
+            position: absolute;
+            width: 525px;
+            height: 525px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 1px dashed rgba(255, 255, 255, 0.05);
+            z-index: 4;
+        }
+        
+        /* Círculo interno com botões principais */
+        .inner-circle {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: rgba(30, 30, 60, 0.9);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Home button */
+        .home-button {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(145deg, #1a1a2e, #0f3460);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            color: white;
+            text-decoration: none;
             text-align: center;
             font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 2;
-            padding: 15px;
+            z-index: 20;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        .sections {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            flex-wrap: wrap;
-            gap: 20px;
+        .home-button i {
+            font-size: 28px;
+            margin-bottom: 5px;
+            color: #4169E1;
         }
         
-        .section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            flex: 1;
-            min-width: 300px;
-            max-width: 400px;
-        }
-        
-        .links {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-        
-        .link {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-left: 5px solid #4169E1;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            color: #333;
+        .home-button span {
             font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+            opacity: 0.9;
         }
         
-        .link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #f8f9fa;
+        /* Botões do menu principal */
+        .main-menu-item {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 15;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
         }
         
-        .link.social {
-            border-left-color: #1DA1F2;
+        .main-menu-item i {
+            font-size: 24px;
+            margin-bottom: 4px;
         }
         
-        .link.pedagogic {
-            border-left-color: #9370DB;
+        .main-menu-item span {
+            font-size: 10px;
+            font-weight: bold;
+            opacity: 0.9;
+            text-transform: uppercase;
         }
         
-        .link.chat {
-            border-left-color: #25D366;
+        .main-menu-item.active {
+            transform: scale(1.15) translate(-43%, -43%);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4),
+                        0 0 30px currentColor;
         }
         
-        .link.additional {
-            border-left-color: #FF7F50;
+        .main-menu-item:hover {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
+                      0 0 20px currentColor;
         }
         
-        .section-title {
-            background-color: #4169E1;
+        /* Setores externos */
+        .outer-sector {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 4;
+        }
+        
+        .outer-sector.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Submenu items */
+        .submenu-items {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+        
+        .submenu-item {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 24px;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Centralizar exatamente no ponto de interseção */
+            transform-origin: center;
+            margin-left: -30px;
+            margin-top: -30px;
+        }
+        
+        .outer-sector.active .submenu-item {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .submenu-item.social {
+            background: linear-gradient(145deg, #1DA1F2, #0078d7);
+        }
+        
+        .submenu-item.pedagogic {
+            background: linear-gradient(145deg, #8A2BE2, #6A1ACA);
+        }
+        
+        .submenu-item.chat {
+            background: linear-gradient(145deg, #25D366, #128C7E);
+        }
+        
+        .submenu-item.additional {
+            background: linear-gradient(145deg, #FF6347, #E0442E);
+        }
+        
+        .submenu-item:hover {
+            transform: scale(1.15) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
+                        0 0 15px currentColor;
+        }
+        
+        /* Tooltips */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
             color: white;
             padding: 8px 15px;
-            border-radius: 20px;
-            margin-bottom: 15px;
-            font-size: 16px;
-            text-align: center;
-            width: fit-content;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            font-size: 14px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
         }
         
-        .social .section-title {
-            background-color: #1DA1F2;
-        }
-        
-        .pedagogic .section-title {
-            background-color: #9370DB;
-        }
-        
-        .chat .section-title {
-            background-color: #25D366;
-        }
-        
-        .additional .section-title {
-            background-color: #FF7F50;
-        }
-        
-        .connector {
-            width: 2px;
-            height: 30px;
-            background-color: #ccc;
-        }
-        
-        .level-connectors {
-            display: flex;
-            justify-content: space-around;
-            width: 90%;
-            position: relative;
-        }
-        
-        .level-connectors::before {
+        .tooltip::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background-color: #ccc;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            top: -5px;
+            left: 50%;
+            transform: translateX(-50%) rotate(45deg);
         }
         
-        .vertical-connector {
-            width: 2px;
-            height: 30px;
-            background-color: #ccc;
-        }
-        
-        .url {
-            font-size: 12px;
-            color: #666;
-            display: block;
-            word-break: break-all;
+        .submenu-item:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Mapa do Site Matemático 10</h1>
+        <h1>Matemático 10</h1>
+        
     </div>
     
-    <div class="organogram">
-        <div class="main-node">
-            
-                    <a href="index.html" class="main-node">
-                        Home
-                        <span class="url">index.html</span>
-                    </a>
+    <div class="menu-container">
+        <!-- Círculo de fundo -->
+        <div class="background-circle"></div>
+        
+        <!-- Linhas dos 24 setores -->
+        <div class="sector-lines" id="sectorLines"></div>
+        
+        <!-- Círculo intermediário -->
+        <div class="middle-circle"></div>
+        
+        <!-- Círculo externo -->
+        <div class="outer-circle"></div>
+        
+        <!-- Menu Home central -->
+        <a href="home.html" class="home-button">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        
+        <!-- Círculo interno com os menus principais -->
+        <div class="inner-circle">
+            <!-- Botões do menu principal serão posicionados via JS -->
         </div>
         
-        <div class="connector"></div>
-        
-        <div class="level-connectors">
-            <div class="vertical-connector"></div>
-            <div class="vertical-connector"></div>
-            <div class="vertical-connector"></div>
-            <div class="vertical-connector"></div>
+        <!-- Setores externos (submenus) -->
+        <div class="outer-sector social">
+            <div class="submenu-items social">
+                <!-- Itens do submenu serão inseridos via JS -->
+            </div>
         </div>
         
-        <div class="sections">
-            <!-- Seção de Redes Sociais -->
-            <div class="section social">
-                <a href="https://matematico10.com.br/#contato" class="section-title" style="text-decoration: none; color: inherit;">
-                 Redes Sociais e Canais
-                </a>
-                <div class="links">
-                   <a href="https://www.soundon.global/bio/andradepsa" class="link social">
-                        Músicas
-                        <span class="url">https://www.soundon.global/bio/andradepsa</span>
-                    </a>
-                    <a href="https://x.com/SergioPaul97880" class="link social">
-                        X (Twitter)
-                        <span class="url">https://x.com/SergioPaul97880</span>
-                    </a>
-                    <a href="https://www.youtube.com/@MATEMATICO1O" class="link social">
-                        YouTube
-                        <span class="url">https://www.youtube.com/@MATEMATICO1O</span>
-                    </a>
-                    <a href="https://www.linkedin.com/in/geral10" class="link social">
-                        LinkedIn
-                        <span class="url">https://www.linkedin.com/in/geral10</span>
-                    </a>
-                    <a href="http://lattes.cnpq.br/7286865766488458" class="link social">
-                        Currículo Lattes
-                        <span class="url">http://lattes.cnpq.br/7286865766488458</span>
-                    </a>
-                </div>
+        <div class="outer-sector pedagogic">
+            <div class="submenu-items pedagogic">
+                <!-- Itens do submenu serão inseridos via JS -->
             </div>
-            
-            <!-- Recursos Pedagógicos -->
-            <div class="section pedagogic">
-                <a href="https://matematico10.com.br/Recursos%20Pedag%C3%B3gicos.html" class="section-title" style="text-decoration: none; color: inherit;">
-
-
-                <div>Recursos Pedagógicos</div>
-                 </a>
-
-                <div class="connector"></div>
-                <div class="links">
-                    <a href="Teste BR-EUA.html" class="link pedagogic">
-                        Paradoxo Hiperdimensional
-                        <span class="url">Teste BR-EUA.html</span>
-                    </a>
-                   <a href="Planej. Anuais.html" class="link pedagogic">
-                        Planejamentos Anuais
-                        <span class="url">Planej. Anuais.html</span>
-                    </a>
-                    <a href="Vídeos do K10.html" class="link pedagogic">
-                        Vídeos K10
-                        <span class="url">Vídeos do K10.html</span>
-                    </a>
-                    <a href="Provas OBMEP.html" class="link pedagogic">
-                       Provas OBMEP
-                        <span class="url">Provas OBMEP.html</span>
-                    </a>
-                    <a href="https://chatgpt.com/g/g-6751bf722f24819191d5e300e315b63a-tutor-ia-pia" class="link pedagogic">
-                        Planos de Aula com I.A.
-                        <span class="url">https://chatgpt.com/g/g-6751bf722f24819191d5e300e315b63a-tutor-ia-pia</span>
-                    </a>
-                     <a href="https://theresanaiforthat.com/s/video/" class="link pedagogic">
-                        There’s An AI For That
-                        <span class="url">https://theresanaiforthat.com/s/video/</span>
-                    </a>
-                </div>
+        </div>
+        
+        <div class="outer-sector chat">
+            <div class="submenu-items chat">
+                <!-- Itens do submenu serão inseridos via JS -->
             </div>
-            
-            <!-- Chat e Servidor -->
-            <div class="section chat">
-                <a href="Chat K10.html" class="section-title" style="text-decoration: none; color: inherit;">
-                 Chat e Servidor
-                </a>
-
-                <div class="links">
-                      <a href="Chat Mobile.HTML" class="link chat">
-                      Chat Mobile
-                      <span class="url">Chat Mobile.HTML</span>
-                    </a>
-                    <a href="Chat Desktop.HTML" class="link chat">
-                        Chat  Desktop
-                        <span class="url">Chat Desktop.HTML</span>
-                    </a>
-                     <a href="SERVIDOR CHAT P2P-CO.html" class="link chat">
-                        Servidor
-                        <span class="url">SERVIDOR CHAT P2P-CO.html</span>
-                    </a>
-                    <a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p " class="link chat">
-                        Baixar Chat K10  + Servidor
-                        <span class="url">https://paulo-sergio-de-andrade.itch.io/chat-p2p </span>
-                    </a>
-                    <a href="https://github.com/andradepsa/Chicken" class="link chat">
-                        Projeto no Github
-                       <span class="url">https://github.com/andradepsa/Chicken</span>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- Recursos Adicionais -->
-            <div class="section additional">
-                <div class="section-title">Recursos Adicionais</div>
-                <div class="links">
-                    <a href="https://matematico10.com.br/#curso" class="link additional">
-                        O Mundo da Matemática
-                       <span class="url">https://matematico10.com.br/#curso</span>
-                    </a>
-                    <a href="https://matematico10.com.br/#livros" class="link additional">
-                        Caleidoscópio da Matemática 
-                       <span class="url">https://matematico10.com.br/#livros</span>
-                    </a>
-                     <a href="https://matematico10.com.br/#livros" class="link additional">
-                        Código Matemático
-                       <span class="url">https://matematico10.com.br/#livros</span>
-                    </a>
-                    <a href="https://matematico10.com.br/#livros" </" class="link additional">
-                        Leviatã da Matemática
-                       <span class="url">https://matematico10.com.br/#livros</span>
-                    </a>
-                     <a href="https://reserva.ink/545227" </" class="link additional">
-                        Reserva Ink
-                       <span class="url">https://reserva.ink/545227</span>
-                    </a>
-                    <a href="https://matematico10.com.br/" class="link additional">
-                        Contagem Regressiva
-                       <span class="url">https://matematico10.com.br/</span>
-                    </a>
-                </div>
+        </div>
+        
+        <div class="outer-sector additional">
+            <div class="submenu-items additional">
+                <!-- Itens do submenu serão inseridos via JS -->
             </div>
         </div>
     </div>
+
+    <script>
+        // Dados dos menus
+        const menuData = {
+            social: {
+                title: 'Redes Sociais',
+                items: [
+                    { name: 'YouTube', icon: '<i class="fab fa-youtube"></i>', url: 'https://www.youtube.com/@MATEMATICO1O', point: 1 },
+                    { name: 'LinkedIn', icon: '<i class="fab fa-linkedin-in"></i>', url: 'https://www.linkedin.com/in/geral10', point: 2 },
+                    { name: 'Currículo Lattes', icon: '<i class="fas fa-file-alt"></i>', url: 'http://lattes.cnpq.br/7286865766488458', point: 3 },
+                    { name: 'X (Twitter)', icon: '<i class="fab fa-twitter"></i>', url: 'https://x.com/SergioPaul97880', point: 24 },
+                    { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 23 }
+                ]
+            },
+            pedagogic: {
+                title: 'Recursos Pedagógicos',
+                items: [
+                    { name: 'Paradoxo Hiperdimensional', icon: '<i class="fas fa-brain"></i>', url: 'Teste BR-EUA.html', point: 5 },
+                    { name: 'Planejamentos Anuais', icon: '<i class="fas fa-calendar-alt"></i>', url: 'Planej. Anuais.html', point: 6 },
+                    { name: 'Vídeos K10', icon: '<i class="fas fa-film"></i>', url: 'Vídeos do K10.html', point: 8 },
+                    { name: 'Provas OBMEP', icon: '<i class="fas fa-file-signature"></i>', url: 'Provas OBMEP.html', point: 9 }
+                ]
+            },
+            chat: {
+                title: 'Chat e Servidor',
+                items: [
+                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat Mobile.HTML', point: 11 },
+                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat Desktop.HTML', point: 12 },
+                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'SERVIDOR CHAT P2P-CO.html', point: 13 },
+                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                    { name: 'Github', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa/Chicken', point: 15 }
+                ]
+            },
+            additional: {
+                title: 'Recursos Adicionais',
+                items: [
+                    { name: 'O Mundo da Matemática', icon: '<i class="fas fa-globe"></i>', url: 'https://www.udemy.com/course/mundodamatematica/', point: 16 },
+                    { name: 'Caleidoscópio da Matemática', icon: '<i class="fas fa-book-open"></i>', url: 'https://www.amazon.com.br/dp/B0CW179J4P', point: 17 },
+                    { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 18 },
+                    { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 20 },
+                    { name: 'Reserva Ink', icon: '<i class="fas fa-pen-fancy"></i>', url: 'https://reserva.ink/545227', point: 21 },
+                    { name: 'Contagem Regressiva', icon: '<i class="fas fa-hourglass-half"></i>', url: 'https://matematico10.com.br/contador', point: 22 }
+                ]
+            }
+        };
+
+        // Criar as linhas dos 24 setores e adicionar números nos pontos de interseção
+        function createSectorLines() {
+            const sectorLinesContainer = document.getElementById('sectorLines');
+            const angleStep = 360 / 24; // 24 setores = 15 graus cada
+            const outerRadius = 262.5; // Raio da circunferência externa (525px / 2)
+            
+            for (let i = 0; i < 24; i++) {
+                // Criar a linha do setor
+                const line = document.createElement('div');
+                line.className = 'sector-line';
+                line.style.transform = `rotate(${i * angleStep}deg)`;
+                sectorLinesContainer.appendChild(line);
+                
+                // Criar o número na interseção
+                const number = document.createElement('div');
+                number.className = 'intersection-number';
+                number.textContent = i + 1; // Números de 1 a 24
+                number.setAttribute('data-point', i + 1); // Armazenar o número do ponto
+                const radianAngle = (i * angleStep) * Math.PI / 180;
+                const x = outerRadius * Math.cos(radianAngle);
+                const y = outerRadius * Math.sin(radianAngle);
+                number.style.left = `calc(50% + ${x}px)`;
+                number.style.top = `calc(50% + ${y}px)`;
+                sectorLinesContainer.appendChild(number);
+            }
+        }
+
+        // Criar os botões do menu principal distribuídos uniformemente
+        function createMainMenuItems() {
+            const innerCircle = document.querySelector('.inner-circle');
+            const categories = ['social', 'pedagogic', 'chat', 'additional'];
+            const colors = {
+                social: 'linear-gradient(145deg, #1DA1F2, #0078d7)',
+                pedagogic: 'linear-gradient(145deg, #8A2BE2, #6A1ACA)',
+                chat: 'linear-gradient(145deg, #25D366, #128C7E)',
+                additional: 'linear-gradient(145deg, #FF6347, #E0442E)'
+            };
+            const icons = {
+                social: 'fa-share-alt',
+                pedagogic: 'fa-book',
+                chat: 'fa-comments',
+                additional: 'fa-puzzle-piece'
+            };
+            const labels = {
+                social: 'Redes',
+                pedagogic: 'Recursos',
+                chat: 'Chat',
+                additional: 'Extras'
+            };
+            
+            // Posicionar cada botão principal nos pontos cardeais (alinhados com as linhas cruzadas)
+            categories.forEach((category, index) => {
+                let x, y;
+                const radius = 175; // Raio do círculo intermediário (350px de diâmetro / 2)
+                
+                // Definir posições baseadas nos quadrantes
+                switch(index) {
+                    case 0: // social (direita)
+                        x = radius;
+                        y = 0;
+                        break;
+                    case 1: // pedagogic (baixo)
+                        x = 0;
+                        y = radius;
+                        break;
+                    case 2: // chat (esquerda)
+                        x = -radius;
+                        y = 0;
+                        break;
+                    case 3: // additional (cima)
+                        x = 0;
+                        y = -radius;
+                        break;
+                }
+                
+                // Criar o botão do menu principal
+                const menuItem = document.createElement('div');
+                menuItem.className = `main-menu-item ${category}`;
+                menuItem.setAttribute('data-section', category);
+                menuItem.style.background = colors[category];
+                menuItem.style.left = `calc(50% + ${x}px)`;
+                menuItem.style.top = `calc(50% + ${y}px)`;
+                
+                // Adicionar ícone e label
+                menuItem.innerHTML = `
+                    <i class="fas ${icons[category]}"></i>
+                    <span>${labels[category]}</span>
+                `;
+                
+                innerCircle.appendChild(menuItem);
+            });
+        }
+
+        // Criando os itens de submenu para cada setor
+        function createSubmenuItems() {
+            Object.keys(menuData).forEach(key => {
+                const submenuContainer = document.querySelector(`.submenu-items.${key}`);
+                const items = menuData[key].items;
+                
+                items.forEach((item, index) => {
+                    // Encontrar a posição exata do ponto por seu número
+                    const pointNumber = item.point;
+                    const pointElement = document.querySelector(`.intersection-number[data-point="${pointNumber}"]`);
+                    
+                    if (pointElement) {
+                        // Obter as coordenadas do ponto de interseção
+                        const pointRect = pointElement.getBoundingClientRect();
+                        const containerRect = document.querySelector('.menu-container').getBoundingClientRect();
+                        
+                        // Calcular a posição relativa ao contêiner
+                        const x = pointRect.left - containerRect.left + (pointRect.width / 2);
+                        const y = pointRect.top - containerRect.top + (pointRect.height / 2);
+                        
+                        // Criar o item do submenu
+                        const submenuItem = document.createElement('a');
+                        submenuItem.className = `submenu-item ${key}`;
+                        submenuItem.href = item.url;
+                        submenuItem.innerHTML = item.icon;
+                        submenuItem.style.left = `${x}px`;
+                        submenuItem.style.top = `${y}px`;
+                        submenuItem.style.transitionDelay = `${0.1 + index * 0.05}s`;
+                        
+                        // Adicionar tooltip
+                        const tooltip = document.createElement('span');
+                        tooltip.className = 'tooltip';
+                        tooltip.textContent = item.name;
+                        
+                        // Calcular ângulo para posicionamento do tooltip
+                        const centerX = containerRect.width / 2;
+                        const centerY = containerRect.height / 2;
+                        const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                        
+                        // Posicionar o tooltip com base no ângulo
+                        if (angle > -45 && angle <= 45) { // direita
+                            tooltip.style.left = '70px';
+                            tooltip.style.top = '50%';
+                            tooltip.style.transform = 'translateY(-50%)';
+                        } else if (angle > 45 && angle <= 135) { // baixo
+                            tooltip.style.top = '70px';
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translateX(-50%)';
+                        } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) { // esquerda
+                            tooltip.style.right = '70px';
+                            tooltip.style.left = 'auto';
+                            tooltip.style.top = '50%';
+                            tooltip.style.transform = 'translateY(-50%)';
+                        } else { // cima
+                            tooltip.style.bottom = '70px';
+                            tooltip.style.top = 'auto';
+                            tooltip.style.left = '50%';
+                            tooltip.style.transform = 'translateX(-50%)';
+                        }
+                        
+                        submenuItem.appendChild(tooltip);
+                        submenuContainer.appendChild(submenuItem);
+                    }
+                });
+            });
+        }
+
+        // Adicionar eventos de clique aos botões do menu principal
+        function addMenuEvents() {
+            const mainMenuItems = document.querySelectorAll('.main-menu-item');
+            
+            mainMenuItems.forEach(item => {
+                // Adicionar evento de clique
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    
+                    // Verificar se este menu já está ativo
+                    const isActive = this.classList.contains('active');
+                    
+                    // Remover classe ativa de todos os menus e setores
+                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.outer-sector').forEach(sector => {
+                        sector.classList.remove('active');
+                    });
+                    
+                    // Se não estava ativo, ativá-lo
+                    if (!isActive) {
+                        this.classList.add('active');
+                        document.querySelector(`.outer-sector.${section}`).classList.add('active');
+                    }
+                });
+            });
+            
+            // Fechar os submenus quando clicar fora
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.main-menu-item') && 
+                    !event.target.closest('.submenu-item') &&
+                    !event.target.closest('.home-button')) {
+                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    
+                    document.querySelectorAll('.outer-sector').forEach(sector => {
+                        sector.classList.remove('active');
+                    });
+                }
+            });
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            createSectorLines(); // Criar as linhas dos 24 setores e números
+            createMainMenuItems();
+            
+            // Usar setTimeout para garantir que os números dos pontos já estejam renderizados
+            setTimeout(() => {
+                createSubmenuItems();
+                addMenuEvents();
+                
+                // Exibir o primeiro menu automaticamente
+                setTimeout(() => {
+                    const firstMenu = document.querySelector('.main-menu-item');
+                    if (firstMenu) {
+                        firstMenu.click();
+                    }
+                }, 500);
+            }, 100);
+        });
+    </script>
 </body>
 </html>
