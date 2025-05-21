@@ -487,12 +487,6 @@
             text-align: center;
             min-height: 15px;
         }
-        
-        @media (max-width: 768px) {
-            .countdown-container {
-                display: none !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -617,25 +611,19 @@
         const sitesSubmenuData = {
             title: 'Sites Úteis para Matemática',
             items: [
-
-                
-                { name: 'Curso Google For Education', icon: '<i class="fas fa-certificate"></i>', url: 'https://sites.google.com/saladeaula.org/gegbrasil/certifica%C3%A7%C3%B5es', point: 23 },
-                { name: 'Programa GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 24 },
-                { name: 'Programa  Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 1 },
-                { name: 'Programa Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 2 },
-                { name: 'Programa Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 3 },
-                { name: 'Vídeos Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 4 },
-                { name: 'Videos Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 5 },
-                { name: 'Videos  Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 6 },
-                { name: 'Provas OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'http://www.obmep.org.br/provas.htm', point: 7 },
-                { name: 'Provas Canguru Matemático', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 8 },
-                { name: 'Provas do Enem', icon: '<i class="fas fa-file-alt"></i>', url: 'https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos', point: 9 },
-                { name: 'Provas da OBM',   icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.obm.org.br/como-se-preparar/provas-e-gabaritos/', point: 10 },
-                { name: 'Portal Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 11 },
-                { name: 'Portal MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 12 },          
-                { name: 'Portal OBMEP', icon: '<i class="fas fa-star"></i>', url: 'https://portaldaobmep.impa.br/', point: 13 },             
-                { name: 'Portal Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 14 },
-                { name: 'Portal Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 15 },
+                { name: 'GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 1 },
+                { name: 'Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 2 },
+                { name: 'Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 3 },
+                { name: 'MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 4 },
+                { name: 'Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 5 },
+                { name: 'Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 6 },
+                { name: 'OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'https://www.obmep.org.br/', point: 7 },
+                { name: 'Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 8 },
+                { name: 'Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 9 },
+                { name: 'Canguru Matemática', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 10 },
+                { name: 'Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 11 },
+                { name: 'Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 12 },
+                { name: 'Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 13 }
             ]
         };
 
@@ -752,7 +740,7 @@
                         submenuItem.className = `submenu-item ${key}`;
                         if (item.hasSubSubmenu) {
                             submenuItem.setAttribute('data-subsubmenu', item.subSubmenu);
-                            submenuItem.href = 'javascript:void(0);'; // Evita navegação padrão para itens com sub-submenu
+                            submenuItem.href = 'javascript:void(0);';
                         } else {
                             submenuItem.href = item.url;
                         }
@@ -898,13 +886,11 @@
                         }
                     });
                 }
-                // Links normais não precisam de manipuladores adicionais, já que têm href
             });
 
             subsubmenuItems.forEach(item => {
                 item.addEventListener('click', function(e) {
                     // Permite que o comportamento padrão do link ocorra
-                    // O href já está definido, então não é necessário manipular aqui
                 });
             });
 
@@ -947,28 +933,33 @@
                 targetYear++;
             }
             const target = new Date(targetYear, 2, 14);
+
             let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
             if (now.getDate() > target.getDate()) {
                 months--;
             }
+
             let adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
+
             if (adjustedDate > target) {
                 months--;
                 adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
             }
+
             const diffMs = target - adjustedDate;
             const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 2;
+
             const totalMs = target - now;
             const hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
             const minutes = Math.floor((totalMs / (1000 * 60)) % 60);
-            const seconds = Math.floor((totalMs / (1000 * 60)) % 60);
-            
+            const seconds = Math.floor((totalMs / 1000) % 60);
+
             document.getElementById('months').textContent = months;
             document.getElementById('days').textContent = days;
             document.getElementById('hours').textContent = hours;
             document.getElementById('minutes').textContent = minutes;
             document.getElementById('seconds').textContent = seconds;
-            
+
             if (totalMs <= 0) {
                 document.getElementById('message').textContent = "FELIZ DIA DA MATEMÁTICA!";
                 clearInterval(countdownInterval);
@@ -996,18 +987,17 @@
                 adjustZoom();
                 window.addEventListener('resize', adjustZoom);
                 
-                if (window.innerWidth > 768) {
-                    updateCountdown();
-                    countdownInterval = setInterval(updateCountdown, 1000);
-                    const countdownContainer = document.querySelector('.countdown-container');
-                    countdownContainer.style.opacity = '0';
-                    countdownContainer.style.transform = 'translateY(-20px)';
-                    countdownContainer.style.transition = 'all 0.5s ease 0.5s';
-                    setTimeout(() => {
-                        countdownContainer.style.opacity = '1';
-                        countdownContainer.style.transform = 'translateY(0)';
-                    }, 600);
-                }
+                // Start countdown
+                updateCountdown();
+                countdownInterval = setInterval(updateCountdown, 1000);
+                const countdownContainer = document.querySelector('.countdown-container');
+                countdownContainer.style.opacity = '0';
+                countdownContainer.style.transform = 'translateY(-20px)';
+                countdownContainer.style.transition = 'all 0.5s ease 0.5s';
+                setTimeout(() => {
+                    countdownContainer.style.opacity = '1';
+                    countdownContainer.style.transform = 'translateY(0)';
+                }, 600);
                 
                 const menuItems = document.querySelectorAll('.main-menu-item, .submenu-item, .subsubmenu-item');
                 menuItems.forEach(item => {
