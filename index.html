@@ -14,13 +14,24 @@
         }
         
         body {
-            background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #1a5276, #2c3e50);
             color: white;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            position: relative;
+        }
+        
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
         
         .header {
@@ -50,7 +61,6 @@
             letter-spacing: 2px;
         }
         
-        /* Menu container */
         .menu-container {
             position: relative;
             width: 800px;
@@ -58,7 +68,6 @@
             margin: 50px auto;
         }
         
-        /* Círculo de fundo */
         .background-circle {
             position: absolute;
             width: 750px;
@@ -72,7 +81,6 @@
             box-shadow: 0 0 40px rgba(65, 105, 225, 0.3);
         }
         
-        /* Linhas dos 24 setores */
         .sector-lines {
             position: absolute;
             width: 100%;
@@ -92,7 +100,6 @@
             transform-origin: center;
         }
         
-        /* Letras e números nos pontos de interseção */
         .intersection-number {
             position: absolute;
             width: 24px;
@@ -110,7 +117,6 @@
             z-index: 4;
         }
         
-        /* Círculo intermediário */
         .middle-circle {
             position: absolute;
             width: 350px;
@@ -123,7 +129,6 @@
             z-index: 5;
         }
         
-        /* Círculo externo */
         .outer-circle {
             position: absolute;
             width: 525px;
@@ -136,7 +141,6 @@
             z-index: 4;
         }
         
-        /* Círculo interno com botões principais */
         .inner-circle {
             position: absolute;
             width: 200px;
@@ -154,7 +158,6 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
-        /* Home button */
         .home-button {
             position: absolute;
             width: 100px;
@@ -188,7 +191,6 @@
             opacity: 0.9;
         }
         
-        /* Botões do menu principal */
         .main-menu-item {
             position: absolute;
             width: 70px;
@@ -229,7 +231,6 @@
                       0 0 20px currentColor;
         }
         
-        /* Setores externos */
         .outer-sector {
             position: absolute;
             width: 100%;
@@ -247,7 +248,6 @@
             opacity: 1;
         }
         
-        /* Submenu items */
         .submenu-items {
             position: absolute;
             width: 100%;
@@ -270,10 +270,9 @@
             font-size: 24px;
             transform: scale(0);
             opacity: 0;
-            transition: all: all 0.5s Cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            /* Centralizar exatamente no ponto de interseção */
             transform-origin: center;
             margin-left: -30px;
             margin-top: -30px;
@@ -300,13 +299,67 @@
             background: linear-gradient(145deg, #FF6347, #E0442E);
         }
         
+        .submenu-item.sites {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+        }
+        
         .submenu-item:hover {
             transform: scale(1.15) !important;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
                         0 0 15px currentColor;
         }
         
-        /* Tooltips */
+        .subsubmenu-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 5;
+        }
+        
+        .subsubmenu-container.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .subsubmenu-item {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 20px;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform-origin: center;
+            margin-left: -25px;
+            margin-top: -25px;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+        }
+        
+        .subsubmenu-container.active .subsubmenu-item {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .subsubmenu-item:hover {
+            transform: scale(1.15) !important;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
+                        0 0 15px currentColor;
+        }
+        
         .tooltip {
             position: absolute;
             background: rgba(0, 0, 0, 0.8);
@@ -334,12 +387,12 @@
             transform: translateX(-50%) rotate(45deg);
         }
         
-        .submenu-item:hover .tooltip {
+        .submenu-item:hover .tooltip,
+        .subsubmenu-item:hover .tooltip {
             visibility: visible;
             opacity: 1;
         }
-
-        /* Invisible container with auto-zoom */
+        
         .responsive-container {
             display: flex;
             justify-content: center;
@@ -350,31 +403,14 @@
             position: relative;
             background: transparent;
         }
-
+        
         .content-wrapper {
             transform-origin: center center;
             width: 900px;
             height: 900px;
             transition: transform 0.3s ease;
         }
-
-        /* Estilos adicionados para o novo fundo */
-        body {
-            background: linear-gradient(135deg, #1a5276, #2c3e50) !important;
-            position: relative;
-        }
         
-        #particles-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* Estilos para o contador regressivo */
         .countdown-container {
             position: fixed;
             top: 20px;
@@ -424,12 +460,11 @@
             border: 3px solid;
         }
         
-        /* Cores diferentes para cada mostrador */
-        .countdown-item:nth-child(1) { border-color: #FF5252; } /* Meses - Vermelho */
-        .countdown-item:nth-child(2) { border-color: #FF9800; } /* Dias - Laranja */
-        .countdown-item:nth-child(3) { border-color: #4CAF50; } /* Horas - Verde */
-        .countdown-item:nth-child(4) { border-color: #2196F3; } /* Minutos - Azul */
-        .countdown-item:nth-child(5) { border-color: #9C27B0; } /* Segundos - Roxo */
+        .countdown-item:nth-child(1) { border-color: #FF5252; }
+        .countdown-item:nth-child(2) { border-color: #FF9800; }
+        .countdown-item:nth-child(3) { border-color: #4CAF50; }
+        .countdown-item:nth-child(4) { border-color: #2196F3; }
+        .countdown-item:nth-child(5) { border-color: #9C27B0; }
         
         .countdown-item div:first-child {
             font-size: 12px;
@@ -452,8 +487,7 @@
             text-align: center;
             min-height: 15px;
         }
-
-        /* Esconder o contador em telas pequenas (mobile) */
+        
         @media (max-width: 768px) {
             .countdown-container {
                 display: none !important;
@@ -462,10 +496,8 @@
     </style>
 </head>
 <body>
-    <!-- Canvas para as partículas -->
     <canvas id="particles-canvas"></canvas>
     
-    <!-- Contador regressivo (visível apenas em telas grandes) -->
     <div class="countdown-container">
         <div class="countdown-title">14 de março - Dia Internacional da Matemática</div>
         <div class="countdown-subtitle">Dia da Matemática e nascimento de Einstein.</div>
@@ -492,7 +524,7 @@
                 <div class="unit">Seg</div>
             </div>
         </div>
-        <div class="countdown-message" id="message">&nbsp;</div>
+        <div class="countdown-message" id="message"></div>
     </div>
     
     <div class="responsive-container">
@@ -502,59 +534,36 @@
             </div>
             
             <div class="menu-container">
-                <!-- Círculo de fundo -->
                 <div class="background-circle"></div>
-                
-                <!-- Linhas dos 24 setores -->
                 <div class="sector-lines" id="sectorLines"></div>
-                
-                <!-- Círculo intermediário -->
                 <div class="middle-circle"></div>
-                
-                <!-- Círculo externo -->
                 <div class="outer-circle"></div>
                 
-                <!-- Menu Home central -->
                 <a href="home.html" class="home-button">
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </a>
                 
-                <!-- Círculo interno com os menus principais -->
-                <div class="inner-circle">
-                    <!-- Botões do menu principal serão posicionados via JS -->
-                </div>
+                <div class="inner-circle"></div>
                 
-                <!-- Setores externos (submenus) -->
                 <div class="outer-sector social">
-                    <div class="submenu-items social">
-                        <!-- Itens do submenu serão inseridos via JS -->
-                    </div>
+                    <div class="submenu-items social"></div>
                 </div>
-                
                 <div class="outer-sector pedagogic">
-                    <div class="submenu-items pedagogic">
-                        <!-- Itens do submenu serão inseridos via JS -->
-                    </div>
+                    <div class="submenu-items pedagogic"></div>
+                    <div class="subsubmenu-container sites"></div>
                 </div>
-                
                 <div class="outer-sector chat">
-                    <div class="submenu-items chat">
-                        <!-- Itens do submenu serão inseridos via JS -->
-                    </div>
+                    <div class="submenu-items chat"></div>
                 </div>
-                
                 <div class="outer-sector additional">
-                    <div class="submenu-items additional">
-                        <!-- Itens do submenu serão inseridos via JS -->
-                    </div>
+                    <div class="submenu-items additional"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Dados dos menus
         const menuData = {
             social: {
                 title: 'Redes Sociais',
@@ -565,27 +574,22 @@
                     { name: 'linktr', icon: '<i class="fas fa-link"></i>', url: 'https://linktr.ee/matematico10', point: 1 },
                     { name: 'X (Twitter)', icon: '<i class="fab fa-twitter"></i>', url: 'https://x.com/SergioPaul97880', point: 2 },
                     { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 23 },
-                     { name: 'GitHub',  icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 4 }
+                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 4 }
                 ]
             },
             pedagogic: {
-    title: 'Recursos Pedagógicos',
-    items: [
-
-  { "name": "Paradoxo Hiperdimensional", "icon": "<i class=\"fas fa-brain\"></i>", "url": "Recursos/Hiperdimensional/Teste BR-EUA.html", "point": 4 },
-  { "name": "Planejamentos Anuais", "icon": "<i class=\"fas fa-calendar-alt\"></i>", "url": "Recursos/Planej. Anuais.html", "point": 5 },
-  { "name": "YouTube", "icon": "<i class=\"fab fa-youtube\"></i>", "url": "https://www.youtube.com/@MATEMATICO1O", "point": 6 },
-  { "name": "Jogo do Milhão", "icon": "<i class=\"fas fa-gamepad\"></i>", "url": "Recursos/Jogo do Milhão.html", "point": 7 },
-  { "name": "Minha Videoteca", "icon": "<i class=\"fas fa-video\"></i>", "url": "Recursos/VídeosK10.html", "point": 8 },
-  { "name": "Banco de Questões", "icon": "<i class=\"fas fa-book\"></i>", "url": "Recursos/BancoDeQuestões.html", "point": 9 },
-  { "name": "Banco de Perguntas", "icon": "<i class=\"fas fa-question-circle\"></i>", "url": "Recursos/BancoDePerguntas.html", "point": 10 },
- 
-
-
-        
-    ]
-},
-
+                title: 'Recursos Pedagógicos',
+                items: [
+                    { name: 'Paradoxo Hiperdimensional', icon: '<i class="fas fa-brain"></i>', url: 'Recursos/Hiperdimensional/Teste BR-EUA.html', point: 4 },
+                    { name: 'Planejamentos Anuais', icon: '<i class="fas fa-calendar-alt"></i>', url: 'Recursos/Planej. Anuais.html', point: 5 },
+                    { name: 'YouTube', icon: '<i class="fab fa-youtube"></i>', url: 'https://www.youtube.com/@MATEMATICO1O', point: 6 },
+                    { name: 'Jogo do Milhão', icon: '<i class="fas fa-gamepad"></i>', url: 'Recursos/Jogo do Milhão.html', point: 7 },
+                    { name: 'Minha Videoteca', icon: '<i class="fas fa-video"></i>', url: 'Recursos/VídeosK10.html', point: 8 },
+                    { name: 'Banco de Questões', icon: '<i class="fas fa-book"></i>', url: 'Recursos/BancoDeQuestões.html', point: 9 },
+                    { name: 'Banco de Perguntas', icon: '<i class="fas fa-question-circle"></i>', url: 'Recursos/BancoDePerguntas.html', point: 10 },
+                    { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 11 }
+                ]
+            },
             chat: {
                 title: 'Chat e Servidor',
                 items: [
@@ -594,7 +598,7 @@
                     { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
                     { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
                     { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
-                    { name: 'GitHub',  icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
+                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
                 ]
             },
             additional: {
@@ -602,7 +606,7 @@
                 items: [
                     { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 18 },
                     { name: 'Caleidoscópio da Matemática', icon: '<i class="fas fa-book-open"></i>', url: 'https://www.amazon.com.br/dp/B0CW179J4P', point: 17 },
-                    { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 16},
+                    { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 16 },
                     { name: 'O Mundo da Matemática', icon: '<i class="fas fa-globe"></i>', url: 'https://www.udemy.com/course/mundodamatematica/', point: 20 },
                     { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 21 },
                     { name: 'Reserva Ink', icon: '<i class="fas fa-pen-fancy"></i>', url: 'https://reserva.ink/545227', point: 22 }
@@ -610,27 +614,44 @@
             }
         };
 
-        // Criar as linhas dos 24 setores, letras minúsculas no círculo de 350px, letras maiúsculas no círculo de 525px e números no círculo de 750px
+        const sitesSubmenuData = {
+            title: 'Sites Úteis para Matemática',
+            items: [
+                { name: 'GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 1 },
+                { name: 'Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 2 },
+                { name: 'Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 3 },
+                { name: 'MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 4 },
+                { name: 'Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 5 },
+                { name: 'Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 6 },
+                { name: 'OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'https://www.obmep.org.br/', point: 7 },
+                { name: 'Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 8 },
+                { name: 'Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 9 },
+                { name: 'Canguru Matemática', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 10 },
+                { name: 'Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 11 },
+                { name: 'Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 12 },
+                { name: 'Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 13 },
+               
+            ]
+        };
+
         function createSectorLines() {
             const sectorLinesContainer = document.getElementById('sectorLines');
-            const angleStep = 360 / 24; // 24 setores = 15 graus cada
-            const middleRadius = 175; // Raio da circunferência intermediária (350px / 2)
-            const outerRadius = 262.5; // Raio da circunferência externa (525px / 2)
-            const backgroundRadius = 375; // Raio da circunferência de fundo (750px / 2)
-            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz'.split('').slice(0, 24); // Letras a a x
-            const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, 24); // Letras A a X
+            const angleStep = 360 / 24;
+            const middleRadius = 175;
+            const outerRadius = 262.5;
+            const backgroundRadius = 375;
+            const lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz'.split('').slice(0, 24);
+            const uppercaseLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').slice(0, 24);
             
             for (let i = 0; i < 24; i++) {
-                // Criar a linha do setor
                 const line = document.createElement('div');
                 line.className = 'sector-line';
                 line.style.transform = `rotate(${i * angleStep}deg)`;
                 sectorLinesContainer.appendChild(line);
                 
-                // Criar a letra minúscula na interseção do círculo de 350px
                 const lowercaseLetter = document.createElement('div');
                 lowercaseLetter.className = 'intersection-number';
-                lowercaseLetter.textContent = lowercaseLetters[i]; // Letras a a x
+                lowercaseLetter.textContent = lowercaseLetters[i];
                 let radianAngle = (i * angleStep) * Math.PI / 180;
                 let x = middleRadius * Math.cos(radianAngle);
                 let y = middleRadius * Math.sin(radianAngle);
@@ -638,21 +659,20 @@
                 lowercaseLetter.style.top = `calc(50% + ${y}px)`;
                 sectorLinesContainer.appendChild(lowercaseLetter);
                 
-                // Criar a letra maiúscula na interseção do círculo de 525px
                 const uppercaseLetter = document.createElement('div');
                 uppercaseLetter.className = 'intersection-number';
-                uppercaseLetter.textContent = uppercaseLetters[i]; // Letras A a X
-                uppercaseLetter.setAttribute('data-point', i + 1); // Manter o atributo data-point com números
+                uppercaseLetter.textContent = uppercaseLetters[i];
+                uppercaseLetter.setAttribute('data-point', i + 1);
                 x = outerRadius * Math.cos(radianAngle);
                 y = outerRadius * Math.sin(radianAngle);
                 uppercaseLetter.style.left = `calc(50% + ${x}px)`;
                 uppercaseLetter.style.top = `calc(50% + ${y}px)`;
                 sectorLinesContainer.appendChild(uppercaseLetter);
                 
-                // Criar o número na interseção do círculo de 750px
                 const number = document.createElement('div');
                 number.className = 'intersection-number';
-                number.textContent = i + 1; // Números 1 a 24
+                number.textContent = i + 1;
+                number.setAttribute('data-number-point', i + 1);
                 x = backgroundRadius * Math.cos(radianAngle);
                 y = backgroundRadius * Math.sin(radianAngle);
                 number.style.left = `calc(50% + ${x}px)`;
@@ -661,7 +681,6 @@
             }
         }
 
-        // Criar os botões do menu principal distribuídos uniformemente
         function createMainMenuItems() {
             const innerCircle = document.querySelector('.inner-circle');
             const categories = ['social', 'pedagogic', 'chat', 'additional'];
@@ -684,102 +703,81 @@
                 additional: 'Extras'
             };
             
-            // Posicionar cada botão principal nos pontos cardeais
             categories.forEach((category, index) => {
                 let x, y;
-                const radius = 175; // Raio do círculo intermediário (350px de diâmetro / 2)
+                const radius = 175;
                 
                 switch(index) {
-                    case 0: // social (direita)
-                        x = radius;
-                        y = 0;
-                        break;
-                    case 1: // pedagogic (baixo)
-                        x = 0;
-                        y = radius;
-                        break;
-                    case 2: // chat (esquerda)
-                        x = -radius;
-                        y = 0;
-                        break;
-                    case 3: // additional (cima)
-                        x = 0;
-                        y = -radius;
-                        break;
+                    case 0: x = radius; y = 0; break;
+                    case 1: x = 0; y = radius; break;
+                    case 2: x = -radius; y = 0; break;
+                    case 3: x = 0; y = -radius; break;
                 }
                 
-                // Criar o botão do menu principal
                 const menuItem = document.createElement('div');
                 menuItem.className = `main-menu-item ${category}`;
                 menuItem.setAttribute('data-section', category);
                 menuItem.style.background = colors[category];
                 menuItem.style.left = `calc(50% + ${x}px)`;
                 menuItem.style.top = `calc(50% + ${y}px)`;
-                
-                // Adicionar ícone e label
                 menuItem.innerHTML = `
                     <i class="fas ${icons[category]}"></i>
                     <span>${labels[category]}</span>
                 `;
-                
                 innerCircle.appendChild(menuItem);
             });
         }
 
-        // Criando os itens de submenu para cada setor
         function createSubmenuItems() {
             Object.keys(menuData).forEach(key => {
                 const submenuContainer = document.querySelector(`.submenu-items.${key}`);
                 const items = menuData[key].items;
                 
                 items.forEach((item, index) => {
-                    // Encontrar a posição exata do ponto por seu número
                     const pointNumber = item.point;
                     const pointElement = document.querySelector(`.intersection-number[data-point="${pointNumber}"]`);
                     
                     if (pointElement) {
-                        // Obter as coordenadas do ponto de interseção
                         const pointRect = pointElement.getBoundingClientRect();
                         const containerRect = document.querySelector('.menu-container').getBoundingClientRect();
-                        
-                        // Calcular a posição relativa ao contêiner
                         const x = pointRect.left - containerRect.left + (pointRect.width / 2);
                         const y = pointRect.top - containerRect.top + (pointRect.height / 2);
                         
-                        // Criar o item do submenu
                         const submenuItem = document.createElement('a');
                         submenuItem.className = `submenu-item ${key}`;
-                        submenuItem.href = item.url;
+                        if (item.hasSubSubmenu) {
+                            submenuItem.setAttribute('data-subsubmenu', item.subSubmenu);
+                            submenuItem.href = 'javascript:void(0);'; // Evita navegação padrão para itens com sub-submenu
+                        } else {
+                            submenuItem.href = item.url;
+                        }
                         submenuItem.innerHTML = item.icon;
                         submenuItem.style.left = `${x}px`;
                         submenuItem.style.top = `${y}px`;
                         submenuItem.style.transitionDelay = `${0.1 + index * 0.05}s`;
                         
-                        // Adicionar tooltip
                         const tooltip = document.createElement('span');
                         tooltip.className = 'tooltip';
                         tooltip.textContent = item.name;
                         
-                        // Calcular ângulo para posicionamento do tooltip
                         const centerX = containerRect.width / 2;
                         const centerY = containerRect.height / 2;
                         const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
                         
-                        // Posicionar o tooltip com base no ângulo
-                        if (angle > -45 && angle <= 45) { // direita
+                        if (angle > -45 && angle <= 45) {
                             tooltip.style.left = '70px';
                             tooltip.style.top = '50%';
                             tooltip.style.transform = 'translateY(-50%)';
-                        } else if (angle > 45 && angle <= 135) { // baixo
+                        } else if (angle > 45 && angle <= 135) {
                             tooltip.style.top = '70px';
                             tooltip.style.left = '50%';
                             tooltip.style.transform = 'translateX(-50%)';
-                        } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) { // esquerda
+                        } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) {
                             tooltip.style.right = '70px';
                             tooltip.style.left = 'auto';
                             tooltip.style.top = '50%';
                             tooltip.style.transform = 'translateY(-50%)';
-                        } else { // cima
+                        } else {
                             tooltip.style.bottom = '70px';
                             tooltip.style.top = 'auto';
                             tooltip.style.left = '50%';
@@ -793,108 +791,179 @@
             });
         }
 
-        // Adicionar eventos de clique aos botões do menu principal
+        function createSitesSubSubmenuItems() {
+            const subsubmenuContainer = document.querySelector('.subsubmenu-container.sites');
+            const items = sitesSubmenuData.items;
+            
+            items.forEach((item, index) => {
+                const pointNumber = item.point;
+                const pointElement = document.querySelector(`.intersection-number[data-number-point="${pointNumber}"]`);
+                
+                if (pointElement) {
+                    const pointRect = pointElement.getBoundingClientRect();
+                    const containerRect = document.querySelector('.menu-container').getBoundingClientRect();
+                    const x = pointRect.left - containerRect.left + (pointRect.width / 2);
+                    const y = pointRect.top - containerRect.top + (pointRect.height / 2);
+                    
+                    const subsubmenuItem = document.createElement('a');
+                    subsubmenuItem.className = 'subsubmenu-item sites';
+                    subsubmenuItem.href = item.url;
+                    subsubmenuItem.innerHTML = item.icon;
+                    subsubmenuItem.style.left = `${x}px`;
+                    subsubmenuItem.style.top = `${y}px`;
+                    subsubmenuItem.style.transitionDelay = `${0.1 + index * 0.05}s`;
+                    
+                    const tooltip = document.createElement('span');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = item.name;
+                    
+                    const centerX = containerRect.width / 2;
+                    const centerY = containerRect.height / 2;
+                    const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                    
+                    if (angle > -45 && angle <= 45) {
+                        tooltip.style.left = '60px';
+                        tooltip.style.top = '50%';
+                        tooltip.style.transform = 'translateY(-50%)';
+                    } else if (angle > 45 && angle <= 135) {
+                        tooltip.style.top = '60px';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                    } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) {
+                        tooltip.style.right = '60px';
+                        tooltip.style.left = 'auto';
+                        tooltip.style.top = '50%';
+                        tooltip.style.transform = 'translateY(-50%)';
+                    } else {
+                        tooltip.style.bottom = '60px';
+                        tooltip.style.top = 'auto';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                    }
+                    
+                    subsubmenuItem.appendChild(tooltip);
+                    subsubmenuContainer.appendChild(subsubmenuItem);
+                }
+            });
+        }
+
         function addMenuEvents() {
             const mainMenuItems = document.querySelectorAll('.main-menu-item');
-            
+            const submenuItems = document.querySelectorAll('.submenu-item');
+            const subsubmenuItems = document.querySelectorAll('.subsubmenu-item');
+
             mainMenuItems.forEach(item => {
-                // Adicionar evento de clique
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
                     const section = this.getAttribute('data-section');
-                    
-                    // Verificar se este menu já está ativo
                     const isActive = this.classList.contains('active');
                     
-                    // Remover classe ativa de todos os menus e setores
-                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                    mainMenuItems.forEach(menuItem => {
                         menuItem.classList.remove('active');
                     });
-                    
                     document.querySelectorAll('.outer-sector').forEach(sector => {
                         sector.classList.remove('active');
                     });
+                    document.querySelectorAll('.subsubmenu-container').forEach(container => {
+                        container.classList.remove('active');
+                    });
                     
-                    // Se não estava ativo, ativá-lo
                     if (!isActive) {
                         this.classList.add('active');
                         document.querySelector(`.outer-sector.${section}`).classList.add('active');
                     }
                 });
             });
-            
-            // Fechar os submenus quando clicar fora
+
+            submenuItems.forEach(item => {
+                if (item.hasAttribute('data-subsubmenu')) {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const subsubmenu = this.getAttribute('data-subsubmenu');
+                        const subsubmenuContainer = document.querySelector(`.subsubmenu-container.${subsubmenu}`);
+                        const isActive = subsubmenuContainer.classList.contains('active');
+                        
+                        document.querySelectorAll('.subsubmenu-container').forEach(container => {
+                            container.classList.remove('active');
+                        });
+                        
+                        if (!isActive) {
+                            subsubmenuContainer.classList.add('active');
+                        }
+                    });
+                }
+                // Links normais não precisam de manipuladores adicionais, já que têm href
+            });
+
+            subsubmenuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Permite que o comportamento padrão do link ocorra
+                    // O href já está definido, então não é necessário manipular aqui
+                });
+            });
+
             document.addEventListener('click', function(event) {
                 if (!event.target.closest('.main-menu-item') && 
                     !event.target.closest('.submenu-item') &&
+                    !event.target.closest('.subsubmenu-item') &&
                     !event.target.closest('.home-button')) {
-                    document.querySelectorAll('.main-menu-item').forEach(menuItem => {
+                    mainMenuItems.forEach(menuItem => {
                         menuItem.classList.remove('active');
                     });
-                    
                     document.querySelectorAll('.outer-sector').forEach(sector => {
                         sector.classList.remove('active');
+                    });
+                    document.querySelectorAll('.subsubmenu-container').forEach(container => {
+                        container.classList.remove('active');
                     });
                 }
             });
         }
 
-        // Função para ajustar o zoom do conteúdo
         function adjustZoom() {
             const container = document.querySelector('.responsive-container');
             const content = document.querySelector('.content-wrapper');
-            
             const containerWidth = container.offsetWidth;
             const containerHeight = container.offsetHeight;
-            const contentWidth = 900; // Largura original (800px + margens)
-            const contentHeight = 900; // Altura original (800px + margens)
-            
-            // Calcular a proporção de escala para caber no contêiner
+            const contentWidth = 900;
+            const contentHeight = 900;
             const scaleX = containerWidth / contentWidth;
             const scaleY = containerHeight / contentHeight;
             const scale = Math.min(scaleX, scaleY);
-            
-            // Aplicar a transformação de escala
             content.style.transform = `scale(${scale})`;
         }
 
-        // Função para atualizar o contador regressivo
         function updateCountdown() {
             const now = new Date();
-
             let targetYear = now.getFullYear();
             const march14ThisYear = new Date(targetYear, 2, 14);
             if (now > march14ThisYear) {
                 targetYear++;
             }
             const target = new Date(targetYear, 2, 14);
-
             let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
             if (now.getDate() > target.getDate()) {
                 months--;
             }
-
             let adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
-
             if (adjustedDate > target) {
                 months--;
                 adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
             }
-
             const diffMs = target - adjustedDate;
             const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 2;
-
             const totalMs = target - now;
             const hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
             const minutes = Math.floor((totalMs / (1000 * 60)) % 60);
-            const seconds = Math.floor((totalMs / 1000) % 60);
-
+            const seconds = Math.floor((totalMs / (1000 * 60)) % 60);
+            
             document.getElementById('months').textContent = months;
             document.getElementById('days').textContent = days;
             document.getElementById('hours').textContent = hours;
             document.getElementById('minutes').textContent = minutes;
             document.getElementById('seconds').textContent = seconds;
-
+            
             if (totalMs <= 0) {
                 document.getElementById('message').textContent = "FELIZ DIA DA MATEMÁTICA!";
                 clearInterval(countdownInterval);
@@ -903,17 +972,15 @@
             }
         }
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
-            createSectorLines(); // Criar as linhas dos 24 setores, letras minúsculas, maiúsculas e números
+            createSectorLines();
             createMainMenuItems();
             
-            // Usar setTimeout para garantir que os pontos já estejam renderizados
             setTimeout(() => {
                 createSubmenuItems();
+                createSitesSubSubmenuItems();
                 addMenuEvents();
                 
-                // Exibir o primeiro menu automaticamente
                 setTimeout(() => {
                     const firstMenu = document.querySelector('.main-menu-item');
                     if (firstMenu) {
@@ -921,50 +988,38 @@
                     }
                 }, 500);
                 
-                // Ajustar o zoom inicialmente
                 adjustZoom();
-                
-                // Ajustar o zoom ao redimensionar a janela
                 window.addEventListener('resize', adjustZoom);
                 
-                // Iniciar o contador regressivo apenas em telas grandes
                 if (window.innerWidth > 768) {
                     updateCountdown();
                     countdownInterval = setInterval(updateCountdown, 1000);
-                    
-                    // Adicionar animação de entrada para o contador
                     const countdownContainer = document.querySelector('.countdown-container');
                     countdownContainer.style.opacity = '0';
                     countdownContainer.style.transform = 'translateY(-20px)';
                     countdownContainer.style.transition = 'all 0.5s ease 0.5s';
-                    
                     setTimeout(() => {
                         countdownContainer.style.opacity = '1';
                         countdownContainer.style.transform = 'translateY(0)';
                     }, 600);
                 }
                 
-                // Adicionar efeito de hover suave nos itens do menu
-                const menuItems = document.querySelectorAll('.main-menu-item, .submenu-item');
+                const menuItems = document.querySelectorAll('.main-menu-item, .submenu-item, .subsubmenu-item');
                 menuItems.forEach(item => {
                     item.addEventListener('mouseenter', () => {
                         item.style.transition = 'all 0.3s ease';
                     });
-                    
                     item.addEventListener('mouseleave', () => {
                         item.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                     });
                 });
                 
-                // Verificar se é 14 de março para exibir mensagem especial
                 const today = new Date();
-                if (today.getMonth() === 2 && today.getDate() === 14) { // Mês 2 = março (0-indexed)
+                if (today.getMonth() === 2 && today.getDate() === 14) {
                     const message = document.getElementById('message');
                     if (message) {
                         message.textContent = "FELIZ DIA DA MATEMÁTICA!";
                         message.style.animation = 'pulse 1s infinite alternate';
-                        
-                        // Adicionar estilo de animação para a mensagem
                         const style = document.createElement('style');
                         style.textContent = `
                             @keyframes pulse {
@@ -973,12 +1028,9 @@
                             }
                         `;
                         document.head.appendChild(style);
-                        
-                        // Adicionar efeito especial nos menus
                         document.querySelectorAll('.main-menu-item').forEach(item => {
                             item.style.animation = 'rainbowBorder 3s infinite linear';
                         });
-                        
                         const rainbowStyle = document.createElement('style');
                         rainbowStyle.textContent = `
                             @keyframes rainbowBorder {
@@ -994,37 +1046,28 @@
                     }
                 }
                 
-                // Adicionar efeito de rotação suave no círculo de fundo
                 const backgroundCircle = document.querySelector('.background-circle');
                 let rotation = 0;
-                
                 function rotateBackground() {
                     rotation += 0.1;
                     backgroundCircle.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
                     requestAnimationFrame(rotateBackground);
                 }
-                
                 rotateBackground();
-                
             }, 100);
         });
         
         let countdownInterval;
     </script>
     
-    <!-- Script para as partículas -->
     <script>
-        // Configuração do canvas de partículas
         const canvas = document.getElementById('particles-canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
-        // Array para armazenar as partículas
         const particlesArray = [];
         const numberOfParticles = 50;
 
-        // Classe para representar cada partícula
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
@@ -1032,7 +1075,6 @@
                 this.size = Math.random() * 5 + 1;
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * 1 - 0.5;
-                // Símbolos matemáticos para as partículas
                 this.symbol = [
                     'ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈',
                     '≠', '≡', '≤', '≥', '⊂', '⊃', '⊆', '⊇', '∈', '∉', '∅',
@@ -1049,20 +1091,14 @@
                 ][Math.floor(Math.random() * 121)];
             }
             
-            // Atualiza a posição e tamanho da partícula
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
-                
-                // Gradualmente diminui o tamanho
                 if (this.size > 0.2) this.size -= 0.01;
-                
-                // Rebate nas bordas da tela
                 if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
                 if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
             }
             
-            // Desenha a partícula na tela
             draw() {
                 ctx.font = `${this.size * 5}px 'Segoe UI'`;
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
@@ -1070,55 +1106,41 @@
             }
         }
 
-        // Inicializa o array de partículas
         function init() {
             for (let i = 0; i < numberOfParticles; i++) {
                 particlesArray.push(new Particle());
             }
         }
 
-        // Anima as partículas
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Atualiza e desenha cada partícula
             for (let i = 0; i < particlesArray.length; i++) {
                 particlesArray[i].update();
                 particlesArray[i].draw();
-                
-                // Regenera partículas que ficaram muito pequenas
                 if (particlesArray[i].size <= 0.2) {
                     particlesArray.splice(i, 1);
                     i--;
                     particlesArray.push(new Particle());
                 }
             }
-            
             requestAnimationFrame(animate);
         }
 
-        // Inicializa e começa a animação
         init();
         animate();
 
-        // Ajusta o canvas quando a janela é redimensionada
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         });
 
-        // Adicionar efeito de interação com o mouse nas partículas
         document.addEventListener('mousemove', (e) => {
             const mouseX = e.clientX;
             const mouseY = e.clientY;
-            
             particlesArray.forEach(particle => {
-                // Calcular distância entre mouse e partícula
                 const dx = mouseX - particle.x;
                 const dy = mouseY - particle.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                // Se o mouse estiver perto, repelir a partícula
                 if (distance < 100) {
                     const force = (100 - distance) / 50;
                     particle.x -= dx * force * 0.01;
@@ -1128,24 +1150,19 @@
         });
     </script>
 
-    <!-- Script adicional para melhorar a acessibilidade -->
     <script>
-        // Adicionar foco visível para elementos interativos
         document.addEventListener('DOMContentLoaded', () => {
-            const interactiveElements = document.querySelectorAll('a, button, [tabindex="0"], .main-menu-item, .submenu-item');
-            
+            const interactiveElements = document.querySelectorAll('a, button, [tabindex="0"], .main-menu-item, .submenu-item, .subsubmenu-item');
             interactiveElements.forEach(element => {
                 element.addEventListener('focus', () => {
                     element.style.outline = '2px solid #4169E1';
                     element.style.outlineOffset = '2px';
                 });
-                
                 element.addEventListener('blur', () => {
                     element.style.outline = 'none';
                 });
             });
             
-            // Adicionar aria-labels para ícones decorativos
             const icons = document.querySelectorAll('i[aria-hidden="true"]');
             icons.forEach(icon => {
                 const parent = icon.parentElement;
