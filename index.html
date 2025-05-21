@@ -487,6 +487,13 @@
             text-align: center;
             min-height: 15px;
         }
+        
+        /* Ocultar contador em telas menores que 768px */
+        @media (max-width: 768px) {
+            .countdown-container {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
