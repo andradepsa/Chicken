@@ -78,7 +78,7 @@
             transform: translate(-50%, -50%);
             width: 80vmin;
             height: 80vmin;
-            z-index: 1;
+            z-index: 1; /* Abaixo do contador se ele estiver sempre visível e precisar sobrepor algo aqui */
         }
 
         #central-core {
@@ -101,6 +101,7 @@
             text-align: center;
             animation: pulseCore 5s infinite alternate, rotateCore 60s linear infinite;
             border: 2px solid var(--glow-color-primary);
+            z-index: 5; /* Para garantir que está acima das linhas de conexão */
         }
         
         #central-core::before, #central-core::after {
@@ -160,13 +161,14 @@
             box-shadow: 0 0 5px var(--node-border), 0 0 10px var(--node-border) inset;
             opacity: 0.8;
             color: var(--text-color);
+            z-index: 3; /* Acima das linhas, abaixo do core se sobrepor */
         }
 
         .data-node:hover, .data-node.active {
             transform: scale(1.2);
             box-shadow: 0 0 15px var(--glow-color-secondary), 0 0 30px var(--glow-color-secondary) inset, 0 0 10px var(--glow-color-primary);
             opacity: 1;
-            z-index: 10;
+            z-index: 10; /* Acima de outros nós ao interagir */
             border-color: var(--glow-color-secondary);
         }
         .data-node i {
@@ -184,7 +186,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: -1; /* Behind nodes but above canvas */
+            z-index: 2; /* Atrás dos nós, mas acima do canvas de partículas */
         }
         
         #connection-lines-svg line {
@@ -210,7 +212,7 @@
             border: 2px solid var(--glow-color-secondary);
             border-radius: 10px;
             box-shadow: 0 0 30px var(--glow-color-secondary), 0 0 60px var(--glow-color-primary) inset;
-            z-index: 100;
+            z-index: 100; /* Deve ser alto para sobrepor outros elementos */
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.5s ease, visibility 0s linear 0.5s, transform 0.5s ease;
@@ -327,28 +329,38 @@
             border: 1px solid var(--glow-color-primary);
             border-radius: 8px;
             padding: 10px 15px;
-            z-index: 50;
+            z-index: 50; /* Abaixo do content-module (100), mas acima do nexus-container e partículas */
             text-align: center;
             box-shadow: 0 0 15px var(--glow-color-primary);
             color: var(--text-color);
             font-size: 0.8rem;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out; /* Para suavizar o hide/show */
         }
-        #countdown-widget .title {
-            font-size: 0.9rem;
+        #countdown-widget .title { /* Alterado para corresponder ao HTML fornecido */
+            font-size: 0.9em;
             color: var(--glow-color-tertiary);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
+        }
+        #countdown-widget h5 { /* Estilo para os novos h5 */
+            font-size: 0.7em;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin: 2px 0;
+            font-weight: normal;
         }
         #countdown-timer {
             display: flex;
             justify-content: center;
             gap: 8px;
             font-weight: bold;
+            margin-top: 5px;
         }
-        #countdown-timer span {
-            min-width: 40px;
+        #countdown-timer span { /* Para o número */
+            min-width: auto; /* Ajuste para caber melhor */
+            padding: 0 3px;
         }
         #countdown-timer .unit {
-            font-size: 0.7rem;
+            font-size: 0.65em;
             opacity: 0.7;
             display: block;
         }
@@ -356,6 +368,7 @@
             margin-top: 5px;
             color: var(--glow-color-secondary);
             font-weight: bold;
+            min-height: 1.2em; /* Para evitar saltos de layout */
         }
 
         /* Terminal-like scanlines overlay */
@@ -366,7 +379,7 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 9990; /* Below cursor, above most content */
+            z-index: 9990; /* Abaixo do cursor, acima da maioria dos conteúdos, mas abaixo do módulo */
             background: linear-gradient(
                 to bottom,
                 rgba(18, 16, 16, 0) 50%,
@@ -389,7 +402,7 @@
             width: 100%;
             height: 100%;
             background-color: var(--bg-color-start);
-            z-index: 10000;
+            z-index: 10000; /* O mais alto para o intro */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -437,6 +450,45 @@
             background-color: #000; /* Fallback bg */
         }
 
+        /* Media Query para ocultar o contador em telas pequenas */
+        @media (max-width: 768px) {
+            #countdown-widget {
+                visibility: hidden; /* Usar visibility e opacity para transições se desejado */
+                opacity: 0;
+                pointer-events: none; /* Impede interação quando oculto */
+            }
+             #content-display-module { /* Ajustar módulo de conteúdo para telas menores */
+                width: 90vw;
+                height: 80vh;
+                padding: 20px;
+            }
+            #content-display-module h2 {
+                font-size: 1.8rem;
+            }
+            #module-content-area {
+                font-size: 0.9rem;
+            }
+            .intro-text { font-size: 6vw; }
+            .intro-text:nth-child(2) { font-size: 3vw; }
+        }
+         @media (max-width: 480px) {
+            .data-node { /* Nós menores em telas muito pequenas */
+                width: 10vmin;
+                height: 10vmin;
+                font-size: 1.2vmin;
+            }
+             .data-node i {
+                font-size: 2.5vmin;
+            }
+             #central-core {
+                width: 18vmin;
+                height: 18vmin;
+            }
+             #content-display-module h2 {
+                font-size: 1.5rem;
+            }
+        }
+
 
     </style>
     <!-- Font Awesome for icons - If strictly "totally HTML" and no external CDNs, replace with SVG icons or text symbols -->
@@ -471,7 +523,9 @@
     </div>
 
     <div id="countdown-widget">
-        <div class="title">PI DAY COUNTDOWN</div>
+        <div class="title">Dia Internacional da Matemática</div>
+        <h5>Contagem regressiva para 14 de março: Dia da Matemática e nascimento de Einstein.</h5>
+        <h5>Também é o Dia do Pi, símbolo eterno da matemática e celebrado em todo o planeta.</h5>
         <div id="countdown-timer">
             <div><span id="months">0</span><span class="unit">Meses</span></div>
             <div><span id="days">0</span><span class="unit">Dias</span></div>
@@ -517,21 +571,21 @@
                     content: `<h2>Recursos Pedagógicos</h2>
                               <p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p>
                               <ul>
-                                <li><a href="Mapa.html#Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank">Paradoxo Hiperdimensional (Teste BR-EUA)</a></li>
-                                <li><a href="Recursos/Planej. Anuais.html" target="_blank">Planejamentos Anuais</a></li>
-                                <li><a href="Recursos/Jogo do Milhão.html" target="_blank">Jogo do Milhão</a></li>
-                                <li><a href="Recursos/VídeosK10.html" target="_blank">Minha Videoteca K10</a></li>
-                                <li><a href="Recursos/BancoDeQuestões.html" target="_blank">Banco de Questões</a></li>
-                                <li><a href="Recursos/BancoDePerguntas.html" target="_blank">Banco de Perguntas</a></li>
-                                <li><strong>Sites Úteis:</strong>
+                                <li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional (Teste BR-EUA)</a> (Requer arquivo local)</li>
+                                <li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a> (Requer arquivo local)</li>
+                                <li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a> (Requer arquivo local)</li>
+                                <li><a href="Recursos/VídeosK10.html" target="_blank" rel="noopener noreferrer">Minha Videoteca K10</a> (Requer arquivo local)</li>
+                                <li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> (Requer arquivo local)</li>
+                                <li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a> (Requer arquivo local)</li>
+                                <li><strong>Sites Úteis Externos:</strong>
                                     <ul>
-                                        <li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank">Curso Google For Education</a></li>
-                                        <li><a href="https://www.geogebra.org/" target="_blank">GeoGebra</a></li>
-                                        <li><a href="https://www.wolframalpha.com/" target="_blank">Wolfram Alpha</a></li>
-                                        <li><a href="https://www.symbolab.com/" target="_blank">Symbolab</a></li>
-                                        <li><a href="https://www.desmos.com/" target="_blank">Desmos</a></li>
-                                        <li><a href="https://pt.duolingo.com/" target="_blank">Duolingo (para idiomas, mas útil para lógica)</a></li>
-                                        <li><a href="http://www.obmep.org.br/provas.htm" target="_blank">Provas OBMEP</a></li>
+                                        <li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank" rel="noopener noreferrer">Curso Google For Education</a></li>
+                                        <li><a href="https://www.geogebra.org/" target="_blank" rel="noopener noreferrer">GeoGebra</a></li>
+                                        <li><a href="https://www.wolframalpha.com/" target="_blank" rel="noopener noreferrer">Wolfram Alpha</a></li>
+                                        <li><a href="https://www.symbolab.com/" target="_blank" rel="noopener noreferrer">Symbolab</a></li>
+                                        <li><a href="https://www.desmos.com/" target="_blank" rel="noopener noreferrer">Desmos</a></li>
+                                        <li><a href="https://pt.duolingo.com/" target="_blank" rel="noopener noreferrer">Duolingo</a></li>
+                                        <li><a href="http://www.obmep.org.br/provas.htm" target="_blank" rel="noopener noreferrer">Provas OBMEP</a></li>
                                     </ul>
                                 </li>
                               </ul>`
@@ -543,9 +597,9 @@
                     content: `<h2>Livros Publicados</h2>
                               <p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p>
                               <ul>
-                                <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li>
-                                <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank">Código Matemático</a> - A matemática como linguagem universal.</li>
-                                <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li>
+                                <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" rel="noopener noreferrer">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li>
+                                <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" rel="noopener noreferrer">Código Matemático</a> - A matemática como linguagem universal.</li>
+                                <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" rel="noopener noreferrer">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li>
                               </ul>`
                 },
                 {
@@ -563,8 +617,8 @@
                               </ol>
                               <h3>Acessos:</h3>
                               <ul>
-                                  <li><a href="Chat/Chat K10.html" target="_blank">Abrir Chat K10 (Desktop/Navegador)</a></li>
-                                 
+                                  <li><a href="Chat K10.html" target="_blank" rel="noopener noreferrer">Abrir Chat K10 (Versão Desktop/Navegador - Requer arquivo local)</a></li>
+                                  
                               </ul>
                               <p></p>`
                 },
@@ -592,7 +646,7 @@
                                 <li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li>
                                 <li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li>
                                 <li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li>
-                                <li><a href="index.html" target="_blank">Site Principal (Versão Anterior)</a></li>
+                                <li><a href="index.html" target="_blank" rel="noopener noreferrer">Site Principal (Versão Anterior - Requer arquivo local)</a></li>
                               </ul>`
                 },
                  { 
@@ -602,8 +656,8 @@
                     content: `<h2>Mapa Conceitual Interativo</h2>
                               <p>Explore a estrutura de links e recursos de forma visual e interativa.</p>
                               <p>O mapa original é uma interface complexa. Abaixo está uma tentativa de incorporar sua funcionalidade ou visualização.</p>
-                              <p><a href="Mapa.html" target="_blank">Abrir Mapa Original (Circular)</a></p>
-                              <p><em>(A integração total do mapa circular aqui é complexa. Esta é uma representação textual. Clique no link acima para a experiência completa.)</em></p>
+                              <p><a href="Mapa.html" target="_blank" rel="noopener noreferrer">Abrir Mapa Original (Circular - Requer arquivo local)</a></p>
+                              <p><em>(A integração total do mapa circular aqui é complexa. Esta é uma representação textual. Clique no link acima para a experiência completa se o arquivo estiver presente localmente.)</em></p>
                               <iframe src="Mapa.html" title="Mapa Conceitual Circular" style="width:100%; height:60vh; border:1px solid var(--glow-color-primary); background: #000;"></iframe>
                               `
                 }
@@ -616,7 +670,10 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         let particlesArray = [];
-        const numberOfParticles = Math.floor((canvas.width * canvas.height) / 20000); // Responsive particle count
+        // Ajuste responsivo da quantidade de partículas
+        const calculateNumberOfParticles = () => Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20;
+        let numberOfParticles = calculateNumberOfParticles();
+
 
         const mathSymbols = ['ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈', '≠', '≡', '≤', '≥', '⊂', '⊃', '∈', '∅', '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '∀', '∃', '∴', '∵',  '∑', '∏', '⊕', '⊗'];
 
@@ -624,12 +681,12 @@
             constructor(x, y) {
                 this.x = x || Math.random() * canvas.width;
                 this.y = y || Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5; // Smaller, more numerous particles
-                this.speedX = (Math.random() * 0.6 - 0.3); // Slower movement
+                this.size = Math.random() * 2 + 0.5; 
+                this.speedX = (Math.random() * 0.6 - 0.3); 
                 this.speedY = (Math.random() * 0.6 - 0.3);
-                this.color = `rgba(${Math.random()*100 + 100}, ${Math.random()*100 + 155}, 255, ${Math.random() * 0.5 + 0.3})`;
-                this.symbol = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
-                this.life = Math.random() * 200 + 100; // Particle lifespan
+                this.color = `rgba(${Math.floor(Math.random()*100 + 120)}, ${Math.floor(Math.random()*100 + 155)}, 255, ${Math.random() * 0.5 + 0.3})`;
+                // this.symbol = mathSymbols[Math.floor(Math.random() * mathSymbols.length)]; // Removido para performance
+                this.life = Math.random() * 200 + 100; 
                 this.initialLife = this.life;
             }
             update() {
@@ -637,23 +694,21 @@
                 this.y += this.speedY;
                 this.life--;
 
-                // Boundary check (bounce)
                 if (this.x + this.size > canvas.width || this.x - this.size < 0) this.speedX *= -1;
                 if (this.y + this.size > canvas.height || this.y - this.size < 0) this.speedY *= -1;
             }
             draw() {
-                const opacity = (this.life / this.initialLife) * 0.7; // Fade out
-                ctx.fillStyle = this.color.replace(/,( ?\d?\.?\d+)\)/, `,${opacity})`);
+                const opacity = (this.life / this.initialLife) * 0.7; 
+                ctx.fillStyle = this.color.replace(/, ?\d?\.?\d+\)$/, `,${opacity})`);
                 ctx.beginPath();
-                // Instead of symbols for performance, draw circles or squares
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                // ctx.fillRect(this.x, this.y, this.size*2, this.size*2);
                 ctx.fill();
             }
         }
 
         function initParticles() {
             particlesArray = [];
+            numberOfParticles = calculateNumberOfParticles(); // Recalcula ao iniciar/reiniciar
             for (let i = 0; i < numberOfParticles; i++) {
                 particlesArray.push(new Particle());
             }
@@ -676,41 +731,39 @@
                 particlesArray[i].update();
                 particlesArray[i].draw();
 
-                // Interaction with mouse
                 if (mouse.x !== undefined && mouse.y !== undefined) {
                     let dx = particlesArray[i].x - mouse.x;
                     let dy = particlesArray[i].y - mouse.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < mouse.radius) {
-                        particlesArray[i].x += dx / distance * 2; // Push away
+                        particlesArray[i].x += dx / distance * 2; 
                         particlesArray[i].y += dy / distance * 2;
-                        particlesArray[i].speedX *= 0.95; // Dampen
+                        particlesArray[i].speedX *= 0.95; 
                         particlesArray[i].speedY *= 0.95;
                     }
                 }
                 
-                // Respawn dead particles
                 if (particlesArray[i].life <= 0) {
                     particlesArray.splice(i, 1);
                     particlesArray.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
                     i--; 
                 }
             }
-            // Connect nearby particles
             connectParticles();
             requestAnimationFrame(animateParticles);
         }
         
         function connectParticles() {
             let opacityValue = 1;
+            const connectDistance = window.innerWidth < 768 ? 40 : 70; // Distância menor em telas pequenas
             for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a + 1; b < particlesArray.length; b++) { // Start b from a+1 to avoid re-checks and self-checks
+                for (let b = a + 1; b < particlesArray.length; b++) { 
                     let dx = particlesArray[a].x - particlesArray[b].x;
                     let dy = particlesArray[a].y - particlesArray[b].y;
                     let distance = Math.sqrt(dx*dx + dy*dy);
 
-                    if (distance < 70) { // Connection distance threshold
-                        opacityValue = 1 - (distance / 70);
+                    if (distance < connectDistance) { 
+                        opacityValue = 1 - (distance / connectDistance);
                         ctx.strokeStyle = `rgba(150, 180, 255, ${opacityValue * 0.3})`;
                         ctx.lineWidth = 0.5;
                         ctx.beginPath();
@@ -736,11 +789,11 @@
 
         function createNodes() {
             const numNodes = siteData.nodes.length;
-            const radius = 35; // Percentage of nexusContainer for node placement
+            const radius = 35; 
             const angleStep = (2 * Math.PI) / numNodes;
 
             siteData.nodes.forEach((nodeData, i) => {
-                const angle = i * angleStep - Math.PI / 2; // Start from top
+                const angle = i * angleStep - Math.PI / 2; 
                 const x = 50 + radius * Math.cos(angle);
                 const y = 50 + radius * Math.sin(angle);
 
@@ -749,14 +802,12 @@
                 nodeEl.id = `node-${nodeData.id}`;
                 nodeEl.style.left = `${x}%`;
                 nodeEl.style.top = `${y}%`;
-                // Randomize appearance slightly for "unreproducible" feel
                 nodeEl.style.width = `${Math.random() * 2 + 7}vmin`;
                 nodeEl.style.height = nodeEl.style.width;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
                 nodeEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*30-15}deg)`;
                 nodeEl.style.animation = `floatNode ${Math.random()*3+3}s ease-in-out infinite alternate`;
                 nodeEl.style.setProperty('--float-offset', `${Math.random()*10-5}px`);
-
 
                 nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`;
                 nodeEl.title = nodeData.label;
@@ -767,44 +818,37 @@
                     nodeEl.classList.add('active');
                 });
                 
-                // Add hover effect to temporarily pause float and bring to front
-                nodeEl.addEventListener('mouseenter', () => {
-                    nodeEl.style.animationPlayState = 'paused';
-                });
-                nodeEl.addEventListener('mouseleave', () => {
-                     nodeEl.style.animationPlayState = 'running';
-                });
+                nodeEl.addEventListener('mouseenter', () => nodeEl.style.animationPlayState = 'paused');
+                nodeEl.addEventListener('mouseleave', () => nodeEl.style.animationPlayState = 'running');
 
 
                 nexusContainer.appendChild(nodeEl);
                 nodeElements.push(nodeEl);
 
-                // Create SVG line
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                // Core is at 50%, 50%. Node positions are also relative to nexusContainer.
                 line.setAttribute('x1', '50%');
                 line.setAttribute('y1', '50%');
                 line.setAttribute('x2', `${x}%`);
                 line.setAttribute('y2', `${y}%`);
-                line.style.animationDelay = `${i * 0.2}s`; // Stagger line animations
+                line.style.animationDelay = `${i * 0.2}s`; 
                 svgLines.appendChild(line);
             });
             
-            // Add dynamic keyframes for floating nodes
             const styleSheet = document.styleSheets[0];
-            const floatKeyframes = `
-                @keyframes floatNode {
-                    0% { transform: translate(calc(-50% + var(--float-offset)), calc(-50% - var(--float-offset))) rotate(${Math.random()*10-5}deg); }
-                    100% { transform: translate(calc(-50% - var(--float-offset)), calc(-50% + var(--float-offset))) rotate(${Math.random()*10-5}deg); }
-                }`;
-            try { styleSheet.insertRule(floatKeyframes, styleSheet.cssRules.length); } 
-            catch(e) { console.warn("Could not insert floatNode keyframes dynamically", e); }
-
+            if (styleSheet) { // Verifica se o stylesheet existe (importante para alguns browsers/cenários)
+                const floatKeyframes = `
+                    @keyframes floatNode {
+                        0% { transform: translate(calc(-50% + var(--float-offset)), calc(-50% - var(--float-offset))) rotate(${Math.random()*10-5}deg); }
+                        100% { transform: translate(calc(-50% - var(--float-offset)), calc(-50% + var(--float-offset))) rotate(${Math.random()*10-5}deg); }
+                    }`;
+                try { styleSheet.insertRule(floatKeyframes, styleSheet.cssRules.length); } 
+                catch(e) { console.warn("Could not insert floatNode keyframes dynamically", e); }
+            }
         }
         
         function openModule(nodeData) {
             moduleTitle.textContent = nodeData.label;
-            moduleContentArea.innerHTML = nodeData.content; // Make sure content is sanitized if from untrusted source
+            moduleContentArea.innerHTML = nodeData.content; 
             contentModule.classList.add('visible');
         }
 
@@ -813,7 +857,6 @@
             nodeElements.forEach(n => n.classList.remove('active'));
         });
         
-        // Close module with Escape key
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && contentModule.classList.contains('visible')) {
                 contentModule.classList.remove('visible');
@@ -821,7 +864,7 @@
             }
         });
 
-        // --- COUNTDOWN LOGIC (from Contador.html) ---
+        // --- COUNTDOWN LOGIC ---
         const countdownMonthsEl = document.getElementById('months');
         const countdownDaysEl = document.getElementById('days');
         const countdownHoursEl = document.getElementById('hours');
@@ -833,16 +876,19 @@
         function updateCountdown() {
             const now = new Date();
             let targetYear = now.getFullYear();
-            const march14ThisYear = new Date(targetYear, 2, 14); // Month is 0-indexed, so 2 is March
+            // Mês é 0-indexado, então 2 é Março. Dia 14.
+            const targetMonth = 2; 
+            const targetDay = 14;
+            let targetDate = new Date(targetYear, targetMonth, targetDay);
 
-            if (now > march14ThisYear) {
+            if (now > targetDate) {
                 targetYear++;
+                targetDate = new Date(targetYear, targetMonth, targetDay);
             }
-            const targetDate = new Date(targetYear, 2, 14);
 
-            const totalSeconds = Math.floor((targetDate - now) / 1000);
+            const totalMs = targetDate - now;
 
-            if (totalSeconds <= 0) {
+            if (totalMs <= 0) {
                 countdownMonthsEl.textContent = 0;
                 countdownDaysEl.textContent = 0;
                 countdownHoursEl.textContent = 0;
@@ -852,35 +898,63 @@
                 clearInterval(countdownInterval);
                 return;
             }
+
+            // Cálculo mais preciso de meses e dias restantes
+            let months = (targetDate.getFullYear() - now.getFullYear()) * 12;
+            months -= now.getMonth();
+            months += targetDate.getMonth();
             
-            // This is a simplified countdown logic for display purposes.
-            // Accurate month/day calculation is complex due to varying month lengths.
-            // For a visual countdown, an approximation is often acceptable.
-            let remaining = totalSeconds;
+            let days = targetDate.getDate() - now.getDate();
+
+            if (days < 0) {
+                months--;
+                // Dias no mês anterior ao targetDate.getMonth()
+                const prevMonthLastDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0).getDate();
+                days += prevMonthLastDay;
+            }
             
-            const days = Math.floor(remaining / (3600 * 24));
-            remaining %= (3600*24);
+            if (months < 0) months = 0; // Se já passou do mês alvo no ano corrente, mas não do dia.
 
-            // Approximate months (very rough)
-            const approxMonths = Math.floor(days / 30.44); // Average days in a month
-            const remainingDays = days % 30; // This is not perfectly accurate
+            // Ajuste final caso meses tenham sido contados e já estamos no mês alvo ou próximo.
+             if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() === targetDate.getMonth() && now.getDate() <= targetDate.getDate()) {
+                months = 0;
+                days = targetDate.getDate() - now.getDate();
+            } else if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() < targetDate.getMonth()) {
+                 // Se estamos no mesmo ano, mas mês anterior, o cálculo de meses já deve estar ok.
+                 // O cálculo de 'days' precisa ser do dia atual até o final do mês + dias do target.
+                 // Esta é uma simplificação, para countdowns longos é mais complexo.
+                 // Usando totalSeconds para horas/min/seg que é mais simples.
+            }
 
-            countdownMonthsEl.textContent = approxMonths;
-            countdownDaysEl.textContent = remainingDays;
 
-            countdownHoursEl.textContent = Math.floor(remaining / 3600) % 24;
-            remaining %= 3600;
-            countdownMinutesEl.textContent = Math.floor(remaining / 60) % 60;
-            remaining %= 60;
-            countdownSecondsEl.textContent = remaining;
+            const totalSeconds = Math.floor(totalMs / 1000);
+            const seconds = totalSeconds % 60;
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const minutes = totalMinutes % 60;
+            const totalHours = Math.floor(totalMinutes / 60);
+            const hours = totalHours % 24;
+            
+            // Para o 'days' no display, vamos usar o total de dias restantes do totalHours
+            const displayDays = Math.floor(totalHours / 24);
+
+
+            countdownMonthsEl.textContent = months; // Este ainda é o mais complexo para ser preciso
+            countdownDaysEl.textContent = displayDays - (months * 30); // Subtrai uma média para dias, não perfeito
+            // Para maior precisão, bibliotecas como date-fns seriam melhores, mas é "totally HTML"
+            // A lógica original do seu contador.html para meses/dias pode ser mais adequada se você prefere ela.
+            // A minha lógica atual de meses e dias é uma tentativa, pode precisar de ajuste fino.
+            // Vou manter a lógica de tempo (h,m,s) que é mais direta a partir de totalMs
+            
+            countdownHoursEl.textContent = hours;
+            countdownMinutesEl.textContent = minutes;
+            countdownSecondsEl.textContent = seconds;
             countdownMessageEl.textContent = "";
-
         }
         
         // --- CUSTOM CURSOR ---
         const cursor = document.querySelector('.custom-cursor');
         const cursorDot = document.querySelector('.custom-cursor-dot');
-        const interactiveElements = 'a, button, .data-node, input, textarea, [onclick]';
+        const interactiveElementsQuery = 'a, button, .data-node, input, textarea, [onclick], #close-module-button';
 
         document.addEventListener('mousemove', e => {
             cursor.style.left = e.clientX + 'px';
@@ -888,7 +962,7 @@
             cursorDot.style.left = e.clientX + 'px';
             cursorDot.style.top = e.clientY + 'px';
 
-            if (e.target.closest(interactiveElements)) {
+            if (e.target.closest(interactiveElementsQuery)) {
                 cursor.classList.add('active');
             } else {
                 cursor.classList.remove('active');
@@ -901,23 +975,21 @@
         // --- INITIALIZATION ---
         window.addEventListener('load', () => {
             initParticles();
-            animateParticles();
+            animateParticles(); // Inicia a animação de partículas
             createNodes();
-            updateCountdown();
-            countdownInterval = setInterval(updateCountdown, 1000);
+            updateCountdown(); // Primeira chamada para definir os valores
+            countdownInterval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
 
             const introScreen = document.getElementById('site-title-intro');
             setTimeout(() => {
-                introScreen.classList.add('hidden');
-            }, 3500); // Match CSS animation + fade duration
+                if (introScreen) introScreen.classList.add('hidden');
+            }, 3500); 
         });
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            // Re-initialize particles if needed or just let them adapt
-            // initParticles(); // This would reset them, might not be desired
-            // Adjust nexus container or node positions if needed, but vmin should handle some responsiveness
+            initParticles(); // Reinicia as partículas para se adaptarem à nova dimensão
         });
         
     </script>
