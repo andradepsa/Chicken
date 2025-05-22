@@ -17,8 +17,8 @@
             --node-bg: rgba(10, 20, 50, 0.8);
             --node-border: var(--glow-color-primary);
             --font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
-            --cursor-active-bg: rgba(0, 255, 255, 0.2); 
-            --glow-color-primary-hsl: 180, 100%, 50%; 
+            --cursor-active-bg: rgba(0, 255, 255, 0.2);
+            --glow-color-primary-hsl: 180, 100%, 50%;
         }
 
         html, body {
@@ -59,9 +59,9 @@
 
         .custom-cursor.active {
             transform: translate(-50%, -50%) scale(1.5);
-            background-color: var(--cursor-active-bg); 
+            background-color: var(--cursor-active-bg);
         }
-        
+
         .custom-cursor-dot {
             position: fixed;
             width: 4px;
@@ -94,7 +94,7 @@
             background-color: rgba(0,0,0,0.5);
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            box-shadow: 
+            box-shadow:
                 0 0 10px var(--glow-color-primary),
                 0 0 20px var(--glow-color-primary),
                 0 0 30px var(--glow-color-secondary),
@@ -109,19 +109,19 @@
             cursor: pointer;
             transition: box-shadow 0.3s ease, border-color 0.3s ease;
         }
-        
+
         #central-core::before, #central-core::after {
             content: '';
             position: absolute;
-            left: 50%; 
-            top: 50%; 
+            left: 50%;
+            top: 50%;
             width: 120%;
             height: 120%;
             border-radius: 50%;
             border: 1px dashed var(--glow-color-secondary);
             animation: rotatePseudoCore 20s linear infinite reverse;
             opacity: 0.5;
-            transform: translate(-50%, -50%) rotate(0deg); 
+            transform: translate(-50%, -50%) rotate(0deg);
             transition: border-color 0.3s ease;
         }
         #central-core::after {
@@ -132,7 +132,7 @@
             animation-duration: 30s;
             opacity: 0.3;
         }
-        
+
         @keyframes rotatePseudoCore {
             from { transform: translate(-50%, -50%) rotate(0deg); }
             to { transform: translate(-50%, -50%) rotate(360deg); }
@@ -147,7 +147,7 @@
             filter: drop-shadow(0 0 5px var(--glow-color-primary));
             transition: filter 0.3s ease;
         }
-        
+
         @keyframes pulseCore {
             0% { box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary), 0 0 30px var(--glow-color-secondary), 0 0 40px var(--glow-color-secondary) inset; transform: translate(-50%, -50%) scale(1); }
             50% { box-shadow: 0 0 15px var(--glow-color-primary), 0 0 30px var(--glow-color-primary), 0 0 45px var(--glow-color-tertiary), 0 0 60px var(--glow-color-tertiary) inset; transform: translate(-50%, -50%) scale(1.1); }
@@ -170,16 +170,16 @@
             color: var(--text-color);
             z-index: 3;
             transform: translate(-50%, -50%) rotate(var(--initial-rotation, 0deg));
-            animation: floatNode 6s ease-in-out infinite alternate; 
+            animation: floatNode 6s ease-in-out infinite alternate;
         }
-        
+
         @keyframes floatNode {
             0% { transform: translate(calc(-50% + var(--float-offset-x, 0px)), calc(-50% - var(--float-offset-y, 0px))) rotate(var(--initial-rotation, 0deg)); }
             100% { transform: translate(calc(-50% - var(--float-offset-x, 0px)), calc(-50% + var(--float-offset-y, 0px))) rotate(var(--initial-rotation, 0deg)); }
         }
 
         .data-node:hover, .data-node.active {
-            transform: scale(1.2) rotate(var(--initial-rotation, 0deg)); 
+            transform: scale(1.2) rotate(var(--initial-rotation, 0deg));
             box-shadow: 0 0 15px var(--glow-color-secondary), 0 0 30px var(--glow-color-secondary) inset, 0 0 10px var(--glow-color-primary);
             opacity: 1;
             z-index: 10;
@@ -189,7 +189,7 @@
             font-size: 3vmin;
             margin-bottom: 0.5vmin;
             display: block;
-            text-shadow: 0 0 5px currentColor; 
+            text-shadow: 0 0 5px currentColor;
         }
 
         #connection-lines-svg {
@@ -201,14 +201,14 @@
             pointer-events: none;
             z-index: 2;
         }
-        
+
         #connection-lines-svg line {
-            stroke: var(--line-color); 
+            stroke: var(--line-color);
             stroke-width: 1;
             animation: pulseLine 3s infinite alternate;
             transition: stroke 0.3s ease;
         }
-        @keyframes pulseLine { 
+        @keyframes pulseLine {
             from { stroke-opacity: 0.2; stroke-width: 0.5; }
             to { stroke-opacity: 0.6; stroke-width: 1.5; }
         }
@@ -222,7 +222,7 @@
             height: 70vh;
             max-width: 1000px;
             max-height: 700px;
-            background-color: rgba(5, 10, 30, 0.95); 
+            background-color: rgba(5, 10, 30, 0.95);
             border: 2px solid var(--glow-color-secondary);
             border-radius: 10px;
             box-shadow: 0 0 30px var(--glow-color-secondary), 0 0 60px var(--glow-color-primary) inset;
@@ -242,7 +242,7 @@
             transform: translate(-50%, -50%) scale(1);
             transition: opacity 0.5s ease, visibility 0s linear 0s, transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
         }
-        
+
         #content-display-module h2 {
             font-size: 2.5rem;
             text-align: center;
@@ -263,7 +263,7 @@
             color: var(--text-color);
             transition: color 0.3s ease;
         }
-        
+
         #module-content-area::-webkit-scrollbar { width: 8px; }
         #module-content-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
         #module-content-area::-webkit-scrollbar-thumb { background: var(--glow-color-primary); border-radius: 4px; box-shadow: 0 0 5px var(--glow-color-primary) inset; transition: background-color 0.3s ease, box-shadow 0.3s ease; }
@@ -281,9 +281,9 @@
             transition: color 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s ease; box-shadow: 0 0 5px var(--glow-color-secondary);
         }
         #close-module-button:hover { color: var(--text-color); border-color: var(--text-color); transform: rotate(90deg) scale(1.1); }
-        
+
         #countdown-widget {
-            position: fixed; bottom: 10px; right: 10px; background-color: var(--node-bg); 
+            position: fixed; bottom: 10px; right: 10px; background-color: var(--node-bg);
             border: 1px solid var(--glow-color-primary); border-radius: 8px; padding: 10px 15px; z-index: 50; text-align: center;
             box-shadow: 0 0 15px var(--glow-color-primary); color: var(--text-color); font-size: 0.8rem;
             transition: opacity 0.3s ease-out, visibility 0.3s ease-out, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
@@ -303,7 +303,7 @@
         @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100vh; } }
 
         #site-title-intro {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color-start); 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color-start);
             z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column;
             opacity: 1; transition: opacity 1s ease-out 3s, background-color 0.3s ease;
         }
@@ -311,15 +311,15 @@
         .intro-text {
             font-size: 4vw; letter-spacing: 0.5vw; text-transform: uppercase; opacity: 0; animation: fadeInGlow 2s forwards;
             text-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary);
-            transition: text-shadow 0.3s ease, color 0.3s ease; 
+            transition: text-shadow 0.3s ease, color 0.3s ease;
         }
         .intro-text:nth-child(1) { animation-delay: 0.5s; color: var(--text-color); }
-        .intro-text:nth-child(2) { 
-            font-size: 2vw; letter-spacing: 0.2vw; animation-delay: 1.5s; 
+        .intro-text:nth-child(2) {
+            font-size: 2vw; letter-spacing: 0.2vw; animation-delay: 1.5s;
             color: var(--glow-color-secondary); text-shadow: 0 0 10px var(--glow-color-secondary);
         }
         @keyframes fadeInGlow { 0% { opacity: 0; transform: translateY(20px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-        
+
         #module-content-area iframe { width: 100%; height: 50vh; border: 1px solid var(--glow-color-primary); border-radius: 5px; background-color: #000; transition: border-color 0.3s ease; }
 
         @media (max-width: 768px) {
@@ -347,7 +347,7 @@
 
     <div class="custom-cursor"></div>
     <div class="custom-cursor-dot"></div>
-    
+
     <canvas id="particle-canvas"></canvas>
     <div id="scanlines"></div>
 
@@ -424,7 +424,7 @@
                     <li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional </a> </li>
                     <li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a></li>
                     <li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a></li>
-                   
+
                     <li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> </li>
                     <li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a></li>
                     <li><strong>Sites Úteis Externos:</strong>
@@ -506,7 +506,7 @@
                 </ul>
             `
         },
-        
+
     ]
         };
 
@@ -519,11 +519,11 @@
             for (let i = 0; i < NUM_THEMES; i++) {
                 const baseHue = Math.random() * 360;
                 const mainSat = 70 + Math.random() * 30;
-                const mainLight = 50 + Math.random() * 15; 
+                const mainLight = 50 + Math.random() * 15;
                 const isDarkBase = Math.random() > 0.15;
                 const bgColorHue = (baseHue + Math.random() * 60 - 30 + 360) % 360;
-                const bgSat = 5 + Math.random() * 25; 
-                const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360; 
+                const bgSat = 5 + Math.random() * 25;
+                const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360;
                 const textSat = 10 + Math.random() * 40;
 
                 themes.push({
@@ -554,7 +554,7 @@
             rootStyle.setProperty('--node-border', theme['--glow-color-primary']);
 
             const primaryGlow = theme['--glow-color-primary'];
-            let primaryGlowH = 180, primaryGlowS = 100, primaryGlowL = 50; 
+            let primaryGlowH = 180, primaryGlowS = 100, primaryGlowL = 50;
 
             if (primaryGlow.startsWith('hsl')) {
                 const parts = primaryGlow.match(/[\d.]+/g);
@@ -564,7 +564,7 @@
                     primaryGlowL = parseFloat(parts[2]);
                     rootStyle.setProperty('--cursor-active-bg', `hsla(${parts[0]}, ${parts[1]}%, ${parts[2]}%, 0.2)`);
                 }
-            } else { 
+            } else {
                 rootStyle.setProperty('--cursor-active-bg', `rgba(0, 255, 255, 0.2)`);
             }
             rootStyle.setProperty('--glow-color-primary-hsl', `${primaryGlowH}, ${primaryGlowS}%, ${primaryGlowL}%`);
@@ -584,7 +584,7 @@
         const ctx = canvas.getContext('2d');
         let particlesArray = [];
         const calculateNumberOfParticles = () => Math.max(10, Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20);
-        let numberOfParticles; 
+        let numberOfParticles;
 
         class Particle {
             constructor(x, y) {
@@ -616,26 +616,26 @@
                     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * lifeOpacityFactor).toFixed(3)})`;
                 } else if (this.themedColorBase.startsWith('hsla') && colorParts && colorParts.length === 4) {
                     ctx.fillStyle = `hsla(${colorParts[0]}, ${colorParts[1]}%, ${colorParts[2]}%, ${(parseFloat(colorParts[3]) * lifeOpacityFactor).toFixed(3)})`;
-                } else { 
-                    ctx.globalAlpha = lifeOpacityFactor; 
+                } else {
+                    ctx.globalAlpha = lifeOpacityFactor;
                     ctx.fillStyle = this.themedColorBase;
                 }
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
-                if (ctx.globalAlpha !== 1.0) { 
-                    ctx.globalAlpha = 1.0; 
+                if (ctx.globalAlpha !== 1.0) {
+                    ctx.globalAlpha = 1.0;
                 }
             }
         }
 
         function initParticles() {
-            canvas.width = window.innerWidth; 
+            canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            if (canvas.width <= 0 || canvas.height <= 0) return; 
+            if (canvas.width <= 0 || canvas.height <= 0) return;
 
             numberOfParticles = calculateNumberOfParticles();
-            particlesArray = []; 
+            particlesArray = [];
             for (let i = 0; i < numberOfParticles; i++) {
                 particlesArray.push(new Particle());
             }
@@ -653,14 +653,14 @@
 
         function animateParticles() {
             if (!ctx || !canvas || canvas.width <= 0 || canvas.height <= 0) {
-                requestAnimationFrame(animateParticles);
+                animationFrameId = requestAnimationFrame(animateParticles); // Store ID
                 return;
             }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < particlesArray.length; i++) {
-                const particle = particlesArray[i]; 
-                if (particle) { 
+                const particle = particlesArray[i];
+                if (particle) {
                     particle.update();
                     particle.draw();
 
@@ -681,7 +681,7 @@
             for (let i = particlesArray.length - 1; i >= 0; i--) {
                 if (particlesArray[i] && particlesArray[i].life <= 0) {
                     particlesArray[i] = new Particle(Math.random() * canvas.width, Math.random() * canvas.height);
-                } else if (!particlesArray[i]) { 
+                } else if (!particlesArray[i]) {
                     particlesArray[i] = new Particle(Math.random() * canvas.width, Math.random() * canvas.height);
                 }
             }
@@ -690,32 +690,30 @@
                 particlesArray.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
             }
             if (particlesArray.length > numberOfParticles) {
-                particlesArray.length = numberOfParticles; 
+                particlesArray.length = numberOfParticles;
             }
 
-            connectParticles(); 
-            requestAnimationFrame(animateParticles);
+            connectParticles();
+            animationFrameId = requestAnimationFrame(animateParticles); // Store ID
         }
-        
+
         function connectParticles() {
             if (!ctx || !canvas || canvas.width <= 0 || canvas.height <= 0 || !particlesArray) return;
 
             const themedLineColorBase = getComputedStyle(document.documentElement).getPropertyValue('--line-color').trim();
             const connectDistance = window.innerWidth < 768 ? 40 : 70;
-            const currentParticlesLength = particlesArray.length; 
+            const currentParticlesLength = particlesArray.length;
 
             for (let a = 0; a < currentParticlesLength; a++) {
                 const particleA = particlesArray[a];
-                if (!particleA) { 
-                    // console.warn(`connectParticles: particleA at index ${a} is undefined`);
+                if (!particleA) {
                     continue;
                 }
 
-                for (let b = a + 1; b < currentParticlesLength; b++) { 
+                for (let b = a + 1; b < currentParticlesLength; b++) {
                     const particleB = particlesArray[b];
-                    if (!particleB) { 
-                        // console.warn(`connectParticles: particleB at index ${b} is undefined`);
-                        continue; 
+                    if (!particleB) {
+                        continue;
                     }
 
                     let dx = particleA.x - particleB.x;
@@ -744,7 +742,7 @@
                         ctx.lineTo(particleB.x, particleB.y);
                         ctx.stroke();
                         if (ctx.globalAlpha !== 1.0 && !(themedLineColorBase.startsWith('rgba') || themedLineColorBase.startsWith('hsla'))) {
-                           ctx.globalAlpha = 1.0; 
+                           ctx.globalAlpha = 1.0;
                         }
                     }
                 }
@@ -762,22 +760,21 @@
         let nodeElements = [];
 
         function createNodes() {
-            if (!nexusContainer) return; 
+            if (!nexusContainer) return;
             const numNodes = siteData.nodes.length;
             const containerWidth = nexusContainer.clientWidth || nexusContainer.offsetWidth;
             const containerHeight = nexusContainer.clientHeight || nexusContainer.offsetHeight;
 
-            if (containerWidth === 0 || containerHeight === 0) { // Adicionado para evitar divisão por zero
-                // console.warn("Nexus container has no dimensions, deferring node creation.");
-                requestAnimationFrame(createNodes); // Tentar novamente no próximo frame
+            if (containerWidth === 0 || containerHeight === 0) {
+                requestAnimationFrame(createNodes);
                 return;
             }
 
-            const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7; 
+            const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7;
             const angleStep = (2 * Math.PI) / numNodes;
 
             siteData.nodes.forEach((nodeData, i) => {
-                const angle = i * angleStep - Math.PI / 2; 
+                const angle = i * angleStep - Math.PI / 2;
                 const xPercent = 50 + (radius / (containerWidth / 2) * 50) * Math.cos(angle);
                 const yPercent = 50 + (radius / (containerHeight / 2) * 50) * Math.sin(angle);
 
@@ -786,12 +783,12 @@
                 nodeEl.id = `node-${nodeData.id}`;
                 nodeEl.style.left = `${xPercent}%`;
                 nodeEl.style.top = `${yPercent}%`;
-                
-                const nodeSize = Math.random() * 2 + 7; 
+
+                const nodeSize = Math.random() * 2 + 7;
                 nodeEl.style.width = `${nodeSize}vmin`;
                 nodeEl.style.height = `${nodeSize}vmin`;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
-                
+
                 const randomRotation = Math.random()*30-15;
                 nodeEl.style.setProperty('--initial-rotation', `${randomRotation}deg`);
                 nodeEl.style.setProperty('--float-offset-x', `${Math.random()*10-5}px`);
@@ -810,21 +807,21 @@
                 nexusContainer.appendChild(nodeEl);
                 nodeElements.push(nodeEl);
 
-                if (svgLines) { // Verificação adicional
+                if (svgLines) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', '50%');
                     line.setAttribute('y1', '50%');
-                    line.setAttribute('x2', `${xPercent}%`); 
+                    line.setAttribute('x2', `${xPercent}%`);
                     line.setAttribute('y2', `${yPercent}%`);
-                    line.style.animationDelay = `${i * 0.2}s`; 
+                    line.style.animationDelay = `${i * 0.2}s`;
                     svgLines.appendChild(line);
                 }
             });
         }
-        
+
         function openModule(nodeData) {
             moduleTitle.textContent = nodeData.label;
-            moduleContentArea.innerHTML = nodeData.content; 
+            moduleContentArea.innerHTML = nodeData.content;
             contentModule.classList.add('visible');
         }
 
@@ -832,7 +829,7 @@
             contentModule.classList.remove('visible');
             nodeElements.forEach(n => n.classList.remove('active'));
         });
-        
+
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && contentModule.classList.contains('visible')) {
                 contentModule.classList.remove('visible');
@@ -849,30 +846,85 @@
         const countdownMessageEl = document.getElementById('countdown-message');
         let countdownInterval;
 
-        function updateCountdown() { 
-            const now = new Date(); let targetYear = now.getFullYear(); const targetMonth = 2; const targetDay = 14;
-            let targetDate = new Date(targetYear, targetMonth, targetDay);
-            if (now > targetDate) { targetYear++; targetDate = new Date(targetYear, targetMonth, targetDay); }
-            const totalMs = targetDate - now;
-            if (totalMs <= 0) {
-                countdownMonthsEl.textContent = 0; countdownDaysEl.textContent = 0; countdownHoursEl.textContent = 0;
-                countdownMinutesEl.textContent = 0; countdownSecondsEl.textContent = 0;
-                countdownMessageEl.textContent = "FELIZ DIA DO PI!"; clearInterval(countdownInterval); return;
-            }
-            let months = (targetDate.getFullYear() - now.getFullYear()) * 12; months -= now.getMonth(); months += targetDate.getMonth();
-            let days = targetDate.getDate() - now.getDate();
-            if (days < 0) { months--; const prevMonthLastDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0).getDate(); days += prevMonthLastDay; }
-            if (months < 0) months = 0;
-            if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() === targetDate.getMonth() && now.getDate() <= targetDate.getDate()) { months = 0; days = targetDate.getDate() - now.getDate(); }
-            const totalSeconds = Math.floor(totalMs / 1000); const seconds = totalSeconds % 60;
-            const totalMinutes = Math.floor(totalSeconds / 60); const minutes = totalMinutes % 60;
-            const totalHours = Math.floor(totalMinutes / 60); const hours = totalHours % 24;
-            const displayDays = Math.floor(totalHours / 24);
-            countdownMonthsEl.textContent = months; countdownDaysEl.textContent = displayDays - (months * 30); 
-            countdownHoursEl.textContent = hours; countdownMinutesEl.textContent = minutes; countdownSecondsEl.textContent = seconds;
-            countdownMessageEl.textContent = "";
+        // UPDATED FUNCTION (replaces the old one)
+        function updateCountdown() {
+          const now = new Date();
+
+          let targetYear = now.getFullYear();
+          // Mês 2 é Março (Janeiro é 0, Fevereiro é 1, Março é 2)
+          const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0);
+
+          let target = new Date(targetYear, 2, 14, 0, 0, 0);
+          if (now > march14ThisYear) {
+            targetYear++;
+            target.setFullYear(targetYear);
+          }
+
+          const totalMsToTarget = target - now;
+
+          if (totalMsToTarget <= 0) {
+            if(countdownMonthsEl) countdownMonthsEl.textContent = 0;
+            if(countdownDaysEl) countdownDaysEl.textContent = 0;
+            if(countdownHoursEl) countdownHoursEl.textContent = 0;
+            if(countdownMinutesEl) countdownMinutesEl.textContent = 0;
+            if(countdownSecondsEl) countdownSecondsEl.textContent = 0;
+            if(countdownMessageEl) countdownMessageEl.textContent = "FELIZ DIA DO PI!";
+            if (countdownInterval) clearInterval(countdownInterval);
+            return;
+          }
+
+          // Lógica de meses do Contador.html
+          let monthsDisplay = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+          if (now.getDate() > target.getDate()) {
+            monthsDisplay--;
+          }
+          if (monthsDisplay < 0) { // Garante que não seja negativo
+              monthsDisplay = 0;
+          }
+          
+          // Lógica de dias do Contador.html
+          // adjustedDate é uma data 'monthsDisplay' à frente de 'now', mas no mesmo dia do mês de 'now'.
+          let adjustedDateForDaysCalculation = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
+
+          // Se o cálculo de monthsDisplay foi tal que adjustedDateForDaysCalculation passou do target,
+          // significa que monthsDisplay estava um a mais.
+          // Ex: now = 30 Jan, target = 14 Fev.
+          // monthsDisplay inicial: (0)*12 + (1-0) = 1.
+          // now.getDate()(30) > target.getDate()(14) -> monthsDisplay = 0.
+          // adjustedDateForDaysCalculation = 30 Jan.
+          // Este if abaixo não será ativado.
+
+          // Ex: now = 1 Fev, target = 14 Mar.
+          // monthsDisplay inicial: (0)*12 + (2-1) = 1.
+          // now.getDate()(1) > target.getDate()(14) -> false. monthsDisplay = 1.
+          // adjustedDateForDaysCalculation = 1 Fev + 1 mes = 1 Mar.
+          // Este if abaixo não será ativado.
+
+          if (adjustedDateForDaysCalculation > target && monthsDisplay > 0) {
+             monthsDisplay--;
+             adjustedDateForDaysCalculation = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
+          }
+
+
+          const diffMsForDays = target - adjustedDateForDaysCalculation;
+          // O +2 é da lógica original do Contador.html
+          const daysDisplay = Math.floor(diffMsForDays / (1000 * 60 * 60 * 24)) + 2;
+
+
+          // Lógica de H, M, S do Contador.html (baseada na diferença total de milissegundos)
+          const hoursDisplay = Math.floor((totalMsToTarget / (1000 * 60 * 60)) % 24);
+          const minutesDisplay = Math.floor((totalMsToTarget / (1000 * 60)) % 60);
+          const secondsDisplay = Math.floor((totalMsToTarget / 1000) % 60);
+
+          if(countdownMonthsEl) countdownMonthsEl.textContent = monthsDisplay;
+          if(countdownDaysEl) countdownDaysEl.textContent = daysDisplay;
+          if(countdownHoursEl) countdownHoursEl.textContent = hoursDisplay;
+          if(countdownMinutesEl) countdownMinutesEl.textContent = minutesDisplay;
+          if(countdownSecondsEl) countdownSecondsEl.textContent = secondsDisplay;
+          if(countdownMessageEl) countdownMessageEl.textContent = "";
         }
-        
+
+
         // --- CUSTOM CURSOR ---
         const cursor = document.querySelector('.custom-cursor');
         const cursorDot = document.querySelector('.custom-cursor-dot');
@@ -883,7 +935,7 @@
             if (cursor) cursor.style.top = e.clientY + 'px';
             if (cursorDot) cursorDot.style.left = e.clientX + 'px';
             if (cursorDot) cursorDot.style.top = e.clientY + 'px';
-            
+
             if (cursor && e.target.closest(interactiveElementsQuery)) {
                 cursor.classList.add('active');
             } else if (cursor) {
@@ -898,19 +950,19 @@
         });
 
         // --- INITIALIZATION ---
-        let animationFrameId = null; // Para controlar o requestAnimationFrame
+        let animationFrameId = null;
 
         function startAnimationLoop() {
-            if (animationFrameId === null) { // Iniciar apenas se não estiver rodando
-                animateParticles();
+            if (animationFrameId === null) {
+                animationFrameId = requestAnimationFrame(animateParticles); // Armazenar o ID aqui
             }
         }
-        function stopAnimationLoop() {
-            if (animationFrameId !== null) {
-                cancelAnimationFrame(animationFrameId);
-                animationFrameId = null;
-            }
-        }
+        // function stopAnimationLoop() { // Não parece ser explicitamente usada para parar/iniciar com frequência
+        //     if (animationFrameId !== null) {
+        //         cancelAnimationFrame(animationFrameId);
+        //         animationFrameId = null;
+        //     }
+        // }
 
 
         window.addEventListener('load', () => {
@@ -918,59 +970,59 @@
             canvas.height = window.innerHeight;
 
             generateThemes();
-            applyTheme(currentThemeIndex); 
+            applyTheme(currentThemeIndex);
 
             if (canvas.width > 0 && canvas.height > 0) {
-                initParticles(); 
-                startAnimationLoop(); // Inicia o loop de animação
+                initParticles();
+                startAnimationLoop();
             }
-            
-            requestAnimationFrame(() => { // Defer node creation
+
+            requestAnimationFrame(() => {
                  createNodes();
             });
 
-            if (typeof updateCountdown === 'function') updateCountdown();
-            if (typeof setInterval === 'function') countdownInterval = setInterval(updateCountdown, 1000);
+            if (typeof updateCountdown === 'function') {
+                 updateCountdown(); // Chamada inicial
+                 if (typeof setInterval === 'function') { // Verifica se setInterval está disponível
+                    countdownInterval = setInterval(updateCountdown, 1000);
+                 }
+            }
+
 
             const introScreen = document.getElementById('site-title-intro');
             setTimeout(() => {
                 if (introScreen) introScreen.classList.add('hidden');
-            }, 3500); 
+            }, 3500);
 
-            if (centralCoreElement) { 
+            if (centralCoreElement) {
                 centralCoreElement.addEventListener('click', nextTheme);
             }
         });
 
         window.addEventListener('resize', () => {
-            // stopAnimationLoop(); // Parar o loop antigo antes de reconfigurar
-
+            // Não é necessário parar explicitamente o loop se animateParticles já lida com o novo tamanho
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
-            if (canvas.width > 0 && canvas.height > 0) {
-                initParticles(); 
-                // A animação já estará rodando ou será reiniciada por startAnimationLoop se necessário.
-                // Se o animateParticles já faz requestAnimationFrame(animateParticles), 
-                // ele se ajustará. A questão é se o loop principal foi parado.
-                // Para simplificar, vamos garantir que ele reinicie se necessário.
-                if (animationFrameId === null) startAnimationLoop();
 
+            if (canvas.width > 0 && canvas.height > 0) {
+                initParticles();
+                 if (animationFrameId === null) startAnimationLoop(); // Garante que o loop reinicie se parado
             } else {
-                // stopAnimationLoop(); // Se o canvas ficou inválido, parar
+                 // Se o canvas se tornar inválido, pode-se considerar parar o loop aqui,
+                 // mas animateParticles já tem uma verificação para isso.
             }
-            
+
             if (svgLines) svgLines.innerHTML = '';
-            if (nodeElements && typeof nodeElements.forEach === 'function') { 
+            if (nodeElements && typeof nodeElements.forEach === 'function') {
                 nodeElements.forEach(node => { if (node && node.remove) node.remove(); });
             }
             nodeElements = [];
-            
-            requestAnimationFrame(() => { 
+
+            requestAnimationFrame(() => {
                 createNodes();
             });
         });
-        
+
     </script>
 </body>
 </html>
