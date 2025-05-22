@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Collatz Sequence Doubling</title>
+  <style>
+    body {
+      font-family: Consolas, monospace;
+      background-color: #f8f8f8;
+      padding: 20px;
+    }
+    input, button {
+      font-size: 16px;
+      padding: 5px;
+      margin: 5px 0;
+    }
+    .arrow {
+      font-size: 32px;
+      color: gold;
+      text-shadow: 1px 1px black;
+      text-align: center;
+    }
+    .result {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+    .link-box {
+      margin-bottom: 20px;
+      background: #e0f0ff;
+      padding: 10px;
+      border-left: 5px solid #007acc;
+    }
+    .link-box a {
+      color: #007acc;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .link-box a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="link-box">
+    📄 Access the academic curriculum here:
+    <a href="http://lattes.cnpq.br/7286865766488458" target="_blank">
+      http://lattes.cnpq.br/7286865766488458
+    </a>
+  </div>
+
+  <h2>INFINITE COLLATZ SEQUENCE</h2>
+
+  <label>Enter initial value of a₁ (positive integer):</label><br>
+  <input type="number" id="start" min="1"><br>
+
+  <label>How many sequences to display:</label><br>
+  <input type="number" id="count" min="1"><br>
+
+  <button onclick="showCollatz()">Show Sequences</button>
+
+  <div id="output" class="result"></div>
+
+  <script>
+    function collatz(n) {
+      const seq = [n];
+      while (n !== 1) {
+        n = n % 2 === 0 ? n / 2 : 3 * n + 1;
+        seq.push(n);
+      }
+      return seq;
+    }
+
+    function showCollatz() {
+      const start = parseInt(document.getElementById("start").value);
+      const count = parseInt(document.getElementById("count").value);
+      const out = document.getElementById("output");
+      if (isNaN(start) || isNaN(count) || start < 1 || count < 1) {
+        out.innerText = "Please enter valid positive numbers.";
+        return;
+      }
+
+      let html = "";
+      let current = start;
+
+      for (let i = 1; i <= count; i++) {
+        const seq = collatz(current);
+        html += `For n = ${i}:\n`;
+        if (i === 1) {
+          html += `  a₁ = ${current} (initial value)\n`;
+        } else {
+          const prev = current / 2;
+          html += `  aₙ = ${prev} × 2 = ${current}\n`;
+        }
+        html += `  Collatz Sequence = [${seq.join(", ")}]\n`;
+
+        if (i < count) {
+          html += `<div class="arrow">⬇️<br><b>×2</b></div>\n`;
+        }
+
+        current *= 2;
+      }
+
+      out.innerHTML = html;
+    }
+  </script>
+
+</body>
+</html>
