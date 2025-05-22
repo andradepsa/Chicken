@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MATEMÁTICO 10</title>
+    <title>MATEMÁTICO 10 - Temas Dinâmicos (vErrorFix)</title>
     <style>
         :root {
-            --glow-color-primary: #00ffff; /* Cyan */
-            --glow-color-secondary: #ff00ff; /* Magenta */
-            --glow-color-tertiary: #ffff00; /* Yellow */
+            --glow-color-primary: #00ffff;
+            --glow-color-secondary: #ff00ff;
+            --glow-color-tertiary: #ffff00;
             --particle-color: rgba(200, 225, 255, 0.7);
             --line-color: rgba(100, 150, 255, 0.3);
             --text-color: #e0f0ff;
@@ -17,6 +17,8 @@
             --node-bg: rgba(10, 20, 50, 0.8);
             --node-border: var(--glow-color-primary);
             --font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+            --cursor-active-bg: rgba(0, 255, 255, 0.2); 
+            --glow-color-primary-hsl: 180, 100%, 50%; 
         }
 
         html, body {
@@ -28,7 +30,8 @@
             background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
             font-family: var(--font-family);
             color: var(--text-color);
-            cursor: none; /* Custom cursor will be implemented */
+            cursor: none;
+            transition: background 0.5s ease-in-out, color 0.3s ease;
         }
 
         #particle-canvas {
@@ -50,13 +53,13 @@
             pointer-events: none;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            transition: transform 0.1s ease-out, width 0.2s ease-out, height 0.2s ease-out;
+            transition: transform 0.1s ease-out, width 0.2s ease-out, height 0.2s ease-out, border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
             box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary) inset;
         }
 
         .custom-cursor.active {
             transform: translate(-50%, -50%) scale(1.5);
-            background-color: rgba(0, 255, 255, 0.2);
+            background-color: var(--cursor-active-bg); 
         }
         
         .custom-cursor-dot {
@@ -69,6 +72,7 @@
             transform: translate(-50%, -50%);
             z-index: 9999;
             box-shadow: 0 0 5px var(--glow-color-secondary);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         #nexus-container {
@@ -78,7 +82,7 @@
             transform: translate(-50%, -50%);
             width: 80vmin;
             height: 80vmin;
-            z-index: 1; /* Abaixo do contador se ele estiver sempre visível e precisar sobrepor algo aqui */
+            z-index: 1;
         }
 
         #central-core {
@@ -99,20 +103,26 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            animation: pulseCore 5s infinite alternate, rotateCore 60s linear infinite;
+            animation: pulseCore 5s infinite alternate;
             border: 2px solid var(--glow-color-primary);
-            z-index: 5; /* Para garantir que está acima das linhas de conexão */
+            z-index: 5;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
         }
         
         #central-core::before, #central-core::after {
             content: '';
             position: absolute;
+            left: 50%; 
+            top: 50%; 
             width: 120%;
             height: 120%;
             border-radius: 50%;
             border: 1px dashed var(--glow-color-secondary);
-            animation: rotateCore 20s linear infinite reverse;
+            animation: rotatePseudoCore 20s linear infinite reverse;
             opacity: 0.5;
+            transform: translate(-50%, -50%) rotate(0deg); 
+            transition: border-color 0.3s ease;
         }
         #central-core::after {
             width: 150%;
@@ -122,7 +132,11 @@
             animation-duration: 30s;
             opacity: 0.3;
         }
-
+        
+        @keyframes rotatePseudoCore {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
 
         #core-logo {
             width: 70%;
@@ -131,6 +145,7 @@
             object-fit: cover;
             opacity: 0.8;
             filter: drop-shadow(0 0 5px var(--glow-color-primary));
+            transition: filter 0.3s ease;
         }
         
         @keyframes pulseCore {
@@ -138,46 +153,44 @@
             50% { box-shadow: 0 0 15px var(--glow-color-primary), 0 0 30px var(--glow-color-primary), 0 0 45px var(--glow-color-tertiary), 0 0 60px var(--glow-color-tertiary) inset; transform: translate(-50%, -50%) scale(1.1); }
             100% { box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary), 0 0 30px var(--glow-color-secondary), 0 0 40px var(--glow-color-secondary) inset; transform: translate(-50%, -50%) scale(1); }
         }
-        @keyframes rotateCore {
-            from { transform: translate(-50%, -50%) rotate(0deg); }
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
 
         .data-node {
             position: absolute;
-            width: 8vmin;
-            height: 8vmin;
             background: var(--node-bg);
             border: 1px solid var(--node-border);
-            border-radius: 50%; /* Default, can be overridden by JS */
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
             font-size: 1.5vmin;
             cursor: pointer;
-            transition: all 0.3s ease-in-out;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, opacity 0.3s ease, transform 0.3s ease-in-out;
             box-shadow: 0 0 5px var(--node-border), 0 0 10px var(--node-border) inset;
             opacity: 0.8;
             color: var(--text-color);
-            z-index: 3; /* Acima das linhas, abaixo do core se sobrepor */
+            z-index: 3;
+            transform: translate(-50%, -50%) rotate(var(--initial-rotation, 0deg));
+            animation: floatNode 6s ease-in-out infinite alternate; 
+        }
+        
+        @keyframes floatNode {
+            0% { transform: translate(calc(-50% + var(--float-offset-x, 0px)), calc(-50% - var(--float-offset-y, 0px))) rotate(var(--initial-rotation, 0deg)); }
+            100% { transform: translate(calc(-50% - var(--float-offset-x, 0px)), calc(-50% + var(--float-offset-y, 0px))) rotate(var(--initial-rotation, 0deg)); }
         }
 
         .data-node:hover, .data-node.active {
-            transform: scale(1.2);
+            transform: scale(1.2) rotate(var(--initial-rotation, 0deg)); 
             box-shadow: 0 0 15px var(--glow-color-secondary), 0 0 30px var(--glow-color-secondary) inset, 0 0 10px var(--glow-color-primary);
             opacity: 1;
-            z-index: 10; /* Acima de outros nós ao interagir */
+            z-index: 10;
             border-color: var(--glow-color-secondary);
         }
         .data-node i {
             font-size: 3vmin;
             margin-bottom: 0.5vmin;
             display: block;
-            text-shadow: 0 0 5px currentColor;
+            text-shadow: 0 0 5px currentColor; 
         }
-
 
         #connection-lines-svg {
             position: absolute;
@@ -186,15 +199,16 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 2; /* Atrás dos nós, mas acima do canvas de partículas */
+            z-index: 2;
         }
         
         #connection-lines-svg line {
-            stroke: var(--line-color);
+            stroke: var(--line-color); 
             stroke-width: 1;
             animation: pulseLine 3s infinite alternate;
+            transition: stroke 0.3s ease;
         }
-        @keyframes pulseLine {
+        @keyframes pulseLine { 
             from { stroke-opacity: 0.2; stroke-width: 0.5; }
             to { stroke-opacity: 0.6; stroke-width: 1.5; }
         }
@@ -208,14 +222,14 @@
             height: 70vh;
             max-width: 1000px;
             max-height: 700px;
-            background-color: rgba(5, 10, 30, 0.95);
+            background-color: rgba(5, 10, 30, 0.95); 
             border: 2px solid var(--glow-color-secondary);
             border-radius: 10px;
             box-shadow: 0 0 30px var(--glow-color-secondary), 0 0 60px var(--glow-color-primary) inset;
-            z-index: 100; /* Deve ser alto para sobrepor outros elementos */
+            z-index: 100;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.5s ease, visibility 0s linear 0.5s, transform 0.5s ease;
+            transition: opacity 0.5s ease, visibility 0s linear 0.5s, transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
             padding: 30px;
             display: flex;
             flex-direction: column;
@@ -226,7 +240,7 @@
             opacity: 1;
             visibility: visible;
             transform: translate(-50%, -50%) scale(1);
-            transition: opacity 0.5s ease, visibility 0s linear 0s, transform 0.5s ease;
+            transition: opacity 0.5s ease, visibility 0s linear 0s, transform 0.5s ease, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
         }
         
         #content-display-module h2 {
@@ -237,261 +251,92 @@
             text-shadow: 0 0 10px var(--glow-color-primary);
             letter-spacing: 2px;
             text-transform: uppercase;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
         #module-content-area {
             flex-grow: 1;
             overflow-y: auto;
-            padding-right: 15px; /* For scrollbar */
+            padding-right: 15px;
             font-size: 1rem;
             line-height: 1.7;
+            color: var(--text-color);
+            transition: color 0.3s ease;
         }
         
-        #module-content-area::-webkit-scrollbar {
-            width: 8px;
-        }
-        #module-content-area::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.3);
-            border-radius: 4px;
-        }
-        #module-content-area::-webkit-scrollbar-thumb {
-            background: var(--glow-color-primary);
-            border-radius: 4px;
-            box-shadow: 0 0 5px var(--glow-color-primary) inset;
-        }
-        #module-content-area::-webkit-scrollbar-thumb:hover {
-            background: var(--glow-color-secondary);
-        }
-
-        #module-content-area a {
-            color: var(--glow-color-tertiary);
-            text-decoration: none;
-            border-bottom: 1px dotted var(--glow-color-tertiary);
-            transition: color 0.3s, border-bottom-color 0.3s;
-        }
-        #module-content-area a:hover {
-            color: var(--glow-color-primary);
-            border-bottom-color: var(--glow-color-primary);
-            text-shadow: 0 0 5px var(--glow-color-primary);
-        }
-        #module-content-area ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-        #module-content-area li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
-        }
-        #module-content-area li::before {
-            content: "» ";
-            color: var(--glow-color-primary);
-            margin-right: 10px;
-        }
-        #module-content-area img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-            margin: 10px 0;
-            border: 1px solid var(--glow-color-primary);
-            box-shadow: 0 0 10px var(--glow-color-primary);
-        }
-
+        #module-content-area::-webkit-scrollbar { width: 8px; }
+        #module-content-area::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+        #module-content-area::-webkit-scrollbar-thumb { background: var(--glow-color-primary); border-radius: 4px; box-shadow: 0 0 5px var(--glow-color-primary) inset; transition: background-color 0.3s ease, box-shadow 0.3s ease; }
+        #module-content-area::-webkit-scrollbar-thumb:hover { background: var(--glow-color-secondary); }
+        #module-content-area a { color: var(--glow-color-tertiary); text-decoration: none; border-bottom: 1px dotted var(--glow-color-tertiary); transition: color 0.3s, border-bottom-color 0.3s; }
+        #module-content-area a:hover { color: var(--glow-color-primary); border-bottom-color: var(--glow-color-primary); text-shadow: 0 0 5px var(--glow-color-primary); }
+        #module-content-area ul { list-style-type: none; padding-left: 0; }
+        #module-content-area li { padding: 8px 0; border-bottom: 1px solid hsla(var(--glow-color-primary-hsl), 0.1); }
+        #module-content-area li::before { content: "» "; color: var(--glow-color-primary); margin-right: 10px; transition: color 0.3s ease; }
+        #module-content-area img { max-width: 100%; height: auto; border-radius: 5px; margin: 10px 0; border: 1px solid var(--glow-color-primary); box-shadow: 0 0 10px var(--glow-color-primary); transition: border-color 0.3s ease, box-shadow 0.3s ease; }
 
         #close-module-button {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: 1px solid var(--glow-color-secondary);
-            color: var(--glow-color-secondary);
-            font-size: 1.5rem;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: color 0.3s, border-color 0.3s, transform 0.3s;
-            box-shadow: 0 0 5px var(--glow-color-secondary);
+            position: absolute; top: 15px; right: 15px; background: none; border: 1px solid var(--glow-color-secondary); color: var(--glow-color-secondary);
+            font-size: 1.5rem; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: color 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s ease; box-shadow: 0 0 5px var(--glow-color-secondary);
         }
-        #close-module-button:hover {
-            color: var(--text-color);
-            border-color: var(--text-color);
-            transform: rotate(90deg) scale(1.1);
-        }
+        #close-module-button:hover { color: var(--text-color); border-color: var(--text-color); transform: rotate(90deg) scale(1.1); }
         
         #countdown-widget {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background-color: rgba(10, 20, 50, 0.7);
-            border: 1px solid var(--glow-color-primary);
-            border-radius: 8px;
-            padding: 10px 15px;
-            z-index: 50; /* Abaixo do content-module (100), mas acima do nexus-container e partículas */
-            text-align: center;
-            box-shadow: 0 0 15px var(--glow-color-primary);
-            color: var(--text-color);
-            font-size: 0.8rem;
-            transition: opacity 0.3s ease-out, visibility 0.3s ease-out; /* Para suavizar o hide/show */
+            position: fixed; bottom: 10px; right: 10px; background-color: var(--node-bg); 
+            border: 1px solid var(--glow-color-primary); border-radius: 8px; padding: 10px 15px; z-index: 50; text-align: center;
+            box-shadow: 0 0 15px var(--glow-color-primary); color: var(--text-color); font-size: 0.8rem;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out, border-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
         }
-        #countdown-widget .title { /* Alterado para corresponder ao HTML fornecido */
-            font-size: 0.9em;
-            color: var(--glow-color-tertiary);
-            margin-bottom: 3px;
-        }
-        #countdown-widget h5 { /* Estilo para os novos h5 */
-            font-size: 0.7em;
-            color: var(--text-color);
-            opacity: 0.8;
-            margin: 2px 0;
-            font-weight: normal;
-        }
-        #countdown-timer {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        #countdown-timer span { /* Para o número */
-            min-width: auto; /* Ajuste para caber melhor */
-            padding: 0 3px;
-        }
-        #countdown-timer .unit {
-            font-size: 0.65em;
-            opacity: 0.7;
-            display: block;
-        }
-        #countdown-message {
-            margin-top: 5px;
-            color: var(--glow-color-secondary);
-            font-weight: bold;
-            min-height: 1.2em; /* Para evitar saltos de layout */
-        }
+        #countdown-widget .title { font-size: 0.9em; color: var(--glow-color-tertiary); margin-bottom: 3px; transition: color 0.3s ease; }
+        #countdown-widget h5 { font-size: 0.7em; color: var(--text-color); opacity: 0.8; margin: 2px 0; font-weight: normal; transition: color 0.3s ease; }
+        #countdown-timer { display: flex; justify-content: center; gap: 8px; font-weight: bold; margin-top: 5px; }
+        #countdown-timer span { min-width: auto; padding: 0 3px; }
+        #countdown-timer .unit { font-size: 0.65em; opacity: 0.7; display: block; }
+        #countdown-message { margin-top: 5px; color: var(--glow-color-secondary); font-weight: bold; min-height: 1.2em; transition: color 0.3s ease; }
 
-        /* Terminal-like scanlines overlay */
         #scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9990; /* Abaixo do cursor, acima da maioria dos conteúdos, mas abaixo do módulo */
-            background: linear-gradient(
-                to bottom,
-                rgba(18, 16, 16, 0) 50%,
-                rgba(0, 0, 0, 0.15) 51%
-            );
-            background-size: 100% 4px; /* Adjust line thickness and spacing */
-            opacity: 0.2;
-            animation: scan 20s linear infinite;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9990;
+            background: linear-gradient( to bottom, rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 51% );
+            background-size: 100% 4px; opacity: 0.2; animation: scan 20s linear infinite;
         }
-        @keyframes scan {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100vh; }
-        }
+        @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100vh; } }
 
-        /* Title Intro Animation */
         #site-title-intro {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color-start);
-            z-index: 10000; /* O mais alto para o intro */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            opacity: 1;
-            transition: opacity 1s ease-out 3s; /* Fade out after 3s animation + 1s fade */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--bg-color-start); 
+            z-index: 10000; display: flex; justify-content: center; align-items: center; flex-direction: column;
+            opacity: 1; transition: opacity 1s ease-out 3s, background-color 0.3s ease;
         }
-        #site-title-intro.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+        #site-title-intro.hidden { opacity: 0; pointer-events: none; }
         .intro-text {
-            font-size: 4vw;
-            letter-spacing: 0.5vw;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: fadeInGlow 2s forwards;
+            font-size: 4vw; letter-spacing: 0.5vw; text-transform: uppercase; opacity: 0; animation: fadeInGlow 2s forwards;
             text-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary);
+            transition: text-shadow 0.3s ease, color 0.3s ease; 
         }
-        .intro-text:nth-child(1) { animation-delay: 0.5s; }
+        .intro-text:nth-child(1) { animation-delay: 0.5s; color: var(--text-color); }
         .intro-text:nth-child(2) { 
-            font-size: 2vw; 
-            letter-spacing: 0.2vw;
-            animation-delay: 1.5s; 
-            color: var(--glow-color-secondary);
-            text-shadow: 0 0 10px var(--glow-color-secondary);
+            font-size: 2vw; letter-spacing: 0.2vw; animation-delay: 1.5s; 
+            color: var(--glow-color-secondary); text-shadow: 0 0 10px var(--glow-color-secondary);
         }
-
-        @keyframes fadeInGlow {
-            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* For FontAwesome Icons if CDN is used (example) */
-        .fas, .fab {
-            /* Basic styling for icons if needed, though they should inherit color */
-        }
+        @keyframes fadeInGlow { 0% { opacity: 0; transform: translateY(20px) scale(0.9); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         
-        /* Specific iframe styling for security if loading external content */
-        #module-content-area iframe {
-            width: 100%;
-            height: 50vh; /* Adjust as needed */
-            border: 1px solid var(--glow-color-primary);
-            border-radius: 5px;
-            background-color: #000; /* Fallback bg */
-        }
+        #module-content-area iframe { width: 100%; height: 50vh; border: 1px solid var(--glow-color-primary); border-radius: 5px; background-color: #000; transition: border-color 0.3s ease; }
 
-        /* Media Query para ocultar o contador em telas pequenas */
         @media (max-width: 768px) {
-            #countdown-widget {
-                visibility: hidden; /* Usar visibility e opacity para transições se desejado */
-                opacity: 0;
-                pointer-events: none; /* Impede interação quando oculto */
-            }
-             #content-display-module { /* Ajustar módulo de conteúdo para telas menores */
-                width: 90vw;
-                height: 80vh;
-                padding: 20px;
-            }
-            #content-display-module h2 {
-                font-size: 1.8rem;
-            }
-            #module-content-area {
-                font-size: 0.9rem;
-            }
+            #countdown-widget { visibility: hidden; opacity: 0; pointer-events: none; }
+            #content-display-module { width: 90vw; height: 80vh; padding: 20px; }
+            #content-display-module h2 { font-size: 1.8rem; }
+            #module-content-area { font-size: 0.9rem; }
             .intro-text { font-size: 6vw; }
             .intro-text:nth-child(2) { font-size: 3vw; }
         }
-         @media (max-width: 480px) {
-            .data-node { /* Nós menores em telas muito pequenas */
-                width: 10vmin;
-                height: 10vmin;
-                font-size: 1.2vmin;
-            }
-             .data-node i {
-                font-size: 2.5vmin;
-            }
-             #central-core {
-                width: 18vmin;
-                height: 18vmin;
-            }
-             #content-display-module h2 {
-                font-size: 1.5rem;
-            }
+        @media (max-width: 480px) {
+            .data-node { width: 10vmin; height: 10vmin; font-size: 1.2vmin; }
+            .data-node i { font-size: 2.5vmin; }
+            #central-core { width: 18vmin; height: 18vmin; }
+            #content-display-module h2 { font-size: 1.5rem; }
         }
-
-
     </style>
-    <!-- Font Awesome for icons - If strictly "totally HTML" and no external CDNs, replace with SVG icons or text symbols -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
@@ -507,18 +352,16 @@
     <div id="scanlines"></div>
 
     <div id="nexus-container">
-        <div id="central-core">
+        <div id="central-core" title="Clique para mudar o tema">
             <img id="core-logo" src="https://i.ibb.co/CXgmX10/Simbolo-Matem-tico-10.jpg" alt="Matemático 10 Logo">
         </div>
         <svg id="connection-lines-svg"></svg>
-        <!-- Data nodes will be injected here by JavaScript -->
     </div>
 
     <div id="content-display-module">
         <button id="close-module-button" title="Fechar Módulo">×</button>
         <h2 id="module-title">Título do Módulo</h2>
         <div id="module-content-area">
-            <!-- Content will be injected here -->
         </div>
     </div>
 
@@ -537,179 +380,146 @@
     </div>
 
     <script>
-        // --- SITE DATA (Simulating data from your other files) ---
+        // --- SITE DATA ---
         const siteData = {
             nodes: [
-                { 
-                    id: "inicio", 
-                    label: "Início", 
-                    icon: "fas fa-atom", 
-                    content: `<h1>Bem-vindo ao Matemático 10</h1>
-<p>A matemática é muito mais do que contas e fórmulas — é uma chave que abre portas para entender o mundo com clareza e precisão.</p>
-<p>No <strong>Matemático 10</strong>, você encontrará um ambiente completo para explorar essa ciência fascinante. Aqui, cada conceito é apresentado de forma acessível, com materiais dinâmicos.<strong></strong> </p>
-<img src="https://cdn.pixabay.com/photo/2023/06/05/07/19/einstein-8041625_1280.png" alt="Einstein Pensativo" style="width:300px; display:block; margin:20px auto; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
-<p>Seja para resolver problemas do dia a dia, entender fenômenos da natureza ou construir novas tecnologias, a matemática está sempre presente.</p>
-<p>O <strong>Matemático 10</strong> é o seu ponto de partida para desenvolver o raciocínio lógico, descobrir padrões, e enxergar o mundo com outros olhos. Vamos juntos transformar o conhecimento em poder.</p>`
-                },
-                { 
-                    id: "curso", 
-                    label: "Curso", 
-                    icon: "fas fa-graduation-cap",
-                    content: `<h2>O Mundo da Matemática</h2>
-                              <p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p>
-                              <h3>Destaques:</h3>
-                              <ul>
-                                <li><strong>Conteúdo Estruturado:</strong> Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</li>
-                                <li><strong>200 Podcasts Exclusivos:</strong> Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível.</li>
-                                <li><strong>Material de Apoio:</strong> Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível.</li>
-                              </ul>
-                              <p><a href="https://www.udemy.com/course/mundodamatematica" target="_blank" rel="noopener noreferrer">Matricule-se Agora na Udemy</a></p>`
-                },
-                { 
-                    id: "recursos", 
-                    label: "Recursos", 
-                    icon: "fas fa-cogs",
-                    content: `<h2>Pedagógicos</h2>
-                              <p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p>
-                              <ul>
-                                <li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional (Teste BR-EUA)</a> (Requer arquivo local)</li>
-                                <li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a> (Requer arquivo local)</li>
-                                <li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a> (Requer arquivo local)</li>
-                                <li><a href="Recursos/VídeosK10.html" target="_blank" rel="noopener noreferrer">Minha Videoteca K10</a> (Requer arquivo local)</li>
-                                <li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> (Requer arquivo local)</li>
-                                <li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a> (Requer arquivo local)</li>
-                                <li><strong>Sites Úteis Externos:</strong>
-                                    <ul>
-                                        <li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank" rel="noopener noreferrer">Curso Google For Education</a></li>
-                                        <li><a href="https://www.geogebra.org/" target="_blank" rel="noopener noreferrer">GeoGebra</a></li>
-                                        <li><a href="https://www.wolframalpha.com/" target="_blank" rel="noopener noreferrer">Wolfram Alpha</a></li>
-                                        <li><a href="https://www.symbolab.com/" target="_blank" rel="noopener noreferrer">Symbolab</a></li>
-                                        <li><a href="https://www.desmos.com/" target="_blank" rel="noopener noreferrer">Desmos</a></li>
-                                        <li><a href="https://pt.duolingo.com/" target="_blank" rel="noopener noreferrer">Duolingo</a></li>
-                                        <li><a href="http://www.obmep.org.br/provas.htm" target="_blank" rel="noopener noreferrer">Provas OBMEP</a></li>
-                                    </ul>
-                                </li>
-                              </ul>`
-                },
-                { 
-                    id: "livros", 
-                    label: "Livros", 
-                    icon: "fas fa-book-open",
-                    content: `<h2>Publicados</h2>
-                              <p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p>
-                              <ul>
-                                <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" rel="noopener noreferrer">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li>
-                                <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" rel="noopener noreferrer">Código Matemático</a> - A matemática como linguagem universal.</li>
-                                <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" rel="noopener noreferrer">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li>
-                              </ul>`
-                },
-                {
-                    id: "chat",
-                    label: "P2P",
-                    icon: "fas fa-comments",
-                    content: `<h2>Chat K10</h2>
-                              <p>Comunicação segura e descentralizada. Para usar o Chat K10:</p>
-                              <ol>
-                                <li>Acesse uma das versões (Navegador é recomendado para teste rápido).</li>
-                                <li>Seu ID único será gerado.</li>
-                                <li>Compartilhe seu ID com um amigo que também esteja usando o Chat K10.</li>
-                                <li>Seu amigo adiciona seu ID e você o dele.</li>
-                                <li>Conectem-se e conversem!</li>
-                              </ol>
-                              <h3>Acessos:</h3>
-                              <ul>
-                                  <li><a href="Chat/Chat K10.html" target="_blank" rel="noopener noreferrer">Abrir Chat K10 (Versão Desktop/Navegador - Requer arquivo local)</a></li>
-                                  
-                              </ul>
-                              <p></p>`
-                },
-                { 
-                    id: "sobre", 
-                    label: "Sobre", 
-                    icon: "fas fa-user-astronaut",
-                    content: `<h2>o Prof. Paulo Sérgio de Andrade</h2>
-                              <p>Educador, Matemático.</p>
-<img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="width:200px; border-radius:50%; float:left; margin-right:15px;">
-<p>Licenciado em Matemática (2010), com especializações em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem, Educação 4.0: Aluno como Protagonista (2021), Matemática, Suas Tecnologias e o Mundo do Trabalho (2024), e Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental (2025), todas voltadas ao fortalecimento da prática pedagógica e ao uso de abordagens inovadoras.</p>
-<p>Comprometido com a transformação do ensino da matemática, valoriza metodologias que promovem a autonomia, o protagonismo estudantil e a conexão entre o saber matemático e o cotidiano.</p>
-<p><a href="http://lattes.cnpq.br/7286865766488458" target="_blank" rel="noopener noreferrer">Currículo Lattes</a></p>`
-                },
-                { 
-                    id: "contato", 
-                    label: "Redes", 
-                    icon: "fas fa-broadcast-tower",
-                    content: `<h2>Sociais e Contato</h2>
-                              <p>Explore mais conteúdos sobre matemática, educação e tecnologia nas minhas redes sociais.</p>
-                              <ul>
-                                <li><a href="https://www.linkedin.com/in/geral10" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
-                                <li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" rel="noopener noreferrer">YouTube</a></li>
-                                <li><a href="https://x.com/SergioPaul97880" target="_blank" rel="noopener noreferrer">X (Twitter)</a></li>
-                                <li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li>
-                                <li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                                <li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li>
-                                <li><a href="home.html" target="_blank" rel="noopener noreferrer">Site Principal (Versão Anterior - Requer arquivo local)</a></li>
-                              </ul>`
-                },
-                 { 
-                    id: "mapa_conceitual", 
-                    label: "Mapa", 
-                    icon: "fas fa-sitemap",
-                    content: `<h2>Mapa Conceitual Interativo</h2>
-                              <p>Explore a estrutura de links e recursos de forma visual e interativa.</p>
-                              <p>O mapa original é uma interface complexa. Abaixo está uma tentativa de incorporar sua funcionalidade ou visualização.</p>
-                              <p><a href="Mapa.html" target="_blank" rel="noopener noreferrer">Abrir Mapa Original (Circular - Requer arquivo local)</a></p>
-                              <p><em>(A integração total do mapa circular aqui é complexa. Esta é uma representação textual. Clique no link acima para a experiência completa se o arquivo estiver presente localmente.)</em></p>
-                              <iframe src="Mapa.html" title="Mapa Conceitual Circular" style="width:100%; height:60vh; border:1px solid var(--glow-color-primary); background: #000;"></iframe>
-                              `
-                }
+                { id: "inicio", label: "Início", icon: "fas fa-atom", content: `<h1>Bem-vindo ao Matemático 10</h1><p>A matemática é muito mais do que contas e fórmulas — é uma chave que abre portas para entender o mundo com clareza e precisão.</p><p>No <strong>Matemático 10</strong>, você encontrará um ambiente completo para explorar essa ciência fascinante. Aqui, cada conceito é apresentado de forma acessível, com materiais dinâmicos.<strong></strong> </p><img src="https://cdn.pixabay.com/photo/2023/06/05/07/19/einstein-8041625_1280.png" alt="Einstein Pensativo" style="width:300px; display:block; margin:20px auto; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><p>Seja para resolver problemas do dia a dia, entender fenômenos da natureza ou construir novas tecnologias, a matemática está sempre presente.</p><p>O <strong>Matemático 10</strong> é o seu ponto de partida para desenvolver o raciocínio lógico, descobrir padrões, e enxergar o mundo com outros olhos. Vamos juntos transformar o conhecimento em poder.</p>` },
+                { id: "curso", label: "Curso", icon: "fas fa-graduation-cap", content: `<h2>O Mundo da Matemática</h2><p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p><h3>Destaques:</h3><ul><li><strong>Conteúdo Estruturado:</strong> Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</li><li><strong>200 Podcasts Exclusivos:</strong> Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível.</li><li><strong>Material de Apoio:</strong> Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível.</li></ul><p><a href="https://www.udemy.com/course/mundodamatematica" target="_blank" rel="noopener noreferrer">Matricule-se Agora na Udemy</a></p>` },
+                { id: "recursos", label: "Recursos", icon: "fas fa-cogs", content: `<h2>Pedagógicos</h2><p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p><ul><li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional (Teste BR-EUA)</a> (Requer arquivo local)</li><li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a> (Requer arquivo local)</li><li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a> (Requer arquivo local)</li><li><a href="Recursos/VídeosK10.html" target="_blank" rel="noopener noreferrer">Minha Videoteca K10</a> (Requer arquivo local)</li><li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> (Requer arquivo local)</li><li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a> (Requer arquivo local)</li><li><strong>Sites Úteis Externos:</strong><ul><li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank" rel="noopener noreferrer">Curso Google For Education</a></li><li><a href="https://www.geogebra.org/" target="_blank" rel="noopener noreferrer">GeoGebra</a></li><li><a href="https://www.wolframalpha.com/" target="_blank" rel="noopener noreferrer">Wolfram Alpha</a></li><li><a href="https://www.symbolab.com/" target="_blank" rel="noopener noreferrer">Symbolab</a></li><li><a href="https://www.desmos.com/" target="_blank" rel="noopener noreferrer">Desmos</a></li><li><a href="https://pt.duolingo.com/" target="_blank" rel="noopener noreferrer">Duolingo</a></li><li><a href="http://www.obmep.org.br/provas.htm" target="_blank" rel="noopener noreferrer">Provas OBMEP</a></li></ul></li></ul>` },
+                { id: "livros", label: "Livros", icon: "fas fa-book-open", content: `<h2>Publicados</h2><p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p><ul><li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" rel="noopener noreferrer">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li><li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" rel="noopener noreferrer">Código Matemático</a> - A matemática como linguagem universal.</li><li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" rel="noopener noreferrer">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li></ul>` },
+                { id: "chat", label: "P2P", icon: "fas fa-comments", content: `<h2>Chat K10</h2><p>Comunicação segura e descentralizada. Para usar o Chat K10:</p><ol><li>Acesse uma das versões (Navegador é recomendado para teste rápido).</li><li>Seu ID único será gerado.</li><li>Compartilhe seu ID com um amigo que também esteja usando o Chat K10.</li><li>Seu amigo adiciona seu ID e você o dele.</li><li>Conectem-se e conversem!</li></ol><h3>Acessos:</h3><ul><li><a href="Chat/Chat K10.html" target="_blank" rel="noopener noreferrer">Abrir Chat K10 (Versão Desktop/Navegador - Requer arquivo local)</a></li></ul><p></p>` },
+                { id: "sobre", label: "Sobre", icon: "fas fa-user-astronaut", content: `<h2>o Prof. Paulo Sérgio de Andrade</h2><p>Educador, Matemático.</p><img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="width:200px; border-radius:50%; float:left; margin-right:15px;"><p>Licenciado em Matemática (2010), com especializações em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem, Educação 4.0: Aluno como Protagonista (2021), Matemática, Suas Tecnologias e o Mundo do Trabalho (2024), e Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental (2025), todas voltadas ao fortalecimento da prática pedagógica e ao uso de abordagens inovadoras.</p><p>Comprometido com a transformação do ensino da matemática, valoriza metodologias que promovem a autonomia, o protagonismo estudantil e a conexão entre o saber matemático e o cotidiano.</p><p><a href="http://lattes.cnpq.br/7286865766488458" target="_blank" rel="noopener noreferrer">Currículo Lattes</a></p>` },
+                { id: "contato", label: "Redes", icon: "fas fa-broadcast-tower", content: `<h2>Sociais e Contato</h2><p>Explore mais conteúdos sobre matemática, educação e tecnologia nas minhas redes sociais.</p><ul><li><a href="https://www.linkedin.com/in/geral10" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" rel="noopener noreferrer">YouTube</a></li><li><a href="https://x.com/SergioPaul97880" target="_blank" rel="noopener noreferrer">X (Twitter)</a></li><li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li><li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li><li><a href="home.html" target="_blank" rel="noopener noreferrer">Site Principal (Versão Anterior - Requer arquivo local)</a></li></ul>` },
+                { id: "mapa_conceitual", label: "Mapa", icon: "fas fa-sitemap", content: `<h2>Mapa Conceitual Interativo</h2><p>Explore a estrutura de links e recursos de forma visual e interativa.</p><p>O mapa original é uma interface complexa. Abaixo está uma tentativa de incorporar sua funcionalidade ou visualização.</p><p><a href="Mapa.html" target="_blank" rel="noopener noreferrer">Abrir Mapa Original (Circular - Requer arquivo local)</a></p><p><em>(A integração total do mapa circular aqui é complexa. Esta é uma representação textual. Clique no link acima para a experiência completa se o arquivo estiver presente localmente.)</em></p><iframe src="Mapa.html" title="Mapa Conceitual Circular" style="width:100%; height:60vh; border:1px solid var(--glow-color-primary); background: #000;"></iframe>` }
             ]
         };
+
+        // --- THEME GENERATION AND MANAGEMENT ---
+        const themes = [];
+        let currentThemeIndex = 0;
+        const NUM_THEMES = 50;
+
+        function generateThemes() {
+            for (let i = 0; i < NUM_THEMES; i++) {
+                const baseHue = Math.random() * 360;
+                const mainSat = 70 + Math.random() * 30;
+                const mainLight = 50 + Math.random() * 15; 
+                const isDarkBase = Math.random() > 0.15;
+                const bgColorHue = (baseHue + Math.random() * 60 - 30 + 360) % 360;
+                const bgSat = 5 + Math.random() * 25; 
+                const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360; 
+                const textSat = 10 + Math.random() * 40;
+
+                themes.push({
+                    name: `Theme ${i + 1}`,
+                    '--glow-color-primary': `hsl(${baseHue}, ${mainSat}%, ${mainLight}%)`,
+                    '--glow-color-secondary': `hsl(${(baseHue + 100 + Math.random() * 40 - 20 + 360) % 360}, ${mainSat - 5 + Math.random() * 10}%, ${mainLight - 5 + Math.random() * 10}%)`,
+                    '--glow-color-tertiary': `hsl(${(baseHue + 200 + Math.random() * 60 - 30 + 360) % 360}, ${mainSat - 10 + Math.random() * 20}%, ${mainLight - 2 + Math.random() * 5}%)`,
+                    '--particle-color': `hsla(${(baseHue + 30 + Math.random() * 60 - 30 + 360) % 360}, ${mainSat - 20 + Math.random() * 30}%, ${isDarkBase ? 65 + Math.random() * 20 : 35 + Math.random() * 20}%, ${0.4 + Math.random() * 0.3})`,
+                    '--line-color': `hsla(${(baseHue - 30 + Math.random() * 60 - 30 + 360) % 360}, ${mainSat - 30 + Math.random() * 20}%, ${isDarkBase ? 55 + Math.random() * 20 : 45 + Math.random() * 20}%, ${0.15 + Math.random() * 0.2})`,
+                    '--text-color': isDarkBase ? `hsl(${textColorHue}, ${textSat}%, ${85 + Math.random() * 10}%)` : `hsl(${textColorHue}, ${textSat + 20}%, ${10 + Math.random() * 10}%)`,
+                    '--bg-color-start': isDarkBase ? `hsl(${bgColorHue}, ${bgSat}%, ${8 + Math.random() * 7}%)` : `hsl(${bgColorHue}, ${bgSat}%, ${92 - Math.random() * 7}%)`,
+                    '--bg-color-end': isDarkBase ? `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${3 + Math.random() * 4}%)` : `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${88 - Math.random() * 4}%)`,
+                    '--node-bg': isDarkBase ? `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${12 + Math.random() * 8}%, 0.8)` : `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${80 + Math.random() * 8}%, 0.8)`,
+                });
+            }
+        }
+
+        function applyTheme(themeIndex) {
+            const theme = themes[themeIndex];
+            if (!theme) return;
+
+            const rootStyle = document.documentElement.style;
+            for (const property in theme) {
+                if (property !== 'name') {
+                    rootStyle.setProperty(property, theme[property]);
+                }
+            }
+            rootStyle.setProperty('--node-border', theme['--glow-color-primary']);
+
+            const primaryGlow = theme['--glow-color-primary'];
+            let primaryGlowH = 180, primaryGlowS = 100, primaryGlowL = 50; 
+
+            if (primaryGlow.startsWith('hsl')) {
+                const parts = primaryGlow.match(/[\d.]+/g);
+                if (parts && parts.length >= 3) {
+                    primaryGlowH = parseFloat(parts[0]);
+                    primaryGlowS = parseFloat(parts[1]);
+                    primaryGlowL = parseFloat(parts[2]);
+                    rootStyle.setProperty('--cursor-active-bg', `hsla(${parts[0]}, ${parts[1]}%, ${parts[2]}%, 0.2)`);
+                }
+            } else { 
+                rootStyle.setProperty('--cursor-active-bg', `rgba(0, 255, 255, 0.2)`);
+            }
+            rootStyle.setProperty('--glow-color-primary-hsl', `${primaryGlowH}, ${primaryGlowS}%, ${primaryGlowL}%`);
+
+            if (typeof initParticles === 'function') {
+                initParticles();
+            }
+        }
+
+        function nextTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            applyTheme(currentThemeIndex);
+        }
 
         // --- PARTICLE SYSTEM ---
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
         let particlesArray = [];
-        // Ajuste responsivo da quantidade de partículas
-        const calculateNumberOfParticles = () => Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20;
-        let numberOfParticles = calculateNumberOfParticles();
-
-
-        const mathSymbols = ['ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈', '≠', '≡', '≤', '≥', '⊂', '⊃', '∈', '∅', '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '∀', '∃', '∴', '∵',  '∑', '∏', '⊕', '⊗'];
+        const calculateNumberOfParticles = () => Math.max(10, Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20);
+        let numberOfParticles; 
 
         class Particle {
             constructor(x, y) {
                 this.x = x || Math.random() * canvas.width;
                 this.y = y || Math.random() * canvas.height;
-                this.size = Math.random() * 2 + 0.5; 
-                this.speedX = (Math.random() * 0.6 - 0.3); 
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() * 0.6 - 0.3);
                 this.speedY = (Math.random() * 0.6 - 0.3);
-                this.color = `rgba(${Math.floor(Math.random()*100 + 120)}, ${Math.floor(Math.random()*100 + 155)}, 255, ${Math.random() * 0.5 + 0.3})`;
-                // this.symbol = mathSymbols[Math.floor(Math.random() * mathSymbols.length)]; // Removido para performance
-                this.life = Math.random() * 200 + 100; 
+                this.themedColorBase = getComputedStyle(document.documentElement).getPropertyValue('--particle-color').trim();
+                this.life = Math.random() * 200 + 100;
                 this.initialLife = this.life;
             }
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
                 this.life--;
-
                 if (this.x + this.size > canvas.width || this.x - this.size < 0) this.speedX *= -1;
                 if (this.y + this.size > canvas.height || this.y - this.size < 0) this.speedY *= -1;
             }
             draw() {
-                const opacity = (this.life / this.initialLife) * 0.7; 
-                ctx.fillStyle = this.color.replace(/, ?\d?\.?\d+\)$/, `,${opacity})`);
+                if (!canvas || canvas.width <= 0 || canvas.height <= 0) return;
+
+                const lifeOpacityFactor = Math.max(0, this.life / this.initialLife);
+                let r, g, b, baseAlpha;
+                const colorParts = this.themedColorBase.match(/[\d.]+/g);
+
+                if (this.themedColorBase.startsWith('rgba') && colorParts && colorParts.length === 4) {
+                    [r, g, b, baseAlpha] = colorParts.map(Number);
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * lifeOpacityFactor).toFixed(3)})`;
+                } else if (this.themedColorBase.startsWith('hsla') && colorParts && colorParts.length === 4) {
+                    ctx.fillStyle = `hsla(${colorParts[0]}, ${colorParts[1]}%, ${colorParts[2]}%, ${(parseFloat(colorParts[3]) * lifeOpacityFactor).toFixed(3)})`;
+                } else { 
+                    ctx.globalAlpha = lifeOpacityFactor; 
+                    ctx.fillStyle = this.themedColorBase;
+                }
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
+                if (ctx.globalAlpha !== 1.0) { 
+                    ctx.globalAlpha = 1.0; 
+                }
             }
         }
 
         function initParticles() {
-            particlesArray = [];
-            numberOfParticles = calculateNumberOfParticles(); // Recalcula ao iniciar/reiniciar
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight;
+            if (canvas.width <= 0 || canvas.height <= 0) return; 
+
+            numberOfParticles = calculateNumberOfParticles();
+            particlesArray = []; 
             for (let i = 0; i < numberOfParticles; i++) {
                 particlesArray.push(new Particle());
             }
@@ -725,126 +535,175 @@
             mouse.y = undefined;
         });
 
-
         function animateParticles() {
+            if (!ctx || !canvas || canvas.width <= 0 || canvas.height <= 0) {
+                requestAnimationFrame(animateParticles);
+                return;
+            }
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
 
-                if (mouse.x !== undefined && mouse.y !== undefined) {
-                    let dx = particlesArray[i].x - mouse.x;
-                    let dy = particlesArray[i].y - mouse.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance < mouse.radius) {
-                        particlesArray[i].x += dx / distance * 2; 
-                        particlesArray[i].y += dy / distance * 2;
-                        particlesArray[i].speedX *= 0.95; 
-                        particlesArray[i].speedY *= 0.95;
+            for (let i = 0; i < particlesArray.length; i++) {
+                const particle = particlesArray[i]; 
+                if (particle) { 
+                    particle.update();
+                    particle.draw();
+
+                    if (mouse.x !== undefined && mouse.y !== undefined) {
+                        let dx = particle.x - mouse.x;
+                        let dy = particle.y - mouse.y;
+                        let distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < mouse.radius) {
+                            particle.x += dx / distance * 2;
+                            particle.y += dy / distance * 2;
+                            particle.speedX *= 0.95;
+                            particle.speedY *= 0.95;
+                        }
                     }
                 }
-                
-                if (particlesArray[i].life <= 0) {
-                    particlesArray.splice(i, 1);
-                    particlesArray.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
-                    i--; 
+            }
+
+            for (let i = particlesArray.length - 1; i >= 0; i--) {
+                if (particlesArray[i] && particlesArray[i].life <= 0) {
+                    particlesArray[i] = new Particle(Math.random() * canvas.width, Math.random() * canvas.height);
+                } else if (!particlesArray[i]) { 
+                    particlesArray[i] = new Particle(Math.random() * canvas.width, Math.random() * canvas.height);
                 }
             }
-            connectParticles();
+
+            while (particlesArray.length < numberOfParticles && numberOfParticles > 0) { // Adicionado numberOfParticles > 0
+                particlesArray.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+            if (particlesArray.length > numberOfParticles) {
+                particlesArray.length = numberOfParticles; 
+            }
+
+            connectParticles(); 
             requestAnimationFrame(animateParticles);
         }
         
         function connectParticles() {
-            let opacityValue = 1;
-            const connectDistance = window.innerWidth < 768 ? 40 : 70; // Distância menor em telas pequenas
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a + 1; b < particlesArray.length; b++) { 
-                    let dx = particlesArray[a].x - particlesArray[b].x;
-                    let dy = particlesArray[a].y - particlesArray[b].y;
+            if (!ctx || !canvas || canvas.width <= 0 || canvas.height <= 0 || !particlesArray) return;
+
+            const themedLineColorBase = getComputedStyle(document.documentElement).getPropertyValue('--line-color').trim();
+            const connectDistance = window.innerWidth < 768 ? 40 : 70;
+            const currentParticlesLength = particlesArray.length; 
+
+            for (let a = 0; a < currentParticlesLength; a++) {
+                const particleA = particlesArray[a];
+                if (!particleA) { 
+                    // console.warn(`connectParticles: particleA at index ${a} is undefined`);
+                    continue;
+                }
+
+                for (let b = a + 1; b < currentParticlesLength; b++) { 
+                    const particleB = particlesArray[b];
+                    if (!particleB) { 
+                        // console.warn(`connectParticles: particleB at index ${b} is undefined`);
+                        continue; 
+                    }
+
+                    let dx = particleA.x - particleB.x;
+                    let dy = particleA.y - particleB.y;
                     let distance = Math.sqrt(dx*dx + dy*dy);
 
-                    if (distance < connectDistance) { 
-                        opacityValue = 1 - (distance / connectDistance);
-                        ctx.strokeStyle = `rgba(150, 180, 255, ${opacityValue * 0.3})`;
+                    if (distance < connectDistance) {
+                        const distanceOpacityFactor = Math.max(0, 1 - (distance / connectDistance));
+                        let r, g, b, baseAlpha;
+                        const colorParts = themedLineColorBase.match(/[\d.]+/g);
+                        let finalLineColor;
+
+                        if (themedLineColorBase.startsWith('rgba') && colorParts && colorParts.length === 4) {
+                            [r, g, b, baseAlpha] = colorParts.map(Number);
+                            finalLineColor = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * distanceOpacityFactor).toFixed(3)})`;
+                        } else if (themedLineColorBase.startsWith('hsla') && colorParts && colorParts.length === 4) {
+                            finalLineColor = `hsla(${colorParts[0]}, ${colorParts[1]}%, ${colorParts[2]}%, ${(parseFloat(colorParts[3]) * distanceOpacityFactor).toFixed(3)})`;
+                        } else {
+                            ctx.globalAlpha = distanceOpacityFactor;
+                            finalLineColor = themedLineColorBase;
+                        }
+                        ctx.strokeStyle = finalLineColor;
                         ctx.lineWidth = 0.5;
                         ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.moveTo(particleA.x, particleA.y);
+                        ctx.lineTo(particleB.x, particleB.y);
                         ctx.stroke();
+                        if (ctx.globalAlpha !== 1.0 && !(themedLineColorBase.startsWith('rgba') || themedLineColorBase.startsWith('hsla'))) {
+                           ctx.globalAlpha = 1.0; 
+                        }
                     }
                 }
             }
         }
 
-
         // --- NEXUS UI LOGIC ---
         const nexusContainer = document.getElementById('nexus-container');
-        const centralCore = document.getElementById('central-core');
+        const centralCoreElement = document.getElementById('central-core');
         const svgLines = document.getElementById('connection-lines-svg');
         const contentModule = document.getElementById('content-display-module');
         const moduleTitle = document.getElementById('module-title');
         const moduleContentArea = document.getElementById('module-content-area');
         const closeModuleButton = document.getElementById('close-module-button');
-        
         let nodeElements = [];
 
         function createNodes() {
+            if (!nexusContainer) return; 
             const numNodes = siteData.nodes.length;
-            const radius = 35; 
+            const containerWidth = nexusContainer.clientWidth || nexusContainer.offsetWidth;
+            const containerHeight = nexusContainer.clientHeight || nexusContainer.offsetHeight;
+
+            if (containerWidth === 0 || containerHeight === 0) { // Adicionado para evitar divisão por zero
+                // console.warn("Nexus container has no dimensions, deferring node creation.");
+                requestAnimationFrame(createNodes); // Tentar novamente no próximo frame
+                return;
+            }
+
+            const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7; 
             const angleStep = (2 * Math.PI) / numNodes;
 
             siteData.nodes.forEach((nodeData, i) => {
                 const angle = i * angleStep - Math.PI / 2; 
-                const x = 50 + radius * Math.cos(angle);
-                const y = 50 + radius * Math.sin(angle);
+                const xPercent = 50 + (radius / (containerWidth / 2) * 50) * Math.cos(angle);
+                const yPercent = 50 + (radius / (containerHeight / 2) * 50) * Math.sin(angle);
 
                 const nodeEl = document.createElement('div');
                 nodeEl.classList.add('data-node');
                 nodeEl.id = `node-${nodeData.id}`;
-                nodeEl.style.left = `${x}%`;
-                nodeEl.style.top = `${y}%`;
-                nodeEl.style.width = `${Math.random() * 2 + 7}vmin`;
-                nodeEl.style.height = nodeEl.style.width;
+                nodeEl.style.left = `${xPercent}%`;
+                nodeEl.style.top = `${yPercent}%`;
+                
+                const nodeSize = Math.random() * 2 + 7; 
+                nodeEl.style.width = `${nodeSize}vmin`;
+                nodeEl.style.height = `${nodeSize}vmin`;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
-                nodeEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*30-15}deg)`;
-                nodeEl.style.animation = `floatNode ${Math.random()*3+3}s ease-in-out infinite alternate`;
-                nodeEl.style.setProperty('--float-offset', `${Math.random()*10-5}px`);
+                
+                const randomRotation = Math.random()*30-15;
+                nodeEl.style.setProperty('--initial-rotation', `${randomRotation}deg`);
+                nodeEl.style.setProperty('--float-offset-x', `${Math.random()*10-5}px`);
+                nodeEl.style.setProperty('--float-offset-y', `${Math.random()*10-5}px`);
+                nodeEl.style.animationDuration = `${Math.random()*3+4}s`;
 
                 nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`;
                 nodeEl.title = nodeData.label;
-
                 nodeEl.addEventListener('click', () => {
                     openModule(nodeData);
                     nodeElements.forEach(n => n.classList.remove('active'));
                     nodeEl.classList.add('active');
                 });
-                
                 nodeEl.addEventListener('mouseenter', () => nodeEl.style.animationPlayState = 'paused');
                 nodeEl.addEventListener('mouseleave', () => nodeEl.style.animationPlayState = 'running');
-
-
                 nexusContainer.appendChild(nodeEl);
                 nodeElements.push(nodeEl);
 
-                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', '50%');
-                line.setAttribute('y1', '50%');
-                line.setAttribute('x2', `${x}%`);
-                line.setAttribute('y2', `${y}%`);
-                line.style.animationDelay = `${i * 0.2}s`; 
-                svgLines.appendChild(line);
+                if (svgLines) { // Verificação adicional
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', '50%');
+                    line.setAttribute('y1', '50%');
+                    line.setAttribute('x2', `${xPercent}%`); 
+                    line.setAttribute('y2', `${yPercent}%`);
+                    line.style.animationDelay = `${i * 0.2}s`; 
+                    svgLines.appendChild(line);
+                }
             });
-            
-            const styleSheet = document.styleSheets[0];
-            if (styleSheet) { // Verifica se o stylesheet existe (importante para alguns browsers/cenários)
-                const floatKeyframes = `
-                    @keyframes floatNode {
-                        0% { transform: translate(calc(-50% + var(--float-offset)), calc(-50% - var(--float-offset))) rotate(${Math.random()*10-5}deg); }
-                        100% { transform: translate(calc(-50% - var(--float-offset)), calc(-50% + var(--float-offset))) rotate(${Math.random()*10-5}deg); }
-                    }`;
-                try { styleSheet.insertRule(floatKeyframes, styleSheet.cssRules.length); } 
-                catch(e) { console.warn("Could not insert floatNode keyframes dynamically", e); }
-            }
         }
         
         function openModule(nodeData) {
@@ -874,123 +733,126 @@
         const countdownMessageEl = document.getElementById('countdown-message');
         let countdownInterval;
 
-        function updateCountdown() {
-            const now = new Date();
-            let targetYear = now.getFullYear();
-            // Mês é 0-indexado, então 2 é Março. Dia 14.
-            const targetMonth = 2; 
-            const targetDay = 14;
+        function updateCountdown() { 
+            const now = new Date(); let targetYear = now.getFullYear(); const targetMonth = 2; const targetDay = 14;
             let targetDate = new Date(targetYear, targetMonth, targetDay);
-
-            if (now > targetDate) {
-                targetYear++;
-                targetDate = new Date(targetYear, targetMonth, targetDay);
-            }
-
+            if (now > targetDate) { targetYear++; targetDate = new Date(targetYear, targetMonth, targetDay); }
             const totalMs = targetDate - now;
-
             if (totalMs <= 0) {
-                countdownMonthsEl.textContent = 0;
-                countdownDaysEl.textContent = 0;
-                countdownHoursEl.textContent = 0;
-                countdownMinutesEl.textContent = 0;
-                countdownSecondsEl.textContent = 0;
-                countdownMessageEl.textContent = "FELIZ DIA DO PI!";
-                clearInterval(countdownInterval);
-                return;
+                countdownMonthsEl.textContent = 0; countdownDaysEl.textContent = 0; countdownHoursEl.textContent = 0;
+                countdownMinutesEl.textContent = 0; countdownSecondsEl.textContent = 0;
+                countdownMessageEl.textContent = "FELIZ DIA DO PI!"; clearInterval(countdownInterval); return;
             }
-
-            // Cálculo mais preciso de meses e dias restantes
-            let months = (targetDate.getFullYear() - now.getFullYear()) * 12;
-            months -= now.getMonth();
-            months += targetDate.getMonth();
-            
+            let months = (targetDate.getFullYear() - now.getFullYear()) * 12; months -= now.getMonth(); months += targetDate.getMonth();
             let days = targetDate.getDate() - now.getDate();
-
-            if (days < 0) {
-                months--;
-                // Dias no mês anterior ao targetDate.getMonth()
-                const prevMonthLastDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0).getDate();
-                days += prevMonthLastDay;
-            }
-            
-            if (months < 0) months = 0; // Se já passou do mês alvo no ano corrente, mas não do dia.
-
-            // Ajuste final caso meses tenham sido contados e já estamos no mês alvo ou próximo.
-             if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() === targetDate.getMonth() && now.getDate() <= targetDate.getDate()) {
-                months = 0;
-                days = targetDate.getDate() - now.getDate();
-            } else if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() < targetDate.getMonth()) {
-                 // Se estamos no mesmo ano, mas mês anterior, o cálculo de meses já deve estar ok.
-                 // O cálculo de 'days' precisa ser do dia atual até o final do mês + dias do target.
-                 // Esta é uma simplificação, para countdowns longos é mais complexo.
-                 // Usando totalSeconds para horas/min/seg que é mais simples.
-            }
-
-
-            const totalSeconds = Math.floor(totalMs / 1000);
-            const seconds = totalSeconds % 60;
-            const totalMinutes = Math.floor(totalSeconds / 60);
-            const minutes = totalMinutes % 60;
-            const totalHours = Math.floor(totalMinutes / 60);
-            const hours = totalHours % 24;
-            
-            // Para o 'days' no display, vamos usar o total de dias restantes do totalHours
+            if (days < 0) { months--; const prevMonthLastDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), 0).getDate(); days += prevMonthLastDay; }
+            if (months < 0) months = 0;
+            if (now.getFullYear() === targetDate.getFullYear() && now.getMonth() === targetDate.getMonth() && now.getDate() <= targetDate.getDate()) { months = 0; days = targetDate.getDate() - now.getDate(); }
+            const totalSeconds = Math.floor(totalMs / 1000); const seconds = totalSeconds % 60;
+            const totalMinutes = Math.floor(totalSeconds / 60); const minutes = totalMinutes % 60;
+            const totalHours = Math.floor(totalMinutes / 60); const hours = totalHours % 24;
             const displayDays = Math.floor(totalHours / 24);
-
-
-            countdownMonthsEl.textContent = months; // Este ainda é o mais complexo para ser preciso
-            countdownDaysEl.textContent = displayDays - (months * 30); // Subtrai uma média para dias, não perfeito
-            // Para maior precisão, bibliotecas como date-fns seriam melhores, mas é "totally HTML"
-            // A lógica original do seu contador.html para meses/dias pode ser mais adequada se você prefere ela.
-            // A minha lógica atual de meses e dias é uma tentativa, pode precisar de ajuste fino.
-            // Vou manter a lógica de tempo (h,m,s) que é mais direta a partir de totalMs
-            
-            countdownHoursEl.textContent = hours;
-            countdownMinutesEl.textContent = minutes;
-            countdownSecondsEl.textContent = seconds;
+            countdownMonthsEl.textContent = months; countdownDaysEl.textContent = displayDays - (months * 30); 
+            countdownHoursEl.textContent = hours; countdownMinutesEl.textContent = minutes; countdownSecondsEl.textContent = seconds;
             countdownMessageEl.textContent = "";
         }
         
         // --- CUSTOM CURSOR ---
         const cursor = document.querySelector('.custom-cursor');
         const cursorDot = document.querySelector('.custom-cursor-dot');
-        const interactiveElementsQuery = 'a, button, .data-node, input, textarea, [onclick], #close-module-button';
+        const interactiveElementsQuery = 'a, button, .data-node, input, textarea, [onclick], #close-module-button, #central-core';
 
         document.addEventListener('mousemove', e => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
-            cursorDot.style.left = e.clientX + 'px';
-            cursorDot.style.top = e.clientY + 'px';
-
-            if (e.target.closest(interactiveElementsQuery)) {
+            if (cursor) cursor.style.left = e.clientX + 'px';
+            if (cursor) cursor.style.top = e.clientY + 'px';
+            if (cursorDot) cursorDot.style.left = e.clientX + 'px';
+            if (cursorDot) cursorDot.style.top = e.clientY + 'px';
+            
+            if (cursor && e.target.closest(interactiveElementsQuery)) {
                 cursor.classList.add('active');
-            } else {
+            } else if (cursor) {
                 cursor.classList.remove('active');
             }
         });
-        document.addEventListener('mousedown', () => cursor.classList.add('active'));
-        document.addEventListener('mouseup', () => cursor.classList.remove('active'));
-
+        document.addEventListener('mousedown', () => { if (cursor) cursor.classList.add('active'); });
+        document.addEventListener('mouseup', () => {
+             if (cursor && !document.querySelector(':hover')?.closest(interactiveElementsQuery)) {
+                cursor.classList.remove('active');
+            }
+        });
 
         // --- INITIALIZATION ---
+        let animationFrameId = null; // Para controlar o requestAnimationFrame
+
+        function startAnimationLoop() {
+            if (animationFrameId === null) { // Iniciar apenas se não estiver rodando
+                animateParticles();
+            }
+        }
+        function stopAnimationLoop() {
+            if (animationFrameId !== null) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+        }
+
+
         window.addEventListener('load', () => {
-            initParticles();
-            animateParticles(); // Inicia a animação de partículas
-            createNodes();
-            updateCountdown(); // Primeira chamada para definir os valores
-            countdownInterval = setInterval(updateCountdown, 1000); // Atualiza a cada segundo
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            generateThemes();
+            applyTheme(currentThemeIndex); 
+
+            if (canvas.width > 0 && canvas.height > 0) {
+                initParticles(); 
+                startAnimationLoop(); // Inicia o loop de animação
+            }
+            
+            requestAnimationFrame(() => { // Defer node creation
+                 createNodes();
+            });
+
+            if (typeof updateCountdown === 'function') updateCountdown();
+            if (typeof setInterval === 'function') countdownInterval = setInterval(updateCountdown, 1000);
 
             const introScreen = document.getElementById('site-title-intro');
             setTimeout(() => {
                 if (introScreen) introScreen.classList.add('hidden');
             }, 3500); 
+
+            if (centralCoreElement) { 
+                centralCoreElement.addEventListener('click', nextTheme);
+            }
         });
 
         window.addEventListener('resize', () => {
+            // stopAnimationLoop(); // Parar o loop antigo antes de reconfigurar
+
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initParticles(); // Reinicia as partículas para se adaptarem à nova dimensão
+            
+            if (canvas.width > 0 && canvas.height > 0) {
+                initParticles(); 
+                // A animação já estará rodando ou será reiniciada por startAnimationLoop se necessário.
+                // Se o animateParticles já faz requestAnimationFrame(animateParticles), 
+                // ele se ajustará. A questão é se o loop principal foi parado.
+                // Para simplificar, vamos garantir que ele reinicie se necessário.
+                if (animationFrameId === null) startAnimationLoop();
+
+            } else {
+                // stopAnimationLoop(); // Se o canvas ficou inválido, parar
+            }
+            
+            if (svgLines) svgLines.innerHTML = '';
+            if (nodeElements && typeof nodeElements.forEach === 'function') { 
+                nodeElements.forEach(node => { if (node && node.remove) node.remove(); });
+            }
+            nodeElements = [];
+            
+            requestAnimationFrame(() => { 
+                createNodes();
+            });
         });
         
     </script>
