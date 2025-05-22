@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATEMÁTICO 10 - NEXUS COGNITIVO</title>
+    <style>
+        :root {
+            --glow-color-primary: #00ffff; /* Cyan */
+            --glow-color-secondary: #ff00ff; /* Magenta */
+            --glow-color-tertiary: #ffff00; /* Yellow */
+            --particle-color: rgba(200, 225, 255, 0.7);
+            --line-color: rgba(100, 150, 255, 0.3);
+            --text-color: #e0f0ff;
+            --bg-color-start: #000010;
+            --bg-color-end: #05000a;
+            --node-bg: rgba(10, 20, 50, 0.8);
+            --node-border: var(--glow-color-primary);
+            --font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+            font-family: var(--font-family);
+            color: var(--text-color);
+            cursor: none; /* Custom cursor will be implemented */
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--glow-color-primary);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: transform 0.1s ease-out, width 0.2s ease-out, height 0.2s ease-out;
+            box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary) inset;
+        }
+
+        .custom-cursor.active {
+            transform: translate(-50%, -50%) scale(1.5);
+            background-color: rgba(0, 255, 255, 0.2);
+        }
+        
+        .custom-cursor-dot {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background-color: var(--glow-color-secondary);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            box-shadow: 0 0 5px var(--glow-color-secondary);
+        }
+
+        #nexus-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vmin;
+            height: 80vmin;
+            z-index: 1;
+        }
+
+        #central-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 15vmin;
+            height: 15vmin;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 
+                0 0 10px var(--glow-color-primary),
+                0 0 20px var(--glow-color-primary),
+                0 0 30px var(--glow-color-secondary),
+                0 0 40px var(--glow-color-secondary) inset;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            animation: pulseCore 5s infinite alternate, rotateCore 60s linear infinite;
+            border: 2px solid var(--glow-color-primary);
+        }
+        
+        #central-core::before, #central-core::after {
+            content: '';
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            border: 1px dashed var(--glow-color-secondary);
+            animation: rotateCore 20s linear infinite reverse;
+            opacity: 0.5;
+        }
+        #central-core::after {
+            width: 150%;
+            height: 150%;
+            border-style: dotted;
+            border-color: var(--glow-color-tertiary);
+            animation-duration: 30s;
+            opacity: 0.3;
+        }
+
+
+        #core-logo {
+            width: 70%;
+            height: 70%;
+            border-radius: 50%;
+            object-fit: cover;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px var(--glow-color-primary));
+        }
+        
+        @keyframes pulseCore {
+            0% { box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary), 0 0 30px var(--glow-color-secondary), 0 0 40px var(--glow-color-secondary) inset; transform: translate(-50%, -50%) scale(1); }
+            50% { box-shadow: 0 0 15px var(--glow-color-primary), 0 0 30px var(--glow-color-primary), 0 0 45px var(--glow-color-tertiary), 0 0 60px var(--glow-color-tertiary) inset; transform: translate(-50%, -50%) scale(1.1); }
+            100% { box-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary), 0 0 30px var(--glow-color-secondary), 0 0 40px var(--glow-color-secondary) inset; transform: translate(-50%, -50%) scale(1); }
+        }
+        @keyframes rotateCore {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+
+        .data-node {
+            position: absolute;
+            width: 8vmin;
+            height: 8vmin;
+            background: var(--node-bg);
+            border: 1px solid var(--node-border);
+            border-radius: 50%; /* Default, can be overridden by JS */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.5vmin;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 0 5px var(--node-border), 0 0 10px var(--node-border) inset;
+            opacity: 0.8;
+            color: var(--text-color);
+        }
+
+        .data-node:hover, .data-node.active {
+            transform: scale(1.2);
+            box-shadow: 0 0 15px var(--glow-color-secondary), 0 0 30px var(--glow-color-secondary) inset, 0 0 10px var(--glow-color-primary);
+            opacity: 1;
+            z-index: 10;
+            border-color: var(--glow-color-secondary);
+        }
+        .data-node i {
+            font-size: 3vmin;
+            margin-bottom: 0.5vmin;
+            display: block;
+            text-shadow: 0 0 5px currentColor;
+        }
+
+
+        #connection-lines-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1; /* Behind nodes but above canvas */
+        }
+        
+        #connection-lines-svg line {
+            stroke: var(--line-color);
+            stroke-width: 1;
+            animation: pulseLine 3s infinite alternate;
+        }
+        @keyframes pulseLine {
+            from { stroke-opacity: 0.2; stroke-width: 0.5; }
+            to { stroke-opacity: 0.6; stroke-width: 1.5; }
+        }
+
+        #content-display-module {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            width: 70vw;
+            height: 70vh;
+            max-width: 1000px;
+            max-height: 700px;
+            background-color: rgba(5, 10, 30, 0.95);
+            border: 2px solid var(--glow-color-secondary);
+            border-radius: 10px;
+            box-shadow: 0 0 30px var(--glow-color-secondary), 0 0 60px var(--glow-color-primary) inset;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0s linear 0.5s, transform 0.5s ease;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-color);
+        }
+
+        #content-display-module.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+            transition: opacity 0.5s ease, visibility 0s linear 0s, transform 0.5s ease;
+        }
+        
+        #content-display-module h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--glow-color-primary);
+            text-shadow: 0 0 10px var(--glow-color-primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #module-content-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 15px; /* For scrollbar */
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+        
+        #module-content-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        #module-content-area::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        #module-content-area::-webkit-scrollbar-thumb {
+            background: var(--glow-color-primary);
+            border-radius: 4px;
+            box-shadow: 0 0 5px var(--glow-color-primary) inset;
+        }
+        #module-content-area::-webkit-scrollbar-thumb:hover {
+            background: var(--glow-color-secondary);
+        }
+
+        #module-content-area a {
+            color: var(--glow-color-tertiary);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--glow-color-tertiary);
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        #module-content-area a:hover {
+            color: var(--glow-color-primary);
+            border-bottom-color: var(--glow-color-primary);
+            text-shadow: 0 0 5px var(--glow-color-primary);
+        }
+        #module-content-area ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        #module-content-area li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        }
+        #module-content-area li::before {
+            content: "» ";
+            color: var(--glow-color-primary);
+            margin-right: 10px;
+        }
+        #module-content-area img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid var(--glow-color-primary);
+            box-shadow: 0 0 10px var(--glow-color-primary);
+        }
+
+
+        #close-module-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: 1px solid var(--glow-color-secondary);
+            color: var(--glow-color-secondary);
+            font-size: 1.5rem;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: color 0.3s, border-color 0.3s, transform 0.3s;
+            box-shadow: 0 0 5px var(--glow-color-secondary);
+        }
+        #close-module-button:hover {
+            color: var(--text-color);
+            border-color: var(--text-color);
+            transform: rotate(90deg) scale(1.1);
+        }
+        
+        #countdown-widget {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(10, 20, 50, 0.7);
+            border: 1px solid var(--glow-color-primary);
+            border-radius: 8px;
+            padding: 10px 15px;
+            z-index: 50;
+            text-align: center;
+            box-shadow: 0 0 15px var(--glow-color-primary);
+            color: var(--text-color);
+            font-size: 0.8rem;
+        }
+        #countdown-widget .title {
+            font-size: 0.9rem;
+            color: var(--glow-color-tertiary);
+            margin-bottom: 5px;
+        }
+        #countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            font-weight: bold;
+        }
+        #countdown-timer span {
+            min-width: 40px;
+        }
+        #countdown-timer .unit {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            display: block;
+        }
+        #countdown-message {
+            margin-top: 5px;
+            color: var(--glow-color-secondary);
+            font-weight: bold;
+        }
+
+        /* Terminal-like scanlines overlay */
+        #scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9990; /* Below cursor, above most content */
+            background: linear-gradient(
+                to bottom,
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.15) 51%
+            );
+            background-size: 100% 4px; /* Adjust line thickness and spacing */
+            opacity: 0.2;
+            animation: scan 20s linear infinite;
+        }
+        @keyframes scan {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100vh; }
+        }
+
+        /* Title Intro Animation */
+        #site-title-intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color-start);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 1s ease-out 3s; /* Fade out after 3s animation + 1s fade */
+        }
+        #site-title-intro.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .intro-text {
+            font-size: 4vw;
+            letter-spacing: 0.5vw;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInGlow 2s forwards;
+            text-shadow: 0 0 10px var(--glow-color-primary), 0 0 20px var(--glow-color-primary);
+        }
+        .intro-text:nth-child(1) { animation-delay: 0.5s; }
+        .intro-text:nth-child(2) { 
+            font-size: 2vw; 
+            letter-spacing: 0.2vw;
+            animation-delay: 1.5s; 
+            color: var(--glow-color-secondary);
+            text-shadow: 0 0 10px var(--glow-color-secondary);
+        }
+
+        @keyframes fadeInGlow {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* For FontAwesome Icons if CDN is used (example) */
+        .fas, .fab {
+            /* Basic styling for icons if needed, though they should inherit color */
+        }
+        
+        /* Specific iframe styling for security if loading external content */
+        #module-content-area iframe {
+            width: 100%;
+            height: 50vh; /* Adjust as needed */
+            border: 1px solid var(--glow-color-primary);
+            border-radius: 5px;
+            background-color: #000; /* Fallback bg */
+        }
+
+
+    </style>
+    <!-- Font Awesome for icons - If strictly "totally HTML" and no external CDNs, replace with SVG icons or text symbols -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div id="site-title-intro">
+        <div class="intro-text">Matemático 10</div>
+        <div class="intro-text">Nexus Cognitivo</div>
+    </div>
+
+    <div class="custom-cursor"></div>
+    <div class="custom-cursor-dot"></div>
+    
+    <canvas id="particle-canvas"></canvas>
+    <div id="scanlines"></div>
+
+    <div id="nexus-container">
+        <div id="central-core">
+            <img id="core-logo" src="https://i.ibb.co/CXgmX10/Simbolo-Matem-tico-10.jpg" alt="Matemático 10 Logo">
+        </div>
+        <svg id="connection-lines-svg"></svg>
+        <!-- Data nodes will be injected here by JavaScript -->
+    </div>
+
+    <div id="content-display-module">
+        <button id="close-module-button" title="Fechar Módulo">×</button>
+        <h2 id="module-title">Título do Módulo</h2>
+        <div id="module-content-area">
+            <!-- Content will be injected here -->
+        </div>
+    </div>
+
+    <div id="countdown-widget">
+        <div class="title">PI DAY COUNTDOWN</div>
+        <div id="countdown-timer">
+            <div><span id="months">0</span><span class="unit">Meses</span></div>
+            <div><span id="days">0</span><span class="unit">Dias</span></div>
+            <div><span id="hours">0</span><span class="unit">Horas</span></div>
+            <div><span id="minutes">0</span><span class="unit">Min</span></div>
+            <div><span id="seconds">0</span><span class="unit">Seg</span></div>
+        </div>
+        <div id="countdown-message"></div>
+    </div>
+
+    <script>
+        // --- SITE DATA (Simulating data from your other files) ---
+        const siteData = {
+            nodes: [
+                { 
+                    id: "inicio", 
+                    label: "Início", 
+                    icon: "fas fa-atom", 
+                    content: `<h1>Bem-vindo ao Matemático 10</h1>
+                              <p>Uma explanação completa sobre as diversas áreas da <span>matemática</span>!</p>
+                              <p>Aprenda matemática com diferentes recursos que auxiliam na compreensão do conteúdo. Conteúdos estruturados para um aprendizado contínuo e progressivo, incluindo 200 podcasts exclusivos e material de apoio para todos os níveis.</p>
+                              <img src="https://cdn.pixabay.com/photo/2023/06/05/07/19/einstein-8041625_1280.png" alt="Einstein Abstract" style="width:300px; display:block; margin:10px auto;">
+                              <p>Este é o portal Matemático 10, reimaginado como um nexo de conhecimento interconectado. Navegue pelos nós para explorar diferentes facetas do universo matemático e além.</p>`
+                },
+                { 
+                    id: "curso", 
+                    label: "Curso", 
+                    icon: "fas fa-graduation-cap",
+                    content: `<h2>O Curso: O Mundo da Matemática</h2>
+                              <p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p>
+                              <h3>Destaques:</h3>
+                              <ul>
+                                <li><strong>Conteúdo Estruturado:</strong> Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</li>
+                                <li><strong>200 Podcasts Exclusivos:</strong> Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível.</li>
+                                <li><strong>Material de Apoio:</strong> Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível.</li>
+                              </ul>
+                              <p><a href="https://www.udemy.com/course/mundodamatematica" target="_blank" rel="noopener noreferrer">Matricule-se Agora na Udemy</a></p>`
+                },
+                { 
+                    id: "recursos", 
+                    label: "Recursos", 
+                    icon: "fas fa-cogs",
+                    content: `<h2>Recursos Pedagógicos</h2>
+                              <p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p>
+                              <ul>
+                                <li><a href="Mapa.html#Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank">Paradoxo Hiperdimensional (Teste BR-EUA)</a></li>
+                                <li><a href="Mapa.html#Recursos/Planej. Anuais.html" target="_blank">Planejamentos Anuais</a></li>
+                                <li><a href="Mapa.html#Recursos/Jogo do Milhão.html" target="_blank">Jogo do Milhão</a></li>
+                                <li><a href="Mapa.html#Recursos/VídeosK10.html" target="_blank">Minha Videoteca K10</a></li>
+                                <li><a href="Mapa.html#Recursos/BancoDeQuestões.html" target="_blank">Banco de Questões</a></li>
+                                <li><a href="Mapa.html#Recursos/BancoDePerguntas.html" target="_blank">Banco de Perguntas</a></li>
+                                <li><strong>Sites Úteis:</strong>
+                                    <ul>
+                                        <li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank">Curso Google For Education</a></li>
+                                        <li><a href="https://www.geogebra.org/" target="_blank">GeoGebra</a></li>
+                                        <li><a href="https://www.wolframalpha.com/" target="_blank">Wolfram Alpha</a></li>
+                                        <li><a href="https://www.symbolab.com/" target="_blank">Symbolab</a></li>
+                                        <li><a href="https://www.desmos.com/" target="_blank">Desmos</a></li>
+                                        <li><a href="https://pt.duolingo.com/" target="_blank">Duolingo (para idiomas, mas útil para lógica)</a></li>
+                                        <li><a href="http://www.obmep.org.br/provas.htm" target="_blank">Provas OBMEP</a></li>
+                                    </ul>
+                                </li>
+                              </ul>`
+                },
+                { 
+                    id: "livros", 
+                    label: "Livros", 
+                    icon: "fas fa-book-open",
+                    content: `<h2>Livros Publicados</h2>
+                              <p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p>
+                              <ul>
+                                <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li>
+                                <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank">Código Matemático</a> - A matemática como linguagem universal.</li>
+                                <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li>
+                              </ul>`
+                },
+                {
+                    id: "chat",
+                    label: "Chat P2P",
+                    icon: "fas fa-comments",
+                    content: `<h2>Chat K10 - P2P</h2>
+                              <p>Comunicação segura e descentralizada. Para usar o Chat K10:</p>
+                              <ol>
+                                <li>Acesse uma das versões (Navegador é recomendado para teste rápido).</li>
+                                <li>Seu ID único será gerado.</li>
+                                <li>Compartilhe seu ID com um amigo que também esteja usando o Chat K10.</li>
+                                <li>Seu amigo adiciona seu ID e você o dele.</li>
+                                <li>Conectem-se e conversem!</li>
+                              </ol>
+                              <h3>Acessos:</h3>
+                              <ul>
+                                  <li><a href="Chat Desktop.html" target="_blank">Abrir Chat K10 (Desktop/Navegador)</a> (Requer que este arquivo esteja no mesmo diretório ou caminho correto)</li>
+                                  <li><a href="https://k10.netlify.app/#app" target="_blank" rel="noopener noreferrer">Chat K10 Online (Netlify)</a></li>
+                                  <li><a href="https://paulo-sergio-de-andrade.itch.io/chat-p2p" target="_blank" rel="noopener noreferrer">Baixar Apps (itch.io)</a></li>
+                                  <li><a href="README.md" target="_blank">Leia o README</a> (Como usar)</li>
+                              </ul>
+                              <p><strong>Nota:</strong> Para o link "Abrir Chat K10 (Desktop/Navegador)" funcionar, o arquivo <code>Chat Desktop.HTML</code> precisa estar acessível no mesmo local ou caminho relativo correto de onde este arquivo principal está sendo executado.</p>`
+                },
+                { 
+                    id: "sobre", 
+                    label: "Sobre", 
+                    icon: "fas fa-user-astronaut",
+                    content: `<h2>Sobre o Prof. Paulo Sérgio de Andrade</h2>
+                              <p>Educador, Matemático.</p>
+                              <img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="width:200px; border-radius:50%; float:left; margin-right:15px;">
+                              <p>Licenciado em Matemática (2010), com especializações em Docência do Ensino Superior, Metodologias Ativas, Educação 4.0 (2021), Matemática e Mundo do Trabalho (2024), e Currículo e Prática Docente nos Anos Iniciais (2025).</p>
+                              <p>Dedicado à busca por metodologias inovadoras no ensino da matemática, priorizando a participação ativa dos estudantes e a construção significativa do conhecimento.</p>
+                              <p><a href="http://lattes.cnpq.br/7286865766488458" target="_blank" rel="noopener noreferrer">Currículo Lattes</a></p>`
+                },
+                { 
+                    id: "contato", 
+                    label: "Redes", 
+                    icon: "fas fa-broadcast-tower",
+                    content: `<h2>Redes Sociais e Contato</h2>
+                              <p>Explore mais conteúdos sobre matemática, educação e tecnologia nas minhas redes sociais.</p>
+                              <ul>
+                                <li><a href="https://www.linkedin.com/in/geral10" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+                                <li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+                                <li><a href="https://x.com/SergioPaul97880" target="_blank" rel="noopener noreferrer">X (Twitter)</a></li>
+                                <li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li>
+                                <li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+                                <li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li>
+                                <li><a href="index.html" target="_blank">Site Principal (Versão Anterior)</a></li>
+                              </ul>`
+                },
+                 { 
+                    id: "mapa_conceitual", 
+                    label: "Mapa", 
+                    icon: "fas fa-sitemap",
+                    content: `<h2>Mapa Conceitual Interativo</h2>
+                              <p>Explore a estrutura de links e recursos de forma visual e interativa.</p>
+                              <p>O mapa original é uma interface complexa. Abaixo está uma tentativa de incorporar sua funcionalidade ou visualização.</p>
+                              <p><a href="Mapa.html" target="_blank">Abrir Mapa Original (Circular)</a></p>
+                              <p><em>(A integração total do mapa circular aqui é complexa. Esta é uma representação textual. Clique no link acima para a experiência completa.)</em></p>
+                              <iframe src="Mapa.html" title="Mapa Conceitual Circular" style="width:100%; height:60vh; border:1px solid var(--glow-color-primary); background: #000;"></iframe>
+                              `
+                }
+            ]
+        };
+
+        // --- PARTICLE SYSTEM ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray = [];
+        const numberOfParticles = Math.floor((canvas.width * canvas.height) / 20000); // Responsive particle count
+
+        const mathSymbols = ['ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈', '≠', '≡', '≤', '≥', '⊂', '⊃', '∈', '∅', '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '∀', '∃', '∴', '∵',  '∑', '∏', '⊕', '⊗'];
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5; // Smaller, more numerous particles
+                this.speedX = (Math.random() * 0.6 - 0.3); // Slower movement
+                this.speedY = (Math.random() * 0.6 - 0.3);
+                this.color = `rgba(${Math.random()*100 + 100}, ${Math.random()*100 + 155}, 255, ${Math.random() * 0.5 + 0.3})`;
+                this.symbol = mathSymbols[Math.floor(Math.random() * mathSymbols.length)];
+                this.life = Math.random() * 200 + 100; // Particle lifespan
+                this.initialLife = this.life;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life--;
+
+                // Boundary check (bounce)
+                if (this.x + this.size > canvas.width || this.x - this.size < 0) this.speedX *= -1;
+                if (this.y + this.size > canvas.height || this.y - this.size < 0) this.speedY *= -1;
+            }
+            draw() {
+                const opacity = (this.life / this.initialLife) * 0.7; // Fade out
+                ctx.fillStyle = this.color.replace(/,( ?\d?\.?\d+)\)/, `,${opacity})`);
+                ctx.beginPath();
+                // Instead of symbols for performance, draw circles or squares
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                // ctx.fillRect(this.x, this.y, this.size*2, this.size*2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        let mouse = { x: undefined, y: undefined, radius: 80 };
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+        });
+        window.addEventListener('mouseout', () => {
+            mouse.x = undefined;
+            mouse.y = undefined;
+        });
+
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+
+                // Interaction with mouse
+                if (mouse.x !== undefined && mouse.y !== undefined) {
+                    let dx = particlesArray[i].x - mouse.x;
+                    let dy = particlesArray[i].y - mouse.y;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < mouse.radius) {
+                        particlesArray[i].x += dx / distance * 2; // Push away
+                        particlesArray[i].y += dy / distance * 2;
+                        particlesArray[i].speedX *= 0.95; // Dampen
+                        particlesArray[i].speedY *= 0.95;
+                    }
+                }
+                
+                // Respawn dead particles
+                if (particlesArray[i].life <= 0) {
+                    particlesArray.splice(i, 1);
+                    particlesArray.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+                    i--; 
+                }
+            }
+            // Connect nearby particles
+            connectParticles();
+            requestAnimationFrame(animateParticles);
+        }
+        
+        function connectParticles() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a + 1; b < particlesArray.length; b++) { // Start b from a+1 to avoid re-checks and self-checks
+                    let dx = particlesArray[a].x - particlesArray[b].x;
+                    let dy = particlesArray[a].y - particlesArray[b].y;
+                    let distance = Math.sqrt(dx*dx + dy*dy);
+
+                    if (distance < 70) { // Connection distance threshold
+                        opacityValue = 1 - (distance / 70);
+                        ctx.strokeStyle = `rgba(150, 180, 255, ${opacityValue * 0.3})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+
+        // --- NEXUS UI LOGIC ---
+        const nexusContainer = document.getElementById('nexus-container');
+        const centralCore = document.getElementById('central-core');
+        const svgLines = document.getElementById('connection-lines-svg');
+        const contentModule = document.getElementById('content-display-module');
+        const moduleTitle = document.getElementById('module-title');
+        const moduleContentArea = document.getElementById('module-content-area');
+        const closeModuleButton = document.getElementById('close-module-button');
+        
+        let nodeElements = [];
+
+        function createNodes() {
+            const numNodes = siteData.nodes.length;
+            const radius = 35; // Percentage of nexusContainer for node placement
+            const angleStep = (2 * Math.PI) / numNodes;
+
+            siteData.nodes.forEach((nodeData, i) => {
+                const angle = i * angleStep - Math.PI / 2; // Start from top
+                const x = 50 + radius * Math.cos(angle);
+                const y = 50 + radius * Math.sin(angle);
+
+                const nodeEl = document.createElement('div');
+                nodeEl.classList.add('data-node');
+                nodeEl.id = `node-${nodeData.id}`;
+                nodeEl.style.left = `${x}%`;
+                nodeEl.style.top = `${y}%`;
+                // Randomize appearance slightly for "unreproducible" feel
+                nodeEl.style.width = `${Math.random() * 2 + 7}vmin`;
+                nodeEl.style.height = nodeEl.style.width;
+                nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
+                nodeEl.style.transform = `translate(-50%, -50%) rotate(${Math.random()*30-15}deg)`;
+                nodeEl.style.animation = `floatNode ${Math.random()*3+3}s ease-in-out infinite alternate`;
+                nodeEl.style.setProperty('--float-offset', `${Math.random()*10-5}px`);
+
+
+                nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`;
+                nodeEl.title = nodeData.label;
+
+                nodeEl.addEventListener('click', () => {
+                    openModule(nodeData);
+                    nodeElements.forEach(n => n.classList.remove('active'));
+                    nodeEl.classList.add('active');
+                });
+                
+                // Add hover effect to temporarily pause float and bring to front
+                nodeEl.addEventListener('mouseenter', () => {
+                    nodeEl.style.animationPlayState = 'paused';
+                });
+                nodeEl.addEventListener('mouseleave', () => {
+                     nodeEl.style.animationPlayState = 'running';
+                });
+
+
+                nexusContainer.appendChild(nodeEl);
+                nodeElements.push(nodeEl);
+
+                // Create SVG line
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                // Core is at 50%, 50%. Node positions are also relative to nexusContainer.
+                line.setAttribute('x1', '50%');
+                line.setAttribute('y1', '50%');
+                line.setAttribute('x2', `${x}%`);
+                line.setAttribute('y2', `${y}%`);
+                line.style.animationDelay = `${i * 0.2}s`; // Stagger line animations
+                svgLines.appendChild(line);
+            });
+            
+            // Add dynamic keyframes for floating nodes
+            const styleSheet = document.styleSheets[0];
+            const floatKeyframes = `
+                @keyframes floatNode {
+                    0% { transform: translate(calc(-50% + var(--float-offset)), calc(-50% - var(--float-offset))) rotate(${Math.random()*10-5}deg); }
+                    100% { transform: translate(calc(-50% - var(--float-offset)), calc(-50% + var(--float-offset))) rotate(${Math.random()*10-5}deg); }
+                }`;
+            try { styleSheet.insertRule(floatKeyframes, styleSheet.cssRules.length); } 
+            catch(e) { console.warn("Could not insert floatNode keyframes dynamically", e); }
+
+        }
+        
+        function openModule(nodeData) {
+            moduleTitle.textContent = nodeData.label;
+            moduleContentArea.innerHTML = nodeData.content; // Make sure content is sanitized if from untrusted source
+            contentModule.classList.add('visible');
+        }
+
+        closeModuleButton.addEventListener('click', () => {
+            contentModule.classList.remove('visible');
+            nodeElements.forEach(n => n.classList.remove('active'));
+        });
+        
+        // Close module with Escape key
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && contentModule.classList.contains('visible')) {
+                contentModule.classList.remove('visible');
+                nodeElements.forEach(n => n.classList.remove('active'));
+            }
+        });
+
+        // --- COUNTDOWN LOGIC (from Contador.html) ---
+        const countdownMonthsEl = document.getElementById('months');
+        const countdownDaysEl = document.getElementById('days');
+        const countdownHoursEl = document.getElementById('hours');
+        const countdownMinutesEl = document.getElementById('minutes');
+        const countdownSecondsEl = document.getElementById('seconds');
+        const countdownMessageEl = document.getElementById('countdown-message');
+        let countdownInterval;
+
+        function updateCountdown() {
+            const now = new Date();
+            let targetYear = now.getFullYear();
+            const march14ThisYear = new Date(targetYear, 2, 14); // Month is 0-indexed, so 2 is March
+
+            if (now > march14ThisYear) {
+                targetYear++;
+            }
+            const targetDate = new Date(targetYear, 2, 14);
+
+            const totalSeconds = Math.floor((targetDate - now) / 1000);
+
+            if (totalSeconds <= 0) {
+                countdownMonthsEl.textContent = 0;
+                countdownDaysEl.textContent = 0;
+                countdownHoursEl.textContent = 0;
+                countdownMinutesEl.textContent = 0;
+                countdownSecondsEl.textContent = 0;
+                countdownMessageEl.textContent = "FELIZ DIA DO PI!";
+                clearInterval(countdownInterval);
+                return;
+            }
+            
+            // This is a simplified countdown logic for display purposes.
+            // Accurate month/day calculation is complex due to varying month lengths.
+            // For a visual countdown, an approximation is often acceptable.
+            let remaining = totalSeconds;
+            
+            const days = Math.floor(remaining / (3600 * 24));
+            remaining %= (3600*24);
+
+            // Approximate months (very rough)
+            const approxMonths = Math.floor(days / 30.44); // Average days in a month
+            const remainingDays = days % 30; // This is not perfectly accurate
+
+            countdownMonthsEl.textContent = approxMonths;
+            countdownDaysEl.textContent = remainingDays;
+
+            countdownHoursEl.textContent = Math.floor(remaining / 3600) % 24;
+            remaining %= 3600;
+            countdownMinutesEl.textContent = Math.floor(remaining / 60) % 60;
+            remaining %= 60;
+            countdownSecondsEl.textContent = remaining;
+            countdownMessageEl.textContent = "";
+
+        }
+        
+        // --- CUSTOM CURSOR ---
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorDot = document.querySelector('.custom-cursor-dot');
+        const interactiveElements = 'a, button, .data-node, input, textarea, [onclick]';
+
+        document.addEventListener('mousemove', e => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+
+            if (e.target.closest(interactiveElements)) {
+                cursor.classList.add('active');
+            } else {
+                cursor.classList.remove('active');
+            }
+        });
+        document.addEventListener('mousedown', () => cursor.classList.add('active'));
+        document.addEventListener('mouseup', () => cursor.classList.remove('active'));
+
+
+        // --- INITIALIZATION ---
+        window.addEventListener('load', () => {
+            initParticles();
+            animateParticles();
+            createNodes();
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+
+            const introScreen = document.getElementById('site-title-intro');
+            setTimeout(() => {
+                introScreen.classList.add('hidden');
+            }, 3500); // Match CSS animation + fade duration
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Re-initialize particles if needed or just let them adapt
+            // initParticles(); // This would reset them, might not be desired
+            // Adjust nexus container or node positions if needed, but vmin should handle some responsiveness
+        });
+        
+    </script>
+</body>
+</html>
