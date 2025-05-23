@@ -21,7 +21,7 @@
             --glow-color-primary-hsl: 180, 100%, 50%;
             /* Variáveis para Mobile - serão atualizadas pelos temas */
             --mobile-header-bg: rgba(5, 10, 30, 0.9);
-            --mobile-nav-bg: rgba(10, 25, 60, 0.7); /* Renomeada de mobile-nav-item-bg */
+            --mobile-nav-bg: rgba(10, 25, 60, 0.7);
             --mobile-nav-item-hover-bg: rgba(20, 40, 80, 0.9);
         }
 
@@ -30,17 +30,17 @@
             padding: 0;
             width: 100vw;
             height: 100vh;
-            overflow: hidden; /* Mantido para desktop, ajustado para mobile */
+            overflow: hidden;
             background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
             font-family: var(--font-family);
             color: var(--text-color);
-            cursor: none; /* Mantido para desktop, ajustado para mobile */
+            cursor: none;
             transition: background 0.5s ease-in-out, color 0.3s ease;
         }
 
         /* --- DESKTOP VIEW STYLES --- */
         #desktop-view {
-            display: block; /* Mostra por padrão */
+            display: block;
             width: 100%;
             height: 100%;
             position: relative;
@@ -225,7 +225,7 @@
             to { stroke-opacity: 0.6; stroke-width: 1.5; }
         }
 
-        #content-display-module { /* Modal para desktop */
+        #content-display-module {
             position: fixed;
             top: 50%;
             left: 50%;
@@ -336,13 +336,13 @@
 
         /* --- MOBILE VIEW STYLES --- */
         #mobile-view {
-            display: none; /* Escondido por padrão */
+            display: none;
             flex-direction: column;
             width: 100%;
-            height: 100vh; /* Ocupar toda a altura da viewport */
-            background-color: var(--bg-color-start); /* Usa a cor de fundo base */
+            height: 100vh;
+            background-color: var(--bg-color-start);
             color: var(--text-color);
-            overflow: hidden; /* O conteúdo principal e nav terão seus próprios scrolls */
+            overflow: hidden;
         }
 
         #mobile-header {
@@ -352,8 +352,8 @@
             border-bottom: 2px solid var(--glow-color-primary);
             box-shadow: 0 2px 10px var(--glow-color-primary);
             z-index: 10;
-            flex-shrink: 0; /* Impede que o header encolha */
-            position: relative; /* Para posicionar o botão de tema absoluto a ele */
+            flex-shrink: 0;
+            position: relative;
         }
         #mobile-header h1 {
             margin: 0;
@@ -367,7 +367,7 @@
             transform: translateY(-50%);
             right: 15px;
             background: var(--glow-color-secondary);
-            color: var(--bg-color-start); /* Idealmente uma cor que contraste bem com o glow-secondary */
+            color: var(--bg-color-start);
             border: none;
             border-radius: 50%;
             width: 40px;
@@ -381,17 +381,17 @@
             transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
         }
 
-        #mobile-nav { /* Menu horizontal rolável */
+        #mobile-nav {
             list-style: none;
             padding: 0;
             margin: 0;
             display: flex;
             overflow-x: auto;
             overflow-y: hidden;
-            background-color: var(--mobile-nav-bg); /* Fundo da barra de navegação */
+            background-color: var(--mobile-nav-bg);
             border-bottom: 1px solid var(--node-border);
             flex-shrink: 0;
-            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
+            -webkit-overflow-scrolling: touch;
         }
         #mobile-nav::-webkit-scrollbar {
             height: 4px;
@@ -412,32 +412,32 @@
             align-items: center;
             white-space: nowrap;
             border-right: 1px solid hsla(var(--glow-color-primary-hsl), 0.15);
-            color: var(--text-color); /* Cor padrão do texto dos itens */
+            color: var(--text-color);
         }
         #mobile-nav li:last-child {
             border-right: none;
         }
         #mobile-nav li i {
             margin-right: 8px;
-            color: var(--glow-color-primary); /* Cor padrão do ícone */
+            color: var(--glow-color-primary);
             font-size: 1.1em;
             transition: color 0.3s ease;
         }
         #mobile-nav li:hover,
         #mobile-nav li.active {
             background-color: var(--mobile-nav-item-hover-bg);
-            color: var(--glow-color-secondary); /* Cor do texto no hover/ativo */
+            color: var(--glow-color-secondary);
         }
         #mobile-nav li.active i,
         #mobile-nav li:hover i {
-            color: var(--glow-color-secondary); /* Cor do ícone no hover/ativo */
+            color: var(--glow-color-secondary);
         }
 
         #mobile-content-container {
             flex-grow: 1;
             padding: 20px;
-            overflow-y: auto; /* Scroll vertical apenas para o conteúdo */
-            background-color: rgba(0,0,0,0.3); /* Fundo sutil para área de conteúdo */
+            overflow-y: auto;
+            background-color: rgba(0,0,0,0.3);
         }
         #mobile-content-container h2 {
             font-size: 1.5rem;
@@ -449,7 +449,6 @@
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
-         /* Estilos do #module-content-area aplicados também a #mobile-content-container */
         #mobile-content-container a { color: var(--glow-color-tertiary); text-decoration: none; border-bottom: 1px dotted var(--glow-color-tertiary); transition: color 0.3s, border-bottom-color 0.3s; }
         #mobile-content-container a:hover { color: var(--glow-color-primary); border-bottom-color: var(--glow-color-primary); text-shadow: 0 0 5px var(--glow-color-primary); }
         #mobile-content-container ul { list-style-type: none; padding-left: 0; }
@@ -461,42 +460,35 @@
         #mobile-content-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         #mobile-content-container::-webkit-scrollbar-thumb { background: var(--glow-color-primary); border-radius: 3px; }
 
-
         /* --- MEDIA QUERIES --- */
         @media (max-width: 768px) {
-            /* Regras gerais para mobile */
             html, body {
-                overflow: hidden; /* No mobile, o scroll é controlado internamente */
-                cursor: auto; /* Cursor padrão no mobile */
+                overflow: hidden;
+                cursor: auto;
             }
             #desktop-view {
-                display: none !important; /* Esconde a view desktop */
+                display: none !important;
             }
             #mobile-view {
-                display: flex !important; /* Mostra a view mobile */
+                display: flex !important;
             }
             .custom-cursor, .custom-cursor-dot, #particle-canvas, #scanlines, #countdown-widget {
-                display: none !important; /* Esconde elementos desnecessários no mobile */
+                display: none !important;
             }
             #site-title-intro .intro-text { font-size: 6vw; }
             #site-title-intro .intro-text:nth-child(2) { font-size: 3vw; }
-
-            /* Ajustes específicos para o modal de conteúdo do desktop (se ainda fosse usado) */
             #content-display-module { width: 90vw; height: 80vh; padding: 20px; }
             #content-display-module h2 { font-size: 1.8rem; }
             #module-content-area { font-size: 0.9rem; }
         }
 
         @media (max-width: 480px) {
-            /* Ajustes desktop se fossem visíveis */
             .data-node { width: 10vmin; height: 10vmin; font-size: 1.2vmin; }
             .data-node i { font-size: 2.5vmin; }
             #central-core { width: 18vmin; height: 18vmin; }
-            /* Ajustes modal desktop se fosse visível */
             #content-display-module h2 { font-size: 1.5rem; }
-            /* Ajustes mobile */
             #mobile-header h1 { font-size: 1.5rem; }
-            #mobile-nav li { padding: 10px 12px; font-size: 0.85rem;} /* Menor padding/fonte */
+            #mobile-nav li { padding: 10px 12px; font-size: 0.85rem;}
             #mobile-nav li i { font-size: 1em; margin-right: 6px;}
             #mobile-content-container { padding: 15px; font-size: 0.9rem;}
             #mobile-content-container h2 { font-size: 1.3rem;}
@@ -511,29 +503,22 @@
         <div class="intro-text">Paulo Sérgio de Andrade</div>
     </div>
 
-    <!-- === DESKTOP VIEW === -->
     <div id="desktop-view">
         <div class="custom-cursor"></div>
         <div class="custom-cursor-dot"></div>
         <canvas id="particle-canvas"></canvas>
         <div id="scanlines"></div>
-
         <div id="nexus-container">
             <div id="central-core" title="Clique para mudar o tema">
                 <img id="core-logo" src="https://i.ibb.co/CXgmX10/Simbolo-Matem-tico-10.jpg" alt="Matemático 10 Logo">
             </div>
             <svg id="connection-lines-svg"></svg>
-            <!-- Os .data-node serão inseridos aqui pelo JS -->
         </div>
-
         <div id="content-display-module">
             <button id="close-module-button" title="Fechar Módulo">×</button>
             <h2 id="module-title">Título do Módulo</h2>
-            <div id="module-content-area">
-                <!-- Conteúdo do módulo desktop inserido aqui -->
-            </div>
+            <div id="module-content-area"></div>
         </div>
-
         <div id="countdown-widget">
             <div class="title">Dia Internacional da Matemática</div>
             <h5>Contagem regressiva para 14 de março: Dia da Matemática e nascimento de Einstein.</h5>
@@ -549,157 +534,35 @@
         </div>
     </div>
 
-    <!-- === MOBILE VIEW === -->
     <div id="mobile-view">
         <header id="mobile-header">
             <h1>Matemático 10</h1>
             <button id="mobile-theme-switcher" title="Mudar Tema"><i class="fas fa-palette"></i></button>
         </header>
-        <ul id="mobile-nav">
-            <!-- Itens de navegação mobile inseridos aqui pelo JS -->
-        </ul>
+        <ul id="mobile-nav"></ul>
         <div id="mobile-content-container">
             <h2 id="mobile-content-title">Bem-vindo</h2>
-            <div id="mobile-content-area">
-                <!-- Conteúdo do item selecionado no mobile inserido aqui -->
-            </div>
+            <div id="mobile-content-area"></div>
         </div>
     </div>
 
     <script>
-        // --- SITE DATA (mesmo para ambas as views) ---
         const siteData = {
             nodes: [
-                {
-                    id: "inicio",
-                    label: "Início",
-                    icon: "fas fa-atom",
-                    content: `
-                        <h1>Bem-vindo ao Matemático 10</h1>
-                        <p>A matemática é muito mais do que contas e fórmulas — é uma chave que abre portas para entender o mundo com clareza e precisão.</p>
-                        <p>No <strong>Matemático 10</strong>, você encontrará um ambiente completo para explorar essa ciência fascinante. Aqui, cada conceito é apresentado de forma acessível, com materiais dinâmicos.</p>
-                        <p>Seja para resolver problemas do dia a dia, entender fenômenos da natureza ou construir novas tecnologias, a matemática está sempre presente.</p>
-                        <p>O <strong>Matemático 10</strong> é o seu ponto de partida para desenvolver o raciocínio lógico, descobrir padrões, e enxergar o mundo com outros olhos. Vamos juntos transformar o conhecimento em poder.</p>
-                    `
-                },
-                {
-                    id: "curso",
-                    label: "Curso",
-                    icon: "fas fa-graduation-cap",
-                    content: `
-                        <h2>O Mundo da Matemática</h2>
-                        <p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p>
-                        <h3>Destaques:</h3>
-                        <ul>
-                            <li><strong>Conteúdo Estruturado:</strong> Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</li>
-                            <li><strong>200 Podcasts Exclusivos:</strong> Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível.</li>
-                            <li><strong>Material de Apoio:</strong> Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível.</li>
-                        </ul>
-                        <p><a href="https://www.udemy.com/course/mundodamatematica" target="_blank" rel="noopener noreferrer">Matricule-se Agora na Udemy</a></p>
-                    `
-                },
-                {
-                    id: "recursos",
-                    label: "Recursos",
-                    icon: "fas fa-cogs",
-                    content: `
-                        <h2>Pedagógicos</h2>
-                        <p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p>
-                        <ul>
-                            <li><a href="Recursos/VídeosK10.html" target="_blank" rel="noopener noreferrer">Minha Videoteca K10</a></li>
-                            <li><a href="Recursos/INFINITE COLLATZ SEQUENCE.html" target="_blank" rel="noopener noreferrer">Infinite Collatz Sequence</a> </li>
-                            <li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional </a> </li>
-                            <li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a></li>
-                            <li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a></li>
-                            <li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> </li>
-                            <li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a></li>
-                            <li><strong>Sites Úteis Externos:</strong>
-                                <ul>
-                                    <li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank" rel="noopener noreferrer">Curso Google For Education</a></li>
-                                    <li><a href="https://www.geogebra.org/" target="_blank" rel="noopener noreferrer">GeoGebra</a></li>
-                                    <li><a href="https://www.wolframalpha.com/" target="_blank" rel="noopener noreferrer">Wolfram Alpha</a></li>
-                                    <li><a href="https://www.symbolab.com/" target="_blank" rel="noopener noreferrer">Symbolab</a></li>
-                                    <li><a href="https://www.desmos.com/" target="_blank" rel="noopener noreferrer">Desmos</a></li>
-                                    <li><a href="https://pt.duolingo.com/" target="_blank" rel="noopener noreferrer">Duolingo</a></li>
-                                    <li><a href="http://www.obmep.org.br/provas.htm" target="_blank" rel="noopener noreferrer">Provas OBMEP</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    `
-                },
-                {
-                    id: "livros",
-                    label: "Livros",
-                    icon: "fas fa-book-open",
-                    content: `
-                        <h2>Publicados</h2>
-                        <p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p>
-                        <ul>
-                            <li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" rel="noopener noreferrer">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li>
-                            <li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" rel="noopener noreferrer">Código Matemático</a> - A matemática como linguagem universal.</li>
-                            <li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" rel="noopener noreferrer">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li>
-                        </ul>
-                    `
-                },
-                {
-                    id: "chat",
-                    label: "P2P",
-                    icon: "fas fa-comments",
-                    content: `
-                        <h2>Chat K10</h2>
-                        <p>Comunicação segura e descentralizada. Para usar o Chat K10:</p>
-                        <ol>
-                            <li>Acesse uma das versões (Navegador é recomendado para teste rápido).</li>
-                            <li>Seu ID único será gerado.</li>
-                            <li>Compartilhe seu ID com um amigo que também esteja usando o Chat K10.</li>
-                            <li>Seu amigo adiciona seu ID e você o dele.</li>
-                            <li>Conectem-se e conversem!</li>
-                        </ol>
-                        <h3>Acessos:</h3>
-                        <ul>
-                            <li><a href="Chat/Chat K10.html" target="_blank" rel="noopener noreferrer">Abrir Chat K10</a></li>
-                        </ul>
-                    `
-                },
-                {
-                    id: "sobre",
-                    label: "Sobre",
-                    icon: "fas fa-user-astronaut",
-                    content: `
-                        <h2>Paulo Sérgio de Andrade</h2>
-                        <p>Educador, Matemático.</p>
-                        <img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="width:150px; border-radius:50%; float:left; margin-right:15px; margin-bottom:10px;">
-                        <p>Licenciado em Matemática (2010), com especializações em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem, Educação 4.0: Aluno como Protagonista (2021), Matemática, Suas Tecnologias e o Mundo do Trabalho (2024), e Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental (2025), todas voltadas ao fortalecimento da prática pedagógica e ao uso de abordagens inovadoras.</p>
-                        <p style="clear:both;">Comprometido com a transformação do ensino da matemática, valoriza metodologias que promovem a autonomia, o protagonismo estudantil e a conexão entre o saber matemático e o cotidiano.</p>
-                        <p><a href="http://lattes.cnpq.br/7286865766488458" target="_blank" rel="noopener noreferrer">Currículo Lattes</a></p>
-                    `
-                },
-                {
-                    id: "contato",
-                    label: "Redes",
-                    icon: "fas fa-broadcast-tower",
-                    content: `
-                        <h2>Sociais e Contato</h2>
-                        <p>Explore mais conteúdos sobre matemática, educação e tecnologia nas minhas redes sociais.</p>
-                        <ul>
-                            <li><a href="https://www.linkedin.com/in/geral10" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
-                            <li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" rel="noopener noreferrer">YouTube</a></li>
-                            <li><a href="https://x.com/SergioPaul97880" target="_blank" rel="noopener noreferrer">X (Twitter)</a></li>
-                            <li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li>
-                            <li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                            <li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li>
-                            <li><a href="home.html" target="_blank" rel="noopener noreferrer">Site Principal</a></li>
-                        </ul>
-                    `
-                },
+                { id: "inicio", label: "Início", icon: "fas fa-atom", content: `<h1>Bem-vindo ao Matemático 10</h1><p>A matemática é muito mais do que contas e fórmulas — é uma chave que abre portas para entender o mundo com clareza e precisão.</p><p>No <strong>Matemático 10</strong>, você encontrará um ambiente completo para explorar essa ciência fascinante. Aqui, cada conceito é apresentado de forma acessível, com materiais dinâmicos.</p><p>Seja para resolver problemas do dia a dia, entender fenômenos da natureza ou construir novas tecnologias, a matemática está sempre presente.</p><p>O <strong>Matemático 10</strong> é o seu ponto de partida para desenvolver o raciocínio lógico, descobrir padrões, e enxergar o mundo com outros olhos. Vamos juntos transformar o conhecimento em poder.</p>` },
+                { id: "curso", label: "Curso", icon: "fas fa-graduation-cap", content: `<h2>O Mundo da Matemática</h2><p>"O Mundo da Matemática" é uma explanação abrangente e detalhada das principais áreas da matemática, proporcionando uma visão panorâmica dos conceitos essenciais e suas aplicações.</p><h3>Destaques:</h3><ul><li><strong>Conteúdo Estruturado:</strong> Organização cronológica dos conteúdos para um aprendizado contínuo e progressivo, ideal para estudantes de nível básico.</li><li><strong>200 Podcasts Exclusivos:</strong> Complemento didático em áudio para reforçar o aprendizado de forma prática e flexível.</li><li><strong>Material de Apoio:</strong> Recursos para todos os níveis, garantindo que o aprendizado seja contínuo e acessível.</li></ul><p><a href="https://www.udemy.com/course/mundodamatematica" target="_blank" rel="noopener noreferrer">Matricule-se Agora na Udemy</a></p>` },
+                { id: "recursos", label: "Recursos", icon: "fas fa-cogs", content: `<h2>Pedagógicos</h2><p>Explore uma variedade de ferramentas e materiais para aprofundar seu conhecimento matemático.</p><ul><li><a href="Recursos/VídeosK10.html" target="_blank" rel="noopener noreferrer">Minha Videoteca K10</a></li><li><a href="Recursos/INFINITE COLLATZ SEQUENCE.html" target="_blank" rel="noopener noreferrer">Infinite Collatz Sequence</a> </li><li><a href="Recursos/Hiperdimensional/Teste BR-EUA.html" target="_blank" rel="noopener noreferrer">Paradoxo Hiperdimensional </a> </li><li><a href="Recursos/Planej. Anuais.html" target="_blank" rel="noopener noreferrer">Planejamentos Anuais</a></li><li><a href="Recursos/Jogo do Milhão.html" target="_blank" rel="noopener noreferrer">Jogo do Milhão</a></li><li><a href="Recursos/BancoDeQuestões.html" target="_blank" rel="noopener noreferrer">Banco de Questões</a> </li><li><a href="Recursos/BancoDePerguntas.html" target="_blank" rel="noopener noreferrer">Banco de Perguntas</a></li><li><strong>Sites Úteis Externos:</strong><ul><li><a href="https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/" target="_blank" rel="noopener noreferrer">Curso Google For Education</a></li><li><a href="https://www.geogebra.org/" target="_blank" rel="noopener noreferrer">GeoGebra</a></li><li><a href="https://www.wolframalpha.com/" target="_blank" rel="noopener noreferrer">Wolfram Alpha</a></li><li><a href="https://www.symbolab.com/" target="_blank" rel="noopener noreferrer">Symbolab</a></li><li><a href="https://www.desmos.com/" target="_blank" rel="noopener noreferrer">Desmos</a></li><li><a href="https://pt.duolingo.com/" target="_blank" rel="noopener noreferrer">Duolingo</a></li><li><a href="http://www.obmep.org.br/provas.htm" target="_blank" rel="noopener noreferrer">Provas OBMEP</a></li></ul></li></ul>` },
+                { id: "livros", label: "Livros", icon: "fas fa-book-open", content: `<h2>Publicados</h2><p>Explore as obras do Professor Paulo Sérgio de Andrade e mergulhe no fascinante mundo da matemática.</p><ul><li><a href="https://www.amazon.com.br/dp/B0CW179J4P" target="_blank" rel="noopener noreferrer">Caleidoscópio da Matemática</a> - Uma fascinante junção de arte e ciência.</li><li><a href="https://www.amazon.com.br/dp/B0CXYSW5TK" target="_blank" rel="noopener noreferrer">Código Matemático</a> - A matemática como linguagem universal.</li><li><a href="https://www.amazon.com.br/dp/B0CW1G1FPS" target="_blank" rel="noopener noreferrer">Leviatã da Matemática</a> - Uma metáfora poderosa da força matemática.</li></ul>` },
+                { id: "chat", label: "P2P", icon: "fas fa-comments", content: `<h2>Chat K10</h2><p>Comunicação segura e descentralizada. Para usar o Chat K10:</p><ol><li>Acesse uma das versões (Navegador é recomendado para teste rápido).</li><li>Seu ID único será gerado.</li><li>Compartilhe seu ID com um amigo que também esteja usando o Chat K10.</li><li>Seu amigo adiciona seu ID e você o dele.</li><li>Conectem-se e conversem!</li></ol><h3>Acessos:</h3><ul><li><a href="Chat/Chat K10.html" target="_blank" rel="noopener noreferrer">Abrir Chat K10</a></li></ul>` },
+                { id: "sobre", label: "Sobre", icon: "fas fa-user-astronaut", content: `<h2>Paulo Sérgio de Andrade</h2><p>Educador, Matemático.</p><img src="https://i.ibb.co/Xf70svTW/Whats-App-Image-2025-05-03-at-02-00-16.jpg" alt="Professor Paulo Sérgio de Andrade" style="width:150px; border-radius:50%; float:left; margin-right:15px; margin-bottom:10px;"><p>Licenciado em Matemática (2010), com especializações em Docência do Ensino Superior e Metodologias Ativas de Aprendizagem, Educação 4.0: Aluno como Protagonista (2021), Matemática, Suas Tecnologias e o Mundo do Trabalho (2024), e Currículo e Prática Docente nos Anos Iniciais do Ensino Fundamental (2025), todas voltadas ao fortalecimento da prática pedagógica e ao uso de abordagens inovadoras.</p><p style="clear:both;">Comprometido com a transformação do ensino da matemática, valoriza metodologias que promovem a autonomia, o protagonismo estudantil e a conexão entre o saber matemático e o cotidiano.</p><p><a href="http://lattes.cnpq.br/7286865766488458" target="_blank" rel="noopener noreferrer">Currículo Lattes</a></p>` },
+                { id: "contato", label: "Redes", icon: "fas fa-broadcast-tower", content: `<h2>Sociais e Contato</h2><p>Explore mais conteúdos sobre matemática, educação e tecnologia nas minhas redes sociais.</p><ul><li><a href="https://www.linkedin.com/in/geral10" target="_blank" rel="noopener noreferrer">LinkedIn</a></li><li><a href="https://www.youtube.com/@MATEMATICO1O" target="_blank" rel="noopener noreferrer">YouTube</a></li><li><a href="https://x.com/SergioPaul97880" target="_blank" rel="noopener noreferrer">X (Twitter)</a></li><li><a href="https://www.soundon.global/bio/andradepsa" target="_blank" rel="noopener noreferrer">Músicas (SoundOn)</a></li><li><a href="https://github.com/andradepsa" target="_blank" rel="noopener noreferrer">GitHub</a></li><li><a href="https://linktr.ee/matematico10" target="_blank" rel="noopener noreferrer">Linktree</a></li><li><a href="home.html" target="_blank" rel="noopener noreferrer">Site Principal</a></li></ul>` },
             ]
         };
 
-        // --- THEME GENERATION AND MANAGEMENT ---
         const themes = [];
         let currentThemeIndex = 0;
         const NUM_THEMES = 50;
-        let activeMobileNodeId = null; // <<< GUARDA O ID DO NÓ MOBILE ATIVO
+        let activeMobileNodeId = null;
 
         function generateThemes() {
             for (let i = 0; i < NUM_THEMES; i++) {
@@ -711,7 +574,6 @@
                 const bgSat = 5 + Math.random() * 25;
                 const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360;
                 const textSat = 10 + Math.random() * 40;
-
                 themes.push({
                     name: `Theme ${i + 1}`,
                     '--glow-color-primary': `hsl(${baseHue}, ${mainSat}%, ${mainLight}%)`,
@@ -733,18 +595,13 @@
         function applyTheme(themeIndex) {
             const theme = themes[themeIndex];
             if (!theme) return;
-
             const rootStyle = document.documentElement.style;
             for (const property in theme) {
-                if (property !== 'name') {
-                    rootStyle.setProperty(property, theme[property]);
-                }
+                if (property !== 'name') rootStyle.setProperty(property, theme[property]);
             }
             rootStyle.setProperty('--node-border', theme['--glow-color-primary']);
-
             const primaryGlow = theme['--glow-color-primary'];
             let primaryGlowH = 180, primaryGlowS = 100, primaryGlowL = 50;
-
             if (primaryGlow.startsWith('hsl')) {
                 const parts = primaryGlow.match(/[\d.]+/g);
                 if (parts && parts.length >= 3) {
@@ -757,16 +614,12 @@
                 rootStyle.setProperty('--cursor-active-bg', `rgba(0, 255, 255, 0.2)`);
             }
             rootStyle.setProperty('--glow-color-primary-hsl', `${primaryGlowH}, ${primaryGlowS}%, ${primaryGlowL}%`);
-
             const mobileSwitcher = document.getElementById('mobile-theme-switcher');
             if (mobileSwitcher) {
                 mobileSwitcher.style.color = theme['--bg-color-start'];
                 mobileSwitcher.style.backgroundColor = theme['--glow-color-secondary'];
             }
-
-            if (isDesktopView() && typeof initParticles === 'function') {
-                initParticles();
-            }
+            if (isDesktopView() && typeof initParticles === 'function') initParticles();
         }
 
         function nextTheme() {
@@ -774,12 +627,8 @@
             applyTheme(currentThemeIndex);
         }
 
-        // --- HELPERS ---
-        function isDesktopView() {
-            return window.innerWidth > 768;
-        }
+        function isDesktopView() { return window.innerWidth > 768; }
 
-        // --- PARTICLE SYSTEM (Desktop Only) ---
         const particleCanvas = document.getElementById('particle-canvas');
         const particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null;
         let particlesArray = [];
@@ -787,7 +636,7 @@
         let numberOfParticles;
 
         class Particle {
-             constructor(x, y) {
+            constructor(x, y) {
                 this.x = x || Math.random() * particleCanvas.width;
                 this.y = y || Math.random() * particleCanvas.height;
                 this.size = Math.random() * 2 + 0.5;
@@ -798,9 +647,7 @@
                 this.initialLife = this.life;
             }
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life--;
+                this.x += this.speedX; this.y += this.speedY; this.life--;
                 if (this.x + this.size > particleCanvas.width || this.x - this.size < 0) this.speedX *= -1;
                 if (this.y + this.size > particleCanvas.height || this.y - this.size < 0) this.speedY *= -1;
             }
@@ -815,26 +662,19 @@
                 } else if (this.themedColorBase.startsWith('hsla') && colorParts && colorParts.length === 4) {
                     particleCtx.fillStyle = `hsla(${colorParts[0]}, ${colorParts[1]}%, ${colorParts[2]}%, ${(parseFloat(colorParts[3]) * lifeOpacityFactor).toFixed(3)})`;
                 } else {
-                    particleCtx.globalAlpha = lifeOpacityFactor;
-                    particleCtx.fillStyle = this.themedColorBase;
+                    particleCtx.globalAlpha = lifeOpacityFactor; particleCtx.fillStyle = this.themedColorBase;
                 }
-                particleCtx.beginPath();
-                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                particleCtx.fill();
+                particleCtx.beginPath(); particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2); particleCtx.fill();
                 if (particleCtx.globalAlpha !== 1.0) particleCtx.globalAlpha = 1.0;
             }
         }
 
         function initParticles() {
             if (!isDesktopView() || !particleCanvas) return;
-            particleCanvas.width = window.innerWidth;
-            particleCanvas.height = window.innerHeight;
+            particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight;
             if (particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
-            numberOfParticles = calculateNumberOfParticles();
-            particlesArray = [];
-            for (let i = 0; i < numberOfParticles; i++) {
-                particlesArray.push(new Particle());
-            }
+            numberOfParticles = calculateNumberOfParticles(); particlesArray = [];
+            for (let i = 0; i < numberOfParticles; i++) particlesArray.push(new Particle());
         }
 
         let mouse = { x: undefined, y: undefined, radius: 80 };
@@ -842,80 +682,48 @@
 
         function animateParticles() {
             if (!isDesktopView() || !particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) {
-                if (animationFrameId) animationFrameId = requestAnimationFrame(animateParticles);
-                return;
+                if (animationFrameId) animationFrameId = requestAnimationFrame(animateParticles); return;
             }
             particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
             for (let i = 0; i < particlesArray.length; i++) {
                 const particle = particlesArray[i];
                 if (particle) {
-                    particle.update();
-                    particle.draw();
+                    particle.update(); particle.draw();
                     if (mouse.x !== undefined && mouse.y !== undefined) {
-                        let dx = particle.x - mouse.x;
-                        let dy = particle.y - mouse.y;
-                        let distance = Math.sqrt(dx * dx + dy * dy);
-                        if (distance < mouse.radius) {
-                            particle.x += dx / distance * 2;
-                            particle.y += dy / distance * 2;
-                            particle.speedX *= 0.95;
-                            particle.speedY *= 0.95;
-                        }
+                        let dx = particle.x - mouse.x, dy = particle.y - mouse.y, distance = Math.sqrt(dx * dx + dy * dy);
+                        if (distance < mouse.radius) { particle.x += dx / distance * 2; particle.y += dy / distance * 2; particle.speedX *= 0.95; particle.speedY *= 0.95; }
                     }
                 }
             }
             for (let i = particlesArray.length - 1; i >= 0; i--) {
-                if (particlesArray[i] && particlesArray[i].life <= 0) {
-                    particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
-                } else if (!particlesArray[i]) {
-                    particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
-                }
+                if (particlesArray[i] && particlesArray[i].life <= 0) particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
+                else if (!particlesArray[i]) particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
             }
-            while (particlesArray.length < numberOfParticles && numberOfParticles > 0) {
-                particlesArray.push(new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height));
-            }
+            while (particlesArray.length < numberOfParticles && numberOfParticles > 0) particlesArray.push(new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height));
             if (particlesArray.length > numberOfParticles) particlesArray.length = numberOfParticles;
-            connectParticles();
-            animationFrameId = requestAnimationFrame(animateParticles);
+            connectParticles(); animationFrameId = requestAnimationFrame(animateParticles);
         }
 
         function connectParticles() {
             if (!isDesktopView() || !particleCtx || !particleCanvas || !particlesArray || particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
             const themedLineColorBase = getComputedStyle(document.documentElement).getPropertyValue('--line-color').trim();
-            const connectDistance = 70;
-            const currentParticlesLength = particlesArray.length;
+            const connectDistance = 70; const currentParticlesLength = particlesArray.length;
             for (let a = 0; a < currentParticlesLength; a++) {
-                const particleA = particlesArray[a];
-                if (!particleA) continue;
+                const particleA = particlesArray[a]; if (!particleA) continue;
                 for (let b = a + 1; b < currentParticlesLength; b++) {
-                    const particleB = particlesArray[b];
-                    if (!particleB) continue;
-                    let dx = particleA.x - particleB.x;
-                    let dy = particleA.y - particleB.y;
-                    let distance = Math.sqrt(dx*dx + dy*dy);
+                    const particleB = particlesArray[b]; if (!particleB) continue;
+                    let dx = particleA.x - particleB.x, dy = particleA.y - particleB.y, distance = Math.sqrt(dx*dx + dy*dy);
                     if (distance < connectDistance) {
                         const distanceOpacityFactor = Math.max(0, 1 - (distance / connectDistance));
-                        let r, g, b, baseAlpha;
-                        const colorParts = themedLineColorBase.match(/[\d.]+/g);
-                        let finalLineColor;
+                        let r, g, bl, baseAlpha; const colorParts = themedLineColorBase.match(/[\d.]+/g); let finalLineColor;
                         if (themedLineColorBase.startsWith('rgba') && colorParts && colorParts.length === 4) {
-                            [r, g, b, baseAlpha] = colorParts.map(Number);
-                            finalLineColor = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * distanceOpacityFactor).toFixed(3)})`;
+                            [r, g, bl, baseAlpha] = colorParts.map(Number); finalLineColor = `rgba(${r}, ${g}, ${bl}, ${(baseAlpha * distanceOpacityFactor).toFixed(3)})`;
                         } else if (themedLineColorBase.startsWith('hsla') && colorParts && colorParts.length === 4) {
                             finalLineColor = `hsla(${colorParts[0]}, ${colorParts[1]}%, ${colorParts[2]}%, ${(parseFloat(colorParts[3]) * distanceOpacityFactor).toFixed(3)})`;
-                        } else {
-                            particleCtx.globalAlpha = distanceOpacityFactor;
-                            finalLineColor = themedLineColorBase;
-                        }
-                        particleCtx.strokeStyle = finalLineColor;
-                        particleCtx.lineWidth = 0.5;
-                        particleCtx.beginPath();
-                        particleCtx.moveTo(particleA.x, particleA.y);
-                        particleCtx.lineTo(particleB.x, particleB.y);
-                        particleCtx.stroke();
-                        if (particleCtx.globalAlpha !== 1.0 && !(themedLineColorBase.startsWith('rgba') || themedLineColorBase.startsWith('hsla'))) {
-                           particleCtx.globalAlpha = 1.0;
-                        }
+                        } else { particleCtx.globalAlpha = distanceOpacityFactor; finalLineColor = themedLineColorBase; }
+                        particleCtx.strokeStyle = finalLineColor; particleCtx.lineWidth = 0.5; particleCtx.beginPath();
+                        particleCtx.moveTo(particleA.x, particleA.y); particleCtx.lineTo(particleB.x, particleB.y); particleCtx.stroke();
+                        if (particleCtx.globalAlpha !== 1.0 && !(themedLineColorBase.startsWith('rgba') || themedLineColorBase.startsWith('hsla'))) particleCtx.globalAlpha = 1.0;
                     }
                 }
             }
@@ -924,23 +732,17 @@
         function startStopParticleAnimation() {
             if (isDesktopView() && particleCanvas) {
                 if (animationFrameId === null) {
-                    particleCanvas.width = window.innerWidth;
-                    particleCanvas.height = window.innerHeight;
-                    if (particleCanvas.width > 0 && particleCanvas.height > 0) {
-                        initParticles();
-                        animationFrameId = requestAnimationFrame(animateParticles);
-                    }
+                    particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight;
+                    if (particleCanvas.width > 0 && particleCanvas.height > 0) { initParticles(); animationFrameId = requestAnimationFrame(animateParticles); }
                 }
             } else {
                 if (animationFrameId !== null) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
+                    cancelAnimationFrame(animationFrameId); animationFrameId = null;
                     if (particleCtx && particleCanvas) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
                 }
             }
         }
 
-        // --- NEXUS UI LOGIC (Desktop Only) ---
         const nexusContainer = document.getElementById('nexus-container');
         const centralCoreElement = document.getElementById('central-core');
         const svgLines = document.getElementById('connection-lines-svg');
@@ -952,138 +754,76 @@
 
         function createDesktopNodes() {
             if (!isDesktopView() || !nexusContainer) return;
-            nodeElements.forEach(node => node.remove());
-            nodeElements = [];
+            nodeElements.forEach(node => node.remove()); nodeElements = [];
             if(svgLines) svgLines.innerHTML = '';
-            if (nexusContainer.offsetWidth === 0 || nexusContainer.offsetHeight === 0) {
-                requestAnimationFrame(createDesktopNodes);
-                return;
-            }
-            const containerWidth = nexusContainer.offsetWidth;
-            const containerHeight = nexusContainer.offsetHeight;
-            const numNodes = siteData.nodes.length;
-            const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7;
-            const angleStep = (2 * Math.PI) / numNodes;
-
+            if (nexusContainer.offsetWidth === 0 || nexusContainer.offsetHeight === 0) { requestAnimationFrame(createDesktopNodes); return; }
+            const containerWidth = nexusContainer.offsetWidth, containerHeight = nexusContainer.offsetHeight;
+            const numNodes = siteData.nodes.length, radius = Math.min(containerWidth, containerHeight) / 2 * 0.7, angleStep = (2 * Math.PI) / numNodes;
             siteData.nodes.forEach((nodeData, i) => {
                 const angle = i * angleStep - Math.PI / 2;
                 const xPercent = 50 + (radius / (containerWidth / 2) * 50) * Math.cos(angle);
                 const yPercent = 50 + (radius / (containerHeight / 2) * 50) * Math.sin(angle);
-                const nodeEl = document.createElement('div');
-                nodeEl.classList.add('data-node');
-                nodeEl.id = `node-${nodeData.id}`;
-                nodeEl.style.left = `${xPercent}%`;
-                nodeEl.style.top = `${yPercent}%`;
-                const nodeSize = Math.random() * 2 + 7;
-                nodeEl.style.width = `${nodeSize}vmin`;
-                nodeEl.style.height = `${nodeSize}vmin`;
+                const nodeEl = document.createElement('div'); nodeEl.classList.add('data-node'); nodeEl.id = `node-${nodeData.id}`;
+                nodeEl.style.left = `${xPercent}%`; nodeEl.style.top = `${yPercent}%`;
+                const nodeSize = Math.random() * 2 + 7; nodeEl.style.width = `${nodeSize}vmin`; nodeEl.style.height = `${nodeSize}vmin`;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
-                const randomRotation = Math.random()*30-15;
-                nodeEl.style.setProperty('--initial-rotation', `${randomRotation}deg`);
-                nodeEl.style.setProperty('--float-offset-x', `${Math.random()*10-5}px`);
-                nodeEl.style.setProperty('--float-offset-y', `${Math.random()*10-5}px`);
+                const randomRotation = Math.random()*30-15; nodeEl.style.setProperty('--initial-rotation', `${randomRotation}deg`);
+                nodeEl.style.setProperty('--float-offset-x', `${Math.random()*10-5}px`); nodeEl.style.setProperty('--float-offset-y', `${Math.random()*10-5}px`);
                 nodeEl.style.animationDuration = `${Math.random()*3+4}s`;
-                nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`;
-                nodeEl.title = nodeData.label;
-                nodeEl.addEventListener('click', () => {
-                    openDesktopModule(nodeData);
-                    nodeElements.forEach(n => n.classList.remove('active'));
-                    nodeEl.classList.add('active');
-                });
+                nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`; nodeEl.title = nodeData.label;
+                nodeEl.addEventListener('click', () => { openDesktopModule(nodeData); nodeElements.forEach(n => n.classList.remove('active')); nodeEl.classList.add('active'); });
                 nodeEl.addEventListener('mouseenter', () => nodeEl.style.animationPlayState = 'paused');
                 nodeEl.addEventListener('mouseleave', () => nodeEl.style.animationPlayState = 'running');
-                nexusContainer.appendChild(nodeEl);
-                nodeElements.push(nodeEl);
+                nexusContainer.appendChild(nodeEl); nodeElements.push(nodeEl);
                 if (svgLines) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                    line.setAttribute('x1', '50%');
-                    line.setAttribute('y1', '50%');
-                    line.setAttribute('x2', `${xPercent}%`);
-                    line.setAttribute('y2', `${yPercent}%`);
-                    line.style.animationDelay = `${i * 0.2}s`;
-                    svgLines.appendChild(line);
+                    line.setAttribute('x1', '50%'); line.setAttribute('y1', '50%'); line.setAttribute('x2', `${xPercent}%`); line.setAttribute('y2', `${yPercent}%`);
+                    line.style.animationDelay = `${i * 0.2}s`; svgLines.appendChild(line);
                 }
             });
         }
 
         function openDesktopModule(nodeData) {
             if (!moduleTitle || !moduleContentArea || !contentModule) return;
-            moduleTitle.textContent = nodeData.label;
-            moduleContentArea.innerHTML = nodeData.content;
-            contentModule.classList.add('visible');
+            moduleTitle.textContent = nodeData.label; moduleContentArea.innerHTML = nodeData.content; contentModule.classList.add('visible');
         }
+        if (closeModuleButton) closeModuleButton.addEventListener('click', () => { if (contentModule) contentModule.classList.remove('visible'); if (nodeElements) nodeElements.forEach(n => n.classList.remove('active')); });
 
-        if (closeModuleButton) {
-            closeModuleButton.addEventListener('click', () => {
-                if (contentModule) contentModule.classList.remove('visible');
-                if (nodeElements) nodeElements.forEach(n => n.classList.remove('active'));
-            });
-        }
-
-        // --- MOBILE UI LOGIC ---
         const mobileNav = document.getElementById('mobile-nav');
         const mobileContentTitle = document.getElementById('mobile-content-title');
         const mobileContentArea = document.getElementById('mobile-content-area');
         const mobileThemeSwitcher = document.getElementById('mobile-theme-switcher');
 
         function createMobileNav() {
-            if (!mobileNav) return;
-            mobileNav.innerHTML = '';
-
-            let nodeToActivateData = null;
-            let firstNodeData = null;
-
+            if (!mobileNav) return; mobileNav.innerHTML = '';
+            let nodeToActivateData = null, firstNodeData = null;
             siteData.nodes.forEach((nodeData, index) => {
                 if (index === 0) firstNodeData = nodeData;
-
-                const li = document.createElement('li');
-                li.innerHTML = `<i class="${nodeData.icon}"></i> ${nodeData.label}`;
-                li.dataset.nodeId = nodeData.id;
-
+                const li = document.createElement('li'); li.innerHTML = `<i class="${nodeData.icon}"></i> ${nodeData.label}`; li.dataset.nodeId = nodeData.id;
                 li.addEventListener('click', () => {
-                    openMobileContent(nodeData);
-                    Array.from(mobileNav.children).forEach(item => item.classList.remove('active'));
-                    li.classList.add('active');
-                    if(mobileNav.offsetWidth < mobileNav.scrollWidth){
-                        mobileNav.scrollTo({ left: li.offsetLeft - mobileNav.offsetWidth / 2 + li.offsetWidth / 2, behavior: 'smooth' });
-                    }
+                    openMobileContent(nodeData); Array.from(mobileNav.children).forEach(item => item.classList.remove('active')); li.classList.add('active');
+                    if(mobileNav.offsetWidth < mobileNav.scrollWidth) mobileNav.scrollTo({ left: li.offsetLeft - mobileNav.offsetWidth / 2 + li.offsetWidth / 2, behavior: 'smooth' });
                 });
                 mobileNav.appendChild(li);
-
-                if (activeMobileNodeId && activeMobileNodeId === nodeData.id) {
-                    nodeToActivateData = nodeData;
-                }
+                if (activeMobileNodeId && activeMobileNodeId === nodeData.id) nodeToActivateData = nodeData;
             });
-
             const targetNodeData = nodeToActivateData || firstNodeData;
-
             if (targetNodeData) {
                 openMobileContent(targetNodeData);
                 const activeLi = mobileNav.querySelector(`li[data-node-id="${targetNodeData.id}"]`);
                 if (activeLi) {
                     activeLi.classList.add('active');
-                     if(mobileNav.offsetWidth < mobileNav.scrollWidth){
-                        setTimeout(() => {
-                            mobileNav.scrollTo({ left: activeLi.offsetLeft - mobileNav.offsetWidth / 2 + activeLi.offsetWidth / 2, behavior: 'auto' });
-                        }, 0);
-                    }
+                    if(mobileNav.offsetWidth < mobileNav.scrollWidth) setTimeout(() => { mobileNav.scrollTo({ left: activeLi.offsetLeft - mobileNav.offsetWidth / 2 + activeLi.offsetWidth / 2, behavior: 'auto' }); }, 0);
                 }
             }
         }
-
         function openMobileContent(nodeData) {
             if (!mobileContentTitle || !mobileContentArea) return;
-            mobileContentTitle.textContent = nodeData.label;
-            mobileContentArea.innerHTML = nodeData.content;
-            if (mobileContentArea) mobileContentArea.scrollTop = 0;
-            activeMobileNodeId = nodeData.id;
+            mobileContentTitle.textContent = nodeData.label; mobileContentArea.innerHTML = nodeData.content;
+            if (mobileContentArea) mobileContentArea.scrollTop = 0; activeMobileNodeId = nodeData.id;
         }
+        if (mobileThemeSwitcher) mobileThemeSwitcher.addEventListener('click', nextTheme);
 
-        if (mobileThemeSwitcher) {
-            mobileThemeSwitcher.addEventListener('click', nextTheme);
-        }
-
-        // --- COUNTDOWN LOGIC ---
         const countdownMonthsEl = document.getElementById('months');
         const countdownDaysEl = document.getElementById('days');
         const countdownHoursEl = document.getElementById('hours');
@@ -1092,7 +832,7 @@
         const countdownMessageEl = document.getElementById('countdown-message');
         let countdownInterval;
 
-        function updateCountdown() {
+        function updateCountdown() { // <<< LÓGICA DO CONTADOR ATUALIZADA AQUI
             const countdownWidget = document.getElementById('countdown-widget');
             if (!isDesktopView() && countdownWidget && getComputedStyle(countdownWidget).display === 'none') {
                 if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
@@ -1104,57 +844,63 @@
 
             const now = new Date();
             let targetYear = now.getFullYear();
+            // No JS, mês 2 é Março (Janeiro=0, Fevereiro=1, Março=2)
+            // Definimos o alvo para 00:00:00 do dia 14 para clareza
             const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0);
             let target = new Date(targetYear, 2, 14, 0, 0, 0);
 
-            if (now > march14ThisYear) {
+            // Se 'now' for maior ou igual ao início do dia 14 de Março deste ano, o alvo é o próximo ano.
+            if (now >= march14ThisYear) {
                 targetYear++;
                 target.setFullYear(targetYear);
             }
-            const totalMsToTarget = target - now;
-
-            if (totalMsToTarget <= 0) {
-                if(countdownMonthsEl) countdownMonthsEl.textContent = "0";
-                if(countdownDaysEl) countdownDaysEl.textContent = "0";
-                if(countdownHoursEl) countdownHoursEl.textContent = "0";
-                if(countdownMinutesEl) countdownMinutesEl.textContent = "0";
-                if(countdownSecondsEl) countdownSecondsEl.textContent = "0";
-                if(countdownMessageEl) countdownMessageEl.textContent = "FELIZ DIA DO PI!";
-                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
-                return;
+            // Certifique-se de que o target é sempre futuro (caso raro, mas seguro)
+             if (now >= target) {
+                target.setFullYear(target.getFullYear() + 1);
             }
 
-            let monthsDisplay = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-            if (now.getDate() > target.getDate() && (target.getMonth() !== now.getMonth() || target.getFullYear() !== now.getFullYear())) {
-                monthsDisplay--;
+            let monthsValue, daysValue, hoursValue, minutesValue, secondsValue;
+            const totalMs = target - now;
+
+            if (totalMs <= 0) {
+                monthsValue = 0; daysValue = 0; hoursValue = 0; minutesValue = 0; secondsValue = 0;
+                if (countdownMessageEl) countdownMessageEl.textContent = "FELIZ DIA DO PI!";
+                 // O clearInterval é tratado pela lógica de visibilidade ou no próximo ciclo se totalMs <=0
+            } else {
+                // Lógica de cálculo de meses do Contador.html
+                monthsValue = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+                if (now.getDate() > target.getDate()) {
+                    monthsValue--;
+                }
+                // Evitar meses negativos se a lógica acima não cobrir algum caso extremo com o target.getDate()
+                if (monthsValue < 0) monthsValue = 0;
+
+                // Lógica de cálculo de dias do Contador.html
+                let adjustedDate = new Date(now.getFullYear(), now.getMonth() + monthsValue, now.getDate());
+                if (adjustedDate > target && monthsValue > 0) { // Adicionado monthsValue > 0
+                    monthsValue--;
+                    adjustedDate = new Date(now.getFullYear(), now.getMonth() + monthsValue, now.getDate());
+                }
+                const diffMsForDays = target - adjustedDate;
+                daysValue = Math.floor(diffMsForDays / (1000 * 60 * 60 * 24)) + 2; // Mantendo o +2 do Contador.html
+                if (daysValue < 0) daysValue = 0; // Evitar dias negativos
+
+                // Lógica de horas, minutos, segundos do Contador.html
+                hoursValue = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
+                minutesValue = Math.floor((totalMs / (1000 * 60)) % 60);
+                secondsValue = Math.floor((totalMs / 1000) % 60);
+
+                if (countdownMessageEl) countdownMessageEl.textContent = "";
             }
-            if (monthsDisplay < 0) monthsDisplay = 0;
 
-
-            let daysDisplay = 0;
-            let dateForDayCalc = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
-            if (dateForDayCalc > target && monthsDisplay > 0) { // Overcounted months
-                monthsDisplay--;
-                dateForDayCalc = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
-            }
-            daysDisplay = Math.floor((target - dateForDayCalc) / (1000 * 60 * 60 * 24));
-            if(daysDisplay < 0) daysDisplay = 0;
-
-
-            const hoursDisplay = Math.floor((totalMsToTarget / (1000 * 60 * 60)) % 24);
-            const minutesDisplay = Math.floor((totalMsToTarget / (1000 * 60)) % 60);
-            const secondsDisplay = Math.floor((totalMsToTarget / 1000) % 60);
-
-            if(countdownMonthsEl) countdownMonthsEl.textContent = monthsDisplay;
-            if(countdownDaysEl) countdownDaysEl.textContent = daysDisplay;
-            if(countdownHoursEl) countdownHoursEl.textContent = hoursDisplay;
-            if(countdownMinutesEl) countdownMinutesEl.textContent = minutesDisplay;
-            if(countdownSecondsEl) countdownSecondsEl.textContent = secondsDisplay;
-            if(countdownMessageEl) countdownMessageEl.textContent = "";
+            if(countdownMonthsEl) countdownMonthsEl.textContent = monthsValue;
+            if(countdownDaysEl) countdownDaysEl.textContent = daysValue;
+            if(countdownHoursEl) countdownHoursEl.textContent = hoursValue;
+            if(countdownMinutesEl) countdownMinutesEl.textContent = minutesValue;
+            if(countdownSecondsEl) countdownSecondsEl.textContent = secondsValue;
         }
 
 
-        // --- CUSTOM CURSOR (Desktop Only) ---
         const cursor = document.querySelector('.custom-cursor');
         const cursorDot = document.querySelector('.custom-cursor-dot');
         const interactiveElementsQuery = 'a, button, .data-node, input, textarea, [onclick], #close-module-button, #central-core';
@@ -1186,85 +932,60 @@
             else if (cursor) cursor.classList.remove('active');
         }
         function desktopCursorActivate() { if (cursor) cursor.classList.add('active'); }
-        function desktopCursorDeactivate() {
-            if (cursor && !document.querySelector(':hover')?.closest(interactiveElementsQuery)) {
-                cursor.classList.remove('active');
-            }
-        }
+        function desktopCursorDeactivate() { if (cursor && !document.querySelector(':hover')?.closest(interactiveElementsQuery)) cursor.classList.remove('active'); }
         function particleMouseMoveListener(event) { mouse.x = event.clientX; mouse.y = event.clientY; }
         function particleMouseOutListener() { mouse.x = undefined; mouse.y = undefined; }
 
-        // --- INITIALIZATION AND RESIZE LOGIC ---
         let isInitialLoad = true;
-
         function initializeView() {
             if (themes.length === 0) generateThemes();
             applyTheme(currentThemeIndex);
             setupDesktopInteractivity();
-
-            const currentViewIsDesktop = isDesktopView();
-
-            if (currentViewIsDesktop) {
+            if (isDesktopView()) {
                 if (particleCanvas) particleCanvas.style.display = 'block';
-                if (cursor) cursor.style.display = 'block';
-                if (cursorDot) cursorDot.style.display = 'block';
-                requestAnimationFrame(createDesktopNodes);
-                startStopParticleAnimation();
+                if (cursor) cursor.style.display = 'block'; if (cursorDot) cursorDot.style.display = 'block';
+                requestAnimationFrame(createDesktopNodes); startStopParticleAnimation();
                 if (typeof updateCountdown === 'function') {
                     updateCountdown();
                     if (!countdownInterval && document.getElementById('countdown-widget')?.style.display !== 'none') {
                          countdownInterval = setInterval(updateCountdown, 1000);
                     }
                 }
-            } else { // Mobile view
+            } else {
                 if (particleCanvas) particleCanvas.style.display = 'none';
-                if (cursor) cursor.style.display = 'none';
-                if (cursorDot) cursorDot.style.display = 'none';
-                createMobileNav();
-                startStopParticleAnimation();
+                if (cursor) cursor.style.display = 'none'; if (cursorDot) cursorDot.style.display = 'none';
+                createMobileNav(); startStopParticleAnimation();
                 if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
             }
-
             if (isInitialLoad) {
                 const introScreen = document.getElementById('site-title-intro');
-                if (introScreen) {
-                    setTimeout(() => {
-                        introScreen.classList.add('hidden');
-                    }, 3500);
-                }
+                if (introScreen) { setTimeout(() => { introScreen.classList.add('hidden'); }, 3500); }
                 isInitialLoad = false;
             }
         }
 
         window.addEventListener('load', initializeView);
-
-        let resizeTimeout;
-        let lastWindowWidth = window.innerWidth;
-
+        let resizeTimeout, lastWindowWidth = window.innerWidth;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 const currentWindowWidth = window.innerWidth;
                 const changedBreakpoint = (lastWindowWidth <= 768 && currentWindowWidth > 768) || (lastWindowWidth > 768 && currentWindowWidth <= 768);
-
                 if (changedBreakpoint) {
                     initializeView();
                 } else if (isDesktopView()) {
                     requestAnimationFrame(createDesktopNodes);
                     if (particleCanvas) {
-                         particleCanvas.width = window.innerWidth;
-                         particleCanvas.height = window.innerHeight;
+                         particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight;
                          if (particleCanvas.width > 0 && particleCanvas.height > 0) initParticles();
                     }
                 }
                 lastWindowWidth = currentWindowWidth;
             }, 250);
         });
-
-         window.addEventListener('keydown', (e) => {
+        window.addEventListener('keydown', (e) => {
             if (isDesktopView() && e.key === 'Escape' && contentModule && contentModule.classList.contains('visible')) {
-                contentModule.classList.remove('visible');
-                if (nodeElements) nodeElements.forEach(n => n.classList.remove('active'));
+                contentModule.classList.remove('visible'); if (nodeElements) nodeElements.forEach(n => n.classList.remove('active'));
             }
         });
     </script>
