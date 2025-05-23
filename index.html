@@ -19,8 +19,9 @@
             --font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
             --cursor-active-bg: rgba(0, 255, 255, 0.2);
             --glow-color-primary-hsl: 180, 100%, 50%;
+            /* Variáveis para Mobile - serão atualizadas pelos temas */
             --mobile-header-bg: rgba(5, 10, 30, 0.9);
-            --mobile-nav-item-bg: rgba(10, 25, 60, 0.7);
+            --mobile-nav-bg: rgba(10, 25, 60, 0.7); /* Renomeada de mobile-nav-item-bg */
             --mobile-nav-item-hover-bg: rgba(20, 40, 80, 0.9);
         }
 
@@ -338,10 +339,10 @@
             display: none; /* Escondido por padrão */
             flex-direction: column;
             width: 100%;
-            height: 100%;
-            background-color: var(--bg-color-start);
+            height: 100vh; /* Ocupar toda a altura da viewport */
+            background-color: var(--bg-color-start); /* Usa a cor de fundo base */
             color: var(--text-color);
-            overflow: hidden; /* O conteúdo principal terá scroll */
+            overflow: hidden; /* O conteúdo principal e nav terão seus próprios scrolls */
         }
 
         #mobile-header {
@@ -351,6 +352,8 @@
             border-bottom: 2px solid var(--glow-color-primary);
             box-shadow: 0 2px 10px var(--glow-color-primary);
             z-index: 10;
+            flex-shrink: 0; /* Impede que o header encolha */
+            position: relative; /* Para posicionar o botão de tema absoluto a ele */
         }
         #mobile-header h1 {
             margin: 0;
@@ -360,10 +363,11 @@
         }
         #mobile-theme-switcher {
             position: absolute;
-            top: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             right: 15px;
             background: var(--glow-color-secondary);
-            color: var(--bg-color-start);
+            color: var(--bg-color-start); /* Idealmente uma cor que contraste bem com o glow-secondary */
             border: none;
             border-radius: 50%;
             width: 40px;
@@ -371,42 +375,68 @@
             font-size: 1.2rem;
             cursor: pointer;
             box-shadow: 0 0 10px var(--glow-color-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
         }
 
-        #mobile-nav {
+        #mobile-nav { /* Menu horizontal rolável */
             list-style: none;
             padding: 0;
             margin: 0;
-            max-height: 40vh; /* Limita altura da navegação */
-            overflow-y: auto;
+            display: flex;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background-color: var(--mobile-nav-bg); /* Fundo da barra de navegação */
             border-bottom: 1px solid var(--node-border);
+            flex-shrink: 0;
+            -webkit-overflow-scrolling: touch; /* Rolagem suave em iOS */
         }
+        #mobile-nav::-webkit-scrollbar {
+            height: 4px;
+        }
+        #mobile-nav::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        #mobile-nav::-webkit-scrollbar-thumb {
+            background: var(--glow-color-primary);
+            border-radius: 2px;
+        }
+
         #mobile-nav li {
-            padding: 15px 20px;
-            background-color: var(--mobile-nav-item-bg);
-            border-bottom: 1px solid hsla(var(--glow-color-primary-hsl), 0.2);
+            padding: 12px 15px;
             cursor: pointer;
             transition: background-color 0.3s ease, color 0.3s ease;
             display: flex;
             align-items: center;
+            white-space: nowrap;
+            border-right: 1px solid hsla(var(--glow-color-primary-hsl), 0.15);
+            color: var(--text-color); /* Cor padrão do texto dos itens */
+        }
+        #mobile-nav li:last-child {
+            border-right: none;
         }
         #mobile-nav li i {
-            margin-right: 15px;
-            color: var(--glow-color-primary);
-            font-size: 1.2em;
+            margin-right: 8px;
+            color: var(--glow-color-primary); /* Cor padrão do ícone */
+            font-size: 1.1em;
+            transition: color 0.3s ease;
         }
-        #mobile-nav li:hover, #mobile-nav li.active {
+        #mobile-nav li:hover,
+        #mobile-nav li.active {
             background-color: var(--mobile-nav-item-hover-bg);
-            color: var(--glow-color-secondary);
+            color: var(--glow-color-secondary); /* Cor do texto no hover/ativo */
         }
-        #mobile-nav li.active i {
-            color: var(--glow-color-secondary);
+        #mobile-nav li.active i,
+        #mobile-nav li:hover i {
+            color: var(--glow-color-secondary); /* Cor do ícone no hover/ativo */
         }
 
         #mobile-content-container {
             flex-grow: 1;
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: auto; /* Scroll vertical apenas para o conteúdo */
             background-color: rgba(0,0,0,0.3); /* Fundo sutil para área de conteúdo */
         }
         #mobile-content-container h2 {
@@ -436,7 +466,7 @@
         @media (max-width: 768px) {
             /* Regras gerais para mobile */
             html, body {
-                overflow: auto; /* Permite scroll no mobile */
+                overflow: hidden; /* No mobile, o scroll é controlado internamente */
                 cursor: auto; /* Cursor padrão no mobile */
             }
             #desktop-view {
@@ -466,10 +496,11 @@
             #content-display-module h2 { font-size: 1.5rem; }
             /* Ajustes mobile */
             #mobile-header h1 { font-size: 1.5rem; }
-            #mobile-nav li { padding: 12px 15px; font-size: 0.9rem;}
-            #mobile-nav li i { font-size: 1.1em; }
+            #mobile-nav li { padding: 10px 12px; font-size: 0.85rem;} /* Menor padding/fonte */
+            #mobile-nav li i { font-size: 1em; margin-right: 6px;}
             #mobile-content-container { padding: 15px; font-size: 0.9rem;}
             #mobile-content-container h2 { font-size: 1.3rem;}
+            #mobile-theme-switcher { width: 35px; height: 35px; font-size: 1rem; right: 10px;}
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -667,14 +698,14 @@
         // --- THEME GENERATION AND MANAGEMENT ---
         const themes = [];
         let currentThemeIndex = 0;
-        const NUM_THEMES = 50; // Mantido
+        const NUM_THEMES = 50;
 
         function generateThemes() {
             for (let i = 0; i < NUM_THEMES; i++) {
                 const baseHue = Math.random() * 360;
                 const mainSat = 70 + Math.random() * 30;
                 const mainLight = 50 + Math.random() * 15;
-                const isDarkBase = Math.random() > 0.15;
+                const isDarkBase = Math.random() > 0.15; // Maior chance de ser escuro
                 const bgColorHue = (baseHue + Math.random() * 60 - 30 + 360) % 360;
                 const bgSat = 5 + Math.random() * 25;
                 const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360;
@@ -691,10 +722,10 @@
                     '--bg-color-start': isDarkBase ? `hsl(${bgColorHue}, ${bgSat}%, ${8 + Math.random() * 7}%)` : `hsl(${bgColorHue}, ${bgSat}%, ${92 - Math.random() * 7}%)`,
                     '--bg-color-end': isDarkBase ? `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${3 + Math.random() * 4}%)` : `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${88 - Math.random() * 4}%)`,
                     '--node-bg': isDarkBase ? `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${12 + Math.random() * 8}%, 0.8)` : `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${80 + Math.random() * 8}%, 0.8)`,
-                    // Adicionando variáveis para mobile, podem ser iguais ou diferentes
-                    '--mobile-header-bg': isDarkBase ? `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 5}%, ${5 + Math.random() * 5}%, 0.9)` : `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 5}%, ${90 + Math.random() * 5}%, 0.9)`,
-                    '--mobile-nav-item-bg': isDarkBase ? `hsla(${(baseHue + 20 + 360) % 360}, ${bgSat + 15}%, ${10 + Math.random() * 7}%, 0.7)` : `hsla(${(baseHue + 20 + 360) % 360}, ${bgSat + 15}%, ${85 + Math.random() * 7}%, 0.7)`,
-                    '--mobile-nav-item-hover-bg': isDarkBase ? `hsla(${(baseHue + 30 + 360) % 360}, ${bgSat + 20}%, ${15 + Math.random() * 5}%, 0.9)` : `hsla(${(baseHue + 30 + 360) % 360}, ${bgSat + 20}%, ${75 + Math.random() * 5}%, 0.9)`
+                    // Mobile specific vars derived from base theme properties
+                    '--mobile-header-bg': isDarkBase ? `hsla(${bgColorHue}, ${bgSat + 5}%, ${5 + Math.random() * 3}%, 0.95)` : `hsla(${bgColorHue}, ${bgSat + 5}%, ${95 - Math.random() * 3}%, 0.95)`,
+                    '--mobile-nav-bg': isDarkBase ? `hsla(${(bgColorHue + 10 + 360) % 360}, ${bgSat + 10}%, ${10 + Math.random() * 5}%, 0.85)` : `hsla(${(bgColorHue + 10 + 360) % 360}, ${bgSat + 10}%, ${90 - Math.random() * 5}%, 0.85)`,
+                    '--mobile-nav-item-hover-bg': `hsla(${(baseHue + 60 + 360) % 360}, ${mainSat - 15}%, ${mainLight - 10}%, 0.5)` // Um pouco mais sutil que o glow secundário
                 });
             }
         }
@@ -722,13 +753,21 @@
                     primaryGlowL = parseFloat(parts[2]);
                     rootStyle.setProperty('--cursor-active-bg', `hsla(${parts[0]}, ${parts[1]}%, ${parts[2]}%, 0.2)`);
                 }
-            } else {
+            } else { // Fallback for non-hsl (e.g. if you hardcode a hex/rgb)
                 rootStyle.setProperty('--cursor-active-bg', `rgba(0, 255, 255, 0.2)`);
             }
             rootStyle.setProperty('--glow-color-primary-hsl', `${primaryGlowH}, ${primaryGlowS}%, ${primaryGlowL}%`);
 
+            // Update mobile theme switcher color for contrast if needed (JS can access theme vars)
+            const mobileSwitcher = document.getElementById('mobile-theme-switcher');
+            if (mobileSwitcher) {
+                mobileSwitcher.style.color = theme['--bg-color-start']; // Or another contrasting color from the theme
+                mobileSwitcher.style.backgroundColor = theme['--glow-color-secondary'];
+            }
+
+
             if (isDesktopView() && typeof initParticles === 'function') {
-                initParticles(); // Re-init particles com as novas cores do tema
+                initParticles();
             }
         }
 
@@ -739,14 +778,12 @@
 
         // --- HELPERS ---
         function isDesktopView() {
-            // Verifica se a visualização desktop está ativa (baseado no CSS)
-            // Considera o breakpoint usado nas media queries
             return window.innerWidth > 768;
         }
 
         // --- PARTICLE SYSTEM (Desktop Only) ---
         const particleCanvas = document.getElementById('particle-canvas');
-        const particleCtx = particleCanvas.getContext('2d');
+        const particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null; // Check if canvas exists
         let particlesArray = [];
         const calculateNumberOfParticles = () => Math.max(10, Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20);
         let numberOfParticles;
@@ -770,7 +807,7 @@
                 if (this.y + this.size > particleCanvas.height || this.y - this.size < 0) this.speedY *= -1;
             }
             draw() {
-                if (!particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
+                if (!particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
 
                 const lifeOpacityFactor = Math.max(0, this.life / this.initialLife);
                 let r, g, b, baseAlpha;
@@ -808,23 +845,14 @@
         }
 
         let mouse = { x: undefined, y: undefined, radius: 80 };
-        // Estes listeners de mouse são para partículas, então só se for desktop
-        if (isDesktopView()) {
-            window.addEventListener('mousemove', (event) => {
-                mouse.x = event.clientX;
-                mouse.y = event.clientY;
-            });
-            window.addEventListener('mouseout', () => {
-                mouse.x = undefined;
-                mouse.y = undefined;
-            });
-        }
-
+        // Particle mouse listeners are added/removed in setupCustomCursorEvents based on view
 
         let animationFrameId = null;
         function animateParticles() {
             if (!isDesktopView() || !particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) {
-                animationFrameId = requestAnimationFrame(animateParticles);
+                if (animationFrameId) { // If it was running, request next frame to allow it to stop if view changes
+                     animationFrameId = requestAnimationFrame(animateParticles);
+                }
                 return;
             }
             particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
@@ -852,7 +880,7 @@
             for (let i = particlesArray.length - 1; i >= 0; i--) {
                 if (particlesArray[i] && particlesArray[i].life <= 0) {
                     particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
-                } else if (!particlesArray[i]) {
+                } else if (!particlesArray[i]) { // Should not happen if initialized correctly
                     particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
                 }
             }
@@ -872,7 +900,7 @@
             if (!isDesktopView() || !particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0 || !particlesArray) return;
 
             const themedLineColorBase = getComputedStyle(document.documentElement).getPropertyValue('--line-color').trim();
-            const connectDistance = window.innerWidth < 768 ? 40 : 70; // Já tem uma verificação, mas ok
+            const connectDistance = 70; // Fixed for desktop
             const currentParticlesLength = particlesArray.length;
 
             for (let a = 0; a < currentParticlesLength; a++) {
@@ -917,18 +945,20 @@
         }
 
         function startStopParticleAnimation() {
-            if (isDesktopView()) {
-                if (animationFrameId === null) { // Se não estiver rodando, inicia
-                    particleCanvas.width = window.innerWidth; // Garante tamanho certo
+            if (isDesktopView() && particleCanvas) {
+                if (animationFrameId === null) {
+                    particleCanvas.width = window.innerWidth;
                     particleCanvas.height = window.innerHeight;
-                    initParticles(); // Recria partículas com base no tamanho e tema
-                    animationFrameId = requestAnimationFrame(animateParticles);
+                    if (particleCanvas.width > 0 && particleCanvas.height > 0) { // Ensure canvas is valid
+                        initParticles();
+                        animationFrameId = requestAnimationFrame(animateParticles);
+                    }
                 }
             } else {
-                if (animationFrameId !== null) { // Se estiver rodando, para
+                if (animationFrameId !== null) {
                     cancelAnimationFrame(animationFrameId);
                     animationFrameId = null;
-                    if (particleCtx) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height); // Limpa o canvas
+                    if (particleCtx && particleCanvas) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
                 }
             }
         }
@@ -945,19 +975,19 @@
 
         function createDesktopNodes() {
             if (!isDesktopView() || !nexusContainer) return;
-             // Limpar nós existentes para evitar duplicação em redimensionamentos
             nodeElements.forEach(node => node.remove());
             nodeElements = [];
             if(svgLines) svgLines.innerHTML = '';
 
             const numNodes = siteData.nodes.length;
-            const containerWidth = nexusContainer.clientWidth || nexusContainer.offsetWidth;
-            const containerHeight = nexusContainer.clientHeight || nexusContainer.offsetHeight;
-
-            if (containerWidth === 0 || containerHeight === 0) {
-                requestAnimationFrame(createDesktopNodes); // Tenta novamente no próximo frame
+            // Ensure nexusContainer has dimensions before proceeding
+            if (nexusContainer.offsetWidth === 0 || nexusContainer.offsetHeight === 0) {
+                requestAnimationFrame(createDesktopNodes); // Try again next frame
                 return;
             }
+            const containerWidth = nexusContainer.offsetWidth;
+            const containerHeight = nexusContainer.offsetHeight;
+
 
             const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7;
             const angleStep = (2 * Math.PI) / numNodes;
@@ -973,7 +1003,7 @@
                 nodeEl.style.left = `${xPercent}%`;
                 nodeEl.style.top = `${yPercent}%`;
 
-                const nodeSize = Math.random() * 2 + 7;
+                const nodeSize = Math.random() * 2 + 7; // 7vmin to 9vmin
                 nodeEl.style.width = `${nodeSize}vmin`;
                 nodeEl.style.height = `${nodeSize}vmin`;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
@@ -1030,21 +1060,20 @@
 
         function createMobileNav() {
             if (!mobileNav) return;
-            mobileNav.innerHTML = ''; // Limpar nav existente
+            mobileNav.innerHTML = '';
 
             siteData.nodes.forEach((nodeData, index) => {
                 const li = document.createElement('li');
                 li.innerHTML = `<i class="${nodeData.icon}"></i> ${nodeData.label}`;
                 li.addEventListener('click', () => {
                     openMobileContent(nodeData);
-                    // Gerenciar classe 'active' para itens da navegação mobile
                     Array.from(mobileNav.children).forEach(item => item.classList.remove('active'));
                     li.classList.add('active');
+                    mobileNav.scrollTo({ left: li.offsetLeft - mobileNav.offsetWidth / 2 + li.offsetWidth / 2, behavior: 'smooth' });
                 });
                 mobileNav.appendChild(li);
 
-                // Abrir o primeiro item por padrão no mobile
-                if (index === 0) {
+                if (index === 0) { // Open first item by default
                     openMobileContent(nodeData);
                     li.classList.add('active');
                 }
@@ -1055,7 +1084,7 @@
             if (!mobileContentTitle || !mobileContentArea) return;
             mobileContentTitle.textContent = nodeData.label;
             mobileContentArea.innerHTML = nodeData.content;
-            mobileContentArea.scrollTop = 0; // Reset scroll ao trocar conteúdo
+            if (mobileContentArea) mobileContentArea.scrollTop = 0;
         }
 
         if (mobileThemeSwitcher) {
@@ -1063,7 +1092,7 @@
         }
 
 
-        // --- COUNTDOWN LOGIC (Desktop only, mas o JS pode rodar) ---
+        // --- COUNTDOWN LOGIC ---
         const countdownMonthsEl = document.getElementById('months');
         const countdownDaysEl = document.getElementById('days');
         const countdownHoursEl = document.getElementById('hours');
@@ -1073,21 +1102,19 @@
         let countdownInterval;
 
         function updateCountdown() {
-            // Só atualiza DOM se os elementos existirem (serão nulos se o widget estiver display:none e JS otimizar)
-            // Ou, melhor, só executa se for desktop
-            if (!isDesktopView() && document.getElementById('countdown-widget')?.style.display === 'none') {
+            const countdownWidget = document.getElementById('countdown-widget');
+            if (!isDesktopView() && countdownWidget && getComputedStyle(countdownWidget).display === 'none') {
                 if (countdownInterval) clearInterval(countdownInterval);
                 countdownInterval = null;
                 return;
             }
-            if (!countdownInterval && isDesktopView()) { // Reinicia se voltar para desktop
+            if (isDesktopView() && !countdownInterval && countdownWidget && getComputedStyle(countdownWidget).display !== 'none') {
                  countdownInterval = setInterval(updateCountdown, 1000);
             }
 
-
             const now = new Date();
             let targetYear = now.getFullYear();
-            const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0);
+            const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0); // Mês 2 é Março
             let target = new Date(targetYear, 2, 14, 0, 0, 0);
 
             if (now > march14ThisYear) {
@@ -1104,24 +1131,34 @@
                 if(countdownMinutesEl) countdownMinutesEl.textContent = "0";
                 if(countdownSecondsEl) countdownSecondsEl.textContent = "0";
                 if(countdownMessageEl) countdownMessageEl.textContent = "FELIZ DIA DO PI!";
-                if (countdownInterval) clearInterval(countdownInterval);
-                countdownInterval = null;
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
                 return;
             }
 
             let monthsDisplay = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-            if (now.getDate() > target.getDate()) {
+            if (now.getDate() > target.getDate() && (now.getMonth() !== target.getMonth() || now.getFullYear() !== target.getFullYear())) {
                 monthsDisplay--;
+            } else if (now.getDate() === target.getDate() && now.getMonth() === target.getMonth() && now.getHours() >= 0) {
+                 // No dia alvo, mas antes da hora 0, meses pode ser 0. Se for após, meses já deveria ter sido ajustado.
             }
-            if (monthsDisplay < 0) monthsDisplay = 0;
+             if (monthsDisplay < 0) monthsDisplay = 0;
 
-            let adjustedDateForDaysCalculation = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
-            if (adjustedDateForDaysCalculation > target && monthsDisplay > 0) {
+
+            let tempNow = new Date(now);
+            tempNow.setMonth(now.getMonth() + monthsDisplay);
+
+            let daysDisplay = 0;
+            if (target > tempNow) {
+                daysDisplay = Math.floor((target - tempNow) / (1000 * 60 * 60 * 24));
+            } else if (target < tempNow && monthsDisplay > 0) { // Overcounted months
                 monthsDisplay--;
-                adjustedDateForDaysCalculation = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
+                tempNow.setMonth(now.getMonth() + monthsDisplay);
+                daysDisplay = Math.floor((target - tempNow) / (1000 * 60 * 60 * 24));
+            } else if (target.getMonth() === tempNow.getMonth() && target.getFullYear() === tempNow.getFullYear()){
+                 daysDisplay = target.getDate() - tempNow.getDate();
             }
-            const diffMsForDays = target - adjustedDateForDaysCalculation;
-            const daysDisplay = Math.max(0, Math.floor(diffMsForDays / (1000 * 60 * 60 * 24)) + 2); // Adicionado Max(0,...)
+            if (daysDisplay < 0) daysDisplay = 0;
+
 
             const hoursDisplay = Math.floor((totalMsToTarget / (1000 * 60 * 60)) % 24);
             const minutesDisplay = Math.floor((totalMsToTarget / (1000 * 60)) % 60);
@@ -1140,15 +1177,25 @@
         const cursorDot = document.querySelector('.custom-cursor-dot');
         const interactiveElementsQuery = 'a, button, .data-node, input, textarea, [onclick], #close-module-button, #central-core';
 
-        function setupCustomCursorEvents() {
-            if (isDesktopView() && cursor && cursorDot) {
-                document.addEventListener('mousemove', desktopCursorMove);
-                document.addEventListener('mousedown', desktopCursorActivate);
-                document.addEventListener('mouseup', desktopCursorDeactivate);
-            } else {
-                document.removeEventListener('mousemove', desktopCursorMove);
-                document.removeEventListener('mousedown', desktopCursorActivate);
-                document.removeEventListener('mouseup', desktopCursorDeactivate);
+        function setupDesktopInteractivity() {
+            if (isDesktopView()) {
+                if (cursor && cursorDot) {
+                    document.addEventListener('mousemove', desktopCursorMove);
+                    document.addEventListener('mousedown', desktopCursorActivate);
+                    document.addEventListener('mouseup', desktopCursorDeactivate);
+                }
+                 window.addEventListener('mousemove', particleMouseMoveListener);
+                 window.addEventListener('mouseout', particleMouseOutListener);
+                 if (centralCoreElement) centralCoreElement.addEventListener('click', nextTheme);
+            } else { // Cleanup for mobile
+                if (cursor && cursorDot) {
+                    document.removeEventListener('mousemove', desktopCursorMove);
+                    document.removeEventListener('mousedown', desktopCursorActivate);
+                    document.removeEventListener('mouseup', desktopCursorDeactivate);
+                }
+                 window.removeEventListener('mousemove', particleMouseMoveListener);
+                 window.removeEventListener('mouseout', particleMouseOutListener);
+                 // O listener do centralCoreElement não precisa ser removido pois o elemento não estará visível.
             }
         }
         function desktopCursorMove(e) {
@@ -1166,34 +1213,41 @@
                 cursor.classList.remove('active');
             }
         }
+        // Particle mouse listeners
+        function particleMouseMoveListener(event) { mouse.x = event.clientX; mouse.y = event.clientY; }
+        function particleMouseOutListener() { mouse.x = undefined; mouse.y = undefined; }
+
 
         // --- INITIALIZATION AND RESIZE LOGIC ---
         function initializeView() {
-            generateThemes(); // Gerar temas uma vez
-            applyTheme(currentThemeIndex); // Aplicar tema inicial
+            // Gerar temas só uma vez é melhor, a menos que queira novos a cada resize
+            if (themes.length === 0) {
+                 generateThemes();
+            }
+            applyTheme(currentThemeIndex);
+
+            setupDesktopInteractivity(); // Adiciona/remove listeners de desktop
 
             if (isDesktopView()) {
                 if (particleCanvas) particleCanvas.style.display = 'block';
-                if (document.querySelector('.custom-cursor')) document.querySelector('.custom-cursor').style.display = 'block';
-                if (document.querySelector('.custom-cursor-dot')) document.querySelector('.custom-cursor-dot').style.display = 'block';
+                if (cursor) cursor.style.display = 'block';
+                if (cursorDot) cursorDot.style.display = 'block';
                 
-                createDesktopNodes();
-                setupCustomCursorEvents();
+                requestAnimationFrame(createDesktopNodes); // Usar rAF para garantir que o DOM esteja pronto
                 startStopParticleAnimation();
                 if (typeof updateCountdown === 'function') {
-                    updateCountdown(); // Chamada inicial
-                    if (!countdownInterval) countdownInterval = setInterval(updateCountdown, 1000);
+                    updateCountdown();
+                    if (!countdownInterval && document.getElementById('countdown-widget')?.style.display !== 'none') {
+                         countdownInterval = setInterval(updateCountdown, 1000);
+                    }
                 }
-                 if (centralCoreElement) centralCoreElement.addEventListener('click', nextTheme);
-
             } else { // Mobile view
                 if (particleCanvas) particleCanvas.style.display = 'none';
-                 if (document.querySelector('.custom-cursor')) document.querySelector('.custom-cursor').style.display = 'none';
-                if (document.querySelector('.custom-cursor-dot')) document.querySelector('.custom-cursor-dot').style.display = 'none';
+                if (cursor) cursor.style.display = 'none';
+                if (cursorDot) cursorDot.style.display = 'none';
                 
                 createMobileNav();
-                setupCustomCursorEvents(); // Isso vai remover os listeners
-                startStopParticleAnimation(); // Isso vai parar a animação
+                startStopParticleAnimation(); // Vai parar a animação
                 if (countdownInterval) {
                     clearInterval(countdownInterval);
                     countdownInterval = null;
@@ -1201,10 +1255,11 @@
             }
 
             const introScreen = document.getElementById('site-title-intro');
-            if (introScreen) {
+            if (introScreen && !introScreen.classList.contains('hidden-initially')) { // Só faz o timeout uma vez
                 setTimeout(() => {
                     introScreen.classList.add('hidden');
                 }, 3500);
+                introScreen.classList.add('hidden-initially'); // Marca que já foi feito
             }
         }
 
@@ -1215,13 +1270,11 @@
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                // Simplesmente re-inicializa a view correta.
-                // O CSS media query já terá trocado o display dos containers principais.
+                // A mudança de display é feita pelo CSS. JS re-inicializa componentes.
                 initializeView();
-            }, 250); // Debounce para evitar execuções excessivas
+            }, 250);
         });
 
-        // Listener de teclado para fechar modal desktop
          window.addEventListener('keydown', (e) => {
             if (isDesktopView() && e.key === 'Escape' && contentModule && contentModule.classList.contains('visible')) {
                 contentModule.classList.remove('visible');
