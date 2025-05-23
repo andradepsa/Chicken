@@ -699,13 +699,14 @@
         const themes = [];
         let currentThemeIndex = 0;
         const NUM_THEMES = 50;
+        let activeMobileNodeId = null; // <<< GUARDA O ID DO NÓ MOBILE ATIVO
 
         function generateThemes() {
             for (let i = 0; i < NUM_THEMES; i++) {
                 const baseHue = Math.random() * 360;
                 const mainSat = 70 + Math.random() * 30;
                 const mainLight = 50 + Math.random() * 15;
-                const isDarkBase = Math.random() > 0.15; // Maior chance de ser escuro
+                const isDarkBase = Math.random() > 0.15;
                 const bgColorHue = (baseHue + Math.random() * 60 - 30 + 360) % 360;
                 const bgSat = 5 + Math.random() * 25;
                 const textColorHue = (baseHue + 180 + Math.random() * 40 - 20 + 360) % 360;
@@ -722,10 +723,9 @@
                     '--bg-color-start': isDarkBase ? `hsl(${bgColorHue}, ${bgSat}%, ${8 + Math.random() * 7}%)` : `hsl(${bgColorHue}, ${bgSat}%, ${92 - Math.random() * 7}%)`,
                     '--bg-color-end': isDarkBase ? `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${3 + Math.random() * 4}%)` : `hsl(${(bgColorHue + 20 + 360) % 360}, ${bgSat}%, ${88 - Math.random() * 4}%)`,
                     '--node-bg': isDarkBase ? `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${12 + Math.random() * 8}%, 0.8)` : `hsla(${(baseHue + 10 + 360) % 360}, ${bgSat + 10}%, ${80 + Math.random() * 8}%, 0.8)`,
-                    // Mobile specific vars derived from base theme properties
                     '--mobile-header-bg': isDarkBase ? `hsla(${bgColorHue}, ${bgSat + 5}%, ${5 + Math.random() * 3}%, 0.95)` : `hsla(${bgColorHue}, ${bgSat + 5}%, ${95 - Math.random() * 3}%, 0.95)`,
                     '--mobile-nav-bg': isDarkBase ? `hsla(${(bgColorHue + 10 + 360) % 360}, ${bgSat + 10}%, ${10 + Math.random() * 5}%, 0.85)` : `hsla(${(bgColorHue + 10 + 360) % 360}, ${bgSat + 10}%, ${90 - Math.random() * 5}%, 0.85)`,
-                    '--mobile-nav-item-hover-bg': `hsla(${(baseHue + 60 + 360) % 360}, ${mainSat - 15}%, ${mainLight - 10}%, 0.5)` // Um pouco mais sutil que o glow secundário
+                    '--mobile-nav-item-hover-bg': `hsla(${(baseHue + 60 + 360) % 360}, ${mainSat - 15}%, ${mainLight - 10}%, 0.5)`
                 });
             }
         }
@@ -753,18 +753,16 @@
                     primaryGlowL = parseFloat(parts[2]);
                     rootStyle.setProperty('--cursor-active-bg', `hsla(${parts[0]}, ${parts[1]}%, ${parts[2]}%, 0.2)`);
                 }
-            } else { // Fallback for non-hsl (e.g. if you hardcode a hex/rgb)
+            } else {
                 rootStyle.setProperty('--cursor-active-bg', `rgba(0, 255, 255, 0.2)`);
             }
             rootStyle.setProperty('--glow-color-primary-hsl', `${primaryGlowH}, ${primaryGlowS}%, ${primaryGlowL}%`);
 
-            // Update mobile theme switcher color for contrast if needed (JS can access theme vars)
             const mobileSwitcher = document.getElementById('mobile-theme-switcher');
             if (mobileSwitcher) {
-                mobileSwitcher.style.color = theme['--bg-color-start']; // Or another contrasting color from the theme
+                mobileSwitcher.style.color = theme['--bg-color-start'];
                 mobileSwitcher.style.backgroundColor = theme['--glow-color-secondary'];
             }
-
 
             if (isDesktopView() && typeof initParticles === 'function') {
                 initParticles();
@@ -783,7 +781,7 @@
 
         // --- PARTICLE SYSTEM (Desktop Only) ---
         const particleCanvas = document.getElementById('particle-canvas');
-        const particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null; // Check if canvas exists
+        const particleCtx = particleCanvas ? particleCanvas.getContext('2d') : null;
         let particlesArray = [];
         const calculateNumberOfParticles = () => Math.max(10, Math.floor((window.innerWidth * window.innerHeight) / 25000) + 20);
         let numberOfParticles;
@@ -808,11 +806,9 @@
             }
             draw() {
                 if (!particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
-
                 const lifeOpacityFactor = Math.max(0, this.life / this.initialLife);
                 let r, g, b, baseAlpha;
                 const colorParts = this.themedColorBase.match(/[\d.]+/g);
-
                 if (this.themedColorBase.startsWith('rgba') && colorParts && colorParts.length === 4) {
                     [r, g, b, baseAlpha] = colorParts.map(Number);
                     particleCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * lifeOpacityFactor).toFixed(3)})`;
@@ -825,9 +821,7 @@
                 particleCtx.beginPath();
                 particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 particleCtx.fill();
-                if (particleCtx.globalAlpha !== 1.0) {
-                    particleCtx.globalAlpha = 1.0;
-                }
+                if (particleCtx.globalAlpha !== 1.0) particleCtx.globalAlpha = 1.0;
             }
         }
 
@@ -836,7 +830,6 @@
             particleCanvas.width = window.innerWidth;
             particleCanvas.height = window.innerHeight;
             if (particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
-
             numberOfParticles = calculateNumberOfParticles();
             particlesArray = [];
             for (let i = 0; i < numberOfParticles; i++) {
@@ -845,24 +838,19 @@
         }
 
         let mouse = { x: undefined, y: undefined, radius: 80 };
-        // Particle mouse listeners are added/removed in setupCustomCursorEvents based on view
-
         let animationFrameId = null;
+
         function animateParticles() {
             if (!isDesktopView() || !particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0) {
-                if (animationFrameId) { // If it was running, request next frame to allow it to stop if view changes
-                     animationFrameId = requestAnimationFrame(animateParticles);
-                }
+                if (animationFrameId) animationFrameId = requestAnimationFrame(animateParticles);
                 return;
             }
             particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-
             for (let i = 0; i < particlesArray.length; i++) {
                 const particle = particlesArray[i];
                 if (particle) {
                     particle.update();
                     particle.draw();
-
                     if (mouse.x !== undefined && mouse.y !== undefined) {
                         let dx = particle.x - mouse.x;
                         let dy = particle.y - mouse.y;
@@ -876,51 +864,40 @@
                     }
                 }
             }
-
             for (let i = particlesArray.length - 1; i >= 0; i--) {
                 if (particlesArray[i] && particlesArray[i].life <= 0) {
                     particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
-                } else if (!particlesArray[i]) { // Should not happen if initialized correctly
+                } else if (!particlesArray[i]) {
                     particlesArray[i] = new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height);
                 }
             }
-
             while (particlesArray.length < numberOfParticles && numberOfParticles > 0) {
                 particlesArray.push(new Particle(Math.random() * particleCanvas.width, Math.random() * particleCanvas.height));
             }
-            if (particlesArray.length > numberOfParticles) {
-                particlesArray.length = numberOfParticles;
-            }
-
+            if (particlesArray.length > numberOfParticles) particlesArray.length = numberOfParticles;
             connectParticles();
             animationFrameId = requestAnimationFrame(animateParticles);
         }
 
         function connectParticles() {
-            if (!isDesktopView() || !particleCtx || !particleCanvas || particleCanvas.width <= 0 || particleCanvas.height <= 0 || !particlesArray) return;
-
+            if (!isDesktopView() || !particleCtx || !particleCanvas || !particlesArray || particleCanvas.width <= 0 || particleCanvas.height <= 0) return;
             const themedLineColorBase = getComputedStyle(document.documentElement).getPropertyValue('--line-color').trim();
-            const connectDistance = 70; // Fixed for desktop
+            const connectDistance = 70;
             const currentParticlesLength = particlesArray.length;
-
             for (let a = 0; a < currentParticlesLength; a++) {
                 const particleA = particlesArray[a];
                 if (!particleA) continue;
-
                 for (let b = a + 1; b < currentParticlesLength; b++) {
                     const particleB = particlesArray[b];
                     if (!particleB) continue;
-
                     let dx = particleA.x - particleB.x;
                     let dy = particleA.y - particleB.y;
                     let distance = Math.sqrt(dx*dx + dy*dy);
-
                     if (distance < connectDistance) {
                         const distanceOpacityFactor = Math.max(0, 1 - (distance / connectDistance));
                         let r, g, b, baseAlpha;
                         const colorParts = themedLineColorBase.match(/[\d.]+/g);
                         let finalLineColor;
-
                         if (themedLineColorBase.startsWith('rgba') && colorParts && colorParts.length === 4) {
                             [r, g, b, baseAlpha] = colorParts.map(Number);
                             finalLineColor = `rgba(${r}, ${g}, ${b}, ${(baseAlpha * distanceOpacityFactor).toFixed(3)})`;
@@ -949,7 +926,7 @@
                 if (animationFrameId === null) {
                     particleCanvas.width = window.innerWidth;
                     particleCanvas.height = window.innerHeight;
-                    if (particleCanvas.width > 0 && particleCanvas.height > 0) { // Ensure canvas is valid
+                    if (particleCanvas.width > 0 && particleCanvas.height > 0) {
                         initParticles();
                         animationFrameId = requestAnimationFrame(animateParticles);
                     }
@@ -978,17 +955,13 @@
             nodeElements.forEach(node => node.remove());
             nodeElements = [];
             if(svgLines) svgLines.innerHTML = '';
-
-            const numNodes = siteData.nodes.length;
-            // Ensure nexusContainer has dimensions before proceeding
             if (nexusContainer.offsetWidth === 0 || nexusContainer.offsetHeight === 0) {
-                requestAnimationFrame(createDesktopNodes); // Try again next frame
+                requestAnimationFrame(createDesktopNodes);
                 return;
             }
             const containerWidth = nexusContainer.offsetWidth;
             const containerHeight = nexusContainer.offsetHeight;
-
-
+            const numNodes = siteData.nodes.length;
             const radius = Math.min(containerWidth, containerHeight) / 2 * 0.7;
             const angleStep = (2 * Math.PI) / numNodes;
 
@@ -996,24 +969,20 @@
                 const angle = i * angleStep - Math.PI / 2;
                 const xPercent = 50 + (radius / (containerWidth / 2) * 50) * Math.cos(angle);
                 const yPercent = 50 + (radius / (containerHeight / 2) * 50) * Math.sin(angle);
-
                 const nodeEl = document.createElement('div');
                 nodeEl.classList.add('data-node');
                 nodeEl.id = `node-${nodeData.id}`;
                 nodeEl.style.left = `${xPercent}%`;
                 nodeEl.style.top = `${yPercent}%`;
-
-                const nodeSize = Math.random() * 2 + 7; // 7vmin to 9vmin
+                const nodeSize = Math.random() * 2 + 7;
                 nodeEl.style.width = `${nodeSize}vmin`;
                 nodeEl.style.height = `${nodeSize}vmin`;
                 nodeEl.style.borderRadius = `${Math.random() > 0.5 ? '50%' : (Math.random()*20+10)+'px'}`;
-
                 const randomRotation = Math.random()*30-15;
                 nodeEl.style.setProperty('--initial-rotation', `${randomRotation}deg`);
                 nodeEl.style.setProperty('--float-offset-x', `${Math.random()*10-5}px`);
                 nodeEl.style.setProperty('--float-offset-y', `${Math.random()*10-5}px`);
                 nodeEl.style.animationDuration = `${Math.random()*3+4}s`;
-
                 nodeEl.innerHTML = `<i class="${nodeData.icon}"></i><span>${nodeData.label}</span>`;
                 nodeEl.title = nodeData.label;
                 nodeEl.addEventListener('click', () => {
@@ -1025,7 +994,6 @@
                 nodeEl.addEventListener('mouseleave', () => nodeEl.style.animationPlayState = 'running');
                 nexusContainer.appendChild(nodeEl);
                 nodeElements.push(nodeEl);
-
                 if (svgLines) {
                     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                     line.setAttribute('x1', '50%');
@@ -1062,22 +1030,45 @@
             if (!mobileNav) return;
             mobileNav.innerHTML = '';
 
+            let nodeToActivateData = null;
+            let firstNodeData = null;
+
             siteData.nodes.forEach((nodeData, index) => {
+                if (index === 0) firstNodeData = nodeData;
+
                 const li = document.createElement('li');
                 li.innerHTML = `<i class="${nodeData.icon}"></i> ${nodeData.label}`;
+                li.dataset.nodeId = nodeData.id;
+
                 li.addEventListener('click', () => {
                     openMobileContent(nodeData);
                     Array.from(mobileNav.children).forEach(item => item.classList.remove('active'));
                     li.classList.add('active');
-                    mobileNav.scrollTo({ left: li.offsetLeft - mobileNav.offsetWidth / 2 + li.offsetWidth / 2, behavior: 'smooth' });
+                    if(mobileNav.offsetWidth < mobileNav.scrollWidth){
+                        mobileNav.scrollTo({ left: li.offsetLeft - mobileNav.offsetWidth / 2 + li.offsetWidth / 2, behavior: 'smooth' });
+                    }
                 });
                 mobileNav.appendChild(li);
 
-                if (index === 0) { // Open first item by default
-                    openMobileContent(nodeData);
-                    li.classList.add('active');
+                if (activeMobileNodeId && activeMobileNodeId === nodeData.id) {
+                    nodeToActivateData = nodeData;
                 }
             });
+
+            const targetNodeData = nodeToActivateData || firstNodeData;
+
+            if (targetNodeData) {
+                openMobileContent(targetNodeData);
+                const activeLi = mobileNav.querySelector(`li[data-node-id="${targetNodeData.id}"]`);
+                if (activeLi) {
+                    activeLi.classList.add('active');
+                     if(mobileNav.offsetWidth < mobileNav.scrollWidth){
+                        setTimeout(() => {
+                            mobileNav.scrollTo({ left: activeLi.offsetLeft - mobileNav.offsetWidth / 2 + activeLi.offsetWidth / 2, behavior: 'auto' });
+                        }, 0);
+                    }
+                }
+            }
         }
 
         function openMobileContent(nodeData) {
@@ -1085,12 +1076,12 @@
             mobileContentTitle.textContent = nodeData.label;
             mobileContentArea.innerHTML = nodeData.content;
             if (mobileContentArea) mobileContentArea.scrollTop = 0;
+            activeMobileNodeId = nodeData.id;
         }
 
         if (mobileThemeSwitcher) {
             mobileThemeSwitcher.addEventListener('click', nextTheme);
         }
-
 
         // --- COUNTDOWN LOGIC ---
         const countdownMonthsEl = document.getElementById('months');
@@ -1104,8 +1095,7 @@
         function updateCountdown() {
             const countdownWidget = document.getElementById('countdown-widget');
             if (!isDesktopView() && countdownWidget && getComputedStyle(countdownWidget).display === 'none') {
-                if (countdownInterval) clearInterval(countdownInterval);
-                countdownInterval = null;
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
                 return;
             }
             if (isDesktopView() && !countdownInterval && countdownWidget && getComputedStyle(countdownWidget).display !== 'none') {
@@ -1114,14 +1104,13 @@
 
             const now = new Date();
             let targetYear = now.getFullYear();
-            const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0); // Mês 2 é Março
+            const march14ThisYear = new Date(targetYear, 2, 14, 0, 0, 0);
             let target = new Date(targetYear, 2, 14, 0, 0, 0);
 
             if (now > march14ThisYear) {
                 targetYear++;
                 target.setFullYear(targetYear);
             }
-
             const totalMsToTarget = target - now;
 
             if (totalMsToTarget <= 0) {
@@ -1136,28 +1125,20 @@
             }
 
             let monthsDisplay = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-            if (now.getDate() > target.getDate() && (now.getMonth() !== target.getMonth() || now.getFullYear() !== target.getFullYear())) {
+            if (now.getDate() > target.getDate() && (target.getMonth() !== now.getMonth() || target.getFullYear() !== now.getFullYear())) {
                 monthsDisplay--;
-            } else if (now.getDate() === target.getDate() && now.getMonth() === target.getMonth() && now.getHours() >= 0) {
-                 // No dia alvo, mas antes da hora 0, meses pode ser 0. Se for após, meses já deveria ter sido ajustado.
             }
-             if (monthsDisplay < 0) monthsDisplay = 0;
+            if (monthsDisplay < 0) monthsDisplay = 0;
 
-
-            let tempNow = new Date(now);
-            tempNow.setMonth(now.getMonth() + monthsDisplay);
 
             let daysDisplay = 0;
-            if (target > tempNow) {
-                daysDisplay = Math.floor((target - tempNow) / (1000 * 60 * 60 * 24));
-            } else if (target < tempNow && monthsDisplay > 0) { // Overcounted months
+            let dateForDayCalc = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
+            if (dateForDayCalc > target && monthsDisplay > 0) { // Overcounted months
                 monthsDisplay--;
-                tempNow.setMonth(now.getMonth() + monthsDisplay);
-                daysDisplay = Math.floor((target - tempNow) / (1000 * 60 * 60 * 24));
-            } else if (target.getMonth() === tempNow.getMonth() && target.getFullYear() === tempNow.getFullYear()){
-                 daysDisplay = target.getDate() - tempNow.getDate();
+                dateForDayCalc = new Date(now.getFullYear(), now.getMonth() + monthsDisplay, now.getDate());
             }
-            if (daysDisplay < 0) daysDisplay = 0;
+            daysDisplay = Math.floor((target - dateForDayCalc) / (1000 * 60 * 60 * 24));
+            if(daysDisplay < 0) daysDisplay = 0;
 
 
             const hoursDisplay = Math.floor((totalMsToTarget / (1000 * 60 * 60)) % 24);
@@ -1171,6 +1152,7 @@
             if(countdownSecondsEl) countdownSecondsEl.textContent = secondsDisplay;
             if(countdownMessageEl) countdownMessageEl.textContent = "";
         }
+
 
         // --- CUSTOM CURSOR (Desktop Only) ---
         const cursor = document.querySelector('.custom-cursor');
@@ -1187,7 +1169,7 @@
                  window.addEventListener('mousemove', particleMouseMoveListener);
                  window.addEventListener('mouseout', particleMouseOutListener);
                  if (centralCoreElement) centralCoreElement.addEventListener('click', nextTheme);
-            } else { // Cleanup for mobile
+            } else {
                 if (cursor && cursorDot) {
                     document.removeEventListener('mousemove', desktopCursorMove);
                     document.removeEventListener('mousedown', desktopCursorActivate);
@@ -1195,17 +1177,13 @@
                 }
                  window.removeEventListener('mousemove', particleMouseMoveListener);
                  window.removeEventListener('mouseout', particleMouseOutListener);
-                 // O listener do centralCoreElement não precisa ser removido pois o elemento não estará visível.
             }
         }
         function desktopCursorMove(e) {
             if (cursor) { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; }
             if (cursorDot) { cursorDot.style.left = e.clientX + 'px'; cursorDot.style.top = e.clientY + 'px'; }
-            if (cursor && e.target.closest(interactiveElementsQuery)) {
-                cursor.classList.add('active');
-            } else if (cursor) {
-                cursor.classList.remove('active');
-            }
+            if (cursor && e.target.closest(interactiveElementsQuery)) cursor.classList.add('active');
+            else if (cursor) cursor.classList.remove('active');
         }
         function desktopCursorActivate() { if (cursor) cursor.classList.add('active'); }
         function desktopCursorDeactivate() {
@@ -1213,27 +1191,24 @@
                 cursor.classList.remove('active');
             }
         }
-        // Particle mouse listeners
         function particleMouseMoveListener(event) { mouse.x = event.clientX; mouse.y = event.clientY; }
         function particleMouseOutListener() { mouse.x = undefined; mouse.y = undefined; }
 
-
         // --- INITIALIZATION AND RESIZE LOGIC ---
+        let isInitialLoad = true;
+
         function initializeView() {
-            // Gerar temas só uma vez é melhor, a menos que queira novos a cada resize
-            if (themes.length === 0) {
-                 generateThemes();
-            }
+            if (themes.length === 0) generateThemes();
             applyTheme(currentThemeIndex);
+            setupDesktopInteractivity();
 
-            setupDesktopInteractivity(); // Adiciona/remove listeners de desktop
+            const currentViewIsDesktop = isDesktopView();
 
-            if (isDesktopView()) {
+            if (currentViewIsDesktop) {
                 if (particleCanvas) particleCanvas.style.display = 'block';
                 if (cursor) cursor.style.display = 'block';
                 if (cursorDot) cursorDot.style.display = 'block';
-                
-                requestAnimationFrame(createDesktopNodes); // Usar rAF para garantir que o DOM esteja pronto
+                requestAnimationFrame(createDesktopNodes);
                 startStopParticleAnimation();
                 if (typeof updateCountdown === 'function') {
                     updateCountdown();
@@ -1245,33 +1220,44 @@
                 if (particleCanvas) particleCanvas.style.display = 'none';
                 if (cursor) cursor.style.display = 'none';
                 if (cursorDot) cursorDot.style.display = 'none';
-                
                 createMobileNav();
-                startStopParticleAnimation(); // Vai parar a animação
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                }
+                startStopParticleAnimation();
+                if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
             }
 
-            const introScreen = document.getElementById('site-title-intro');
-            if (introScreen && !introScreen.classList.contains('hidden-initially')) { // Só faz o timeout uma vez
-                setTimeout(() => {
-                    introScreen.classList.add('hidden');
-                }, 3500);
-                introScreen.classList.add('hidden-initially'); // Marca que já foi feito
+            if (isInitialLoad) {
+                const introScreen = document.getElementById('site-title-intro');
+                if (introScreen) {
+                    setTimeout(() => {
+                        introScreen.classList.add('hidden');
+                    }, 3500);
+                }
+                isInitialLoad = false;
             }
         }
-
 
         window.addEventListener('load', initializeView);
 
         let resizeTimeout;
+        let lastWindowWidth = window.innerWidth;
+
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
-                // A mudança de display é feita pelo CSS. JS re-inicializa componentes.
-                initializeView();
+                const currentWindowWidth = window.innerWidth;
+                const changedBreakpoint = (lastWindowWidth <= 768 && currentWindowWidth > 768) || (lastWindowWidth > 768 && currentWindowWidth <= 768);
+
+                if (changedBreakpoint) {
+                    initializeView();
+                } else if (isDesktopView()) {
+                    requestAnimationFrame(createDesktopNodes);
+                    if (particleCanvas) {
+                         particleCanvas.width = window.innerWidth;
+                         particleCanvas.height = window.innerHeight;
+                         if (particleCanvas.width > 0 && particleCanvas.height > 0) initParticles();
+                    }
+                }
+                lastWindowWidth = currentWindowWidth;
             }, 250);
         });
 
@@ -1281,7 +1267,6 @@
                 if (nodeElements) nodeElements.forEach(n => n.classList.remove('active'));
             }
         });
-
     </script>
 </body>
 </html>
