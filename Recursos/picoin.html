@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiCoin Extended: Sistema de Ciclos de Emissão</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #4c63d2 0%, #9b59b6 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            color: #4c63d2;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero h2 {
+            font-size: 1.8em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            color: #777;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section h3 {
+            color: #4c63d2;
+            font-size: 2em;
+            margin-bottom: 20px;
+            border-left: 5px solid #4c63d2;
+            padding-left: 15px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .comparison-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+        }
+
+        .comparison-card.original {
+            border-left: 5px solid #dc3545;
+        }
+
+        .comparison-card.modified {
+            border-left: 5px solid #28a745;
+        }
+
+        .comparison-card h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #4c63d2 0%, #9b59b6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h4 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: #4c63d2;
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+
+        .timeline-item:nth-child(odd) {
+            text-align: right;
+            padding-right: 50%;
+        }
+
+        .timeline-item:nth-child(even) {
+            text-align: left;
+            padding-left: 50%;
+        }
+
+        .timeline-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #4c63d2;
+            position: relative;
+        }
+
+        .timeline-date {
+            font-weight: bold;
+            color: #4c63d2;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ddd6fe, #c7d2fe);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #4c63d2;
+        }
+
+        .benefits-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .benefit-item {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #28a745;
+        }
+
+        .benefit-item h5 {
+            color: #28a745;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-left: 5px solid #f39c12;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #4c63d2, #9b59b6);
+            color: white;
+            text-align: center;
+            padding: 40px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .cta-section h3 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .pi-symbol {
+            color: #4c63d2;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 2.5em;
+            }
+            
+            .timeline::before {
+                left: 20px;
+            }
+            
+            .timeline-item {
+                padding-left: 50px;
+                text-align: left;
+            }
+            
+            .timeline-item:nth-child(odd) {
+                padding-right: 20px;
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 1s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero fade-in">
+            <h1 class="pulse"><span class="pi-symbol">π</span> PiCoin Extended</h1>
+            <h2>Sistema de Ciclos de Emissão</h2>
+            <p>Estendendo a operação do PiCoin por milhares de anos. Sistema de 70 ciclos controlados que garante recompensas para mineradores até o ano 9.825, baseado na robusta arquitetura Bitcoin.</p>
+        </div>
+
+        <!-- Problema Section -->
+        <div class="section fade-in">
+            <h3>🚨 O Desafio das Criptomoedas Tradicionais</h3>
+            <div class="warning-box">
+                <h4>⏰ Limite de Emissão Tradicional</h4>
+                <p>Seguindo o modelo Bitcoin original, muitas criptomoedas têm limites fixos que podem comprometer a sustentabilidade de longo prazo. O PiCoin Extended resolve este problema implementando ciclos controlados de emissão.</p>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>21M</h4>
+                    <p>Moedas por Ciclo</p>
+                </div>
+                <div class="stat-card">
+                    <h4>140</h4>
+                    <p>Anos por Ciclo</p>
+                </div>
+                <div class="stat-card">
+                    <h4>70</h4>
+                    <p>Ciclos Totais</p>
+                </div>
+                <div class="stat-card">
+                    <h4>9.825</h4>
+                    <p>Ano Final</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Solução Section -->
+        <div class="section fade-in">
+            <h3>✨ PiCoin Extended: Sistema de Ciclos</h3>
+            <div class="highlight">
+                <h4>🔄 Emissão Cíclica Inteligente</h4>
+                <p>Sistema revolucionário de 70 ciclos de 140 anos cada, baseado na robusta arquitetura Bitcoin. Cada ciclo permite a criação de até 21 milhões de PiCoins, garantindo operação contínua até o ano 9.825.</p>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card original">
+                    <h4>🔴 Modelo Tradicional</h4>
+                    <ul>
+                        <li>📊 <strong>Limite fixo</strong> de moedas</li>
+                        <li>📅 Emissão <strong>limitada</strong> no tempo</li>
+                        <li>💀 <strong>Fim</strong> da recompensa</li>
+                        <li>❓ <strong>Incerteza</strong> futura</li>
+                        <li>⚡ Dependência de <strong>taxas apenas</strong></li>
+                    </ul>
+                </div>
+                <div class="comparison-card modified">
+                    <h4>🟢 PiCoin Extended</h4>
+                    <ul>
+                        <li>📊 <strong>1,47 bilhão</strong> de PiCoins</li>
+                        <li>📅 Emissão até <strong>9.825</strong></li>
+                        <li>🔄 <strong>Renovação</strong> cíclica</li>
+                        <li>✅ <strong>Previsibilidade</strong> total</li>
+                        <li>💰 Incentivos <strong>de longo prazo</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Section -->
+        <div class="section fade-in">
+            <h3>📅 Cronograma dos Ciclos PiCoin</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2025-2165 (Ciclo 1)</div>
+                        <h4>🟡 Estabelecimento da Base</h4>
+                        <p><strong>Compatibilidade com padrão Bitcoin.</strong> Sistema de halving funciona normalmente. Emissão de até 21 milhões de PiCoins no primeiro ciclo.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2166-2305 (Ciclo 2)</div>
+                        <h4>🔄 Primeira Renovação</h4>
+                        <p><strong>Sistema inicia segundo ciclo.</strong> Novo período permite mais 21 milhões de PiCoins. Total acumulado: 42 milhões.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2306-9685 (Ciclos 3-69)</div>
+                        <h4>⚡ Era da Prosperidade</h4>
+                        <p><strong>67 ciclos de crescimento sustentável.</strong> Cada ciclo permite mais 21 milhões. Sistema garante incentivos por milênios.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">9686-9825 (Ciclo 70)</div>
+                        <h4>🏁 Ciclo de Consolidação</h4>
+                        <p><strong>Último ciclo de emissão programada.</strong> Total máximo de 1,47 bilhão de PiCoins. Transição para economia madura.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detalhes Técnicos Section -->
+        <div class="section fade-in">
+            <h3>⚙️ Arquitetura Técnica</h3>
+            <p>O PiCoin Extended foi desenvolvido baseado na robusta arquitetura Bitcoin Core, com modificações precisas em 4 arquivos principais:</p>
+            
+            <div class="code-block">
+<strong>📁 1. src/consensus/params.h</strong>
+// Estrutura para parâmetros de ciclos PiCoin
+struct EmissionCycleParams {
+    int start_year{0};                    // Ano de início: 2025
+    int end_year{0};                      // Fim do primeiro ciclo: 2165  
+    CAmount first_cycle_max_supply{0};    // 21M PiCoins por ciclo
+    int cycle_duration_years{0};          // 140 anos por ciclo
+    int total_cycles{0};                  // 70 ciclos total
+};
+            </div>
+
+            <div class="code-block">
+<strong>📁 2. src/chainparams.cpp</strong>
+// Configurações específicas por rede
+// Mainnet
+consensus.emission_cycles.start_year = 2025;
+consensus.emission_cycles.end_year = 2165;
+consensus.emission_cycles.first_cycle_max_supply = 21000000LL * COIN;
+consensus.emission_cycles.cycle_duration_years = 140;
+consensus.emission_cycles.total_cycles = 70;
+
+// Testnet (para testes rápidos)
+consensus.emission_cycles.start_year = 2024;
+consensus.emission_cycles.first_cycle_max_supply = 1000LL * COIN;
+consensus.emission_cycles.cycle_duration_years = 1;
+consensus.emission_cycles.total_cycles = 5;
+            </div>
+
+            <div class="code-block">
+<strong>📁 3. src/chain.h</strong>
+// Rastreamento de moedas emitidas por bloco
+class CBlockIndex {
+    // ... outros campos existentes ...
+    
+    //! Total de PiCoins emitidos até este bloco
+    CAmount nMoneySupply{0};
+    
+    // Construtor atualizado para inicializar nMoneySupply
+    explicit CBlockIndex(const CBlockHeader& block)
+        : nMoneySupply{0} { /* ... */ }
+};
+            </div>
+
+            <div class="code-block">
+<strong>📁 4. src/validation.cpp</strong>
+// Função principal que aplica as regras de ciclo
+CAmount ApplyEmissionCycleRules(CAmount nSubsidyPiCoin, 
+                               int nBlockHeight, 
+                               const CBlockIndex* pindexPrev, 
+                               const Consensus::Params& consensusParams) {
+    
+    // Calcula qual ciclo estamos baseado no ano atual
+    int currentYear = GetCurrentYear(pindexPrev);
+    int cycle = CalculateCurrentCycle(currentYear, consensusParams);
+    
+    // Verifica limite do ciclo
+    CAmount maxSupply = consensusParams.emission_cycles.first_cycle_max_supply * cycle;
+    CAmount totalEmitted = pindexPrev ? pindexPrev->nMoneySupply : 0;
+    
+    // Para emissão se limite atingido
+    if (totalEmitted >= maxSupply) return 0;
+    
+    // Permite emissão dentro do limite
+    return nSubsidyPiCoin;
+}
+
+// Integração no ConnectBlock para aplicar as regras
+bool Chainstate::ConnectBlock(const CBlock& block, ...) {
+    // ... código existente ...
+    
+    // Aplica regras de ciclo na verificação da coinbase
+    CAmount originalSubsidy = GetBlockSubsidy(pindex->nHeight, params.GetConsensus());
+    CAmount finalSubsidy = ApplyEmissionCycleRules(originalSubsidy, 
+                                                  pindex->nHeight, 
+                                                  pindex->pprev, 
+                                                  params.GetConsensus());
+    
+    // Atualiza contador de moedas emitidas
+    if (!fJustCheck) {
+        pindex->nMoneySupply = (pindex->pprev ? pindex->pprev->nMoneySupply : 0) + originalSubsidy;
+    }
+    
+    // Verifica se coinbase respeitou o limite
+    CAmount blockReward = nFees + finalSubsidy;
+    if (block.vtx[0]->GetValueOut() > blockReward) {
+        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, 
+                           "bad-cb-amount", "coinbase exceeds cycle limit");
+    }
+    
+    // ... resto do código ...
+}
+            </div>
+
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <h5>🔒 Arquitetura Comprovada</h5>
+                    <p>Baseado na sólida fundação Bitcoin. Herda toda a segurança e estabilidade do protocolo mais testado do mundo.</p>
+                </div>
+                <div class="benefit-item">
+                    <h5>🧮 Lógica Transparente</h5>
+                    <p>Fórmula clara: 21M × ciclo = limite. Totalmente auditável e previsível por qualquer pessoa.</p>
+                </div>
+                <div class="benefit-item">
+                    <h5>⚡ Sistema Híbrido</h5>
+                    <p>Combina halving tradicional com ciclos inovadores. Melhor dos dois mundos em um sistema único.</p>
+                </div>
+                <div class="benefit-item">
+                    <h5>🛡️ Segurança Máxima</h5>
+                    <p>Mantém todos os algoritmos de consenso Bitcoin. Zero compromisso com aspectos de segurança.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefícios Section -->
+        <div class="section fade-in">
+            <h3>🎯 Vantagens do PiCoin Extended</h3>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>70x</h4>
+                    <p>Mais PiCoins</p>
+                </div>
+                <div class="stat-card">
+                    <h4>7.685</h4>
+                    <p>Anos Extras</p>
+                </div>
+                <div class="stat-card">
+                    <h4>100%</h4>
+                    <p>Compatibilidade</p>
+                </div>
+                <div class="stat-card">
+                    <h4>∞</h4>
+                    <p>Longevidade</p>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <h4>🌟 Revolução na Longevidade</h4>
+                <p>O PiCoin Extended resolve o maior desafio das criptomoedas: operação de longo prazo. Garante incentivos para mineradores por milhares de anos, mantendo a rede segura, descentralizada e economicamente viável.</p>
+            </div>
+        </div>
+
+        <!-- Configurações por Rede Section -->
+        <div class="section fade-in">
+            <h3>🌐 Configurações por Rede</h3>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card modified">
+                    <h4>🔵 Mainnet (Produção)</h4>
+                    <ul>
+                        <li><strong>Início:</strong> 2025</li>
+                        <li><strong>Fim Ciclo 1:</strong> 2165</li>
+                        <li><strong>Por Ciclo:</strong> 21.000.000 PiCoins</li>
+                        <li><strong>Duração:</strong> 140 anos</li>
+                        <li><strong>Total Ciclos:</strong> 70</li>
+                        <li><strong>Máximo:</strong> 1,47 bilhão</li>
+                    </ul>
+                </div>
+                <div class="comparison-card original">
+                    <h4>🟡 Testnet (Testes)</h4>
+                    <ul>
+                        <li><strong>Início:</strong> 2024</li>
+                        <li><strong>Fim Ciclo 1:</strong> 2025</li>
+                        <li><strong>Por Ciclo:</strong> 1.000 PiCoins</li>
+                        <li><strong>Duração:</strong> 1 ano</li>
+                        <li><strong>Total Ciclos:</strong> 5</li>
+                        <li><strong>Máximo:</strong> 5.000</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparação Visual Section -->
+        <div class="section fade-in">
+            <h3>📊 Comparação Visual</h3>
+            <h4>📈 Capacidade de Emissão</h4>
+            
+            <div style="margin: 20px 0;">
+                <h5>Modelo Tradicional</h5>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+                <p><strong>21 milhões</strong> → FIM</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h5>PiCoin Extended</h5>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 1.43%;"></div>
+                </div>
+                <p><strong>21 milhões</strong> → <strong>1,47 bilhão PiCoins</strong></p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h5>Longevidade da Rede</h5>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 1.43%;"></div>
+                </div>
+                <p><strong>140 anos</strong> → <strong>9.800 anos</strong></p>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="section fade-in">
+            <h3>❓ Perguntas Frequentes</h3>
+            
+            <div style="margin: 20px 0;">
+                <h4 style="color: #4c63d2;">🤔 Por que baseado em Bitcoin e não Pi Network?</h4>
+                <p><strong>Arquitetura comprovada.</strong> Bitcoin tem 15+ anos de funcionamento perfeito. Usamos sua arquitetura sólida como base para criar o PiCoin Extended, garantindo máxima confiabilidade.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4 style="color: #4c63d2;">🔄 Como os ciclos se renovam automaticamente?</h4>
+                <p><strong>Baseado no calendário.</strong> O sistema verifica automaticamente o ano atual e determina qual ciclo está ativo. Não requer intervenção manual ou atualizações.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4 style="color: #4c63d2;">🛡️ Isso afeta a segurança do PiCoin?</h4>
+                <p><strong>Zero impacto negativo.</strong> Mantém 100% da segurança Bitcoin. As modificações são apenas na camada de emissão, não nos algoritmos de consenso.</p>
+            </div>
+
+            <div style="margin: 20px 0;">
+                <h4 style="color: #4c63d2;">⏰ Por que 70 ciclos e 140 anos?</h4>
+                <p><strong>Planejamento milenar.</strong> 70 × 140 anos = 9.800 anos de operação garantida. Tempo suficiente para evoluções tecnológicas e sociais inimagináveis.</p>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section fade-in">
+            <h3>🚀 Junte-se à Revolução PiCoin</h3>
+            <p style="font-size: 1.3em; margin-bottom: 30px;">
+                Seja pioneiro na maior inovação em criptomoedas desde o Bitcoin. 
+                O PiCoin Extended combina tradição e inovação para criar o futuro das moedas digitais.
+            </p>
+            <a href="#" class="btn">💻 Download do Código</a>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 40px; color: rgba(255,255,255,0.8);">
+            <p><span class="pi-symbol">π</span> <strong>PiCoin Extended</strong> - Redefinindo o futuro das criptomoedas</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Desenvolvido com 💜 usando arquitetura Bitcoin | 
+                Código aberto e auditável | 
+                Baseado em Bitcoin Core para máxima confiabilidade
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Animações simples
+        window.addEventListener('scroll', () => {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Contador animado para estatísticas
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(start).toLocaleString();
+                }
+            }, 16);
+        }
+
+        // Inicializar contadores quando visíveis
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counter = entry.target.querySelector('h4');
+                    const value = counter.textContent;
+                    
+                    // Pula animação para símbolos especiais como ∞
+                    if (value.includes('∞') || value.includes('π') || value === '70x') {
+                        return; // Não anima símbolos especiais
+                    }
+                    
+                    const numericValue = value.replace(/[^\d]/g, '');
+                    if (!isNaN(numericValue) && numericValue !== '') {
+                        animateCounter(counter, parseInt(numericValue));
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.stat-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
