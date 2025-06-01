@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Moeda dourada -->
+  <circle cx="32" cy="32" r="30" fill="#FFD700" stroke="#DAA520" stroke-width="4"/>
+  
+  <!-- Trema (duas bolinhas acima do pi) -->
+  <circle cx="26" cy="18" r="2" fill="#4B3621"/>
+  <circle cx="38" cy="18" r="2" fill="#4B3621"/>
+  
+  <!-- Símbolo pi -->
+  <text x="32" y="44" font-size="32" font-family="Georgia, serif" fill="#4B3621" text-anchor="middle">π</text>
+</svg>
