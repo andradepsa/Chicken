@@ -423,100 +423,10 @@
         <div class="section fade-in">
             <h3>⚙️ Technical Architecture</h3>
             <p>PiCoin Extended was developed based on the robust Bitcoin Core architecture, with precise modifications in 4 main files:</p>
-            
-            <div class="code-block">
-<strong>📁 1. src/consensus/params.h</strong>
-// Structure for PiCoin cycle parameters
-struct EmissionCycleParams {
-    int start_year{0};                    // Start year: 2025
-    int end_year{0};                      // End of first cycle: 2165  
-    CAmount first_cycle_max_supply{0};    // 21M PiCoins per cycle
-    int cycle_duration_years{0};          // 140 years per cycle
-    int total_cycles{0};                  // 70 total cycles
-};
-            </div>
-
-            <div class="code-block">
-<strong>📁 2. src/chainparams.cpp</strong>
-// Network-specific configurations
-// Mainnet
-consensus.emission_cycles.start_year = 2025;
-consensus.emission_cycles.end_year = 2165;
-consensus.emission_cycles.first_cycle_max_supply = 21000000LL * COIN;
-consensus.emission_cycles.cycle_duration_years = 140;
-consensus.emission_cycles.total_cycles = 70;
-
-// Testnet (for quick testing)
-consensus.emission_cycles.start_year = 2024;
-consensus.emission_cycles.first_cycle_max_supply = 1000LL * COIN;
-consensus.emission_cycles.cycle_duration_years = 1;
-consensus.emission_cycles.total_cycles = 5;
-            </div>
-
-            <div class="code-block">
-<strong>📁 3. src/chain.h</strong>
-// Tracking coins issued per block
-class CBlockIndex {
-    // ... other existing fields ...
-    
-    //! Total PiCoins issued up to this block
-    CAmount nMoneySupply{0};
-    
-    // Updated constructor to initialize nMoneySupply
-    explicit CBlockIndex(const CBlockHeader& block)
-        : nMoneySupply{0} { /* ... */ }
-};
-            </div>
-
-            <div class="code-block">
-<strong>📁 4. src/validation.cpp</strong>
-// Main function that applies cycle rules
-CAmount ApplyEmissionCycleRules(CAmount nSubsidyPiCoin, 
-                               int nBlockHeight, 
-                               const CBlockIndex* pindexPrev, 
-                               const Consensus::Params& consensusParams) {
-    
-    // Calculate which cycle we are in based on the current year
-    int currentYear = GetCurrentYear(pindexPrev);
-    int cycle = CalculateCurrentCycle(currentYear, consensusParams);
-    
-    // Check cycle limit
-    CAmount maxSupply = consensusParams.emission_cycles.first_cycle_max_supply * cycle;
-    CAmount totalEmitted = pindexPrev ? pindexPrev->nMoneySupply : 0;
-    
-    // Stop issuance if limit is reached
-    if (totalEmitted >= maxSupply) return 0;
-    
-    // Allow issuance within the limit
-    return nSubsidyPiCoin;
-}
-
-// Integration in ConnectBlock to apply rules
-bool Chainstate::ConnectBlock(const CBlock& block, ...) {
-    // ... existing code ...
-    
-    // Apply cycle rules in coinbase verification
-    CAmount originalSubsidy = GetBlockSubsidy(pindex->nHeight, params.GetConsensus());
-    CAmount finalSubsidy = ApplyEmissionCycleRules(originalSubsidy, 
-                                                  pindex->nHeight, 
-                                                  pindex->pprev, 
-                                                  params.GetConsensus());
-    
-    // Update issued coins counter
-    if (!fJustCheck) {
-        pindex->nMoneySupply = (pindex->pprev ? pindex->pprev->nMoneySupply : 0) + originalSubsidy;
-    }
-    
-    // Check if coinbase respected the limit
-    CAmount blockReward = nFees + finalSubsidy;
-    if (block.vtx[0]->GetValueOut() > blockReward) {
-        return state.Invalid(BlockValidationResult::BLOCK_CONSENSUS, 
-                           "bad-cb-amount", "coinbase exceeds cycle limit");
-    }
-    
-    // ... rest of the code ...
-}
-            </div>
+            <p><strong>📁 1.</strong>src/consensus/params.h – Cycle structure</p>
+            <p><strong>📁 2.</strong>src/chainparams.cpp – Network configuration</p>
+            <p><strong>📁 3.</strong>src/chain.h – Emission tracking</p>
+            <p><strong>📁 4.</strong>src/validation.cpp – Core logic of cycles</p>
 
             <div class="benefits-list">
                 <div class="benefit-item">
