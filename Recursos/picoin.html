@@ -469,7 +469,7 @@
 with an ultra-minimal modification in just 1 file:</p>
             <div class="code-block">
                 📁 4. src/validation.cpp – Core logic of cycles
-
+                    return (((time(NULL) - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;
                 
             </div>
 <p>This rigorously minimal approach modifies only 1 line of code, implementing 
