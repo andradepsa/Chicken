@@ -438,11 +438,13 @@
             <p>PiCoin Extended was developed based on Bitcoin Core's robust architecture, with an ultra-minimal modification in just 1 file:</p>
             
             <div class="code-block">
-📁 src/validation.cpp
 
-LINHA 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);
+<p>📁 src/validation.cpp</p>
+<p>LINHA 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);</p>
+<p>LINHA 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;</p>
 
-LINHA 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;
+
+
             </div>
 
             <div class="benefits-list">
