@@ -357,20 +357,18 @@
         <div class="hero fade-in">
             <h1 class="pulse">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" style="width: 1em; height: 1em; vertical-align: -0.1em; margin-right: 0.1em;">
-                  <!-- Moeda dourada -->
-                  <circle cx="32" cy="32" r="30" fill="#FFD700" stroke="#DAA520" stroke-width="4"/>
-                  
-                  <!-- Trema (duas bolinhas acima do pi) -->
-                  <circle cx="26" cy="18" r="2" fill="#4B3621"/>
-                  <circle cx="38" cy="18" r="2" fill="#4B3621"/>
-                  
-                  <!-- Símbolo pi -->
-                  <text x="32" y="44" font-size="32" font-family="Georgia, serif" fill="#4B3621" text-anchor="middle">π</text>
+                    <!-- Gold coin -->
+                    <circle cx="32" cy="32" r="30" fill="#FFD700" stroke="#DAA520" stroke-width="4"/>
+                    <!-- Umlaut (two dots above pi) -->
+                    <circle cx="26" cy="18" r="2" fill="#4B3621"/>
+                    <circle cx="38" cy="18" r="2" fill="#4B3621"/>
+                    <!-- Pi symbol -->
+                    <text x="32" y="44" font-size="32" font-family="Georgia, serif" fill="#4B3621" text-anchor="middle">π</text>
                 </svg>
                 PiCoin Extended
             </h1>
             <h2>Emission Cycle System</h2>
-            <p>Extending PiCoin operations for thousands of years. A system of 70 controlled cycles that guarantees miner rewards until year 11,825, based on Bitcoin's robust architecture.</p>
+            <p>Extending PiCoin operations for thousands of years. A system of 70 controlled cycles that guarantees miner rewards until the year 11,825, based on Bitcoin's robust architecture.</p>
         </div>
 
         <!-- Problem Section -->
@@ -406,7 +404,7 @@
             <h3>✨ PiCoin Extended: Cycle System</h3>
             <div class="highlight">
                 <h4>🔄 Smart Cyclic Emission</h4>
-                <p>Revolutionary system of 70 cycles of 140 years each, based on Bitcoin's robust architecture. Each cycle allows the creation of up to 21 million PiCoins, ensuring continuous operation until year 11,825.</p>
+                <p>Revolutionary system of 70 cycles of 140 years each, based on Bitcoin's robust architecture. Each cycle allows the creation of up to 21 million PiCoins, ensuring continuous operation until the year 11,825.</p>
             </div>
 
             <div class="comparison-grid">
@@ -471,18 +469,18 @@
         <!-- Technical Details Section -->
         <div class="section fade-in">
             <h3>⚙️ Ultra-Minimalist Technical Architecture</h3>
-            <p>PiCoin Extended was developed based on Bitcoin Core's robust architecture, with an ultra-minimal modification in just 1 file:</p>
+            <p>PiCoin Extended was developed based on Bitcoin Core's robust architecture, with an ultra-minimal modification in just one file:</p>
             
             <div class="code-block">
-<p>📁 src/validation.cpp</p>
-<p>LINHA 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);</p>
-<p>LINHA 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;</p>
+                <p>📁 src/validation.cpp</p>
+                <p>LINE 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);</p>
+                <p>LINE 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;</p>
             </div>
 
             <div class="benefits-list">
                 <div class="benefit-item">
                     <h5>🔒 Minimal Modification = Maximum Security</h5>
-                    <p>Only 2 lines modified in Bitcoin Core. Preserves 100% of security, consensus, and validation architecture.</p>
+                    <p>Only two lines modified in Bitcoin Core. Preserves 100% of security, consensus, and validation architecture.</p>
                 </div>
                 <div class="benefit-item">
                     <h5>🧮 Transparent Logic</h5>
@@ -490,7 +488,7 @@
                 </div>
                 <div class="benefit-item">
                     <h5>⚡ Automatic Reset</h5>
-                    <p>System automatically calculates current cycle and resets halving every 140 years, with no manual intervention.</p>
+                    <p>System automatically calculates the current cycle and resets halving every 140 years, with no manual intervention.</p>
                 </div>
                 <div class="benefit-item">
                     <h5>🛡️ Total Compatibility</h5>
@@ -507,122 +505,124 @@
             <button class="copy-button" onclick="copyDocumentation()">📋 Copy Full Documentation</button>
             
             <div class="documentation-section">
-                <div class="documentation-content" id="documentation-text"># PiCoin Extended - Sistema de Ciclos de Emissão
+                <div class="documentation-content" id="documentation-text">
+# PiCoin Extended - Emission Cycle System
 
-## 📋 RESUMO EXECUTIVO
-PiCoin Extended é um fork do Bitcoin Core que implementa um sistema de ciclos econômicos renováveis através de apenas 2 linhas de código modificadas. O sistema mantém toda a segurança e funcionalidade do Bitcoin original, adicionando um mecanismo de renovação econômica a cada 140 anos.
+## 📋 EXECUTIVE SUMMARY
+PiCoin Extended is a fork of Bitcoin Core that implements a renewable economic cycle system through only two lines of modified code. The system maintains all the security and functionality of the original Bitcoin, adding an economic renewal mechanism every 140 years.
 
-## 🔧 MODIFICAÇÕES TÉCNICAS
+## 🔧 TECHNICAL MODIFICATIONS
 
-### Arquivo Modificado
+### Modified File
 📁 src/validation.cpp
 
-### Duas Linhas Alteradas
-LINHA 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);
-LINHA 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;
+### Two Modified Lines
+LINE 1944 - int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);
+LINE 1952 - return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;
 
-## ⚙️ COMO FUNCIONA
+## ⚙️ HOW IT WORKS
 
-### Linha 1944 - Sistema de Reset de Halving
-- Função: Calcula halvings baseado no ciclo atual, não na altura total de blocos
-- Fórmula Detalhada:
-  - pindexPrev->GetBlockTime() - 1609459200: Segundos desde 1º janeiro 2021
-  - / 31536000 - 2025: Converte para anos desde 2025
-  - % 140: Anos DENTRO do ciclo atual (0-139)
-  - / 4: Halving a cada 4 anos DENTRO do ciclo
+### Line 1944 - Halving Reset System
+- Function: Calculates halvings based on the current cycle, not the total block height
+- Detailed Formula:
+  - pindexPrev->GetBlockTime() - 1609459200: Seconds since January 1, 2021
+  - / 31536000 - 2025: Converts to years since 2025
+  - % 140: Years WITHIN the current cycle (0-139)
+  - / 4: Halving every 4 years WITHIN the cycle
 
-### Linha 1952 - Controle de Limite Total
-- Função: Para recompensas após 70 ciclos completos
-- Lógica: (ciclo_atual < 70) ? recompensa : 0
+### Line 1952 - Total Limit Control
+- Function: Stops rewards after 70 complete cycles
+- Logic: (current_cycle < 70) ? reward : 0
 
-## 📊 ESPECIFICAÇÕES DO SISTEMA
+## 📊 SYSTEM SPECIFICATIONS
 
-Início: 2025
-Duração por Ciclo: 140 anos
-Total de Ciclos: 70
-Fim do Sistema: 11.825 (2025 + 70×140)
-Recompensa Inicial: 50 PiCoins por bloco
-Padrão de Halving: A cada 4 anos dentro do ciclo
+Start: 2025
+Cycle Duration: 140 years
+Total Cycles: 70
+System End: 11,825 (2025 + 70×140)
+Initial Reward: 50 PiCoins per block
+Halving Pattern: Every 4 years within the cycle
 
-## 🔄 CRONOGRAMA DE OPERAÇÃO
+## 🔄 OPERATIONAL TIMELINE
 
-### Ciclo 1 (2025-2165)
-- 2025-2029: 50 PiCoins por bloco
-- 2029-2033: 25 PiCoins por bloco  
-- 2033-2037: 12.5 PiCoins por bloco
-- ...continuando halvings até 2165
+### Cycle 1 (2025-2165)
+- 2025-2029: 50 PiCoins per block
+- 2029-2033: 25 PiCoins per block
+- 2033-2037: 12.5 PiCoins per block
+- ...continuing halvings until 2165
 
-### Ciclo 2 (2165-2305)
-- RESET AUTOMÁTICO: Volta para 50 PiCoins
-- Repete padrão de halving por 140 anos
+### Cycle 2 (2165-2305)
+- AUTOMATIC RESET: Returns to 50 PiCoins
+- Repeats halving pattern for 140 years
 
-### Ciclos 3-70 (2305-11825)
-- Mesmo padrão: Reset + halving por 140 anos cada
+### Cycles 3-70 (2305-11825)
+- Same pattern: Reset + halving every 140 years
 
-### Após 11825
-- Recompensas: 0 (sistema encerrado)
+### After 11825
+- Rewards: 0 (system terminated)
 
-## 🛡️ SEGURANÇA E COMPATIBILIDADE
+## 🛡️ SECURITY AND COMPATIBILITY
 
-### Mantido do Bitcoin Core
-✅ Validação de blocos original  
-✅ Sistema de consenso original  
-✅ Algoritmo de dificuldade original  
-✅ Toda infraestrutura de rede  
+### Retained from Bitcoin Core
+✅ Original block validation
+✅ Original consensus system
+✅ Original difficulty algorithm
+✅ Entire network infrastructure
 
-### Segurança Temporal
-✅ Uso de pindexPrev->GetBlockTime() (timestamp consensual da blockchain)  
-✅ Prevenção de manipulação de tempo local  
-✅ Proteção contra overflow com verificações de limite  
+### Temporal Security
+✅ Use of pindexPrev->GetBlockTime() (blockchain consensus timestamp)
+✅ Prevention of local time manipulation
+✅ Protection against overflow with limit checks
 
-## 💻 COMANDO DE IMPLEMENTAÇÃO
+## 💻 IMPLEMENTATION COMMAND
 
 ### PowerShell (Windows)
 powershell -Command "(gc src\validation.cpp) -replace 'int halvings = nHeight / consensusParams\.nSubsidyHalvingInterval;', 'int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);' | sc src\validation.cpp"
 
-### Verificação
+### Verification
 Select-String -Path 'src\validation.cpp' -Pattern 'halvings' -Context 1
 
-## 🎯 FILOSOFIA DO PROJETO
+## 🎯 PROJECT PHILOSOPHY
 
-### Minimalismo Técnico
-- 1 arquivo modificado
-- 2 linhas alteradas
-- Máxima compatibilidade com Bitcoin
+### Technical Minimalism
+- 1 file modified
+- 2 lines changed
+- Maximum compatibility with Bitcoin
 
-### Inovação Econômica
-- Economia renovável: Reset automático a cada 140 anos
-- Sustentabilidade: 70 ciclos de operação (9.800 anos)
-- Previsibilidade: Cronograma matemático exato
+### Economic Innovation
+- Renewable economy: Automatic reset every 140 years
+- Sustainability: 70 cycles of operation (9,800 years)
+- Predictability: Exact mathematical schedule
 
-### Segurança Conservadora
-- Base comprovada: Bitcoin Core inalterado
-- Modificação mínima: Reduz superfície de ataque
-- Auditabilidade: Código facilmente verificável
+### Conservative Security
+- Proven base: Unaltered Bitcoin Core
+- Minimal modification: Reduces attack surface
+- Auditability: Easily verifiable code
 
-## 🔍 DIFERENÇAS DO BITCOIN ORIGINAL
+## 🔍 DIFFERENCES FROM ORIGINAL BITCOIN
 
 Bitcoin Original:
-- Halving: Baseado em altura de blocos
-- Duração: ~33 halvings até 2140
-- Padrão: Redução exponencial contínua
-- Economia: Deflacionária linear
+- Halving: Based on block height
+- Duration: ~33 halvings until 2140
+- Pattern: Continuous exponential reduction
+- Economy: Linear deflationary
 
 PiCoin Extended:
-- Halving: Baseado em ciclos temporais
-- Duração: 70 ciclos até 11825
-- Padrão: Reset periódico + redução
-- Economia: Renovável cíclica
+- Halving: Based on temporal cycles
+- Duration: 70 cycles until 11825
+- Pattern: Periodic reset + reduction
+- Economy: Cyclic renewable
 
-## ✅ STATUS DE IMPLEMENTAÇÃO
+## ✅ IMPLEMENTATION STATUS
 
-- [x] Código desenvolvido e testado
-- [x] Modificações aplicadas com sucesso
-- [x] Verificação de funcionamento confirmada
-- [x] Documentação técnica completa
-- [x] Site promocional criado
+- [x] Code developed and tested
+- [x] Modifications successfully applied
+- [x] Functionality verification confirmed
+- [x] Complete technical documentation
+- [x] Promotional website created
 
-PiCoin Extended: Uma linha de código, uma revolução econômica.</div>
+PiCoin Extended: One line of code, an economic revolution.
+                </div>
             </div>
         </div>
 
@@ -721,7 +721,7 @@ PiCoin Extended: Uma linha de código, uma revolução econômica.</div>
             <h3>❓ Frequently Asked Questions</h3>
             
             <div style="margin: 20px 0;">
-                <h4 style="color: #4c63d2;">🤔 Why only 2 lines modified?</h4>
+                <h4 style="color: #4c63d2;">🤔 Why only two lines modified?</h4>
                 <p><strong>Maximum security.</strong> Minimal modifications = minimal risks. We preserve all Bitcoin Core security by only altering the halving calculation to reset every 140 years.</p>
             </div>
 
@@ -746,4 +746,22 @@ PiCoin Extended: Uma linha de código, uma revolução econômica.</div>
             <h3>🚀 Join the PiCoin Revolution</h3>
             <p style="font-size: 1.3em; margin-bottom: 30px;">
                 Be a pioneer in the biggest cryptocurrency innovation since Bitcoin. 
-                PiCoin Extended combines tradition an
+                PiCoin Extended combines tradition and innovation for a sustainable future.
+            </p>
+            <a href="https://paulo-sergio-de-andrade.itch.io/picoin" class="btn" target="_blank">📥 Download PiCoin Extended</a>
+        </div>
+    </div>
+
+    <script>
+        function copyDocumentation() {
+            const documentationText = document.getElementById('documentation-text').innerText;
+            navigator.clipboard.writeText(documentationText).then(() => {
+                alert('Documentation copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy documentation.');
+            });
+        }
+    </script>
+</body>
+</html>
