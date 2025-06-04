@@ -438,19 +438,23 @@
             <p>PiCoin Extended was developed based on Bitcoin Core's robust architecture, with an ultra-minimal modification in just 1 file:</p>
             
             <div class="code-block">
-<strong>📁 Modified file: src/validation.cpp (only line 1944)</strong>
+<strong>📁 Modified file: src/validation.cpp (lines 1944 and 1952)</strong>
 
-// BEFORE (Bitcoin original):
+// LINE 1944 - BEFORE (Bitcoin original):
 int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
 
-// AFTER (PiCoin Extended):
+// LINE 1944 - AFTER (PiCoin Extended):
 int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);
+
+// LINE 1952 - PiCoin Extended cycle limit:
+return (((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) / 140 < 70) ? nSubsidy : 0;
 
 🎯 EXPLANATION:
 • pindexPrev->GetBlockTime() - 1609459200: seconds since Jan 1st 2021
 • / 31536000 - 2025: converts to years since 2025
-• % 140: years WITHIN current cycle (0-139)
-• / 4: halving every 4 years WITHIN the cycle
+• % 140: years WITHIN current cycle (0-139) - LINE 1944 only
+• / 4: halving every 4 years WITHIN the cycle - LINE 1944 only
+• / 140 < 70: stops rewards after 70 cycles - LINE 1952 only
             </div>
 
             <div class="benefits-list">
