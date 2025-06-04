@@ -447,7 +447,7 @@ int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
 int halvings = ((((pindexPrev->GetBlockTime() - 1609459200) / 31536000 - 2025) % 140) / 4);
 
 🎯 EXPLANATION:
-• pindexPrev->GetBlockTime() - 1609459200: seconds since Jan 1st 2021
+• pindexPrev->GetBlockTime() - 1609459200: seconds since January 1st, 2021
 • / 31536000 - 2025: converts to years since 2025
 • % 140: years WITHIN current cycle (0-139)
 • / 4: halving every 4 years WITHIN the cycle
