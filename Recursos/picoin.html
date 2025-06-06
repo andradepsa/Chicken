@@ -467,8 +467,8 @@
             
             <div class="code-block">
                 <p>📁 src/validation.cpp</p>
-                <p>LINE 1: int halvings = (nHeight / 210000) % 33;</p>
-                <p>LINE 2: return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;</p>
+                <p>Line 1944:  if (nHeight < 0 || nHeight > 1000000000) return 0;</p>
+                <p>Line 1949:  if (halvings >= 64) return 0;</p>
             </div>
 
             <div class="benefits-list">
@@ -511,8 +511,8 @@ PiCoin Extended implements 70 cycles of Bitcoin-identical emission schedules. Ea
 📁 src/validation.cpp
 
 ### Two Modified Lines
-LINE 1: int halvings = (nHeight / 210000) % 33;
-LINE 2: return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;
+Line 1944:  if (nHeight < 0 || nHeight > 1000000000) return 0;
+Line 1949:  if (halvings >= 64) return 0;
 
 ## ⚙️ HOW IT WORKS
 
@@ -573,11 +573,11 @@ Final Year: 11,265 (2025 + 70 × 132)
 ### Code Replacement:
 Replace Bitcoin's halving line:
 OLD: int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
-NEW: int halvings = (nHeight / 210000) % 33;
+NEW: if (nHeight < 0 || nHeight > 1000000000) return 0;
 
 Replace Bitcoin's return line:
 OLD: return nSubsidy;
-NEW: return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;
+NEW: if (halvings >= 64) return 0;
 
 ### Verification Commands:
 findstr /n "nHeight / 210000" validation.cpp
@@ -758,4 +758,10 @@ PiCoin Extended: Bitcoin's proven model, extended for millennia.
             const documentationText = document.getElementById('documentation-text').innerText;
             navigator.clipboard.writeText(documentationText).then(() => {
                 alert('Documentation copied to clipboard!');
-            }).catch(err
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+</html>
