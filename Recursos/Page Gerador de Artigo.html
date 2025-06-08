@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Artigo Científico ABNT - Ferramenta Gratuita</title>
+    <meta name="description" content="Crie artigos científicos com formatação ABNT perfeita. Ferramenta gratuita com IA, referências automáticas e exportação formatada.">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #34a853;
+            --accent-color: #ff6b35;
+            --dark-bg: #1f2937;
+            --light-bg: #f8fafc;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --border-color: #e5e7eb;
+            --shadow: 0 10px 25px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+        
+        .cta-button {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--light-bg);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .section-title p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2.5rem 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid var(--border-color);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        
+        /* How it Works */
+        .how-it-works {
+            padding: 6rem 2rem;
+            background: white;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+        
+        .step {
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .step p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        /* Demo Section */
+        .demo {
+            padding: 6rem 2rem;
+            background: var(--dark-bg);
+            color: white;
+            text-align: center;
+        }
+        
+        .demo h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .demo p {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .demo-preview {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 3rem auto;
+            max-width: 800px;
+            box-shadow: var(--shadow);
+            color: var(--text-dark);
+        }
+        
+        .demo-preview h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .demo-preview p {
+            text-align: left;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            padding: 6rem 2rem;
+            background: var(--light-bg);
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+        
+        .testimonial {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .author-info h4 {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .author-info p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 2rem;
+            background: var(--gradient);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta-section h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-section p {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark-bg);
+            color: white;
+            padding: 3rem 2rem 1rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section p, .footer-section a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            line-height: 1.6;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 2rem;
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .section-title h2 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-content {
+            animation: fadeInUp 1s ease-out;
+        }
+        
+        .feature-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .feature-card:nth-child(1) { animation-delay: 0.1s; }
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.3s; }
+        .feature-card:nth-child(4) { animation-delay: 0.4s; }
+        .feature-card:nth-child(5) { animation-delay: 0.5s; }
+        .feature-card:nth-child(6) { animation-delay: 0.6s; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                🎓 ABNT Generator
+            </div>
+            <ul class="nav-links">
+            </ul>
+            <a href="https://raw.githubusercontent.com/andradepsa/Chicken/main/Recursos/Gerador%20de%20Artigos.html" target="_blank" class="cta-button">Baixar do GitHub</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Crie Artigos Científicos ABNT Perfeitos</h1>
+            <p>Ferramenta inteligente que gera artigos acadêmicos com formatação ABNT rigorosa, referências automáticas e exportação profissional.</p>
+            <div class="hero-buttons">
+                <a href="https://raw.githubusercontent.com/andradepsa/Chicken/main/Recursos/Gerador%20de%20Artigos.html" target="_blank" class="btn-primary">
+                    💾 Baixar do GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Por que escolher nosso gerador?</h2>
+                <p>Tecnologia avançada para criar artigos científicos com qualidade profissional</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">🤖</span>
+                    <h3>IA Avançada</h3>
+                    <p>Powered by Google Gemini para gerar conteúdo acadêmico único e de alta qualidade, adaptado ao seu tema específico.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📚</span>
+                    <h3>Referências Automáticas</h3>
+                    <p>Sistema AUTOR-DATA integrado com busca automática de referências científicas reais e formatação ABNT perfeita.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📋</span>
+                    <h3>Formatação ABNT</h3>
+                    <p>Margens, fontes, espaçamentos e estrutura seguem rigorosamente as normas ABNT mais atualizadas.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💾</span>
+                    <h3>Exportação Inteligente</h3>
+                    <p>Copie texto formatado diretamente para Word, Google Docs ou qualquer editor mantendo toda a formatação.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔄</span>
+                    <h3>Múltiplos Modos</h3>
+                    <p>IA online, modo offline e inserção manual - sempre funciona, mesmo sem internet ou API.</p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">⚡</span>
+                    <h3>Rápido e Eficiente</h3>
+                    <p>Gere artigos completos em minutos, não em horas. Interface intuitiva e processo simplificado.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section id="como-funciona" class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>Como Funciona?</h2>
+                <p>Processo simples em 4 passos para ter seu artigo científico perfeito</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Configure os Dados</h3>
+                    <p>Insira universidade, título, autor e escolha o modo de geração (IA, offline ou manual).</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Gere o Conteúdo</h3>
+                    <p>A IA cria parágrafos únicos para introdução, desenvolvimento e conclusão de forma interativa.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Adicione Referências</h3>
+                    <p>Clique nos parágrafos para buscar e adicionar referências científicas reais automaticamente.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Exporte Formatado</h3>
+                    <p>Copie o texto com formatação ABNT perfeita e cole diretamente no seu editor favorito.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <h2>Veja o Resultado</h2>
+            <p>Exemplo de artigo gerado com formatação ABNT perfeita</p>
+            
+            <div class="demo-preview">
+                <h3>UNIVERSIDADE FEDERAL DE EXEMPLO</h3>
+                <br>
+                <h3>Inteligência Artificial na Educação: Transformações e Perspectivas Futuras</h3>
+                <br>
+                <p><strong>João Silva¹</strong></p>
+                <br>
+                <p><strong>Resumo</strong></p>
+                <p>A inteligência artificial representa uma das mais significativas revoluções tecnológicas da era contemporânea, transformando fundamentalmente os processos educacionais. Este estudo analisa o impacto da IA na educação, explorando suas aplicações atuais e potenciais futuras. Através de revisão bibliográfica abrangente, identifica-se que a personalização do ensino, a automação de tarefas administrativas e o desenvolvimento de sistemas tutores inteligentes constituem as principais contribuições da IA para o setor educacional (SANTOS; OLIVEIRA, 2023)...</p>
+                <br>
+                <p><strong>Palavras-chave:</strong> Inteligência artificial, Educação, Tecnologia educacional, Personalização, Aprendizagem adaptativa.</p>
+            </div>
+            
+            <a href="https://raw.githubusercontent.com/andradepsa/Chicken/main/Recursos/Gerador%20de%20Artigos.html" target="_blank" class="btn-primary">
+                💾 Baixar do GitHub
+            </a>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Pronto para criar seu artigo científico?</h2>
+            <p>Junte-se a milhares de estudantes e pesquisadores que já descobriram a maneira mais eficiente de criar artigos ABNT perfeitos.</p>
+            <a href="https://raw.githubusercontent.com/andradepsa/Chicken/main/Recursos/Gerador%20de%20Artigos.html" target="_blank" class="btn-primary" style="background: white; color: var(--primary-color); font-size: 1.2rem; padding: 1.2rem 2.5rem;">
+                💾 Baixar do GitHub
+            </a>
+        </div>
+    </section>
+
+    <!-- App Section -->
+    <section id="app" style="padding: 4rem 2rem; background: var(--light-bg);">
+        <div class="container">
+            <div class="section-title">
+                <h2>🎓 Gerador de Artigo Científico ABNT</h2>
+                <p>Sua ferramenta profissional para criar artigos acadêmicos perfeitos</p>
+            </div>
+            
+            <!-- App Download Section -->
+            <div style="text-align: center; padding: 3rem; background: white; border-radius: 15px; box-shadow: var(--shadow);">
+                <h3 style="margin-bottom: 2rem; color: var(--primary-color);">🔗 Baixe o Aplicativo</h3>
+                <p style="margin-bottom: 2rem; font-size: 1.1rem;">Faça o download do arquivo HTML e execute diretamente no seu navegador:</p>
+                
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem;">
+                    <a href="https://raw.githubusercontent.com/andradepsa/Chicken/main/Recursos/Gerador%20de%20Artigos.html" target="_blank" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                        💾 Baixar do GitHub
+                    </a>
+                </div>
+                
+                <div style="background: var(--light-bg); padding: 1.5rem; border-radius: 10px; margin: 2rem 0; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">📋 Como usar:</h4>
+                    <ol style="color: var(--text-dark); line-height: 1.8;">
+                        <li><strong>Clique</strong> em "Download Direto" acima</li>
+                        <li><strong>Salve</strong> o arquivo como "gerador-artigo.html"</li>
+                        <li><strong>Abra</strong> o arquivo em qualquer navegador</li>
+                        <li><strong>Use offline</strong> sem precisar de internet!</li>
+                    </ol>
+                </div>
+                
+                <p style="margin-top: 1.5rem; color: var(--text-light); font-size: 0.9rem;">
+                    ✅ Totalmente gratuito &nbsp;|&nbsp; ✅ Sem cadastro necessário &nbsp;|&nbsp; ✅ Funciona offline &nbsp;|&nbsp; ✅ Código aberto
+                </p>
+                
+                <div style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%); border-radius: 10px;">
+                    <h4 style="color: var(--primary-color); margin-bottom: 1rem;">🎯 Recursos Inclusos:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; text-align: left;">
+                        <div>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>🤖</strong> IA Google Gemini</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>📚</strong> Referências Automáticas</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>📋</strong> Formatação ABNT</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>💾</strong> Exportação Formatada</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>🔄</strong> Modo Offline</p>
+                            <p style="margin: 0.5rem 0; color: var(--text-dark);"><strong>⚡</strong> Interface Intuitiva</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ABNT Generator. Feito com ❤️ para a comunidade acadêmica brasileira.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling para links âncora
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animação de entrada para elementos
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observar elementos para animação
+        document.querySelectorAll
