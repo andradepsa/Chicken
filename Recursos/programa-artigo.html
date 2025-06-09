@@ -21,7 +21,7 @@
             justify-content: center; 
             align-items: flex-start; 
             gap: 20px; 
-            flex-wrap: wrap; /* Permite que o painel vá para cima em telas menores */
+            flex-wrap: wrap; 
         }
 
         /* Painel de Controle (Lateral) */
@@ -236,6 +236,29 @@
             .abnt-content p:hover { background-color: transparent; }
             #footer { display: block; }
         }
+
+        /* --- AJUSTES DE RESPONSIVIDADE --- */
+        @media (max-width: 1280px) {
+            .main-container {
+                /* Altera o layout de 'lado a lado' para 'um em cima do outro' */
+                flex-direction: column;
+                align-items: center; /* Centraliza os itens na vertical */
+                gap: 30px; /* Aumenta o espaço entre o painel e a folha */
+            }
+
+            .control-panel {
+                /* Remove a posição fixa para que ele role com a página */
+                position: relative;
+                top: 0;
+                width: 90%; /* Ocupa a maior parte da largura da tela */
+                max-width: 700px; /* Mas não fica excessivamente largo */
+                order: 1; /* Garante que o painel venha primeiro */
+            }
+
+            .page-container {
+                order: 2; /* Garante que a página venha depois do painel */
+            }
+        }
     </style>
 </head>
 <body>
@@ -319,6 +342,7 @@
     </div>
 
 <script>
+// O SCRIPT JAVASCRIPT CONTINUA IGUAL AO ANTERIOR, SEM MUDANÇAS NECESSÁRIAS
 // --- ELEMENTOS DA UI ---
 const elements = {
     startBtn: document.getElementById('startBtn'),
