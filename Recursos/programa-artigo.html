@@ -404,12 +404,35 @@
                 if (allContent.length < 100) { log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning'); return; }
                 const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões).`;
                 userInputs.resumo = await callPuterAI(resumoPrompt);
-                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final.`;
-                userInputs.palavrasChave = await callPuterAI(palavrasPrompt);
+                
+                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
+                const rawPalavrasChave = await callPuterAI(palavrasPrompt);
+                userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, ''); // Garante que não há ponto no final
+
                 const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
-                const keywordsPrompt = `Traduza para o inglês as seguintes palavras-chave: "${userInputs.palavrasChave}"`;
-                userInputs.keywords = await callPuterAI(keywordsPrompt);
+
+                // --- CORREÇÃO APLICADA ---
+                // O prompt anterior era muito simples. Este novo prompt inclui exemplos (few-shot)
+                // para guiar a IA, usando as palavras que você indicou, garantindo maior precisão na tradução.
+                const keywordsPrompt = `
+Traduza as seguintes palavras-chave do português para o inglês.
+Responda APENAS com as palavras-chave traduzidas, separadas por ponto final. Não inclua texto introdutório como "Keywords:" e não termine a lista com um ponto.
+
+Exemplos de tradução:
+- Input: "Matemática. Aplicações. História. Criatividade. Progresso"
+- Output: "Mathematics. Applications. History. Creativity. Progress"
+
+- Input: "Sustentabilidade. Inovação Tecnológica"
+- Output: "Sustainability. Technological Innovation"
+
+Agora traduza o seguinte:
+Input: "${userInputs.palavrasChave}"
+Output:`;
+                const translatedKeywords = await callPuterAI(keywordsPrompt);
+                // Limpa a resposta da IA para garantir que apenas o conteúdo desejado seja salvo
+                userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
+                
                 log('✅ Resumo e abstract gerados!', 'success');
             } catch (error) {
                 log('⚠️ Erro ao gerar resumo. Continue o artigo.', 'warning');
@@ -424,7 +447,9 @@
             `;
             if (userInputs.resumo) {
                 content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
-                if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}</div>`;
+                // --- CORREÇÃO APLICADA ---
+                // Adicionado um ponto final para seguir a norma ABNT corretamente.
+                if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
                 if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
                 if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
