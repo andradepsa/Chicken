@@ -29,7 +29,7 @@
 
         @media print {
             body { background-color: #fff; padding: 0; margin: 0; }
-            .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls, #paragraph-starter-modal { display: none !important; }
+            .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls { display: none !important; }
             .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
             .email-autor { display: none !important; }
             #footer { display: block; }
@@ -46,8 +46,6 @@
         #interactive-controls button { margin-top: 10px; }
         #continueBtn { background-color: #28a745; }
         #continueBtn:hover { background-color: #218838; }
-        .starter-button { background-color: #f0f0f0 !important; color: #333 !important; text-align: left; font-weight: normal; }
-        .starter-button:hover { background-color: #e0e0e0 !important; }
         #concludeBtn { background-color: #fd7e14; }
         #concludeBtn:hover { background-color: #e8681b; }
         #finalizeBtn { background-color: #ffc107; color: black; }
@@ -183,6 +181,7 @@
             </div>
         </div>
 
+        <!-- NOVO MODAL PARA SUGESTÕES DE TEMA -->
         <div id="topic-suggestion-modal" class="modal">
             <div class="modal-content">
                 <h3>✨ Sugestões para o seu Tema</h3>
@@ -193,26 +192,10 @@
                 <button id="confirm-topic-btn">✅ Confirmar Tema e Iniciar</button>
             </div>
         </div>
-
-        <!-- =========== INÍCIO DA ADIÇÃO HTML =========== -->
-        <!-- MODAL PARA INÍCIOS DE PARÁGRAFO -->
-        <div id="paragraph-starter-modal" class="modal">
-            <div class="modal-content">
-                <h3>✍️ Escolha um Início para o Parágrafo</h3>
-                <p>Selecione uma das opções abaixo para a IA continuar a desenvolver a ideia.</p>
-                <div id="starter-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;">
-                    <!-- Conteúdo preenchido via JavaScript -->
-                </div>
-                <button class="close-btn" id="close-starter-modal-btn">❌ Cancelar</button>
-            </div>
-        </div>
-        <!-- =========== FIM DA ADIÇÃO HTML =========== -->
-
     </div>
 
     <script>
-        // =========== INÍCIO DA ADIÇÃO JAVASCRIPT (LISTA DE INÍCIOS) ===========
-        // Esta é a lista de inícios de parágrafos. Você pode adicionar ou remover itens aqui.
+        // === LISTA DE INÍCIOS DE PARÁGRAFO (VOCÊ PODE ADICIONAR MAIS FRASES AQUI) ===
         const paragraphStarters = [
             "Analisando em maior profundidade, é evidente que...",
             "Outro ponto crucial a ser considerado é...",
@@ -225,7 +208,6 @@
             "Nesse contexto, a relevância do tema se torna aparente, pois...",
             "A partir desta análise, desdobram-se importantes questionamentos sobre..."
         ];
-        // =========== FIM DA ADIÇÃO JAVASCRIPT (LISTA DE INÍCIOS) ===========
 
         // --- ELEMENTOS DA UI ---
         const elements = {
@@ -245,14 +227,10 @@
             duplicateWarningDiv: document.getElementById('duplicate-warning'),
             savePdfBtn: document.getElementById('savePdfBtn'),
             footerDiv: document.getElementById('footer'),
+            // Elementos do novo modal de temas
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
-            // =========== INÍCIO DA ADIÇÃO JAVASCRIPT (ELEMENTOS DO NOVO MODAL) ===========
-            paragraphStarterModal: document.getElementById('paragraph-starter-modal'),
-            starterListDiv: document.getElementById('starter-list'),
-            closeStarterModalBtn: document.getElementById('close-starter-modal-btn'),
-            // =========== FIM DA ADIÇÃO JAVASCRIPT (ELEMENTOS DO NOVO MODAL) ===========
         };
 
         // --- ESTADO DA APLICAÇÃO ---
@@ -558,8 +536,10 @@ Output:`;
             
             let prompt;
             if (starter) {
+                 // Prompt para quando um início é fornecido (botão de continuar)
                  prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é continuar a seção de "${sectionName}". O novo parágrafo DEVE OBRIGATORIAMENTE começar com a frase: "${starter}". Após a frase inicial, desenvolva a ideia de forma coesa e relevante, com 80-120 palavras no total (incluindo a frase inicial). NÃO REPITA ideias já presentes.`;
             } else {
+                // Prompt para quando não há início (botão de concluir seção)
                 let actionText = 'um parágrafo de FINALIZAÇÃO';
                 let instruction = 'Sintetize as ideias da seção e use conectivos de conclusão.';
                 prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ser único, ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
@@ -574,33 +554,18 @@ Output:`;
             finally { btn.disabled = false; }
         }
 
-        // =========== INÍCIO DA MODIFICAÇÃO JAVASCRIPT (NOVAS FUNÇÕES E EVENTOS) ===========
-        function openParagraphStarterModal() {
-            elements.starterListDiv.innerHTML = ''; // Limpa a lista para garantir que não haja duplicatas
-            paragraphStarters.forEach(starter => {
-                const button = document.createElement('button');
-                button.textContent = starter;
-                button.className = 'starter-button'; // Estilo customizado para estes botões
-                button.onclick = () => {
-                    elements.paragraphStarterModal.style.display = 'none';
-                    // Chama a função de geração de parágrafo passando o início escolhido
-                    handleSectionGeneration('continue', starter); 
-                };
-                elements.starterListDiv.appendChild(button);
-            });
-            elements.paragraphStarterModal.style.display = 'flex';
-        }
-
-        // Modifica o evento do botão "Adicionar Parágrafo" para abrir o modal
-        elements.continueBtn.addEventListener('click', openParagraphStarterModal);
+        // === ALTERAÇÃO PRINCIPAL AQUI ===
+        // O botão "Adicionar Parágrafo" agora sorteia um início e chama a função de geração.
+        elements.continueBtn.addEventListener('click', () => {
+            // Sorteia um início aleatório da lista `paragraphStarters`
+            const randomStarter = paragraphStarters[Math.floor(Math.random() * paragraphStarters.length)];
+            
+            // Chama a função de geração de parágrafo passando 'continue' e a frase sorteada
+            handleSectionGeneration('continue', randomStarter);
+        });
         
-        // Mantém o evento do botão de conclusão como estava
+        // O botão "Finalizar Seção" continua funcionando como antes
         elements.concludeBtn.addEventListener('click', () => handleSectionGeneration('conclude'));
-        
-        // Adiciona eventos para fechar o novo modal
-        elements.closeStarterModalBtn.addEventListener('click', () => { elements.paragraphStarterModal.style.display = 'none'; });
-        elements.paragraphStarterModal.addEventListener('click', (e) => { if (e.target === elements.paragraphStarterModal) { elements.paragraphStarterModal.style.display = 'none'; } });
-        // =========== FIM DA MODIFICAÇÃO JAVASCRIPT (NOVAS FUNÇÕES E EVENTOS) ===========
         
         elements.finalizeBtn.addEventListener('click', async () => {
             const currentIndex = sectionOrder.indexOf(currentSection);
