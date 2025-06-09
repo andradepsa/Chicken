@@ -52,8 +52,6 @@
         #finalizeBtn:hover { background-color: #e0a800; }
         #finishBtn { background-color: #dc3545; }
         #finishBtn:hover { background-color: #c82333; }
-        #saveToPuterBtn { background-color: #6f42c1; } /* Puter Purple */
-        #saveToPuterBtn:hover { background-color: #5a359e; }
 
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -124,7 +122,7 @@
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #666;">
                     ✅ Sistema AUTOR-DATA + Bibliografia automática<br>
-                    ✅ Formatação ABNT rigorosa + Salvar no Puter
+                    ✅ Formatação ABNT rigorosa
                 </div>
             </div>
             
@@ -145,11 +143,7 @@
                 <div class="form-group">
                     <button id="savePdfBtn">📄 Salvar como PDF</button>
                 </div>
-                <div class="form-group">
-                  <label for="filenameInput">Nome do Arquivo (em ~/Desktop):</label>
-                  <input id="filenameInput" type="text" placeholder="artigo-cientifico.html" style="margin-bottom: 5px;">
-                  <button id="saveToPuterBtn">💾 Salvar no Puter (HTML)</button>
-                </div>
+                <!-- Funcionalidade de salvar em HTML foi removida -->
             </div>
 
             <div id="status" class="info">
@@ -166,8 +160,7 @@
                     <strong>3. Autenticação:</strong> Se necessário, uma janela de login do Puter aparecerá.<br><br>
                     ---<br><br>
                     ✅ Formatação ABNT rigorosa<br>
-                    ✅ Geração de conteúdo com a IA do Puter<br>
-                    ✅ Salve diretamente na sua conta Puter
+                    ✅ Geração de conteúdo com a IA do Puter
                 </p>
             </div>
             <div id="footer"></div>
@@ -209,8 +202,6 @@
             searchInfoDiv: document.getElementById('search-info'),
             duplicateWarningDiv: document.getElementById('duplicate-warning'),
             savePdfBtn: document.getElementById('savePdfBtn'),
-            saveToPuterBtn: document.getElementById('saveToPuterBtn'),
-            filenameInput: document.getElementById('filenameInput'),
             footerDiv: document.getElementById('footer'),
         };
 
@@ -221,7 +212,7 @@
         let currentParagraphId = null;
         let currentSection = 'introducao';
         let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
-        let currentModalReferences = []; // Armazena as referências do modal atual para evitar re-fetch
+        let currentModalReferences = [];
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -241,7 +232,7 @@
                 } else {
                     log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
                 }
-                throw error; // Re-lança o erro para interromper a execução que depende da IA
+                throw error;
             }
         }
 
@@ -262,8 +253,6 @@
         }
 
         // --- LÓGICA DE REFERÊNCIAS ---
-
-        // Extrai termos relevantes do texto para montar uma busca inteligente
         function extractRelevantTerms(text, title = '') {
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho'];
             const combinedText = `${title} ${text}`.toLowerCase();
@@ -272,18 +261,16 @@
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
-        // Busca referências na API do Semantic Scholar
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
                 const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
                 const query = relevantTerms.join(' ');
-                
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
                 elements.searchInfoDiv.style.display = 'block';
 
                 const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
-                const response = await fetch(url, { signal: AbortSignal.timeout(10000) }); // Timeout de 10s
+                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
                 if (!response.ok) throw new Error(`API retornou status ${response.status}`);
                 
                 const data = await response.json();
@@ -298,7 +285,6 @@
             }
         }
         
-        // Abre o modal de referências
         async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
             currentParagraphId = paragraphId;
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
@@ -306,7 +292,7 @@
             elements.referenceModal.style.display = 'flex';
             
             const references = await fetchParagraphReferences(paragraphText, articleTitle);
-            currentModalReferences = references; // **CORREÇÃO: Armazena as referências encontradas**
+            currentModalReferences = references;
             
             if (references.length === 0) {
                 elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
@@ -330,32 +316,25 @@
             }
         }
 
-        // Adiciona as referências selecionadas no modal ao parágrafo
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
             if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
 
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
             const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
-            
-            // **CORREÇÃO: Usa a lista de referências já carregada, sem nova busca**
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
             
-            // Formata as citações no padrão (SOBRENOME, ANO)
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
                 return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
             });
             
-            // Remove citações antigas antes de adicionar a nova
             const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
             paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
             
-            // Atualiza o conteúdo no estado da aplicação
             const [sectionKey, indexStr] = currentParagraphId.split('-');
             articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
             
-            // Adiciona novas referências à lista final, sem duplicatas
             selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
             
             displayABNTDocument();
@@ -363,7 +342,6 @@
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
 
-        // Formata a lista de referências final no padrão ABNT
         function formatarReferenciasABNT() {
             const sortedReferences = [...finalReferences].sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()));
             return sortedReferences.map(ref => {
@@ -378,8 +356,6 @@
         }
         
         // --- GERAÇÃO E EXIBIÇÃO DO CONTEÚDO ---
-
-        // Gera o resumo e o abstract com base no conteúdo completo
         async function generateResumoAndAbstract() {
             try {
                 log('Gerando resumo automático...', 'info');
@@ -404,7 +380,6 @@
             }
         }
 
-        // Atualiza a visualização do documento ABNT na tela
         function displayABNTDocument() {
             let content = `
                 <div class="nome-universidade">${userInputs.universidade || ''}</div>
@@ -436,36 +411,7 @@
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
         }
         
-        // --- FUNÇÕES DE SALVAMENTO ---
-        function generateCompleteArticleHTML() {
-            const styles = Array.from(document.styleSheets).map(sheet => { try { return Array.from(sheet.cssRules).map(rule => rule.cssText).join(''); } catch (e) { return ''; } }).join('\n');
-            const contentHTML = document.getElementById('content-output').innerHTML;
-            return `<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><title>${userInputs.titulo||'Artigo'}</title><style>${styles}</style></head><body><div class="page-container"><div class="abnt-content">${contentHTML}</div></div></body></html>`;
-        }
-        
-        async function saveArticleToPuter() {
-            const filename = elements.filenameInput.value;
-            if (!filename) { log('❌ Insira um nome para o arquivo.', 'error'); return; }
-
-            try {
-                log('💾 Autenticando com Puter...', 'info');
-                const articleHTML = generateCompleteArticleHTML();
-                const filePath = `~/Desktop/${filename}`;
-
-                log(`🔄 Salvando arquivo em ${filePath}...`, 'info');
-                await puter.fs.write(filePath, articleHTML, { overwrite: true });
-                
-                log(`✅ Artigo salvo com sucesso em ${filePath}!`, 'success');
-                alert(`Artigo salvo como '${filename}' na sua área de trabalho do Puter.`);
-            } catch (error) {
-                console.error('Erro ao salvar no Puter:', error);
-                log(`❌ Erro ao salvar: ${error.message || 'Erro desconhecido.'}`, 'error');
-            }
-        }
-
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
-
-        // Botão "Iniciar Artigo"
         elements.startBtn.addEventListener('click', async () => {
             userInputs = {
                 universidade: document.getElementById('universidade').value,
@@ -493,7 +439,6 @@
             }
         });
 
-        // Lógica para gerar novos parágrafos (continuação ou conclusão de seção)
         async function handleSectionGeneration(type) {
             const btn = type === 'continue' ? elements.continueBtn : elements.concludeBtn;
             btn.disabled = true;
@@ -517,7 +462,6 @@
         elements.continueBtn.addEventListener('click', () => handleSectionGeneration('continue'));
         elements.concludeBtn.addEventListener('click', () => handleSectionGeneration('conclude'));
         
-        // Botão "Próxima Seção"
         elements.finalizeBtn.addEventListener('click', async () => {
             const currentIndex = sectionOrder.indexOf(currentSection);
             if (currentIndex < sectionOrder.length - 1) {
@@ -539,22 +483,16 @@
                 elements.continueBtn.disabled = true;
                 elements.concludeBtn.disabled = true;
                 await generateResumoAndAbstract();
-                displayABNTDocument(); // Atualiza a tela com o resumo
+                displayABNTDocument();
                 elements.finishBtn.style.display = 'block';
             }
         });
         
-        // Botão "Finalizar Artigo"
         elements.finishBtn.addEventListener('click', () => {
-            const sanitizedTitle = userInputs.titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-            elements.filenameInput.value = `${sanitizedTitle || 'artigo'}.html`;
-            alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF ou no seu Puter.`);
+            alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
             log(`🎓 Artigo concluído!`, 'success');
         });
         
-        // --- OUTROS EVENTOS ---
-
-        // Clique em um parágrafo para adicionar referência
         elements.outputDiv.addEventListener('click', (e) => {
             const paragraph = e.target.closest('p[data-id]');
             if (paragraph) {
@@ -569,11 +507,10 @@
         elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
 
         elements.savePdfBtn.addEventListener('click', () => {
-            alert('A caixa de diálogo de impressão será aberta.\n\nPara salvar como PDF:\n1. Em "Destino", escolha "Salvar como PDF".\n2. Em "Mais configurações", DESMARQUE a opção "Cabeçalhos e rodapés".');
+            // Mensagem de alerta melhorada para ser mais clara
+            alert('A caixa de diálogo de impressão será aberta.\n\n**COMO SALVAR EM PDF:**\n\n1. No campo "Destino", **ESCOLHA "Salvar como PDF"**.\n2. Verifique as configurações (como remover cabeçalhos/rodapés, se desejar).\n3. Clique em "Salvar".');
             window.print();
         });
-
-        elements.saveToPuterBtn.addEventListener('click', saveArticleToPuter);
 
         // --- INICIALIZAÇÃO ---
         log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
