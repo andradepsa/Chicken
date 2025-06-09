@@ -8,60 +8,124 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
-        body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
-        .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; }
         
-        @page {
-            size: A4;
-            margin-top: 3cm;
-            margin-bottom: 2cm;
-            margin-left: 3cm;
-            margin-right: 2cm;
-            @bottom-center {
-                content: element(footer);
-                font-family: Arial, sans-serif;
-                font-size: 10pt;
-                color: #000;
-                text-align: center;
-            }
+        /* Estilos Gerais */
+        body { 
+            background-color: #e0e0e0; 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            margin: 0;
         }
-        #footer { position: running(footer); font-family: Arial, sans-serif; font-size: 10pt; text-align: center; width: 100%; display: none; }
+        .main-container { 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            gap: 20px; 
+            flex-wrap: wrap; /* Permite que o painel vá para cima em telas menores */
+        }
 
-        @media print {
-            body { background-color: #fff; padding: 0; margin: 0; }
-            .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls { display: none !important; }
-            .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
-            .email-autor { display: none !important; }
-            #footer { display: block; }
+        /* Painel de Controle (Lateral) */
+        .control-panel { 
+            position: sticky; 
+            top: 20px; 
+            width: 400px; 
+            background: #f9f9f9; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); 
+            z-index: 10;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        .control-panel h2 { 
+            margin-top: 0; 
+            text-align: center; 
+            color: #333; 
+        }
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        .form-group input, .form-group button { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+        }
+        .control-panel button { 
+            background-color: #1a73e8; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .control-panel button:hover:not(:disabled) { 
+            background-color: #1765cc; 
+        }
+        .control-panel button:disabled { 
+            background-color: #999; 
+            cursor: not-allowed; 
         }
         
-        .control-panel { position: sticky; top: 20px; width: 400px; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
-        .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
-        .control-panel button:hover { background-color: #1765cc; }
-        .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
+        /* Controles Interativos */
+        #interactive-controls { display: none; }
         #interactive-controls button { margin-top: 10px; }
         #continueBtn { background-color: #28a745; }
-        #continueBtn:hover { background-color: #218838; }
+        #continueBtn:hover:not(:disabled) { background-color: #218838; }
         #concludeBtn { background-color: #fd7e14; }
-        #concludeBtn:hover { background-color: #e8681b; }
+        #concludeBtn:hover:not(:disabled) { background-color: #e8681b; }
         #finalizeBtn { background-color: #ffc107; color: black; }
-        #finalizeBtn:hover { background-color: #e0a800; }
-        #finishBtn { background-color: #dc3545; }
-        #finishBtn:hover { background-color: #c82333; }
+        #finalizeBtn:hover:not(:disabled) { background-color: #e0a800; }
+        #finishBtn { background-color: #dc3545; display: none; }
+        #finishBtn:hover:not(:disabled) { background-color: #c82333; }
+        
+        /* Status e Feedback */
+        #status { 
+            font-weight: bold; 
+            text-align: left; 
+            margin-top: 15px; 
+            padding: 12px; 
+            border-radius: 4px; 
+            border: 1px solid transparent;
+            font-size: 14px;
+        }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border-color: #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
 
-        #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        /* Container da Página A4 */
+        .page-container { 
+            width: 21cm; 
+            min-height: 29.7cm; 
+            padding: 3cm 2cm 2cm 3cm; 
+            background: white; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+            box-sizing: border-box; 
+        }
+        #footer { 
+            position: running(footer); 
+            font-family: Arial, sans-serif; 
+            font-size: 10pt; 
+            text-align: center; 
+            width: 100%; 
+            display: none; /* Só visível na impressão */
+        }
         
-        .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
-        
-        .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
+        /* Estilos ABNT para Conteúdo */
+        .abnt-content { 
+            font-family: 'Arial', sans-serif; 
+            font-size: 12pt; 
+            line-height: 1.5; 
+            text-align: justify; 
+            color: #000;
+        }
         .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
         .titulo-trabalho { font-size: 14pt; text-align: center; font-weight: bold; text-transform: none; margin-bottom: 2em; }
         .autor { text-align: center; font-size: 12pt; margin-bottom: 1em; }
@@ -75,64 +139,186 @@
         .keywords { text-align: left; margin-bottom: 2em; }
         .keywords strong { font-weight: bold; font-style: italic; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
-        .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; line-height: 1.5; text-align: justify; }
-        .abnt-content p:hover { background-color: #f0f8ff; }
+        .abnt-content p { 
+            margin-bottom: 1.5em; 
+            cursor: pointer; 
+            text-indent: 1.25cm; 
+            line-height: 1.5; 
+            text-align: justify; 
+            transition: background-color 0.2s;
+        }
+        .abnt-content p:hover { 
+            background-color: #f0f8ff; 
+        }
         
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100ਸ
+        /* Modais */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .modal-header h2 { margin: 0; }
+        .close-btn {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover, .close-btn:focus { color: black; }
 
-System: I'm sorry, but the code you provided exceeds the maximum length I can process in a single response. To fully address your request for a complete implementation of the 1000 paragraph starters integrated into the provided HTML code, I’ll need to focus on the key changes and provide a clear, concise solution. Below, I’ll include the modified JavaScript section with the implementation of the paragraph starters and explain how to expand it to 1000 starters. For the full HTML, you can use the original code you provided, replacing the `<script>` section with the one below.
+        #reference-list { list-style-type: none; padding: 0; max-height: 40vh; overflow-y: auto; }
+        #reference-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        #reference-list li:hover { background-color: #f1f1f1; }
+        #reference-list label { display: block; cursor: pointer; }
+        .modal-footer { margin-top: 20px; text-align: right; }
+        .modal-footer button {
+             padding: 10px 20px;
+             border: none;
+             border-radius: 5px;
+             cursor: pointer;
+        }
+        #add-references-btn { background-color: #28a745; color: white; }
+        
+        /* Estilos de Impressão */
+        @page {
+            size: A4;
+            margin: 3cm 2cm 2cm 3cm;
+            @bottom-center {
+                content: element(footer);
+                font-family: Arial, sans-serif;
+                font-size: 10pt;
+                color: #000;
+            }
+        }
+        @media print {
+            body { background-color: #fff; padding: 0; margin: 0; }
+            .control-panel, .modal, #save-controls { display: none !important; }
+            .main-container { display: block; }
+            .page-container { 
+                box-shadow: none; 
+                margin: 0; 
+                padding: 0; 
+                width: 100%; 
+                min-height: auto; 
+                border: none; 
+            }
+            .email-autor { display: none !important; }
+            .abnt-content p:hover { background-color: transparent; }
+            #footer { display: block; }
+        }
+    </style>
+</head>
+<body>
 
-### Implementation Details
+    <div class="main-container">
+        <!-- PAINEL DE CONTROLE LATERAL -->
+        <div class="control-panel">
+            <h2>Gerador de Artigo</h2>
+            
+            <div id="initial-form">
+                <div class="form-group">
+                    <label for="universidade">Nome da Universidade</label>
+                    <input type="text" id="universidade" value="Universidade Federal Exemplo (UFE)">
+                </div>
+                <div class="form-group">
+                    <label for="titulo">Título do Artigo</label>
+                    <input type="text" id="titulo" placeholder="Ex: O Impacto da IA na Educação Superior" required>
+                </div>
+                <div class="form-group">
+                    <label for="autor">Autor(a)</label>
+                    <input type="text" id="autor" placeholder="Seu Nome Completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">E-mail do Autor</label>
+                    <input type="email" id="email" placeholder="seu.email@dominio.com">
+                </div>
+                <button id="startBtn">1. Iniciar Artigo</button>
+            </div>
 
-1. minimautoreply: **1000 Paragraph Starters**: I’ve created a list of 20 sample paragraph starters to demonstrate the functionality. To reach 1000, you can expand this list by combining various connectives (e.g., "Neste contexto", "A partir disso"), verbs (e.g., "destaca-se", "evidencia-se"), and thematic structures, ensuring variety and universality.
-2. **Integration with Existing Code**: The modified `handleSectionGeneration` function randomly selects a starter from the list, tracks used starters to minimize repetition, and integrates it into the AI prompt for seamless text generation.
-3. **External Storage Option**: For a list of 1000 starters, consider storing them in a separate JSON file (e.g., `paragraph_starters.json`) and loading it via `fetch` to keep the code manageable.
-4. **Coherence and Flexibility**: The starters are designed to be universal, fitting any academic topic, with instructions to ensure natural integration with AI-generated content.
+            <div id="interactive-controls">
+                <h3>Seção Atual: <span id="current-section-name">Introdução</span></h3>
+                <button id="continueBtn">2. Continuar Seção</button>
+                <button id="concludeBtn">3. Concluir Seção</button>
+                <button id="finalizeBtn">4. Próxima Seção / Finalizar</button>
+                <button id="finishBtn">🎉 Artigo Concluído</button>
+            </div>
+            
+            <div id="save-controls" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;">
+                 <button id="savePdfBtn" style="background-color: #6f42c1;">Salvar como PDF</button>
+            </div>
 
-### Modified JavaScript Section
+            <div id="status" class="info"></div>
+        </div>
 
-Replace the `<script>` section in your original HTML with the following:
+        <!-- CONTAINER DO DOCUMENTO -->
+        <div class="page-container">
+            <div id="content-output" class="abnt-content">
+                <!-- O conteúdo do artigo será inserido aqui -->
+            </div>
+            <div id="footer"></div>
+        </div>
+    </div>
 
-```javascript
-// --- LISTA DE INÍCIOS DE PARÁGRAFOS ---
-const paragraphStarters = [
-    "Neste contexto, é fundamental destacar que",
-    "A análise detalhada revela que",
-    "De acordo com os estudos realizados, observa-se que",
-    "A relevância do tema reside no fato de que",
-    "Um aspecto crucial a ser considerado é que",
-    "Partindo dessa premissa, pode-se afirmar que",
-    "A literatura recente aponta que",
-    "Com base nos dados apresentados, verifica-se que",
-    "Nesse sentido, é pertinente discutir como",
-    "A partir dessa perspectiva, torna-se evidente que",
-    "Considerando o cenário atual, pode-se inferir que",
-    "O desenvolvimento do tema sugere que",
-    "Dada a complexidade do assunto, é necessário explorar como",
-    "A abordagem adotada neste estudo indica que",
-    "No âmbito desta pesquisa, destaca-se que",
-    "A compreensão desse fenômeno passa por analisar como",
-    "Sob essa ótica, é possível argumentar que",
-    "Os resultados obtidos reforçam a ideia de que",
-    "Em consonância com as evidências, observa-se que",
-    "A discussão acerca do tema revela que"
-    // Expanda esta lista para 1000 inícios, variando conectivos e estruturas
-];
+    <!-- MODAL DE SUGESTÃO DE TEMAS -->
+    <div id="topic-suggestion-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Sugestões de Tema</h2>
+            </div>
+            <div id="topic-list"></div>
+            <div class="modal-footer">
+                <button id="confirm-topic-btn" style="background-color:#1a73e8; color:white;">Confirmar Tema e Iniciar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL DE REFERÊNCIAS -->
+    <div id="reference-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Referências</h2>
+                <span id="close-modal-btn" class="close-btn">×</span>
+            </div>
+            <div id="search-info" style="font-size: 12px; margin-bottom: 10px; padding: 5px; background: #f0f0f0; border-radius: 4px; display:none;"></div>
+            <div id="duplicate-warning" style="font-size: 12px; margin-bottom: 10px; color: #856404; background-color: #fff3cd; padding: 8px; border-radius: 4px; display: none;"></div>
+            <ul id="reference-list"></ul>
+            <div class="modal-footer">
+                <button id="add-references-btn" disabled>Adicionar Selecionadas</button>
+            </div>
+        </div>
+    </div>
 
-// Rastreamento de inícios usados para evitar repetições frequentes
-let usedStarters = [];
-
-// Carregar inícios de parágrafos (opcional: de um arquivo JSON externo)
-async function loadParagraphStarters() {
-    try {
-        const response = await fetch('paragraph_starters.json');
-        return await response.json();
-    } catch (error) {
-        console.error('Erro ao carregar inícios de parágrafos:', error);
-        return paragraphStarters; // Fallback para lista embutida
-    }
-}
-
+<script>
 // --- ELEMENTOS DA UI ---
 const elements = {
     startBtn: document.getElementById('startBtn'),
@@ -162,7 +348,7 @@ let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
 let finalReferences = []; 
 let currentParagraphId = null;
 let currentSection = 'introducao';
-let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
+const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
 let currentModalReferences = [];
 
 // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
@@ -183,32 +369,30 @@ async function callPuterAI(prompt) {
         } else {
             log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
         }
-        throw error;
+        throw error; // Re-lança o erro para que a função que chamou saiba que falhou
     }
 }
 
 // --- FUNÇÕES AUXILIARES DE FEEDBACK ---
 function log(message, type = 'info') {
-    elements.statusDiv.className = type;
-    elements.statusDiv.innerHTML = `<div>${getStatusIcon(type)} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
-}
-function getStatusIcon(type) {
+    elements.statusDiv.className = `status ${type}`;
     const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-    return icons[type] || 'ℹ️';
+    elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
 }
 
 // --- LÓGICA DE CORREÇÃO E SUGESTÃO DE TEMAS ---
 async function refineAndSuggestTopics(originalTitle) {
     log('Analisando tema e gerando sugestões...', 'info');
     const prompt = `
-        Analise o tema para um artigo: "${originalTitle}".
-        1. Corrija erros de gramática/digitação e reformule-o para ser um título acadêmico claro e impactante. Este será o "tema corrigido".
-        2. Gere 9 temas alternativos criativos com base na ideia principal.
-        Retorne sua resposta APENAS no formato JSON, usando as chaves "corrected_title" e "suggestions".
-        Exemplo: {"corrected_title": "Título Corrigido", "suggestions": ["Sugestão 1", "Sugestão 2", ...]}
+        Analise o tema para um artigo científico: "${originalTitle}".
+        1.  Corrija possíveis erros de gramática/digitação e reformule-o para ser um título acadêmico claro e impactante. Este será o "tema corrigido".
+        2.  Gere 4 temas alternativos e criativos, baseados na ideia principal do tema original.
+        Retorne sua resposta ESTRITAMENTE no formato JSON, sem nenhum texto adicional antes ou depois.
+        O formato deve ser: {"corrected_title": "string", "suggestions": ["string", "string", ...]}
     `;
     try {
         const response = await callPuterAI(prompt);
+        // Garante que apenas o JSON seja processado, mesmo que a IA adicione texto extra
         const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
         return JSON.parse(jsonString);
     } catch (error) {
@@ -244,30 +428,46 @@ function populateAndShowTopicModal(topicData, originalTitle) {
 
 // --- LÓGICA DE REFERÊNCIAS ---
 function extractRelevantTerms(text, title = '') {
-    const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho'];
+    const stopwords = new Set(['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'foi', 'artigo', 'trabalho', 'estudo', 'pesquisa', 'análise', 'sobre', 'neste']);
     const combinedText = `${title} ${text}`.toLowerCase();
     const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-    const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
-    return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
+    const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.has(word));
+    const wordCounts = words.reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
+    return Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
 }
 
 async function fetchParagraphReferences(paragraphText, articleTitle) {
     log('Buscando referências acadêmicas...', 'info');
     try {
         const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
+        if (relevantTerms.length === 0) {
+            log('⚠️ Não foi possível extrair termos para busca.', 'warning');
+            return [];
+        }
         const query = relevantTerms.join(' ');
-        elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
+        elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query}</em>`;
         elements.searchInfoDiv.style.display = 'block';
+        
         const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+        // Adicionado um timeout para evitar que a aplicação trave em caso de API lenta
         const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
         if (!response.ok) throw new Error(`API retornou status ${response.status}`);
+        
         const data = await response.json();
         const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
-        log(`${papers.length} referências encontradas!`, 'success');
-        return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
+        log(`${papers.length > 0 ? '✅' : 'ℹ️'} ${papers.length} referências encontradas!`, 'success');
+        
+        return papers.map(p => ({
+            id: p.paperId,
+            title: p.title,
+            authors: p.authors.map(a => a.name),
+            year: p.year,
+            abstract: p.abstract || '',
+            url: p.url
+        }));
     } catch (error) {
         console.error('Erro ao buscar referências:', error);
-        log('⚠️ Erro na busca de referências.', 'error');
+        log('❌ Erro na busca de referências. Verifique a conexão ou tente novamente.', 'error');
         return [];
     }
 }
@@ -277,98 +477,113 @@ async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
     elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
     elements.addReferencesBtn.disabled = true;
     elements.referenceModal.style.display = 'flex';
+    
     const references = await fetchParagraphReferences(paragraphText, articleTitle);
     currentModalReferences = references;
+    
     if (references.length === 0) {
-        elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
-    } else {
-        elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-        elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-        elements.referenceList.innerHTML = references.map((ref, index) => {
-            const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-            return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                        <input type="checkbox" id="ref-${index}" value="${index}">
-                        <label for="ref-${index}">
-                            <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
-                            ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                            <br><em>${ref.title}</em>
-                            <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                        </label>
-                    </li>`;
-        }).join('');
-        elements.addReferencesBtn.disabled = false;
+        elements.referenceList.innerHTML = `<div style="text-align:center; padding: 20px;"><strong>Nenhuma referência encontrada para este parágrafo.</strong></div>`;
+        return;
     }
+    
+    elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+    elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências sugeridas já foram usadas no artigo.`;
+
+    elements.referenceList.innerHTML = references.map((ref, index) => {
+        const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+        return `<li style="${isUsed ? 'background-color:#f8f9fa; opacity: 0.7;':''}">
+                    <label>
+                        <input type="checkbox" id="ref-${index}" value="${index}">
+                        <strong>${ref.authors[0]}${ref.authors.length > 1 ? ' et al.' : ''} (${ref.year})</strong>
+                        ${isUsed ? '<span style="color:#6c757d; font-weight:bold;"> [JÁ USADA]</span>':''}
+                        <br><em>${ref.title}</em>
+                        <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0, 120) + '...' : 'Sem resumo disponível'}</small>
+                    </label>
+                </li>`;
+    }).join('');
+    elements.addReferencesBtn.disabled = false;
 }
 
 function addSelectedReferences() {
     const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-    if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+    if (selectedIndices.length === 0) {
+        alert('Selecione ao menos uma referência para adicionar.');
+        return;
+    }
+    
     const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-    const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
+    const [sectionKey, indexStr] = currentParagraphId.split('-');
+    const originalText = articleContent[sectionKey][parseInt(indexStr)];
+    
     const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+    
     const citations = selectedRefs.map(ref => {
         const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-        return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+        return ref.authors.length > 1 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
     });
+    
+    // Remove citações antigas para evitar duplicação antes de adicionar a nova
     const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-    paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
-    const [sectionKey, indexStr] = currentParagraphId.split('-');
-    articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
-    selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+    const newText = `${cleanText} (${citations.join('; ')}).`;
+    
+    articleContent[sectionKey][parseInt(indexStr)] = newText;
+    
+    // Adiciona as referências à lista final, sem duplicatas
+    selectedRefs.forEach(ref => {
+        if (!finalReferences.some(existingRef => existingRef.id === ref.id)) {
+            finalReferences.push(ref);
+        }
+    });
+    
     displayABNTDocument();
     elements.referenceModal.style.display = 'none';
-    log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
+    log(`✅ ${selectedIndices.length} referência(s) adicionada(s) ao parágrafo!`, 'success');
 }
 
 function formatarReferenciasABNT() {
-    const sortedReferences = [...finalReferences].sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()));
+    const sortedReferences = [...finalReferences].sort((a, b) => 
+        a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
+    );
+    
     return sortedReferences.map(ref => {
         const authors = ref.authors.map(author => {
             const names = author.split(' ');
             const lastName = names.pop().toUpperCase();
-            return `${lastName}, ${names.join(' ')}`;
+            const initials = names.map(n => n.charAt(0).toUpperCase() + '.').join(' ');
+            return `${lastName}, ${initials}`;
         });
         const authorStr = authors.length > 3 ? `${authors[0]} et al.` : authors.join('; ');
-        return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <${ref.url}>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}.`;
+        
+        return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <${ref.url}>. Acesso em: ${new Date().toLocaleDateString('pt-BR')}.`;
     }).join('<br><br>');
 }
+
 
 // --- GERAÇÃO E EXIBIÇÃO DO CONTEÚDO ---
 async function generateResumoAndAbstract() {
     try {
-        log('Gerando resumo automático...', 'info');
+        log('Gerando resumo e abstract...', 'info');
         const allContent = Object.values(articleContent).flat().join(' ');
-        if (allContent.length < 100) { log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning'); return; }
-        const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões).`;
-        userInputs.resumo = await callPuterAI(resumoPrompt);
-        
-        const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
-        const rawPalavrasChave = await callPuterAI(palavrasPrompt);
-        userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, '');
+        if (allContent.length < 100) {
+            log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning');
+            return;
+        }
 
-        const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
+        const resumoPrompt = `Com base no título "${userInputs.titulo}" e no conteúdo a seguir: "${allContent.substring(0, 3000)}", escreva um resumo acadêmico em parágrafo único, contendo entre 150 e 250 palavras em português. O resumo deve seguir a estrutura: contextualização, objetivo, metodologia, resultados e conclusão.`;
+        userInputs.resumo = await callPuterAI(resumoPrompt);
+
+        const palavrasPrompt = `Com base no resumo a seguir: "${userInputs.resumo}", extraia exatamente 5 palavras-chave pertinentes em português. Responda apenas com as palavras-chave separadas por ponto final. Exemplo: Palavra 1. Palavra 2. Palavra 3. Palavra 4. Palavra 5`;
+        userInputs.palavrasChave = (await callPuterAI(palavrasPrompt)).replace(/\.$/, '');
+
+        const abstractPrompt = `Traduza o seguinte resumo para o inglês acadêmico, mantendo o tom formal: "${userInputs.resumo}"`;
         userInputs.abstract = await callPuterAI(abstractPrompt);
 
-        const keywordsPrompt = `
-Traduza as seguintes palavras-chave do português para o inglês.
-Responda APENAS com as palavras-chave traduzidas, separadas por ponto final. Não inclua texto introdutório como "Keywords:" e não termine a lista com um ponto.
+        const keywordsPrompt = `Traduza as seguintes palavras-chave para o inglês: "${userInputs.palavrasChave}". Responda apenas com as palavras traduzidas, separadas por ponto final.`;
+        userInputs.keywords = (await callPuterAI(keywordsPrompt)).replace(/\.$/, '');
 
-Exemplos de tradução:
-- Input: "Matemática. Aplicações. História. Criatividade. Progresso"
-- Output: "Mathematics. Applications. History. Creativity. Progress"
-
-- Input: "Sustentabilidade. Inovação Tecnológica"
-- Output: "Sustainability. Technological Innovation"
-
-Agora traduza o seguinte:
-Input: "${userInputs.palavrasChave}"
-Output:`;
-        const translatedKeywords = await callPuterAI(keywordsPrompt);
-        userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
-        
-        log('✅ Resumo e abstract gerados!', 'success');
+        log('✅ Resumo, abstract e palavras-chave gerados!', 'success');
     } catch (error) {
-        log('⚠️ Erro ao gerar resumo. Continue o artigo.', 'warning');
+        log('❌ Erro ao gerar resumo e abstract.', 'error');
     }
 }
 
@@ -378,35 +593,45 @@ function displayABNTDocument() {
         <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
         <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
     `;
+    
     if (userInputs.resumo) {
         content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
         if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
         if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
         if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
     }
-    const sections = [{ name: 'INTRODUÇÃO', key: 'introducao' }, { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' }, { name: 'CONCLUSÃO', key: 'conclusao' }];
+    
+    const sections = [
+        { name: '1 INTRODUÇÃO', key: 'introducao' },
+        { name: '2 DESENVOLVIMENTO', key: 'desenvolvimento' },
+        { name: '3 CONCLUSÃO', key: 'conclusao' }
+    ];
+
     sections.forEach(section => {
         if (articleContent[section.key].length > 0) {
             content += `<div class="section-title">${section.name}</div>`;
             articleContent[section.key].forEach((text, index) => {
-                content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
+                content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar/editar referências">${text}</p>`;
             });
         }
     });
+    
     if (finalReferences.length > 0) {
-        content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left;">${formatarReferenciasABNT()}</div>`;
+        content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 12pt; line-height: 1.5;">${formatarReferenciasABNT()}</div>`;
     }
+    
     if (userInputs.email) {
-        content += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
+        content += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, E-mail: ${userInputs.email}</div>`;
     }
+    
     elements.outputDiv.innerHTML = content;
-    elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
+    elements.footerDiv.innerHTML = `${userInputs.autor}, ${new Date().getFullYear()}`;
 }
 
 // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
 async function proceedWithArticleGeneration() {
     try {
-        const prompt = `Escreva um parágrafo acadêmico de introdução para o artigo "${userInputs.titulo}". O parágrafo deve ter entre 80-120 palavras, usar linguagem formal e contextualizar o tema, sem citações.`;
+        const prompt = `Escreva o parágrafo inicial para a introdução de um artigo científico com o título "${userInputs.titulo}". O parágrafo deve contextualizar o tema, apresentar sua relevância e indicar o problema de pesquisa. Deve ter entre 100 e 150 palavras e usar linguagem formal. Não inclua citações.`;
         const content = await callPuterAI(prompt);
         
         articleContent.introducao.push(content);
@@ -415,9 +640,9 @@ async function proceedWithArticleGeneration() {
         document.getElementById('initial-form').style.display = 'none';
         document.getElementById('interactive-controls').style.display = 'block';
         elements.currentSectionNameSpan.textContent = 'Introdução';
-        log('✅ Artigo iniciado com sucesso!', 'success');
+        log('✅ Artigo iniciado com sucesso! Continue a introdução.', 'success');
     } catch (error) {
-        elements.startBtn.disabled = false;
+        elements.startBtn.disabled = false; // Reabilita o botão se a geração falhar
     }
 }
 
@@ -428,17 +653,21 @@ elements.startBtn.addEventListener('click', async () => {
         autor: document.getElementById('autor').value,
         email: document.getElementById('email').value
     };
-    if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
+    if (!userInputs.titulo || !userInputs.autor) {
+        log('❌ Preencha pelo menos o Título do Artigo e o Autor.', 'error');
+        return;
+    }
     elements.startBtn.disabled = true;
+    
     try {
         const topicData = await refineAndSuggestTopics(userInputs.titulo);
-        if (topicData.suggestions.length > 0) {
+        if (topicData.suggestions && topicData.suggestions.length > 0) {
             populateAndShowTopicModal(topicData, userInputs.titulo);
         } else {
-            await proceedWithArticleGeneration();
+            await proceedWithArticleGeneration(); // Procede mesmo se a sugestão falhar
         }
     } catch (error) {
-        await proceedWithArticleGeneration();
+        await proceedWithArticleGeneration(); // Garante que o app continue
     }
 });
 
@@ -454,21 +683,15 @@ elements.confirmTopicBtn.addEventListener('click', () => {
 async function handleSectionGeneration(type) {
     const btn = type === 'continue' ? elements.continueBtn : elements.concludeBtn;
     btn.disabled = true;
+    
     const sectionName = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' }[currentSection];
     const fullArticleText = Object.values(articleContent).flat().join(' ');
-    let actionText = type === 'continue' ? 'o PRÓXIMO parágrafo' : 'um parágrafo de FINALIZAÇÃO';
-    let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
     
-    // Selecionar um início não usado, se disponível
-    let availableStarters = paragraphStarters.filter(starter => !usedStarters.includes(starter));
-    if (availableStarters.length === 0) {
-        usedStarters = []; // Resetar se todos foram usados
-        availableStarters = paragraphStarters;
-    }
-    const randomStarter = availableStarters[Math.floor(Math.random() * availableStarters.length)];
-    usedStarters.push(randomStarter);
+    let actionText = type === 'continue' 
+        ? `desenvolver a seção de "${sectionName}", adicionando novas informações, argumentos ou exemplos`
+        : `escrever um parágrafo de conclusão para a seção de "${sectionName}", sintetizando os pontos abordados nela e criando uma transição para a próxima seção`;
     
-    const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ser único, ter entre 80-120 palavras, começar com a frase "${randomStarter}" e seguir a instrução: ${instruction}. O texto deve ser fluido, conectando o início fornecido ao restante do conteúdo de forma natural.`;
+    const prompt = `Continuando a redação de um artigo sobre "${userInputs.titulo}". O conteúdo já escrito é: "${fullArticleText.substring(0, 3000)}". Sua tarefa é ${actionText}. O novo parágrafo deve ser coeso, ter entre 100 e 150 palavras, e não repetir ideias já ditas.`;
     
     try {
         const content = await callPuterAI(prompt);
@@ -476,7 +699,7 @@ async function handleSectionGeneration(type) {
         displayABNTDocument();
         log(`✅ Parágrafo de ${type === 'continue' ? 'continuação' : 'conclusão'} adicionado!`, 'success');
     } catch (error) {
-        /* Erro já logado */
+        // O erro já é logado dentro de callPuterAI
     } finally {
         btn.disabled = false;
     }
@@ -488,40 +711,44 @@ elements.concludeBtn.addEventListener('click', () => handleSectionGeneration('co
 elements.finalizeBtn.addEventListener('click', async () => {
     const currentIndex = sectionOrder.indexOf(currentSection);
     if (currentIndex < sectionOrder.length - 1) {
+        // Avança para a próxima seção
         currentSection = sectionOrder[currentIndex + 1];
         const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
         elements.currentSectionNameSpan.textContent = sectionDisplayName;
+        
         const fullArticleText = Object.values(articleContent).flat().join(' ');
-        const prompt = `Com base no artigo já escrito: "${fullArticleText}". Escreva o parágrafo INICIAL da nova seção: "${sectionDisplayName}". O parágrafo deve ser uma transição, conectando com o anterior e apresentando o que será abordado. Tamanho: 80-120 palavras.`;
+        const prompt = `Com base no artigo já escrito sobre "${userInputs.titulo}": "${fullArticleText.substring(0, 3000)}". Escreva o parágrafo INICIAL da nova seção: "${sectionDisplayName}". Este parágrafo deve servir como uma transição, conectando-se com a seção anterior e apresentando o que será discutido a seguir.`;
+        
         try {
             const content = await callPuterAI(prompt);
             articleContent[currentSection].push(content);
             displayABNTDocument();
             log(`✅ Seção '${sectionDisplayName}' iniciada!`, 'success');
-        } catch (error) {
-            /* Erro já logado */
-        }
+        } catch (error) { /* Erro já logado */ }
     } else {
+        // Finaliza o artigo
         elements.finalizeBtn.style.display = 'none';
         elements.continueBtn.disabled = true;
         elements.concludeBtn.disabled = true;
         await generateResumoAndAbstract();
         displayABNTDocument();
         elements.finishBtn.style.display = 'block';
+        log('🎓 Artigo estruturado! Revise e salve em PDF.', 'success');
     }
 });
 
 elements.finishBtn.addEventListener('click', () => {
-    alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
-    log(`🎓 Artigo concluído!`, 'success');
+    alert(`🎉 Artigo finalizado! Agora você pode revisá-lo e salvá-lo como PDF usando o botão roxo.`);
 });
 
+// Event listeners para o modal e impressão
 elements.outputDiv.addEventListener('click', (e) => {
     const paragraph = e.target.closest('p[data-id]');
     if (paragraph) {
         const paragraphId = paragraph.dataset.id;
-        const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
-        openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+        const paragraphText = articleContent[paragraphId.split('-')[0]][parseInt(paragraphId.split('-')[1])];
+        const cleanText = paragraphText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\s*\.?$/g, '').trim();
+        openReferenceModal(paragraphId, cleanText, userInputs.titulo);
     }
 });
 
@@ -530,12 +757,13 @@ elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal
 elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
 
 elements.savePdfBtn.addEventListener('click', () => {
-    alert('A caixa de diálogo de impressão será aberta.\n\n**COMO SALVAR EM PDF:**\n\n1. No campo "Destino", **ESCOLHA "Salvar como PDF"**.\n2. Verifique as configurações (como remover cabeçalhos/rodapés, se desejar).\n3. Clique em "Salvar".');
+    alert('A caixa de diálogo de impressão será aberta.\n\n**COMO SALVAR EM PDF:**\n\n1. No campo "Destino", **ESCOLHA "Salvar como PDF"**.\n2. Verifique as configurações (recomenda-se manter "Gráficos de segundo plano" ativado).\n3. Clique em "Salvar".');
     window.print();
 });
 
 // --- INICIALIZAÇÃO ---
-log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
+log('🎯 Preencha os dados e clique em "Iniciar Artigo"', 'info');
 </script>
+
 </body>
 </html>
