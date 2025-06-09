@@ -2,9 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Artigo Científico ABNT</title>
-    <script src="https://cdn.jsdelivr.net/npm/pizzip@3.1.4/dist/pizzip.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/docxtemplater@3.42.0/build/docxtemplater.js"></script>
+    <title>Gerador de Artigo Científico com IA do Puter</title>
+    <!-- A única biblioteca necessária para a funcionalidade do Puter -->
+    <script src="https://js.puter.com/v2/"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
         body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
@@ -38,7 +39,7 @@
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group button, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .form-group input, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
         .control-panel button:hover { background-color: #1765cc; }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
@@ -51,17 +52,14 @@
         #finalizeBtn:hover { background-color: #e0a800; }
         #finishBtn { background-color: #dc3545; }
         #finishBtn:hover { background-color: #c82333; }
-        #testApiBtn { background-color: #17a2b8; margin-bottom: 10px; }
-        #testApiBtn:hover { background-color: #138496; }
+        #saveToPuterBtn { background-color: #6f42c1; } /* Puter Purple */
+        #saveToPuterBtn:hover { background-color: #5a359e; }
+
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        
-        .api-config { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 10px 0; border-radius: 4px; }
-        .api-config.active { background: #e7f3ff; border-color: #0066cc; }
-        .fallback-info { background: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0; border-radius: 4px; font-size: 12px; }
         
         .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
         
@@ -81,7 +79,6 @@
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
         .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; line-height: 1.5; text-align: justify; }
         .abnt-content p:hover { background-color: #f0f8ff; }
-        .no-indent { text-indent: 0 !important; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
@@ -104,6 +101,7 @@
         <div class="control-panel">
             <div id="initial-form">
                 <h2>🎓 Gerador de Artigo ABNT</h2>
+                <p style="text-align:center; font-size:12px; margin-top:-10px; margin-bottom:20px; color:#6f42c1;"><strong>Powered by Puter.ai</strong></p>
                 
                 <div class="form-group">
                     <label>Universidade:</label>
@@ -122,48 +120,11 @@
                     <input id="email" type="email" value="seu.email@exemplo.com">
                 </div>
 
-                <div class="form-group">
-                    <label>🤖 Modo de Geração:</label>
-                    <select id="apiProvider">
-                        <option value="gemini">Google Gemini (Recomendado)</option>
-                        <option value="offline">Modo Offline (Sempre funciona)</option>
-                        <option value="custom">Inserir texto manualmente</option>
-                    </select>
-                </div>
-
-                <div id="gemini-config" class="api-config active">
-                    <label>🔑 Chave API Gemini:</label>
-                    <input id="geminiApiKey" type="password" placeholder="Cole sua chave AIzaSy...">
-                    <button id="testApiBtn">🧪 Testar API</button>
-                    <div class="fallback-info">
-                        💡 <strong>Problemas com API?</strong><br>
-                        • Regenere a chave no Google AI Studio<br>
-                        • Aguarde 10 minutos após criar<br>
-                        • Use modo offline como backup
-                    </div>
-                </div>
-
-                <div id="offline-config" class="api-config" style="display: none;">
-                    <label>📝 Tema/Área do artigo:</label>
-                    <input id="tema" type="text" placeholder="Ex: Inteligência Artificial, Educação, Tecnologia">
-                    <div class="fallback-info">
-                        ✅ <strong>Modo Offline:</strong> Gera conteúdo usando templates acadêmicos pré-definidos. Sempre funciona!
-                    </div>
-                </div>
-
-                <div id="custom-config" class="api-config" style="display: none;">
-                    <label>✏️ Seu próprio texto de introdução:</label>
-                    <textarea id="customText" rows="4" placeholder="Digite ou cole seu próprio parágrafo de introdução..."></textarea>
-                    <div class="fallback-info">
-                        ✏️ <strong>Modo Manual:</strong> Use seu próprio texto ou conteúdo de outras IAs.
-                    </div>
-                </div>
-
                 <button id="startBtn">🚀 Iniciar Artigo Científico</button>
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #666;">
                     ✅ Sistema AUTOR-DATA + Bibliografia automática<br>
-                    ✅ Formatação ABNT rigorosa + Múltiplas opções
+                    ✅ Formatação ABNT rigorosa + Salvar no Puter
                 </div>
             </div>
             
@@ -185,27 +146,28 @@
                     <button id="savePdfBtn">📄 Salvar como PDF</button>
                 </div>
                 <div class="form-group">
-                  
+                  <label for="filenameInput">Nome do Arquivo (em ~/Desktop):</label>
+                  <input id="filenameInput" type="text" placeholder="artigo-cientifico.html" style="margin-bottom: 5px;">
+                  <button id="saveToPuterBtn">💾 Salvar no Puter (HTML)</button>
                 </div>
             </div>
 
             <div id="status" class="info">
-                🎯 Escolha o modo de geração e preencha os dados
+                🎯 Preencha os dados do artigo e clique em "Iniciar"
             </div>
         </div>
         
         <div class="page-container">
             <div class="abnt-content" id="content-output">
                 <p style="text-align:center; color: #777; padding-top: 0;">
-                    <!-- INSTRUÇÕES ADICIONADAS AQUI -->
                     📄 <strong>Para Começar:</strong><br><br>
                     <strong>1. Preencha os Dados:</strong> Título e Autor são essenciais.<br>
-                    <strong>2. Escolha o Modo de Geração:</strong> Para o modo <strong>Gemini</strong>, você precisa de uma <strong>Chave API</strong> do Google AI Studio.<br>
-                    <strong>3. Inicie o Artigo:</strong> Clique no botão <strong>🚀 Iniciar Artigo Científico</strong>.<br><br>
+                    <strong>2. Inicie o Artigo:</strong> Clique no botão <strong>🚀 Iniciar Artigo Científico</strong>.<br>
+                    <strong>3. Autenticação:</strong> Se necessário, uma janela de login do Puter aparecerá.<br><br>
                     ---<br><br>
                     ✅ Formatação ABNT rigorosa<br>
-                    ✅ Sistema AUTOR-DATA automático<br>
-                    ✅ Múltiplas opções de geração
+                    ✅ Geração de conteúdo com a IA do Puter<br>
+                    ✅ Salve diretamente na sua conta Puter
                 </p>
             </div>
             <div id="footer"></div>
@@ -230,14 +192,8 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO DA API (MANTENHA SUA CHAVE AQUI) ---
-        const GEMINI_API_KEY = "CHAVE AQUI";
-        const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
-
         // --- ELEMENTOS DA UI ---
         const elements = {
-            apiProvider: document.getElementById('apiProvider'),
-            testApiBtn: document.getElementById('testApiBtn'),
             startBtn: document.getElementById('startBtn'),
             continueBtn: document.getElementById('continueBtn'),
             concludeBtn: document.getElementById('concludeBtn'),
@@ -253,11 +209,9 @@
             searchInfoDiv: document.getElementById('search-info'),
             duplicateWarningDiv: document.getElementById('duplicate-warning'),
             savePdfBtn: document.getElementById('savePdfBtn'),
-            saveDocBtn: document.getElementById('saveDocBtn'),
+            saveToPuterBtn: document.getElementById('saveToPuterBtn'),
+            filenameInput: document.getElementById('filenameInput'),
             footerDiv: document.getElementById('footer'),
-            geminiConfig: document.getElementById('gemini-config'),
-            offlineConfig: document.getElementById('offline-config'),
-            customConfig: document.getElementById('custom-config')
         };
 
         // --- ESTADO DA APLICAÇÃO ---
@@ -267,28 +221,31 @@
         let currentParagraphId = null;
         let currentSection = 'introducao';
         let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
-        let apiTested = false;
+        let currentModalReferences = []; // Armazena as referências do modal atual para evitar re-fetch
 
-        // --- TEMPLATES OFFLINE ---
-        const offlineTemplates = {
-            'inteligencia artificial': {
-                intro: 'A inteligência artificial representa uma das mais significativas revoluções tecnológicas da era contemporânea, transformando fundamentalmente a maneira como processamos informações e automatizamos tarefas complexas. O desenvolvimento de sistemas inteligentes capazes de simular capacidades cognitivas humanas tem impacto direto em diversas áreas do conhecimento, desde a medicina e educação até a indústria e serviços financeiros. A crescente integração de algoritmos de aprendizado de máquina e redes neurais artificiais em aplicações cotidianas evidencia a necessidade de compreender profundamente os mecanismos, potencialidades e desafios inerentes a essa tecnologia emergente.',
-                desenvolvimento: 'Os sistemas de inteligência artificial baseiam-se em complexos algoritmos matemáticos que permitem o processamento e análise de grandes volumes de dados de forma automatizada. Através de técnicas como aprendizado supervisionado, não supervisionado e por reforço, esses sistemas desenvolvem a capacidade de reconhecer padrões, fazer predições e tomar decisões com graus crescentes de autonomia. A implementação de redes neurais profundas tem revolucionado áreas como reconhecimento de imagens, processamento de linguagem natural e análise preditiva, demonstrando resultados que frequentemente superam a performance humana em tarefas específicas.',
-                conclusao: 'A inteligência artificial configura-se como um campo de conhecimento em constante expansão, com potencial para transformar significativamente a sociedade contemporânea. Os avanços tecnológicos observados nas últimas décadas evidenciam a necessidade de desenvolvimento de frameworks éticos e regulatórios adequados para garantir o uso responsável dessas tecnologias. O futuro da inteligência artificial dependerá da capacidade de equilibrar inovação tecnológica com considerações sociais, econômicas e éticas, promovendo o desenvolvimento sustentável e inclusivo da sociedade digital.'
-            },
-            'educacao': {
-                intro: 'A educação constitui um dos pilares fundamentais para o desenvolvimento humano e social, desempenhando papel crucial na formação de indivíduos capazes de contribuir efetivamente para a sociedade. No contexto contemporâneo, caracterizado por rápidas transformações tecnológicas e sociais, os sistemas educacionais enfrentam desafios sem precedentes que demandam abordagens inovadoras e adaptativas. A necessidade de preparar estudantes para um mercado de trabalho em constante evolução, aliada às demandas por inclusão e equidade, torna imperativo o repensar das práticas pedagógicas tradicionais e a incorporação de metodologias que promovam o desenvolvimento de competências do século XXI.',
-                desenvolvimento: 'As metodologias ativas de ensino-aprendizagem emergem como alternativas promissoras para superar as limitações dos modelos educacionais tradicionais centrados na transmissão passiva de conhecimento. Estratégias como aprendizagem baseada em problemas, sala de aula invertida e gamificação proporcionam aos estudantes oportunidades de participação ativa no processo educativo, favorecendo o desenvolvimento do pensamento crítico e da capacidade de resolução de problemas. A integração de tecnologias digitais no ambiente educacional amplia as possibilidades de personalização do ensino, permitindo a adaptação dos conteúdos e metodologias às necessidades individuais dos estudantes.',
-                conclusao: 'A transformação dos sistemas educacionais representa um desafio complexo que requer o engajamento de múltiplos atores sociais, incluindo educadores, gestores, estudantes e a comunidade em geral. A implementação bem-sucedida de inovações educacionais depende não apenas de recursos tecnológicos e metodológicos, mas também de mudanças culturais e estruturais que favoreçam a criação de ambientes de aprendizagem mais dinâmicos e inclusivos. O futuro da educação será construído através da colaboração entre tradição e inovação, preservando os valores educacionais essenciais enquanto se adapta às demandas de um mundo em constante transformação.'
-            },
-            'tecnologia': {
-                intro: 'O desenvolvimento tecnológico contemporâneo caracteriza-se por uma aceleração sem precedentes na criação e implementação de soluções inovadoras que transformam fundamentalmente os processos sociais, econômicos e culturais da humanidade. A convergência de diferentes tecnologias emergentes, incluindo computação quântica, biotecnologia, nanotecnologia e sistemas de comunicação avançados, estabelece um novo paradigma de possibilidades que redefine os limites do conhecimento e da capacidade humana. Esta revolução tecnológica demanda uma compreensão aprofundada dos impactos, oportunidades e desafios associados à integração dessas inovações no tecido social contemporâneo.',
-                desenvolvimento: 'A implementação de tecnologias disruptivas em diversos setores da economia tem demonstrado potencial significativo para otimização de processos, redução de custos operacionais e criação de novos modelos de negócio. A digitalização de serviços tradicionais, a automação de processos industriais e o desenvolvimento de plataformas de comunicação global exemplificam como as inovações tecnológicas podem gerar valor econômico e social. Paralelamente, surgem questões relacionadas à segurança cibernética, privacidade de dados e impactos no mercado de trabalho, exigindo o desenvolvimento de políticas públicas e regulamentações adequadas para maximizar benefícios e minimizar riscos.',
-                conclusao: 'O futuro tecnológico da sociedade depende fundamentalmente da capacidade de equilibrar inovação e responsabilidade social, garantindo que os avanços científicos e tecnológicos contribuam para o bem-estar coletivo e o desenvolvimento sustentável. A construção de um ambiente tecnológico inclusivo e ético requer a participação ativa de diferentes stakeholders, incluindo pesquisadores, empresários, gestores públicos e cidadãos. Através da colaboração multidisciplinar e do estabelecimento de princípios éticos sólidos, será possível direcionar o progresso tecnológico para a criação de um futuro mais próspero e equitativo para toda a humanidade.'
+        // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
+        async function callPuterAI(prompt) {
+            try {
+                log('🤖 Gerando conteúdo com a IA do Puter...', 'info');
+                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
+                
+                if (!response || !response.message || !response.message.content) {
+                    throw new Error('Resposta inválida da IA do Puter.');
+                }
+                
+                return response.message.content.trim();
+            } catch (error) {
+                console.error('Erro na IA do Puter:', error);
+                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
+                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
+                } else {
+                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
+                }
+                throw error; // Re-lança o erro para interromper a execução que depende da IA
             }
-        };
+        }
 
-        // --- FUNÇÕES AUXILIARES ---
+        // --- FUNÇÕES AUXILIARES DE FEEDBACK ---
         function log(message, type = 'info') {
             elements.statusDiv.className = type;
             elements.statusDiv.innerHTML = `
@@ -304,532 +261,211 @@
             return icons[type] || 'ℹ️';
         }
 
-        // Switch entre modos de API
-        elements.apiProvider.addEventListener('change', () => {
-            const provider = elements.apiProvider.value;
-            elements.geminiConfig.style.display = provider === 'gemini' ? 'block' : 'none';
-            elements.offlineConfig.style.display = provider === 'offline' ? 'block' : 'none';
-            elements.customConfig.style.display = provider === 'custom' ? 'block' : 'none';
-            
-            // Reset API test status when switching
-            apiTested = provider !== 'gemini';
-        });
+        // --- LÓGICA DE REFERÊNCIAS ---
 
-        // --- FUNÇÃO PRINCIPAL DA API GEMINI (MANTENDO SUA LÓGICA) ---
-        async function callGeminiAPI(prompt, retry = true) {
-            try {
-                log('Gerando conteúdo único...', 'info');
-                const response = await fetch(GEMINI_API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
-                    })
-                });
-
-                if (!response.ok) {
-                    if (response.status === 429 && retry) {
-                        log('Aguardando API...', 'warning');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        return callGeminiAPI(prompt, false);
-                    }
-                    throw new Error(`Erro na API: ${response.status}`);
-                }
-
-                const data = await response.json();
-                if (!data.candidates || !data.candidates[0]?.content?.parts[0]?.text) {
-                    throw new Error('Resposta inválida da API');
-                }
-
-                return data.candidates[0].content.parts[0].text.trim();
-            } catch (error) {
-                console.error('Erro na API:', error);
-                log('⚠️ Erro ao gerar conteúdo. Verifique a conexão ou tente novamente.', 'error');
-                return null;
-            }
-        }
-
-        // --- FUNÇÃO TESTE DA API ---
-        async function testGeminiAPI() {
-            try {
-                log('🧪 Testando conexão com API...', 'info');
-                const testPrompt = "Responda apenas: API funcionando";
-                const result = await callGeminiAPI(testPrompt);
-                
-                if (result) {
-                    log('✅ API funcionando perfeitamente!', 'success');
-                    apiTested = true;
-                    return true;
-                } else {
-                    throw new Error('Resposta vazia');
-                }
-            } catch (error) {
-                log(`❌ Erro na API: ${error.message}`, 'error');
-                apiTested = false;
-                return false;
-            }
-        }
-
-        // --- FUNÇÃO PARA MODO OFFLINE ---
-        function generateOfflineContent(tema, secao) {
-            const temaLower = tema.toLowerCase();
-            let template = null;
-
-            // Busca o template mais próximo
-            for (const [key, value] of Object.entries(offlineTemplates)) {
-                if (temaLower.includes(key) || key.includes(temaLower)) {
-                    template = value;
-                    break;
-                }
-            }
-
-            // Fallback para IA genérico se não encontrar
-            if (!template) {
-                template = offlineTemplates['tecnologia'];
-            }
-
-            const secaoNames = ['intro', 'desenvolvimento', 'conclusao'];
-            return template[secaoNames[secao]] || template.intro;
-        }
-
-        // --- SUAS FUNÇÕES ORIGINAIS DE REFERÊNCIAS (MANTIDAS) ---
+        // Extrai termos relevantes do texto para montar uma busca inteligente
         function extractRelevantTerms(text, title = '') {
-            const stopwords = [
-                'a', 'o', 'as', 'os', 'de', 'da', 'do', 'das', 'dos', 'e', 'em', 'para', 'com', 'no', 'na', 'nos', 'nas', 
-                'um', 'uma', 'uns', 'umas', 'que', 'se', 'por', 'mais', 'como', 'ou', 'ao', 'aos', 'à', 'às', 'pelo', 
-                'pela', 'pelos', 'pelas', 'este', 'esta', 'estes', 'estas', 'esse', 'essa', 'esses', 'essas', 'aquele', 
-                'aquela', 'aqueles', 'aquelas', 'seu', 'sua', 'seus', 'suas', 'nosso', 'nossa', 'nossos', 'nossas',
-                'ser', 'ter', 'estar', 'fazer', 'partir', 'acordo', 'meio', 'forma', 'caso', 'vez', 'exemplo',
-                'através', 'durante', 'sobre', 'quando', 'onde', 'porque', 'assim', 'também', 'ainda', 'apenas',
-                'pode', 'podem', 'deve', 'devem', 'tem', 'têm', 'são', 'foram', 'sendo', 'sido', 'artigo', 'trabalho'
-            ];
-            
+            const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho'];
             const combinedText = `${title} ${text}`.toLowerCase();
             const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-            
-            const words = cleanText
-                .split(/\s+/)
-                .filter(word => 
-                    word.length > 3 && 
-                    !stopwords.includes(word) &&
-                    !/^\d+$/.test(word)
-                )
-                .reduce((acc, word) => {
-                    acc[word] = (acc[word] || 0) + 1;
-                    return acc;
-                }, {});
-            
-            return Object.entries(words)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 6)
-                .map(([word]) => word);
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
+            return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
-
-        function createSearchQueries(text, title) {
-            const relevantTerms = extractRelevantTerms(text, title);
-            const queries = [];
-            
-            if (relevantTerms.length >= 2) {
-                queries.push(relevantTerms.slice(0, 3).join(' '));
-            }
-            
-            if (title && relevantTerms.length > 0) {
-                const titleTerms = extractRelevantTerms(title).slice(0, 2);
-                queries.push([...titleTerms, ...relevantTerms.slice(0, 2)].join(' '));
-            }
-            
-            if (title && queries.length === 0) {
-                queries.push(title);
-            }
-            
-            if (queries.length === 0) {
-                queries.push('artificial intelligence research');
-            }
-            
-            return queries;
-        }
-
+        
+        // Busca referências na API do Semantic Scholar
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
-            
             try {
-                const queries = createSearchQueries(paragraphText, articleTitle);
-                let allReferences = [];
+                const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
+                const query = relevantTerms.join(' ');
                 
-                elements.searchInfoDiv.innerHTML = `
-                    <strong>🔍 Análise:</strong><br>
-                    Termos-chave: <em>${extractRelevantTerms(paragraphText, articleTitle).join(', ')}</em><br>
-                    Consultas: <em>${queries.join(' | ')}</em>
-                `;
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
                 elements.searchInfoDiv.style.display = 'block';
+
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+                const response = await fetch(url, { signal: AbortSignal.timeout(10000) }); // Timeout de 10s
+                if (!response.ok) throw new Error(`API retornou status ${response.status}`);
                 
-                for (const query of queries) {
-                    if (allReferences.length >= 10) break;
-                    
-                    let attempts = 0;
-                    const maxAttempts = 3;
-                    while (attempts < maxAttempts) {
-                        try {
-                            const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=15&fields=title,authors,year,abstract,url,citationCount`;
-                            const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-                            
-                            if (!response.ok) {
-                                attempts++;
-                                if (attempts === maxAttempts) continue;
-                                await new Promise(resolve => setTimeout(resolve, 1000));
-                                continue;
-                            }
-                            
-                            const data = await response.json();
-                            const papers = data.data || [];
-                            
-                            const scoredPapers = papers
-                                .filter(paper => 
-                                    paper.title && 
-                                    paper.authors && 
-                                    paper.authors.length > 0 &&
-                                    paper.year >= 2010
-                                )
-                                .map(paper => {
-                                    let score = 0;
-                                    const titleLower = paper.title.toLowerCase();
-                                    const abstractLower = (paper.abstract || '').toLowerCase();
-                                    const queryTerms = query.toLowerCase().split(' ');
-                                    
-                                    queryTerms.forEach(term => {
-                                        if (titleLower.includes(term)) score += 3;
-                                        if (abstractLower.includes(term)) score += 1;
-                                    });
-                                    
-                                    if (paper.citationCount) {
-                                        score += Math.min(paper.citationCount / 100, 2);
-                                    }
-                                    
-                                    if (paper.year >= 2020) score += 1;
-                                    
-                                    return { ...paper, relevanceScore: score };
-                                })
-                                .filter(paper => paper.relevanceScore > 0)
-                                .sort((a, b) => b.relevanceScore - a.relevanceScore);
-                            
-                            allReferences.push(...scoredPapers.slice(0, 8));
-                            break;
-                        } catch (error) {
-                            console.warn(`Erro na busca (tentativa ${attempts + 1}):`, error);
-                            attempts++;
-                            if (attempts === maxAttempts) {
-                                console.error(`Falha após ${maxAttempts} tentativas para a query: ${query}`);
-                            }
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                        }
-                    }
-                }
+                const data = await response.json();
+                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
                 
-                const uniqueReferences = allReferences
-                    .filter((paper, index, self) => 
-                        index === self.findIndex(p => p.paperId === paper.paperId)
-                    )
-                    .slice(0, 10);
-                
-                elements.searchInfoDiv.innerHTML = `
-                    <strong>✅ Resultado:</strong><br>
-                    ${uniqueReferences.length} referências encontradas
-                `;
-                
-                log(`${uniqueReferences.length} referências encontradas!`, 'success');
-                
-                return uniqueReferences.map(paper => ({
-                    id: paper.paperId,
-                    title: paper.title,
-                    authors: paper.authors.map(author => author.name),
-                    year: paper.year || 's.d.',
-                    abstract: paper.abstract || '',
-                    url: paper.url || `https://www.semanticscholar.org/paper/${paper.paperId}`,
-                    citationCount: paper.citationCount || 0
-                }));
-                
+                log(`${papers.length} referências encontradas!`, 'success');
+                return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
-                log('⚠️ Erro na busca de referências. Tente novamente ou continue sem referências.', 'error');
-                elements.searchInfoDiv.innerHTML = `
-                    <strong>❌ Erro:</strong><br>
-                    Falha ao buscar referências. Verifique a conexão com a internet ou tente novamente.
-                `;
+                log('⚠️ Erro na busca de referências.', 'error');
                 return [];
             }
         }
-
+        
+        // Abre o modal de referências
         async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
             currentParagraphId = paragraphId;
-            elements.duplicateWarningDiv.style.display = 'none';
-            
-            if (!paragraphText.trim() && !articleTitle) {
-                elements.referenceList.innerHTML = '<div class="no-results">⚠️ Conteúdo insuficiente.</div>';
-                elements.addReferencesBtn.disabled = true;
-                elements.referenceModal.style.display = 'flex';
-                return;
-            }
-            
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
             elements.addReferencesBtn.disabled = true;
             elements.referenceModal.style.display = 'flex';
             
             const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            currentModalReferences = references; // **CORREÇÃO: Armazena as referências encontradas**
             
             if (references.length === 0) {
-                elements.referenceList.innerHTML = `
-                    <div class="no-results">
-                        <strong>❌ Nenhuma referência encontrada</strong><br>
-                        Verifique a conexão com a internet ou tente novamente.
-                    </div>
-                `;
-                elements.addReferencesBtn.disabled = true;
+                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
             } else {
-                const existingRefs = references.filter(ref => {
-                    return finalReferences.some(existingRef => existingRef.id === ref.id);
-                });
-                
-                if (existingRefs.length > 0) {
-                    elements.duplicateWarningDiv.innerHTML = `
-                        ⚠️ ${existingRefs.length} referência(s) já foram usadas (podem ser reutilizadas).
-                    `;
-                    elements.duplicateWarningDiv.style.display = 'block';
-                }
+                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
                 
                 elements.referenceList.innerHTML = references.map((ref, index) => {
-                    const isAlreadyUsed = finalReferences.some(existingRef => existingRef.id === ref.id);
-                    
-                    return `
-                        <li style="${isAlreadyUsed ? 'background-color: #f8f9fa;' : ''}">
-                            <input type="checkbox" id="ref-${index}" value="${index}">
-                            <label for="ref-${index}">
-                                <strong>${ref.authors[0]}${ref.authors.length > 1 ? ' et al.' : ''} (${ref.year})</strong>
-                                ${isAlreadyUsed ? '<span style="color: #6c757d;"> [JÁ USADA]</span>' : ''}<br>
-                                <em>${ref.title}</em><br>
-                                <small style="color: #666;">
-                                    ${ref.abstract ? ref.abstract.substring(0, 120) + '...' : 'Sem resumo'}
-                                    ${ref.citationCount ? ` | ${ref.citationCount} citações` : ''}
-                                </small>
-                            </label>
-                        </li>
-                    `;
+                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                                <input type="checkbox" id="ref-${index}" value="${index}">
+                                <label for="ref-${index}">
+                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
+                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
+                                    <br><em>${ref.title}</em>
+                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                </label>
+                            </li>`;
                 }).join('');
                 elements.addReferencesBtn.disabled = false;
             }
         }
 
-        async function addSelectedReferences() {
-            const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked'))
-                .map(input => parseInt(input.value));
-            
-            if (selectedIndices.length === 0) {
-                alert('Selecione pelo menos uma referência.');
-                return;
-            }
+        // Adiciona as referências selecionadas no modal ao parágrafo
+        function addSelectedReferences() {
+            const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
+            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
 
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            const originalText = paragraphElement.textContent.trim();
-            const references = await fetchParagraphReferences(originalText, userInputs.titulo);
+            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
             
-            let cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
+            // **CORREÇÃO: Usa a lista de referências já carregada, sem nova busca**
+            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
             
-            const selectedRefs = selectedIndices.map(index => references[index]);
-            
+            // Formata as citações no padrão (SOBRENOME, ANO)
             const citations = selectedRefs.map(ref => {
-                const authors = ref.authors;
-                if (authors.length === 1) {
-                    const lastName = authors[0].split(' ').pop().toUpperCase();
-                    return `${lastName}, ${ref.year}`;
-                } else if (authors.length === 2) {
-                    const lastName1 = authors[0].split(' ').pop().toUpperCase();
-                    const lastName2 = authors[1].split(' ').pop().toUpperCase();
-                    return `${lastName1}; ${lastName2}, ${ref.year}`;
-                } else {
-                    const lastName1 = authors[0].split(' ').pop().toUpperCase();
-                    return `${lastName1} et al., ${ref.year}`;
-                }
+                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
             });
             
-            const finalText = `${cleanText} (${citations.join('; ')}).`;
+            // Remove citações antigas antes de adicionar a nova
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
             
-            paragraphElement.textContent = finalText;
-            
+            // Atualiza o conteúdo no estado da aplicação
             const [sectionKey, indexStr] = currentParagraphId.split('-');
-            const paragraphIndex = parseInt(indexStr);
-            if (articleContent[sectionKey] && articleContent[sectionKey][paragraphIndex] !== undefined) {
-                articleContent[sectionKey][paragraphIndex] = finalText;
-            }
+            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
             
-            selectedRefs.forEach(ref => {
-                if (!finalReferences.some(existingRef => existingRef.id === ref.id)) {
-                    finalReferences.push(ref);
-                }
-            });
+            // Adiciona novas referências à lista final, sem duplicatas
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
             
             displayABNTDocument();
             elements.referenceModal.style.display = 'none';
-            
-            log(`✅ ${selectedIndices.length} referência(s) adicionada(s) ao parágrafo!`, 'success');
+            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
 
+        // Formata a lista de referências final no padrão ABNT
         function formatarReferenciasABNT() {
-            const sortedReferences = [...finalReferences].sort((a, b) => {
-                const lastNameA = a.authors[0].split(' ').pop().toUpperCase();
-                const lastNameB = b.authors[0].split(' ').pop().toUpperCase();
-                return lastNameA.localeCompare(lastNameB);
-            });
-            
-            return sortedReferences
-                .map(ref => {
-                    const authors = ref.authors.map(author => {
-                        const names = author.split(' ');
-                        const lastName = names.pop().toUpperCase();
-                        const firstNames = names.join(' ');
-                        return `${lastName}, ${firstNames}`;
-                    });
-                    
-                    const authorsStr = authors.length > 3 
-                        ? `${authors[0]} et al.`
-                        : authors.join('; ');
-                    
-                    return `${authorsStr}. <em>${ref.title}</em>. ${ref.year}. Disponível em: ${ref.url}. Acesso em: jun. 2025.`;
-                })
-                .join('<br><br>');
+            const sortedReferences = [...finalReferences].sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()));
+            return sortedReferences.map(ref => {
+                const authors = ref.authors.map(author => {
+                    const names = author.split(' ');
+                    const lastName = names.pop().toUpperCase();
+                    return `${lastName}, ${names.join(' ')}`;
+                });
+                const authorStr = authors.length > 3 ? `${authors[0]} et al.` : authors.join('; ');
+                return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <${ref.url}>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}.`;
+            }).join('<br><br>');
         }
+        
+        // --- GERAÇÃO E EXIBIÇÃO DO CONTEÚDO ---
 
+        // Gera o resumo e o abstract com base no conteúdo completo
         async function generateResumoAndAbstract() {
-            log('Gerando resumo automático...', 'info');
-            
-            const allContent = Object.values(articleContent).flat().join(' ');
-            const titulo = userInputs.titulo;
-            
-            if (!allContent || allContent.length < 100) {
-                log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning');
-                return;
-            }
-            
             try {
-                const resumoPrompt = `
-                Baseado no título "${titulo}" e conteúdo "${allContent}", 
-                escreva um resumo acadêmico de 150-200 palavras seguindo ABNT:
-                - Foco temático, objetivo, método, resultados e conclusões
-                - NÃO use primeira pessoa
-                - Linguagem formal
-                - NÃO inclua citações
-                `;
-                
-                const resumo = await callGeminiAPI(resumoPrompt);
-                if (resumo) {
-                    // CORREÇÃO: Remove o título "Resumo" ou "**Resumo**:" do início do texto gerado pela IA.
-                    userInputs.resumo = resumo.replace(/^(?:\*\*)?Resumo(?:\*\*)?:?\s*/i, '').trim();
-                    
-                    const palavrasPrompt = `Com base no título "${titulo}" e resumo "${userInputs.resumo}", extraia 6 palavras-chave em português. Formato: Palavra1, Palavra2, Palavra3, Palavra4, Palavra5, Palavra6`;
-                    const palavrasChave = await callGeminiAPI(palavrasPrompt);
-                    
-                    if (palavrasChave) {
-                        userInputs.palavrasChave = palavrasChave.replace(/\.$/, '');
-                        
-                        const abstractPrompt = `Traduza para inglês acadêmico: "${userInputs.resumo}"`;
-                        const abstract = await callGeminiAPI(abstractPrompt);
-                        
-                        if (abstract) {
-                            // CORREÇÃO: Remove o título "Abstract" ou "**Abstract**:" do início do texto gerado pela IA.
-                            userInputs.abstract = abstract.replace(/^(?:\*\*)?Abstract(?:\*\*)?:?\s*/i, '').trim();
-                            
-                            const keywordsPrompt = `
-                            Traduza a expressão "${palavrasChave}" para o inglês, mantendo exatamente as mesmas 6 palavras-chave, mas em inglês acadêmico.
-                            Sua resposta deve conter APENAS as 6 palavras-chave traduzidas, separadas por vírgula, sem vírgula no final da última palavra.
-                            NÃO inclua explicações, números ou qualquer texto adicional.
+                log('Gerando resumo automático...', 'info');
+                const allContent = Object.values(articleContent).flat().join(' ');
+                if (allContent.length < 100) { log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning'); return; }
 
-                            Exemplo de formato desejado: Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Keyword6
+                const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões).`;
+                userInputs.resumo = await callPuterAI(resumoPrompt);
 
-                            Palavras-chave para traduzir: "${palavrasChave}"
-                            `;
-                            
-                            const keywords = await callGeminiAPI(keywordsPrompt);
-                            
-                            if (keywords) {
-                                userInputs.keywords = keywords;
-                                displayABNTDocument();
-                                log('✅ Resumo e abstract gerados!', 'success');
-                                return;
-                            }
-                        }
-                    }
-                }
+                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final.`;
+                userInputs.palavrasChave = await callPuterAI(palavrasPrompt);
                 
-                log('⚠️ Erro ao gerar resumo. Continue editando o artigo.', 'warning');
-                
+                const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
+                userInputs.abstract = await callPuterAI(abstractPrompt);
+
+                const keywordsPrompt = `Traduza para o inglês as seguintes palavras-chave: "${userInputs.palavrasChave}"`;
+                userInputs.keywords = await callPuterAI(keywordsPrompt);
+
+                log('✅ Resumo e abstract gerados!', 'success');
             } catch (error) {
-                console.error('Erro:', error);
-                log('⚠️ Erro ao gerar resumo. Verifique a conexão ou tente novamente.', 'error');
+                log('⚠️ Erro ao gerar resumo. Continue o artigo.', 'warning');
             }
         }
 
+        // Atualiza a visualização do documento ABNT na tela
         function displayABNTDocument() {
             let content = `
-                <div class="nome-universidade no-indent">${userInputs.universidade || ''}</div>
-                <div class="titulo-trabalho no-indent">${userInputs.titulo || ''}</div>
-                <div class="autor no-indent">${userInputs.autor || ''}<sup>1</sup></div>
+                <div class="nome-universidade">${userInputs.universidade || ''}</div>
+                <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
+                <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
             `;
-            
             if (userInputs.resumo) {
-                content += `
-                    <div class="resumo-titulo no-indent">Resumo</div>
-                    <div class="resumo-texto no-indent">${userInputs.resumo}</div>
-                `;
-                if (userInputs.palavrasChave) {
-                    content += `<div class="palavras-chave no-indent"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
-                }
-                
-                if (userInputs.abstract) {
-                    content += `
-                        <div class="abstract-titulo no-indent">Abstract</div>
-                        <div class="resumo-texto no-indent">${userInputs.abstract}</div>
-                    `;
-                    if (userInputs.keywords) {
-                        content += `<div class="keywords no-indent"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
-                    }
-                }
+                content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
+                if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}</div>`;
+                if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
+                if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
-            
-            const sections = [
-                { name: 'INTRODUÇÃO', key: 'introducao' },
-                { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' },
-                { name: 'CONCLUSÃO', key: 'conclusao' }
-            ];
-            
+            const sections = [{ name: 'INTRODUÇÃO', key: 'introducao' }, { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' }, { name: 'CONCLUSÃO', key: 'conclusao' }];
             sections.forEach(section => {
                 if (articleContent[section.key].length > 0) {
-                    content += `<div class="section-title no-indent">${section.name}</div>`;
+                    content += `<div class="section-title">${section.name}</div>`;
                     articleContent[section.key].forEach((text, index) => {
-                        const paragraphId = `${section.key}-${index}`;
-                        content += `<p data-id="${paragraphId}" title="💡 Clique para adicionar referências">${text}</p>`;
+                        content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
                     });
                 }
             });
-            
             if (finalReferences.length > 0) {
-                content += '<div class="section-title no-indent">REFERÊNCIAS</div>';
-                content += `<div class="no-indent" style="text-align: left;">${formatarReferenciasABNT()}</div>`;
+                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left;">${formatarReferenciasABNT()}</div>`;
             }
-            
             if (userInputs.email) {
                 content += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
             }
-            
             elements.outputDiv.innerHTML = content;
-            
-            // Definir o rodapé
-            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição de Ensino'}, ${userInputs.email || 'email@exemplo.com'}, jun.2025`;
+            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
+        }
+        
+        // --- FUNÇÕES DE SALVAMENTO ---
+        function generateCompleteArticleHTML() {
+            const styles = Array.from(document.styleSheets).map(sheet => { try { return Array.from(sheet.cssRules).map(rule => rule.cssText).join(''); } catch (e) { return ''; } }).join('\n');
+            const contentHTML = document.getElementById('content-output').innerHTML;
+            return `<!DOCTYPE html><html lang="pt-br"><head><meta charset="UTF-8"><title>${userInputs.titulo||'Artigo'}</title><style>${styles}</style></head><body><div class="page-container"><div class="abnt-content">${contentHTML}</div></div></body></html>`;
+        }
+        
+        async function saveArticleToPuter() {
+            const filename = elements.filenameInput.value;
+            if (!filename) { log('❌ Insira um nome para o arquivo.', 'error'); return; }
+
+            try {
+                log('💾 Autenticando com Puter...', 'info');
+                const articleHTML = generateCompleteArticleHTML();
+                const filePath = `~/Desktop/${filename}`;
+
+                log(`🔄 Salvando arquivo em ${filePath}...`, 'info');
+                await puter.fs.write(filePath, articleHTML, { overwrite: true });
+                
+                log(`✅ Artigo salvo com sucesso em ${filePath}!`, 'success');
+                alert(`Artigo salvo como '${filename}' na sua área de trabalho do Puter.`);
+            } catch (error) {
+                console.error('Erro ao salvar no Puter:', error);
+                log(`❌ Erro ao salvar: ${error.message || 'Erro desconhecido.'}`, 'error');
+            }
         }
 
-        // --- EVENTOS PRINCIPAIS ---
-        
-        // Teste da API
-        elements.testApiBtn.addEventListener('click', testGeminiAPI);
+        // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
 
-        // Iniciar artigo
+        // Botão "Iniciar Artigo"
         elements.startBtn.addEventListener('click', async () => {
             userInputs = {
                 universidade: document.getElementById('universidade').value,
@@ -838,308 +474,88 @@
                 email: document.getElementById('email').value
             };
             
-            if (!userInputs.titulo || !userInputs.autor) {
-                log('❌ Preencha título e autor.', 'error');
-                return;
-            }
-
-            const provider = elements.apiProvider.value;
-            
-            // Validações específicas por modo
-            if (provider === 'gemini' && !apiTested) {
-                log('⚠️ Teste a API primeiro', 'warning');
-                return;
-            }
-            
-            if (provider === 'custom') {
-                const customText = document.getElementById('customText').value.trim();
-                if (!customText) {
-                    log('⚠️ Digite seu texto personalizado', 'warning');
-                    return;
-                }
-            }
-
+            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
             elements.startBtn.disabled = true;
-            log('🔄 Iniciando artigo...', 'info');
 
             try {
-                let content = '';
-
-                if (provider === 'gemini') {
-                    // Corrigir título e gerar sugestões
-                    const titlePrompt = `
-                    Com base no título "${userInputs.titulo}", faça o seguinte:
-                    1. Corrija gramaticalmente o título original, mantendo exatamente o mesmo significado e tema, ajustando apenas erros gramaticais, ortográficos ou de estilo para uma linguagem acadêmica clara e formal, sem criar um novo título.
-                    2. Gere 9 sugestões de títulos acadêmicos baseados no mesmo significado e tema do título original, com linguagem formal, variando perspectivas ou enfoques, mas mantendo a essência do tema.
-                    Formato da resposta:
-                    Título Corrigido: [Título corrigido gramaticalmente]
-                    Sugestões de Títulos:
-                    1. [Título 1]
-                    2. [Título 2]
-                    3. [Título 3]
-                    4. [Título 4]
-                    5. [Título 5]
-                    6. [Título 6]
-                    7. [Título 7]
-                    8. [Título 8]
-                    9. [Título 9]
-                    `;
-                    
-                    log('Corrigindo título e gerando sugestões...', 'info');
-                    const titleResponse = await callGeminiAPI(titlePrompt);
-                    let correctedTitle = userInputs.titulo;
-                    let suggestions = [];
-                    
-                    if (titleResponse) {
-                        const lines = titleResponse.split('\n');
-                        lines.forEach(line => {
-                            if (line.startsWith('Título Corrigido:')) {
-                                correctedTitle = line.replace('Título Corrigido:', '').trim();
-                            } else if (line.match(/^\d+\.\s/)) {
-                                suggestions.push(line.replace(/^\d+\.\s/, '').trim());
-                            }
-                        });
-                    }
-
-                    userInputs.titulo = correctedTitle;
-
-                    log(`Título Corrigido: ${correctedTitle}`, 'success');
-                    
-                    // Gerar introdução
-                    const prompt = `
-                    Escreva um parágrafo acadêmico de introdução para o artigo com o título "${userInputs.titulo}".
-                    - Deve ter entre 80 e 120 palavras.
-                    - Use linguagem formal e acadêmica.
-                    - Não inclua citações.
-                    - O parágrafo deve contextualizar o tema e justificar a importância da pesquisa.
-                    `;
-                    
-                    content = await callGeminiAPI(prompt);
-                    
-                } else if (provider === 'offline') {
-                    const tema = document.getElementById('tema').value.trim() || userInputs.titulo;
-                    content = generateOfflineContent(tema, 0);
-                    
-                } else if (provider === 'custom') {
-                    content = document.getElementById('customText').value.trim();
-                }
-
-                if (!content) {
-                    throw new Error('Conteúdo vazio gerado');
-                }
-
+                const prompt = `Escreva um parágrafo acadêmico de introdução para o artigo "${userInputs.titulo}". O parágrafo deve ter entre 80-120 palavras, usar linguagem formal e contextualizar o tema, sem citações.`;
+                const content = await callPuterAI(prompt);
+                
                 articleContent.introducao.push(content);
                 displayABNTDocument();
                 
                 document.getElementById('initial-form').style.display = 'none';
                 document.getElementById('interactive-controls').style.display = 'block';
                 elements.currentSectionNameSpan.textContent = 'Introdução';
-                
                 log('✅ Artigo iniciado com sucesso!', 'success');
-
             } catch (error) {
-                log(`❌ Erro: ${error.message}`, 'error');
-                
-                // Fallback automático para offline se Gemini falhar
-                if (provider === 'gemini') {
-                    log('🔄 Tentando modo offline...', 'warning');
-                    setTimeout(() => {
-                        elements.apiProvider.value = 'offline';
-                        elements.apiProvider.dispatchEvent(new Event('change'));
-                        document.getElementById('tema').value = userInputs.titulo;
-                    }, 2000);
-                }
-                
-            } finally {
                 elements.startBtn.disabled = false;
             }
         });
 
-        // Continuar seção
-        elements.continueBtn.addEventListener('click', async () => {
-            const provider = elements.apiProvider.value;
+        // Lógica para gerar novos parágrafos (continuação ou conclusão de seção)
+        async function handleSectionGeneration(type) {
+            const btn = type === 'continue' ? elements.continueBtn : elements.concludeBtn;
+            btn.disabled = true;
             
-            elements.continueBtn.disabled = true;
-            log('🔄 Adicionando parágrafo...', 'info');
-
-            try {
-                let content = '';
-
-                if (provider === 'gemini') {
-                    const sectionNames = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' };
-                    const sectionName = sectionNames[currentSection];
-                    const fullArticleText = Object.values(articleContent).flat().join(' ');
-                    
-                    const prompt = `
-                    Artigo: "${userInputs.titulo}"
-                    Conteúdo já escrito: "${fullArticleText}"
-
-                    Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionName}".
-                    
-                    **Instrução Crítica: O novo parágrafo deve ser 100% ÚNICO.**
-                    - **NÃO REPITA** frases, ideias ou argumentos já presentes no "Conteúdo já escrito".
-                    - Introduza um novo ponto de vista, um novo dado, um exemplo específico ou aprofunde um conceito de forma original.
-                    - Mantenha a linguagem formal e acadêmica.
-                    - Tamanho: 80-120 palavras.
-                    - Não use citações nem palavras de finalização de seção.
-                    `;
-                    
-                    content = await callGeminiAPI(prompt);
-                    
-                } else if (provider === 'offline') {
-                    const tema = document.getElementById('tema').value.trim() || userInputs.titulo;
-                    const currentIndex = sectionOrder.indexOf(currentSection);
-                    content = generateOfflineContent(tema, currentIndex);
-                    
-                } else if (provider === 'custom') {
-                    content = prompt(`Digite o próximo parágrafo para a seção ${currentSection}:`);
-                }
-
-                if (content) {
-                    articleContent[currentSection].push(content);
-                    displayABNTDocument();
-                    log('✅ Parágrafo único adicionado!', 'success');
-                }
-
-            } catch (error) {
-                log(`❌ Erro: ${error.message}`, 'error');
-            } finally {
-                elements.continueBtn.disabled = false;
-            }
-        });
-
-        // Finalizar seção
-        elements.concludeBtn.addEventListener('click', async () => {
-            const provider = elements.apiProvider.value;
+            const sectionName = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' }[currentSection];
+            const fullArticleText = Object.values(articleContent).flat().join(' ');
             
-            elements.concludeBtn.disabled = true;
-            log('🔄 Finalizando seção...', 'info');
-
+            let actionText = type === 'continue' ? 'o PRÓXIMO parágrafo' : 'um parágrafo de FINALIZAÇÃO';
+            let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
+            const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ser único, ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
+            
             try {
-                let content = '';
+                const content = await callPuterAI(prompt);
+                articleContent[currentSection].push(content);
+                displayABNTDocument();
+                log(`✅ Parágrafo de ${type === 'continue' ? 'continuação' : 'conclusão'} adicionado!`, 'success');
+            } catch (error) { /* Erro já logado por callPuterAI */ } 
+            finally { btn.disabled = false; }
+        }
 
-                if (provider === 'gemini') {
-                    const sectionNames = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' };
-                    const sectionName = sectionNames[currentSection];
-                    const fullArticleText = Object.values(articleContent).flat().join(' ');
-
-                    const prompt = `
-                    Artigo: "${userInputs.titulo}"
-                    Conteúdo já escrito: "${fullArticleText}"
-
-                    Sua tarefa é escrever um parágrafo de **FINALIZAÇÃO** para a seção de "${sectionName}".
-
-                    **Instrução Crítica: O parágrafo deve ser ÚNICO e conclusivo.**
-                    - **NÃO REPITA** o que já foi dito. Em vez disso, sintetize as ideias principais da seção de uma nova maneira.
-                    - Use conectivos de conclusão (ex: "Portanto", "Dessa forma", "Em suma").
-                    - O parágrafo deve amarrar os pontos discutidos na seção sem introduzir informação totalmente nova.
-                    - Tamanho: 80-120 palavras.
-                    - Não use citações.
-                    `;
-                    
-                    content = await callGeminiAPI(prompt);
-                    
-                } else if (provider === 'offline') {
-                    const tema = document.getElementById('tema').value.trim() || userInputs.titulo;
-                    const currentIndex = sectionOrder.indexOf(currentSection);
-                    content = generateOfflineContent(tema, currentIndex);
-                    
-                } else if (provider === 'custom') {
-                    content = prompt(`Digite o parágrafo de finalização para a seção ${currentSection}:`);
-                }
-
-                if (content) {
-                    articleContent[currentSection].push(content);
-                    displayABNTDocument();
-                    log('✅ Parágrafo de finalização adicionado!', 'success');
-                }
-
-            } catch (error) {
-                log(`❌ Erro: ${error.message}`, 'error');
-            } finally {
-                elements.concludeBtn.disabled = false;
-            }
-        });
-
-        // Próxima seção
+        elements.continueBtn.addEventListener('click', () => handleSectionGeneration('continue'));
+        elements.concludeBtn.addEventListener('click', () => handleSectionGeneration('conclude'));
+        
+        // Botão "Próxima Seção"
         elements.finalizeBtn.addEventListener('click', async () => {
             const currentIndex = sectionOrder.indexOf(currentSection);
-            
             if (currentIndex < sectionOrder.length - 1) {
                 currentSection = sectionOrder[currentIndex + 1];
-                const sectionDisplayNames = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
-                const sectionDisplayName = sectionDisplayNames[currentSection];
+                const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
                 elements.currentSectionNameSpan.textContent = sectionDisplayName;
-                
-                // Auto-gerar primeiro parágrafo da nova seção
-                const provider = elements.apiProvider.value;
+
+                const fullArticleText = Object.values(articleContent).flat().join(' ');
+                const prompt = `Com base no artigo já escrito: "${fullArticleText}". Escreva o parágrafo INICIAL da nova seção: "${sectionDisplayName}". O parágrafo deve ser uma transição, conectando com o anterior e apresentando o que será abordado. Tamanho: 80-120 palavras.`;
                 
                 try {
-                    let content = '';
-
-                    if (provider === 'gemini') {
-                        const fullArticleText = Object.values(articleContent).flat().join(' ');
-
-                        const prompt = `
-                        Artigo: "${userInputs.titulo}"
-                        Conteúdo já escrito nas seções anteriores: "${fullArticleText}"
-
-                        Sua tarefa é escrever o parágrafo **INICIAL** da nova seção: "${sectionDisplayName}".
-
-                        **Instrução Crítica: Este parágrafo deve ser uma transição e introdução ÚNICA.**
-                        - Conecte-se brevemente com a seção anterior, mas **NÃO REPITA** o que foi dito.
-                        - Apresente claramente o que será abordado NESTA nova seção.
-                        - Evite frases genéricas. Seja específico sobre os tópicos do ${sectionDisplayName}.
-                        - Tamanho: 80-120 palavras.
-                        - Não use citações.
-                        `;
-                        
-                        content = await callGeminiAPI(prompt);
-                        
-                    } else if (provider === 'offline') {
-                        const tema = document.getElementById('tema').value.trim() || userInputs.titulo;
-                        content = generateOfflineContent(tema, currentIndex + 1);
-                        
-                    } else if (provider === 'custom') {
-                        content = prompt(`Digite o parágrafo inicial para a seção ${sectionDisplayName}:`);
-                    }
-                    
-                    if (content) {
-                        articleContent[currentSection].push(content);
-                        displayABNTDocument();
-                        log(`✅ ${sectionDisplayName} iniciada!`, 'success');
-                    }
-                    
-                } catch (error) {
-                    log(`⚠️ Erro ao gerar ${sectionDisplayName}. Continue manualmente.`, 'warning');
-                }
-                
+                    const content = await callPuterAI(prompt);
+                    articleContent[currentSection].push(content);
+                    displayABNTDocument();
+                    log(`✅ Seção '${sectionDisplayName}' iniciada!`, 'success');
+                } catch (error) { /* Erro já logado */ }
             } else {
                 elements.finalizeBtn.style.display = 'none';
                 elements.continueBtn.disabled = true;
                 elements.concludeBtn.disabled = true;
-                
-                // Gerar resumo apenas se usar Gemini
-                if (elements.apiProvider.value === 'gemini') {
-                    await generateResumoAndAbstract();
-                }
-                
+                await generateResumoAndAbstract();
+                displayABNTDocument(); // Atualiza a tela com o resumo
                 elements.finishBtn.style.display = 'block';
             }
         });
-
-        // Finalizar artigo
+        
+        // Botão "Finalizar Artigo"
         elements.finishBtn.addEventListener('click', () => {
-            const totalRefs = finalReferences.length;
-            const totalParagraphs = Object.values(articleContent).flat().length;
-            
-            alert(`🎉 Artigo ABNT finalizado!\n\n📊 Estatísticas:\n• ${totalParagraphs} parágrafos únicos\n• ${totalRefs} referências AUTOR-DATA\n• Formatação ABNT rigorosa\n\n💾 Agora você pode usar os botões "Salvar como PDF" ou "Salvar como DOCX".`);
-            log(`🎓 Artigo concluído: ${totalParagraphs} parágrafos, ${totalRefs} referências!`, 'success');
+            const sanitizedTitle = userInputs.titulo.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            elements.filenameInput.value = `${sanitizedTitle || 'artigo'}.html`;
+            alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF ou no seu Puter.`);
+            log(`🎓 Artigo concluído!`, 'success');
         });
+        
+        // --- OUTROS EVENTOS ---
 
-        // Eventos de clique nos parágrafos para adicionar referências
+        // Clique em um parágrafo para adicionar referência
         elements.outputDiv.addEventListener('click', (e) => {
-            e.stopPropagation();
             const paragraph = e.target.closest('p[data-id]');
             if (paragraph) {
                 const paragraphId = paragraph.dataset.id;
@@ -1147,240 +563,20 @@
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
             }
         });
-
-        // Eventos do modal de referências
+        
         elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
-        elements.closeModalBtn.addEventListener('click', () => { 
-            elements.referenceModal.style.display = 'none'; 
-        });
-        elements.referenceModal.addEventListener('click', (e) => { 
-            if (e.target === elements.referenceModal) { 
-                elements.referenceModal.style.display = 'none'; 
-            } 
-        });
+        elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
+        elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
 
-        // --- EVENTOS PARA SALVAR ---
         elements.savePdfBtn.addEventListener('click', () => {
-            alert('A caixa de diálogo de impressão será aberta.\n\nPara salvar como PDF com a formatação correta:\n1. Em "Destino", escolha "Salvar como PDF".\n2. Em "Mais configurações", DESMARQUE a opção "Cabeçalhos e rodapés".\nO rodapé personalizado será incluído automaticamente.\nAs margens ABNT já estão configuradas.');
+            alert('A caixa de diálogo de impressão será aberta.\n\nPara salvar como PDF:\n1. Em "Destino", escolha "Salvar como PDF".\n2. Em "Mais configurações", DESMARQUE a opção "Cabeçalhos e rodapés".');
             window.print();
         });
 
-        elements.saveDocBtn.addEventListener('click', () => {
-            window.open('https://www.ilovepdf.com/pt/pdf_para_word', '_blank');
-        });
-
-        function generateWordHTML() {
-            return `<!DOCTYPE html>
-<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-<head>
-    <meta charset="utf-8">
-    <title>${userInputs.titulo}</title>
-    <!--[if gte mso 9]>
-    <xml>
-        <w:WordDocument>
-            <w:View>Print</w:View>
-            <w:Zoom>90</w:Zoom>
-            <w:DoNotPromptForConvert/>
-            <w:DoNotShowInsertionsAndDeletions/>
-        </w:WordDocument>
-    </xml>
-    <![endif]-->
-    <style>
-        @page {
-            margin: 3cm 2cm 2cm 3cm;
-            size: A4;
-        }
-        body {
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            margin: 0;
-            padding: 0;
-        }
-        .center { text-align: center; }
-        .bold { font-weight: bold; }
-        .italic { font-style: italic; }
-        .justify { text-align: justify; }
-        .uppercase { text-transform: uppercase; }
-        .paragraph {
-            text-align: justify;
-            text-indent: 1.25cm;
-            margin-bottom: 12pt;
-            line-height: 1.5;
-        }
-        .no-indent {
-            text-indent: 0 !important;
-        }
-        .section-title {
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-top: 24pt;
-            margin-bottom: 12pt;
-            text-indent: 0;
-        }
-        .reference {
-            text-align: justify;
-            margin-bottom: 12pt;
-            padding-left: 1cm;
-            text-indent: -1cm;
-            line-height: 1.5;
-        }
-        .footer {
-            border-top: 1pt solid black;
-            padding-top: 10pt;
-            margin-top: 40pt;
-            font-size: 10pt;
-        }
-    </style>
-</head>
-<body>
-    <div class="center bold">${userInputs.universidade}</div>
-    <br>
-    <div class="center bold" style="font-size: 14pt;">${userInputs.titulo}</div>
-    <br>
-    <div class="center">${userInputs.autor}<sup>1</sup></div>
-    <br><br>
-
-    ${userInputs.resumo ? `
-    <div class="bold">Resumo</div>
-    <div class="justify no-indent">${userInputs.resumo}</div>
-    <div class="no-indent"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>
-    <br>
-
-    <div class="bold italic">Abstract</div>
-    <div class="justify no-indent">${userInputs.abstract}</div>
-    <div class="no-indent italic"><strong>Keywords:</strong> ${userInputs.keywords}.</div>
-    <br><br>
-    ` : ''}
-
-    ${generateSectionsHTML()}
-
-    ${finalReferences.length > 0 ? `
-    <div class="section-title">REFERÊNCIAS</div>
-    ${generateReferencesHTML()}
-    ` : ''}
-
-    <div class="footer">
-        <sup>1</sup> ${userInputs.universidade}, ${userInputs.email}
-    </div>
-</body>
-</html>`;
-        }
-
-        function generateSectionsHTML() {
-            const sections = [
-                { name: 'INTRODUÇÃO', key: 'introducao' },
-                { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' },
-                { name: 'CONCLUSÃO', key: 'conclusao' }
-            ];
-
-            let html = '';
-            sections.forEach(section => {
-                if (articleContent[section.key].length > 0) {
-                    html += `<div class="section-title">${section.name}</div>`;
-                    articleContent[section.key].forEach(text => {
-                        html += `<div class="paragraph">${text}</div>`;
-                    });
-                }
-            });
-            return html;
-        }
-
-        function generateReferencesHTML() {
-            const sortedRefs = [...finalReferences].sort((a, b) => {
-                const lastNameA = a.authors[0].split(' ').pop().toUpperCase();
-                const lastNameB = b.authors[0].split(' ').pop().toUpperCase();
-                return lastNameA.localeCompare(lastNameB);
-            });
-
-            return sortedRefs.map(ref => {
-                const authors = ref.authors.map(author => {
-                    const names = author.split(' ');
-                    const lastName = names.pop().toUpperCase();
-                    const firstNames = names.join(' ');
-                    return `${lastName}, ${firstNames}`;
-                });
-
-                const authorsStr = authors.length > 3 ? `${authors[0]} et al.` : authors.join('; ');
-                return `<div class="reference">${authorsStr}. <em>${ref.title}</em>. ${ref.year}. Disponível em: ${ref.url}. Acesso em: jun. 2025.</div>`;
-            }).join('');
-        }
-
-        function generateRTFContent() {
-            const rtfHeader = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}`;
-            const rtfFooter = `}`;
-            
-            let content = `\\f0\\fs24`; // Times New Roman, 12pt
-            
-            // Universidade
-            content += `\\qc\\b ${userInputs.universidade}\\b0\\par\\par`;
-            
-            // Título  
-            content += `\\qc\\b\\fs28 ${userInputs.titulo}\\b0\\fs24\\par\\par`;
-            
-            // Autor
-            content += `\\qc ${userInputs.autor}\\super 1\\nosupersub\\par\\par\\par`;
-            
-            // Resumo
-            if (userInputs.resumo) {
-                content += `\\ql\\b Resumo\\b0\\par`;
-                content += `\\qj ${userInputs.resumo}\\par`;
-                content += `\\ql\\b Palavras-chave:\\b0 ${userInputs.palavrasChave}.\\par\\par`;
-                
-                content += `\\ql\\b\\i Abstract\\b0\\i0\\par`;
-                content += `\\qj ${userInputs.abstract}\\par`;
-                content += `\\ql\\b\\i Keywords:\\b0\\i0 ${userInputs.keywords}.\\par\\par\\par`;
-            }
-            
-            // Seções
-            const sections = [
-                { name: 'INTRODUÇÃO', key: 'introducao' },
-                { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' },
-                { name: 'CONCLUSÃO', key: 'conclusao' }
-            ];
-            
-            sections.forEach(section => {
-                if (articleContent[section.key].length > 0) {
-                    content += `\\ql\\b ${section.name}\\b0\\par\\par`;
-                    articleContent[section.key].forEach(text => {
-                        content += `\\qj\\fi708 ${text.replace(/&/g, '\\&')}\\par\\par`;
-                    });
-                }
-            });
-            
-            // Referências
-            if (finalReferences.length > 0) {
-                content += `\\ql\\b REFERÊNCIAS\\b0\\par\\par`;
-                const sortedRefs = [...finalReferences].sort((a, b) => {
-                    const lastNameA = a.authors[0].split(' ').pop().toUpperCase();
-                    const lastNameB = b.authors[0].split(' ').pop().toUpperCase();
-                    return lastNameA.localeCompare(lastNameB);
-                });
-                
-                sortedRefs.forEach(ref => {
-                    const authors = ref.authors.map(author => {
-                        const names = author.split(' ');
-                        const lastName = names.pop().toUpperCase();
-                        const firstNames = names.join(' ');
-                        return `${lastName}, ${firstNames}`;
-                    });
-                    const authorsStr = authors.length > 3 ? `${authors[0]} et al.` : authors.join('; ');
-                    content += `\\qj\\li567\\fi-567 ${authorsStr}. \\i ${ref.title}\\i0. ${ref.year}. Disponível em: ${ref.url}. Acesso em: jun. 2025.\\par\\par`;
-                });
-            }
-            
-            // Rodapé
-            content += `\\par\\par\\brdrt\\brdrs\\brdrw10\\par`;
-            content += `\\fs20\\super 1\\nosupersub ${userInputs.universidade}, ${userInputs.email}\\fs24`;
-            
-            return rtfHeader + content + rtfFooter;
-        }
+        elements.saveToPuterBtn.addEventListener('click', saveArticleToPuter);
 
         // --- INICIALIZAÇÃO ---
-        log('🎯 Preencha os dados e escolha o modo de geração', 'info');
-
-        // Configurar estado inicial dos elementos
-        elements.startBtn.disabled = false;
+        log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
     </script>
 </body>
 </html>
