@@ -44,14 +44,28 @@
         .control-panel button:hover { background-color: #1765cc; }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
         #interactive-controls button { margin-top: 10px; }
-        #continueBtn { background-color: #28a745; }
-        #continueBtn:hover { background-color: #218838; }
-        #concludeBtn { background-color: #fd7e14; }
-        #concludeBtn:hover { background-color: #e8681b; }
+        
+        /* Estilos específicos para os novos botões */
+        #inicioBtn { background-color: #28a745; }
+        #inicioBtn:hover { background-color: #218838; }
+        #meioBtn { background-color: #007bff; }
+        #meioBtn:hover { background-color: #0056b3; }
+        #fimBtn { background-color: #dc3545; }
+        #fimBtn:hover { background-color: #c82333; }
         #finalizeBtn { background-color: #ffc107; color: black; }
         #finalizeBtn:hover { background-color: #e0a800; }
-        #finishBtn { background-color: #dc3545; }
-        #finishBtn:hover { background-color: #c82333; }
+
+        /* Estilo para contador de páginas */
+        .page-counter { 
+            background-color: #e8f4fd; 
+            padding: 10px; 
+            border-radius: 4px; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            font-weight: bold; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb;
+        }
 
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -127,14 +141,24 @@
             </div>
             
             <div id="interactive-controls" style="display: none;">
-                <h2>📝 Modo Interativo</h2>
-                <p>Trabalhando em: <strong id="current-section-name"></strong></p>
-                <button id="continueBtn">➕ Adicionar Parágrafo</button>
-                <button id="concludeBtn">🔚 Finalizar Seção</button>
+                <h2>📝 Controle de Escrita</h2>
+                
+                <!-- Contador de páginas -->
+                <div class="page-counter">
+                    📄 Páginas: <span id="page-count">1</span>
+                </div>
+                
+                <p>Seção atual: <strong id="current-section-name"></strong></p>
+                
+                <!-- Novos botões simplificados -->
+                <button id="inicioBtn">🌟 INÍCIO</button>
+                <button id="meioBtn">📝 MEIO</button>
+                <button id="fimBtn">🎯 FIM</button>
                 <button id="finalizeBtn">⏭ Próxima Seção</button>
-                <button id="finishBtn" style="display: none;">✅ Finalizar Artigo</button>
+                
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">
-                    💡 Clique nos parágrafos para adicionar referências
+                    💡 Clique nos parágrafos para adicionar referências<br>
+                    🔍 Sistema anti-repetição ativado
                 </div>
             </div>
 
@@ -158,7 +182,8 @@
                     <strong>2. Clique em "Iniciar e Otimizar Tema":</strong> Nossa IA irá analisar, corrigir e sugerir melhorias para o seu tema.<br>
                     <strong>3. Autenticação:</strong> Se necessário, uma janela de login do Puter aparecerá.<br><br>
                     ---<br><br>
-                    ✅ Geração de conteúdo com a IA do Puter
+                    ✅ Geração de conteúdo com a IA do Puter<br>
+                    🔍 Sistema avançado anti-repetição
                 </p>
             </div>
             <div id="footer"></div>
@@ -181,7 +206,7 @@
             </div>
         </div>
 
-        <!-- NOVO MODAL PARA SUGESTÕES DE TEMA -->
+        <!-- MODAL PARA SUGESTÕES DE TEMA -->
         <div id="topic-suggestion-modal" class="modal">
             <div class="modal-content">
                 <h3>✨ Sugestões para o seu Tema</h3>
@@ -198,13 +223,14 @@
         // --- ELEMENTOS DA UI ---
         const elements = {
             startBtn: document.getElementById('startBtn'),
-            continueBtn: document.getElementById('continueBtn'),
-            concludeBtn: document.getElementById('concludeBtn'),
+            inicioBtn: document.getElementById('inicioBtn'),
+            meioBtn: document.getElementById('meioBtn'),
+            fimBtn: document.getElementById('fimBtn'),
             finalizeBtn: document.getElementById('finalizeBtn'),
-            finishBtn: document.getElementById('finishBtn'),
             outputDiv: document.getElementById('content-output'),
             statusDiv: document.getElementById('status'),
             currentSectionNameSpan: document.getElementById('current-section-name'),
+            pageCountSpan: document.getElementById('page-count'),
             referenceModal: document.getElementById('reference-modal'),
             referenceList: document.getElementById('reference-list'),
             addReferencesBtn: document.getElementById('add-references-btn'),
@@ -213,7 +239,6 @@
             duplicateWarningDiv: document.getElementById('duplicate-warning'),
             savePdfBtn: document.getElementById('savePdfBtn'),
             footerDiv: document.getElementById('footer'),
-            // Elementos do novo modal de temas
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
@@ -227,6 +252,8 @@
         let currentSection = 'introducao';
         let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
         let currentModalReferences = [];
+        let usedPhrases = new Set(); // Para controle de repetições
+        let sectionPhaseMap = { introducao: 'inicio', desenvolvimento: 'meio', conclusao: 'fim' };
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -248,6 +275,71 @@
                 }
                 throw error;
             }
+        }
+
+        // --- SISTEMA ANTI-REPETIÇÃO ---
+        function extractKeyPhrases(text) {
+            // Remove citações e pontuação, converte para minúsculas
+            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
+            
+            // Extrai frases de 3-5 palavras consecutivas
+            const phrases = [];
+            for (let i = 0; i < words.length - 2; i++) {
+                phrases.push(words.slice(i, i + 3).join(' '));
+                if (i < words.length - 3) phrases.push(words.slice(i, i + 4).join(' '));
+                if (i < words.length - 4) phrases.push(words.slice(i, i + 5).join(' '));
+            }
+            return phrases;
+        }
+
+        function addPhrasesToMemory(text) {
+            const phrases = extractKeyPhrases(text);
+            phrases.forEach(phrase => usedPhrases.add(phrase));
+        }
+
+        function createAntiRepetitionPrompt(phase) {
+            const allContent = Object.values(articleContent).flat().join(' ');
+            const usedPhrasesArray = Array.from(usedPhrases);
+            
+            let phaseInstructions = '';
+            switch(phase) {
+                case 'inicio':
+                    phaseInstructions = 'Este é um parágrafo de INÍCIO/ABERTURA da seção. Deve apresentar e contextualizar o tema de forma introdutória.';
+                    break;
+                case 'meio':
+                    phaseInstructions = 'Este é um parágrafo de DESENVOLVIMENTO/MEIO da seção. Deve expandir, detalhar ou aprofundar as ideias já apresentadas, SEM repetir conceitos.';
+                    break;
+                case 'fim':
+                    phaseInstructions = 'Este é um parágrafo de FINALIZAÇÃO da seção. Deve sintetizar, concluir ou fazer transição, usando conectivos de fechamento.';
+                    break;
+            }
+
+            return `
+INSTRUÇÕES CRÍTICAS PARA ESCRITA ACADÊMICA:
+
+${phaseInstructions}
+
+ARTIGO: "${userInputs.titulo}"
+CONTEÚDO JÁ ESCRITO: "${allContent}"
+
+REGRAS OBRIGATÓRIAS:
+1. NUNCA repita as seguintes expressões já usadas: [${usedPhrasesArray.slice(-20).join(', ')}]
+2. EVITE palavras e conceitos muito similares aos já escritos
+3. Use sinônimos, reformule ideias de forma original
+4. Mantenha coerência acadêmica com formalidade científica
+5. 80-120 palavras, sem citações
+6. Varie estruturas sintáticas (não comece todos os períodos igual)
+
+ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
+        }
+
+        // --- CONTADOR DE PÁGINAS ---
+        function updatePageCount() {
+            const contentHeight = elements.outputDiv.scrollHeight;
+            const pageHeight = 800; // Altura aproximada de uma página A4 em pixels
+            const pages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+            elements.pageCountSpan.textContent = pages;
         }
 
         // --- FUNÇÕES AUXILIARES DE FEEDBACK ---
@@ -407,14 +499,11 @@
                 
                 const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
                 const rawPalavrasChave = await callPuterAI(palavrasPrompt);
-                userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, ''); // Garante que não há ponto no final
+                userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, '');
 
                 const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
 
-                // --- CORREÇÃO APLICADA ---
-                // O prompt anterior era muito simples. Este novo prompt inclui exemplos (few-shot)
-                // para guiar a IA, usando as palavras que você indicou, garantindo maior precisão na tradução.
                 const keywordsPrompt = `
 Traduza as seguintes palavras-chave do português para o inglês.
 Responda APENAS com as palavras-chave traduzidas, separadas por ponto final. Não inclua texto introdutório como "Keywords:" e não termine a lista com um ponto.
@@ -430,7 +519,6 @@ Agora traduza o seguinte:
 Input: "${userInputs.palavrasChave}"
 Output:`;
                 const translatedKeywords = await callPuterAI(keywordsPrompt);
-                // Limpa a resposta da IA para garantir que apenas o conteúdo desejado seja salvo
                 userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
                 
                 log('✅ Resumo e abstract gerados!', 'success');
@@ -447,8 +535,6 @@ Output:`;
             `;
             if (userInputs.resumo) {
                 content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
-                // --- CORREÇÃO APLICADA ---
-                // Adicionado um ponto final para seguir a norma ABNT corretamente.
                 if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
                 if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
                 if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
@@ -470,13 +556,19 @@ Output:`;
             }
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
+            
+            // Atualiza contador de páginas
+            setTimeout(updatePageCount, 100);
         }
         
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
             try {
-                const prompt = `Escreva um parágrafo acadêmico de introdução para o artigo "${userInputs.titulo}". O parágrafo deve ter entre 80-120 palavras, usar linguagem formal e contextualizar o tema, sem citações.`;
+                const prompt = createAntiRepetitionPrompt('inicio');
                 const content = await callPuterAI(prompt);
+                
+                // Adiciona frases à memória anti-repetição
+                addPhrasesToMemory(content);
                 
                 articleContent.introducao.push(content);
                 displayABNTDocument();
@@ -504,7 +596,7 @@ Output:`;
                 if (topicData.suggestions.length > 0) {
                     populateAndShowTopicModal(topicData, userInputs.titulo);
                 } else {
-                    await proceedWithArticleGeneration(); // Procede direto se não houver sugestões
+                    await proceedWithArticleGeneration();
                 }
             } catch (error) {
                 await proceedWithArticleGeneration();
@@ -520,25 +612,34 @@ Output:`;
             proceedWithArticleGeneration();
         });
 
-        async function handleSectionGeneration(type) {
-            const btn = type === 'continue' ? elements.continueBtn : elements.concludeBtn;
+        // --- NOVOS EVENTOS PARA OS BOTÕES INÍCIO, MEIO, FIM ---
+        async function handleParagraphGeneration(phase) {
+            const buttonMap = { inicio: elements.inicioBtn, meio: elements.meioBtn, fim: elements.fimBtn };
+            const btn = buttonMap[phase];
             btn.disabled = true;
-            const sectionName = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' }[currentSection];
-            const fullArticleText = Object.values(articleContent).flat().join(' ');
-            let actionText = type === 'continue' ? 'o PRÓXIMO parágrafo' : 'um parágrafo de FINALIZAÇÃO';
-            let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
-            const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ser único, ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
+            
             try {
+                const prompt = createAntiRepetitionPrompt(phase);
                 const content = await callPuterAI(prompt);
+                
+                // Adiciona frases à memória anti-repetição
+                addPhrasesToMemory(content);
+                
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
-                log(`✅ Parágrafo de ${type === 'continue' ? 'continuação' : 'conclusão'} adicionado!`, 'success');
-            } catch (error) { /* Erro já logado */ } 
-            finally { btn.disabled = false; }
+                
+                const phaseLabels = { inicio: 'abertura', meio: 'desenvolvimento', fim: 'finalização' };
+                log(`✅ Parágrafo de ${phaseLabels[phase]} adicionado!`, 'success');
+            } catch (error) {
+                log(`❌ Erro ao gerar parágrafo de ${phase}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
         }
 
-        elements.continueBtn.addEventListener('click', () => handleSectionGeneration('continue'));
-        elements.concludeBtn.addEventListener('click', () => handleSectionGeneration('conclude'));
+        elements.inicioBtn.addEventListener('click', () => handleParagraphGeneration('inicio'));
+        elements.meioBtn.addEventListener('click', () => handleParagraphGeneration('meio'));
+        elements.fimBtn.addEventListener('click', () => handleParagraphGeneration('fim'));
         
         elements.finalizeBtn.addEventListener('click', async () => {
             const currentIndex = sectionOrder.indexOf(currentSection);
@@ -546,27 +647,31 @@ Output:`;
                 currentSection = sectionOrder[currentIndex + 1];
                 const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
                 elements.currentSectionNameSpan.textContent = sectionDisplayName;
-                const fullArticleText = Object.values(articleContent).flat().join(' ');
-                const prompt = `Com base no artigo já escrito: "${fullArticleText}". Escreva o parágrafo INICIAL da nova seção: "${sectionDisplayName}". O parágrafo deve ser uma transição, conectando com o anterior e apresentando o que será abordado. Tamanho: 80-120 palavras.`;
+                
+                // Gera parágrafo inicial da nova seção usando sistema anti-repetição
                 try {
+                    const prompt = createAntiRepetitionPrompt('inicio');
                     const content = await callPuterAI(prompt);
+                    addPhrasesToMemory(content);
                     articleContent[currentSection].push(content);
                     displayABNTDocument();
                     log(`✅ Seção '${sectionDisplayName}' iniciada!`, 'success');
-                } catch (error) { /* Erro já logado */ }
+                } catch (error) {
+                    log(`❌ Erro ao iniciar seção ${sectionDisplayName}`, 'error');
+                }
             } else {
+                // Finalização do artigo
                 elements.finalizeBtn.style.display = 'none';
-                elements.continueBtn.disabled = true;
-                elements.concludeBtn.disabled = true;
+                elements.inicioBtn.disabled = true;
+                elements.meioBtn.disabled = true;
+                elements.fimBtn.disabled = true;
+                
                 await generateResumoAndAbstract();
                 displayABNTDocument();
-                elements.finishBtn.style.display = 'block';
+                
+                alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
+                log(`🎓 Artigo concluído com ${usedPhrases.size} expressões únicas registradas!`, 'success');
             }
-        });
-        
-        elements.finishBtn.addEventListener('click', () => {
-            alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
-            log(`🎓 Artigo concluído!`, 'success');
         });
         
         elements.outputDiv.addEventListener('click', (e) => {
