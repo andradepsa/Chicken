@@ -594,14 +594,15 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
                 log('Gerando resumo automático...', 'info');
                 const allContent = Object.values(articleContent).flat().join(' ');
                 if (allContent.length < 100) { log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning'); return; }
-                const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões).`;
+                
+                const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões). IMPORTANTE: Escreva APENAS o texto do resumo, sem incluir a palavra "Resumo" no início.`;
                 userInputs.resumo = await callPuterAI(resumoPrompt);
                 
                 const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
                 const rawPalavrasChave = await callPuterAI(palavrasPrompt);
                 userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, '');
 
-                const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
+                const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}". IMPORTANTE: Escreva APENAS o texto do abstract em inglês, sem incluir a palavra "Abstract" no início.`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
 
                 const keywordsPrompt = `
@@ -633,12 +634,21 @@ Output:`;
                 <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
                 <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
             `;
-            if (userInputs.resumo) {
-                content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
-                if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
-                if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
-                if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
+            
+            // O resumo só aparece quando o artigo estiver finalizado
+            if (userInputs.resumo && userInputs.isFinalized) {
+                // Remove possíveis duplicações de títulos que a IA pode incluir
+                const cleanResumo = userInputs.resumo.replace(/^\*?\*?Resumo\*?\*?\s*/i, '').replace(/^Resumo:\s*/i, '');
+                const cleanAbstract = userInputs.abstract ? userInputs.abstract.replace(/^\*?\*?Abstract\*?\*?\s*/i, '').replace(/^Abstract:\s*/i, '') : '';
+                const cleanPalavrasChave = userInputs.palavrasChave ? userInputs.palavrasChave.replace(/^Palavras-chave:\s*/i, '') : '';
+                const cleanKeywords = userInputs.keywords ? userInputs.keywords.replace(/^Keywords:\s*/i, '') : '';
+                
+                content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${cleanResumo}</div>`;
+                if (cleanPalavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${cleanPalavrasChave}.</div>`;
+                if (cleanAbstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${cleanAbstract}</div>`;
+                if (cleanKeywords) content += `<div class="keywords"><strong>Keywords:</strong> ${cleanKeywords}.</div>`;
             }
+            
             const sections = [{ name: 'INTRODUÇÃO', key: 'introducao' }, { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' }, { name: 'CONCLUSÃO', key: 'conclusao' }];
             sections.forEach(section => {
                 if (articleContent[section.key].length > 0) {
@@ -747,7 +757,9 @@ Output:`;
                         elements.currentSectionNameSpan.textContent = sectionDisplayName;
                         log(`📝 Pronto para iniciar: ${sectionDisplayName}`, 'info');
                     } else {
+                        // Última seção concluída - gerar resumo e finalizar
                         await generateResumoAndAbstract();
+                        userInputs.isFinalized = true; // Marca como finalizado
                         displayABNTDocument();
                         alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
                         log(`🎓 Artigo concluído!`, 'success');
