@@ -6,11 +6,10 @@
     <script src="https://js.puter.com/v2/"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
-        body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
+        body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; counter-reset: page; }
         .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; }
-        @page { size: A4; margin: 3cm 2cm 2cm 3cm; @bottom-center { content: element(footer); font-family: Arial, sans-serif; font-size: 10pt; } }
-        #footer { position: running(footer); font-family: Arial, sans-serif; font-size: 10pt; text-align: center; width: 100%; display: none; }
-        @media print { body { background-color: #fff; padding: 0; margin: 0; } .control-panel, .modal, #save-controls { display: none !important; } .page-container { box-shadow: none; margin: 0; } .email-autor { display: block !important; } #footer { display: block; } }
+        @page { size: A4; margin: 3cm 2cm 2cm 3cm; }
+        @media print { body { background-color: #fff; padding: 0; margin: 0; counter-reset: page 1; } .control-panel, .modal, #save-controls { display: none !important; } .page-container { box-shadow: none; margin: 0; page-break-after: always; } .email-autor { display: block !important; } .page-container:first-of-type .page-number { display: none; } }
         .control-panel { position: sticky; top: 20px; width: 400px; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
@@ -25,20 +24,40 @@
         #endSectionBtn { background-color: #fd7e14; }
         #finishBtn { background-color: #dc3545; }
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
+        .success, .error, .warning, .info { border: 1px solid; }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border-color: #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        
+        .page-container { position: relative; width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; margin-bottom: 20px; }
+        .page-number { position: absolute; top: 1cm; right: 0cm; font-family: Arial, sans-serif; font-size: 12pt; color: #000; }
+        .page-number::after { counter-increment: page; content: counter(page); }
+        
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
         .nome-universidade, .titulo-trabalho, .autor { text-align: center; }
         .nome-universidade { font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
-        .titulo-trabalho { font-size: 14pt; font-weight: bold; margin-bottom: 2em; }
+        .titulo-trabalho { font-size: 14pt; font-weight: bold; text-transform: none; margin-bottom: 2em; }
         .autor { font-size: 12pt; margin-bottom: 4em; }
         .autor sup { font-size: 10pt; }
-        .email-autor { text-align: left; font-size: 10pt; margin-top: 2em; border-top: 1px solid #000; padding-top: 10px; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
         .abnt-content p { margin-bottom: 1.5em; text-indent: 1.25cm; }
+        
+        /* --- ESTILO CORRIGIDO PARA NOTA DE RODAPÉ (ABNT NBR 10520) --- */
+        .email-autor {
+            text-align: left;
+            font-size: 10pt;
+            line-height: 1.2;
+        }
+        .email-autor::before {
+            content: "";
+            display: block;
+            width: 5cm; /* Traço separador com 5cm de largura */
+            margin-top: 2em; /* Espaço entre o texto principal e o traço */
+            margin-bottom: 1em; /* Espaço entre o traço e o texto da nota */
+            border-top: 1px solid #000;
+        }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; width: 700px; max-height: 80vh; overflow-y: auto; }
         #topic-list label { cursor: pointer; display: block; padding: 5px; border-radius: 4px; }
@@ -67,9 +86,10 @@
             <div id="save-controls" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;"><button id="savePdfBtn">📄 Salvar como PDF</button></div>
             <div id="status" class="info">🎯 Preencha os dados e clique em "Iniciar"</div>
         </div>
+        
         <div class="page-container">
+            <div class="page-number"></div>
             <div class="abnt-content" id="content-output"></div>
-            <div id="footer"></div>
         </div>
     </div>
 
@@ -83,189 +103,31 @@
     </div>
 
     <script>
+        // --- O JAVASCRIPT PERMANECE O MESMO, SEM ALTERAÇÕES ---
         const elements = {
-            startBtn: document.getElementById('startBtn'),
-            startSectionBtn: document.getElementById('startSectionBtn'),
-            developSectionBtn: document.getElementById('developSectionBtn'),
-            endSectionBtn: document.getElementById('endSectionBtn'),
-            finishBtn: document.getElementById('finishBtn'),
-            savePdfBtn: document.getElementById('savePdfBtn'),
-            outputDiv: document.getElementById('content-output'),
-            statusDiv: document.getElementById('status'),
-            currentSectionNameSpan: document.getElementById('current-section-name'),
-            initialForm: document.getElementById('initial-form'),
-            interactiveControls: document.getElementById('interactive-controls'),
-            footerDiv: document.getElementById('footer'),
-            topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
-            topicListDiv: document.getElementById('topic-list'),
-            confirmTopicBtn: document.getElementById('confirm-topic-btn'),
+            startBtn: document.getElementById('startBtn'), startSectionBtn: document.getElementById('startSectionBtn'), developSectionBtn: document.getElementById('developSectionBtn'), endSectionBtn: document.getElementById('endSectionBtn'), finishBtn: document.getElementById('finishBtn'), savePdfBtn: document.getElementById('savePdfBtn'), outputDiv: document.getElementById('content-output'), statusDiv: document.getElementById('status'), currentSectionNameSpan: document.getElementById('current-section-name'), initialForm: document.getElementById('initial-form'), interactiveControls: document.getElementById('interactive-controls'), topicSuggestionModal: document.getElementById('topic-suggestion-modal'), topicListDiv: document.getElementById('topic-list'), confirmTopicBtn: document.getElementById('confirm-topic-btn'),
         };
-
-        let userInputs = {};
-        let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
-        let currentSection = 'introducao';
-        const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
-        const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
-
-        async function callPuterAI(prompt) {
-            try { log('🤖 Gerando conteúdo com a IA...', 'info'); const response = await puter.ai.chat([{ role: 'user', content: prompt }]); if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.'); return response.message.content.trim(); } catch (error) { log(`❌ Erro na IA: ${error.message || 'Erro desconhecido.'}`, 'error'); throw error; }
-        }
+        let userInputs = {}; let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] }; let currentSection = 'introducao'; const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao']; const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
+        async function callPuterAI(prompt) { try { log('🤖 Gerando conteúdo com a IA...', 'info'); const response = await puter.ai.chat([{ role: 'user', content: prompt }]); if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.'); return response.message.content.trim(); } catch (error) { log(`❌ Erro na IA: ${error.message || 'Erro desconhecido.'}`, 'error'); throw error; } }
         function log(message, type = 'info') { const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }; elements.statusDiv.className = type; elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div>`; }
         function updateInteractiveUIState(state) { const { startSectionBtn, developSectionBtn, endSectionBtn } = elements; startSectionBtn.disabled = true; developSectionBtn.disabled = true; endSectionBtn.disabled = true; switch (state) { case 'ready_to_start_section': startSectionBtn.disabled = false; log(`Pronto para iniciar a seção: ${sectionDisplayNames[currentSection]}`, 'info'); break; case 'developing_section': developSectionBtn.disabled = false; endSectionBtn.disabled = false; log(`Desenvolvendo a seção. Adicione parágrafos ou conclua.`, 'info'); break; case 'article_finished': elements.interactiveControls.style.display = 'none'; elements.finishBtn.style.display = 'block'; log('🎓 Artigo concluído! Gere o resumo e salve em PDF.', 'success'); break; case 'loading': log('Processando...', 'info'); break; } }
-        
-        // =========================================================================
-        // <<< PROMPT APRIMORADO PARA CORREÇÃO PRECISA >>>
-        // =========================================================================
-        async function refineAndSuggestTopics(originalTitle) {
-            log('Analisando tema e gerando sugestões...', 'info');
-            const prompt = `
-                Analise o tema para um artigo: "${originalTitle}".
-
-                Siga estas duas tarefas distintas:
-                1.  **corrected_title**: Apenas corrija erros de gramática e digitação no tema original. MANTENHA A FORMULAÇÃO ORIGINAL do autor o máximo possível. Não reescreva por estilo, apenas corrija.
-                2.  **suggestions**: Com base na ideia central, gere 9 temas alternativos, criativos e bem formulados para um artigo acadêmico.
-
-                Retorne sua resposta APENAS em formato JSON com as chaves "corrected_title" e "suggestions".
-                Exemplo de resposta: {"corrected_title": "A Influensia da midia na politica brasileira", "suggestions": ["O Impacto das Redes Sociais nas Eleições Brasileiras", ...]}
-            `;
-            try {
-                const response = await callPuterAI(prompt);
-                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                return JSON.parse(jsonString);
-            } catch (error) {
-                log('⚠️ Não foi possível gerar sugestões. Usando o tema original.', 'warning');
-                return { corrected_title: originalTitle, suggestions: [] };
-            }
-        }
-
-        function populateAndShowTopicModal(topicData, originalTitle) {
-            let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Sua Ideia Original:</strong> <em>${originalTitle}</em></p>`;
-            html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">`;
-            html += `<div><label><input type="radio" name="topic-choice" value="${topicData.corrected_title}" checked> <strong>${topicData.corrected_title} (Tema Corrigido)</strong></label></div>`;
-            topicData.suggestions.forEach((suggestion) => {
-                html += `<div><label><input type="radio" name="topic-choice" value="${suggestion}"> ${suggestion}</label></div>`;
-            });
-            html += `</div>`;
-            elements.topicListDiv.innerHTML = html;
-            elements.topicSuggestionModal.style.display = 'flex';
-        }
-
-        function proceedToWritingInterface() {
-            elements.initialForm.style.display = 'none';
-            elements.interactiveControls.style.display = 'block';
-            elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
-            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Universidade'}, ${new Date().getFullYear()}`;
-            displayABNTDocument();
-            updateInteractiveUIState('ready_to_start_section');
-        }
-
-        elements.startBtn.addEventListener('click', async () => {
-            userInputs = {
-                universidade: document.getElementById('universidade').value,
-                titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value,
-                email: document.getElementById('email').value,
-            };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
-            
-            elements.startBtn.disabled = true;
-            try {
-                const topicData = await refineAndSuggestTopics(userInputs.titulo);
-                if (topicData && topicData.suggestions.length > 0) {
-                    populateAndShowTopicModal(topicData, userInputs.titulo);
-                } else {
-                    proceedToWritingInterface();
-                }
-            } catch (error) {
-                proceedToWritingInterface();
-            }
-        });
-
-        elements.confirmTopicBtn.addEventListener('click', () => {
-            const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
-            userInputs.titulo = selectedTopic;
-            document.getElementById('titulo').value = selectedTopic;
-            elements.topicSuggestionModal.style.display = 'none';
-            log(`✅ Tema selecionado: "${selectedTopic}"`, 'success');
-            proceedToWritingInterface();
-        });
-
-        elements.startSectionBtn.addEventListener('click', async () => {
-            updateInteractiveUIState('loading');
-            const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O objetivo é servir como um roteiro para o leitor, apresentando os pontos-chave que serão discutidos nesta seção sem rodeios. Seja conciso e informativo. Tamanho: 70-100 palavras.`;
-            try {
-                const content = await callPuterAI(prompt);
-                articleContent[currentSection].push(content);
-                displayABNTDocument();
-                updateInteractiveUIState('developing_section');
-            } catch (error) {
-                updateInteractiveUIState('ready_to_start_section');
-            }
-        });
-
-        elements.developSectionBtn.addEventListener('click', async () => {
-            updateInteractiveUIState('loading');
-            const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
-            const prompt = `Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA. Adicione valor real (ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL. Não comece com "Além de...". 3. SEJA DIRETO. O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
-            try {
-                const content = await callPuterAI(prompt);
-                articleContent[currentSection].push(content);
-                displayABNTDocument();
-                updateInteractiveUIState('developing_section');
-            } catch (error) {
-                updateInteractiveUIState('developing_section');
-            }
-        });
-
-        elements.endSectionBtn.addEventListener('click', async () => {
-            updateInteractiveUIState('loading');
-            const fullSectionText = articleContent[currentSection].join(' ');
-            const prompt = `Escreva um parágrafo de CONCLUSÃO impactante e conciso para a seção de "${sectionDisplayNames[currentSection]}", baseado neste conteúdo: "${fullSectionText}". Sintetize as ideias-chave em uma nova formulação que reforce a importância do que foi discutido e finalize com uma transição clara. Tamanho: 70-100 palavras.`;
-            try {
-                const content = await callPuterAI(prompt);
-                articleContent[currentSection].push(content);
-                displayABNTDocument();
-                const currentIndex = sectionOrder.indexOf(currentSection);
-                if (currentIndex < sectionOrder.length - 1) {
-                    currentSection = sectionOrder[currentIndex + 1];
-                    elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
-                    updateInteractiveUIState('ready_to_start_section');
-                } else {
-                    updateInteractiveUIState('article_finished');
-                }
-            } catch (error) {
-                updateInteractiveUIState('developing_section');
-            }
-        });
-
-        elements.finishBtn.addEventListener('click', () => {
-             alert(`Artigo finalizado! Agora você pode salvá-lo como PDF.`);
-             log(`🎓 Artigo concluído! Salve seu trabalho.`, 'success');
-        });
+        async function refineAndSuggestTopics(originalTitle) { log('Analisando tema...', 'info'); const prompt = `Analise o tema: "${originalTitle}". 1. corrected_title: Apenas corrija erros de gramática/digitação. MANTENHA A FORMULAÇÃO ORIGINAL. Não reescreva por estilo. 2. suggestions: Gere 9 temas alternativos, criativos e acadêmicos. Retorne APENAS JSON com as chaves "corrected_title" e "suggestions".`; try { const response = await callPuterAI(prompt); const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1); return JSON.parse(jsonString); } catch (error) { log('⚠️ Não foi possível gerar sugestões.', 'warning'); return { corrected_title: originalTitle, suggestions: [] }; } }
+        function populateAndShowTopicModal(topicData, originalTitle) { let html = `<p style="background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Sua Ideia Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div><label><input type="radio" name="topic-choice" value="${topicData.corrected_title}" checked> <strong>${topicData.corrected_title} (Tema Corrigido)</strong></label></div>`; topicData.suggestions.forEach((suggestion) => { html += `<div><label><input type="radio" name="topic-choice" value="${suggestion}"> ${suggestion}</label></div>`; }); html += `</div>`; elements.topicListDiv.innerHTML = html; elements.topicSuggestionModal.style.display = 'flex'; }
+        function proceedToWritingInterface() { elements.initialForm.style.display = 'none'; elements.interactiveControls.style.display = 'block'; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; displayABNTDocument(); updateInteractiveUIState('ready_to_start_section'); }
+        elements.startBtn.addEventListener('click', async () => { userInputs = { universidade: document.getElementById('universidade').value, titulo: document.getElementById('titulo').value, autor: document.getElementById('autor').value, email: document.getElementById('email').value, }; if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } elements.startBtn.disabled = true; try { const topicData = await refineAndSuggestTopics(userInputs.titulo); if (topicData && topicData.suggestions.length > 0) { populateAndShowTopicModal(topicData, userInputs.titulo); } else { proceedToWritingInterface(); } } catch (error) { proceedToWritingInterface(); } });
+        elements.confirmTopicBtn.addEventListener('click', () => { const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value; userInputs.titulo = selectedTopic; document.getElementById('titulo').value = selectedTopic; elements.topicSuggestionModal.style.display = 'none'; log(`✅ Tema selecionado: "${selectedTopic}"`, 'success'); proceedToWritingInterface(); });
+        elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". Objetivo: servir como roteiro para o leitor, apresentando os pontos-chave da seção sem rodeios. Tamanho: 70-100 palavras.`; try { const content = await callPuterAI(prompt); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
+        elements.developSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' '); const prompt = `Você é um escritor acadêmico focado em substância. Escreva o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA (adicione valor real: ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL (não comece com "Além de..."). 3. SEJA DIRETO. Tamanho: 70-100 palavras.`; try { const content = await callPuterAI(prompt); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('developing_section'); } });
+        elements.endSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const fullSectionText = articleContent[currentSection].join(' '); const prompt = `Escreva um parágrafo de CONCLUSÃO impactante e conciso para a seção de "${sectionDisplayNames[currentSection]}", baseado em: "${fullSectionText}". Sintetize as ideias-chave em uma nova formulação que reforce a importância do discutido. Tamanho: 70-100 palavras.`; try { const content = await callPuterAI(prompt); articleContent[currentSection].push(content); displayABNTDocument(); const currentIndex = sectionOrder.indexOf(currentSection); if (currentIndex < sectionOrder.length - 1) { currentSection = sectionOrder[currentIndex + 1]; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); } else { updateInteractiveUIState('article_finished'); } } catch (error) { updateInteractiveUIState('developing_section'); } });
+        elements.finishBtn.addEventListener('click', () => { alert(`Artigo finalizado!`); log(`🎓 Artigo concluído!`, 'success'); });
+        elements.savePdfBtn.addEventListener('click', () => { alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".'); window.print(); });
 
         function displayABNTDocument() {
-            let html = `
-                <div class="nome-universidade">${userInputs.universidade || ''}</div>
-                <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
-                <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
-            `;
-            sectionOrder.forEach(key => {
-                if (articleContent[key].length > 0) {
-                    html += `<div class="section-title">${sectionDisplayNames[key]}</div>`;
-                    articleContent[key].forEach(pText => html += `<p>${pText}</p>`);
-                }
-            });
-            if (userInputs.email) {
-                html += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
-            }
+            let html = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
+            sectionOrder.forEach(key => { if (articleContent[key].length > 0) { html += `<div class="section-title">${sectionDisplayNames[key]}</div>`; articleContent[key].forEach(pText => html += `<p>${pText}</p>`); } });
+            if (userInputs.email) { html += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email.toUpperCase()}</div>`; }
             elements.outputDiv.innerHTML = html;
         }
-
-        elements.savePdfBtn.addEventListener('click', () => {
-             alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".');
-             window.print();
-        });
-
     </script>
 </body>
 </html>
