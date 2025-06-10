@@ -171,7 +171,7 @@
                 <button id="rewriteBtn" style="display: none; background-color: #fd7e14;">✏️ REESCREVER</button>
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">
-                    💡 Clique nos parágrafos para adicionar referências<br>
+                    💡 <span id="reference-status">Inicie uma sessão para adicionar referências</span><br>
                     🔍 Sistema anti-repetição ativado
                 </div>
             </div>
@@ -256,6 +256,7 @@
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
+            referenceStatusSpan: document.getElementById('reference-status'),
         };
 
         // --- ESTADO DA APLICAÇÃO ---
@@ -588,9 +589,11 @@ Output:`;
             if (finalReferences.length > 0) {
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left;">${formatarReferenciasABNT()}</div>`;
             }
-            if (userInputs.email) {
-                // Formatação ABNT correta com numeração sobrescrita
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade || ''}, ${userInputs.email}.</div>`;
+            if (userInputs.email && userInputs.universidade) {
+                // Formatação ABNT correta: ¹ Nível, Instituição, email.
+                const instituicaoFormatada = userInputs.universidade.replace(/universidade/gi, 'Universidade').replace(/federal/gi, 'Federal').replace(/estadual/gi, 'Estadual').replace(/municipal/gi, 'Municipal');
+                const emailFormatado = userInputs.email.toLowerCase();
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${instituicaoFormatada}, ${emailFormatado}.</div>`;
             }
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
@@ -662,6 +665,7 @@ Output:`;
                     sessionActive = true;
                     elements.meioBtn.disabled = false;
                     elements.fimBtn.disabled = false;
+                    elements.referenceStatusSpan.textContent = 'Clique nos parágrafos para adicionar referências';
                 }
                 
                 articleContent[currentSection].push(content);
@@ -680,6 +684,7 @@ Output:`;
                     elements.inicioBtn.disabled = false;
                     elements.meioBtn.disabled = true;
                     elements.fimBtn.disabled = true;
+                    elements.referenceStatusSpan.textContent = 'Inicie uma sessão para adicionar referências';
                     log('🎯 Sessão finalizada! Clique em INÍCIO para nova sessão.', 'info');
                     
                     // Avança para próxima seção automaticamente se não for a última
@@ -794,7 +799,7 @@ Output:`;
         
         elements.outputDiv.addEventListener('click', (e) => {
             const paragraph = e.target.closest('p[data-id]');
-            if (paragraph) {
+            if (paragraph && sessionActive) {
                 const paragraphId = paragraph.dataset.id;
                 const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
