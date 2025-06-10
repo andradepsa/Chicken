@@ -205,12 +205,12 @@
             <div class="modal-content">
                 <h3>📚 Adicionar Referências AUTOR-DATA</h3>
                 <div class="citation-example">
-                    <strong>🌍 Sistema Global com Tradução ABNT:</strong><br>
-                    • 🇧🇷 **Português**: Mantém títulos originais<br>
-                    • 🌍 **Outros idiomas**: Original + [Tradução em português]<br>
-                    • **Conforme ABNT**: Título Original [Título Traduzido]<br>
-                    • Busca em 16 idiomas, apresenta tudo em português<br>
-                    <em>Padrão acadêmico brasileiro com alcance global!</em>
+                    <strong>🚀 Sistema de Busca Otimizada:</strong><br>
+                    • **Prioridade:** 🇧🇷🇪🇸🇮🇹🇫🇷 Línguas Latinas (mais rápidas)<br>
+                    • **Secundária:** 🇺🇸🇩🇪🇷🇺 Principais idiomas<br>
+                    • **Reserva:** 🇨🇳🇯🇵🇸🇦 Só se necessário<br>
+                    • **Formatação ABNT**: Original + [Tradução portuguesa]<br>
+                    <em>Velocidade otimizada com qualidade garantida!</em>
                 </div>
                 <div id="search-info" class="search-info" style="display: none;"></div>
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
@@ -531,42 +531,40 @@
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando:</strong> <em>"${originalText}"</em><br><small>Gerando estratégias em múltiplos idiomas...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
-                // Gera estratégias de busca em múltiplos idiomas usando IA
+                // Gera estratégias de busca em múltiplos idiomas usando IA - OTIMIZADO
                 const strategiesPrompt = `
                 Analise esta frase: "${originalText}"
                 
-                Extraia a IDEIA PRINCIPAL e gere termos de busca nas seguintes línguas (top 20 idiomas mundiais):
+                Extraia a IDEIA PRINCIPAL e gere termos de busca PRIORIZANDO línguas latinas e principais:
                 
-                CHINÊS SIMPLIFICADO (3 termos):
+                PRIORIDADE ALTA (línguas latinas + principais):
+                PORTUGUÊS (4 termos):
+                ESPANHOL (4 termos):
                 INGLÊS (4 termos):
-                PORTUGUÊS (3 termos):
-                ESPANHOL (2 termos):
-                HINDI (2 termos):
-                ÁRABE (2 termos):
-                BENGALI (1 termo):
-                RUSSO (2 termos):
-                JAPONÊS (2 termos):
-                FRANCÊS (2 termos):
+                FRANCÊS (3 termos):
+                ITALIANO (3 termos):
+                
+                PRIORIDADE MÉDIA (se necessário):
                 ALEMÃO (2 termos):
-                COREANO (1 termo):
-                ITALIANO (1 termo):
-                TURCO (1 termo):
-                VIETNAMITA (1 termo):
-                PERSA (1 termo):
+                RUSSO (2 termos):
+                
+                PRIORIDADE BAIXA (só se não encontrar 10 referências):
+                CHINÊS SIMPLIFICADO (2 termos):
+                JAPONÊS (1 termo):
+                ÁRABE (1 termo):
                 
                 REGRAS:
                 1. Use termos técnicos e conceitos acadêmicos
                 2. Varie entre termos específicos e gerais
                 3. Cada termo deve ter 2-6 palavras
                 4. Foque nos conceitos-chave da frase
-                5. Para idiomas não-latinos, use transliteração quando necessário
                 
                 FORMATO DE RESPOSTA:
-                CHINÊS SIMPLIFICADO:
+                PORTUGUÊS:
                 termo1
                 termo2
                 ...
-                INGLÊS:
+                ESPANHOL:
                 term1
                 term2
                 ...
@@ -582,7 +580,7 @@
                 
                 for (const line of lines) {
                     const cleanLine = line.trim();
-                    if (cleanLine.match(/^(CHINÊS SIMPLIFICADO|INGLÊS|PORTUGUÊS|ESPANHOL|HINDI|ÁRABE|BENGALI|RUSSO|JAPONÊS|FRANCÊS|ALEMÃO|COREANO|ITALIANO|TURCO|VIETNAMITA|PERSA):/)) {
+                    if (cleanLine.match(/^(PORTUGUÊS|ESPANHOL|INGLÊS|FRANCÊS|ITALIANO|ALEMÃO|RUSSO|CHINÊS SIMPLIFICADO|JAPONÊS|ÁRABE):/)) {
                         currentSection = cleanLine.replace(':', '');
                     } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
                         searchTerms.push({
@@ -592,12 +590,28 @@
                     }
                 }
                 
-                // Se não conseguiu extrair termos estruturados, gera termos simples
+                // Organiza termos por prioridade para busca mais eficiente
+                const priorityOrder = {
+                    'PORTUGUÊS': 1,
+                    'ESPANHOL': 2, 
+                    'INGLÊS': 3,
+                    'FRANCÊS': 4,
+                    'ITALIANO': 5,
+                    'ALEMÃO': 6,
+                    'RUSSO': 7,
+                    'CHINÊS SIMPLIFICADO': 8,
+                    'JAPONÊS': 9,
+                    'ÁRABE': 10
+                };
+                
+                searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
+                
+                // Se não conseguiu extrair termos estruturados, gera termos simples priorizando latinas
                 if (searchTerms.length === 0) {
-                    const fallbackPrompt = `Extraia 20 termos de busca diferentes da frase: "${originalText}". Um termo por linha, variando entre português, inglês, espanhol, chinês, francês e outros idiomas relevantes:`;
+                    const fallbackPrompt = `Extraia 15 termos de busca diferentes da frase: "${originalText}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
                     const fallbackResponse = await callPuterAI(fallbackPrompt);
                     const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
-                    const languages = ['PORTUGUÊS', 'INGLÊS', 'ESPANHOL', 'CHINÊS SIMPLIFICADO', 'FRANCÊS', 'ALEMÃO', 'RUSSO', 'JAPONÊS'];
+                    const languages = ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO', 'ALEMÃO'];
                     terms.forEach((term, index) => {
                         searchTerms.push({
                             term: term.trim(),
@@ -609,36 +623,37 @@
                 let allPapers = [];
                 let foundPapers = new Set(); // Para evitar duplicatas
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🌍 Testando ${searchTerms.length} termos em múltiplos idiomas...</strong>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong>`;
                 
                 // Testa cada estratégia de busca até encontrar 10 referências únicas
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
                     
+                    // Para na busca se já temos 10 referências
+                    if (allPapers.length >= 10) break;
+                    
+                    // Mostra se chegou nas línguas não-latinas
+                    const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
+                    const priorityText = isLatinLanguage ? '🏃‍♂️ RÁPIDA' : '🌍 GLOBAL';
+                    
                     try {
                         const languageFlag = {
-                            'CHINÊS SIMPLIFICADO': '🇨🇳',
-                            'INGLÊS': '🇺🇸',
                             'PORTUGUÊS': '🇧🇷',
                             'ESPANHOL': '🇪🇸',
-                            'HINDI': '🇮🇳',
-                            'ÁRABE': '🇸🇦',
-                            'BENGALI': '🇧🇩',
-                            'RUSSO': '🇷🇺',
-                            'JAPONÊS': '🇯🇵',
+                            'INGLÊS': '🇺🇸',
                             'FRANCÊS': '🇫🇷',
-                            'ALEMÃO': '🇩🇪',
-                            'COREANO': '🇰🇷',
                             'ITALIANO': '🇮🇹',
-                            'TURCO': '🇹🇷',
-                            'VIETNAMITA': '🇻🇳',
-                            'PERSA': '🇮🇷'
+                            'ALEMÃO': '🇩🇪',
+                            'RUSSO': '🇷🇺',
+                            'CHINÊS SIMPLIFICADO': '🇨🇳',
+                            'JAPONÊS': '🇯🇵',
+                            'ÁRABE': '🇸🇦'
                         }[language] || '🌍';
                         
-                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} - Termo ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
+                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} ${priorityText} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
                         
-                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=5&fields=title,authors,year,abstract,url`;
-                        const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
+                        const response = await fetch(url, { signal: AbortSignal.timeout(6000) }); // Timeout reduzido
                         
                         if (response.ok) {
                             const data = await response.json();
@@ -669,29 +684,37 @@
                                     originalTitle: paper.title // Mantém o título original
                                 };
                                 
-                                // Se não for português, traduz título para português
+                                // Se não for português, traduz título para português (mais rápido para latinas)
                                 if (language !== 'PORTUGUÊS') {
                                     try {
+                                        // Tradução mais rápida para línguas latinas
+                                        const translationTimeout = isLatinLanguage ? 3000 : 4000;
+                                        
                                         // Traduz título para português
                                         const titleTranslationPrompt = `Traduza APENAS o seguinte título acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações ou aspas:
 
 "${paper.title}"`;
                                         
-                                        const translatedTitle = await callPuterAI(titleTranslationPrompt);
+                                        const translatedTitle = await Promise.race([
+                                            callPuterAI(titleTranslationPrompt),
+                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                        ]);
+                                        
                                         processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
                                         
-                                        // Traduz abstract se existir
-                                        if (paper.abstract && paper.abstract.length > 20) {
+                                        // Traduz abstract só para as primeiras referências para ser mais rápido
+                                        if (allPapers.length < 5 && paper.abstract && paper.abstract.length > 20) {
                                             const abstractTranslationPrompt = `Traduza APENAS o seguinte resumo acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações:
 
 "${paper.abstract}"`;
                                             
-                                            const translatedAbstract = await callPuterAI(abstractTranslationPrompt);
+                                            const translatedAbstract = await Promise.race([
+                                                callPuterAI(abstractTranslationPrompt),
+                                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                            ]);
+                                            
                                             processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
                                         }
-                                        
-                                        // Pequena pausa entre traduções
-                                        await new Promise(resolve => setTimeout(resolve, 500));
                                         
                                     } catch (translationError) {
                                         console.warn('Erro na tradução, mantendo original:', translationError);
@@ -703,12 +726,19 @@
                             }
                         }
                         
-                        // Pequena pausa entre requisições para não sobrecarregar a API
-                        await new Promise(resolve => setTimeout(resolve, 800)); // Aumentado para acomodar traduções
+                        // Pausa reduzida para línguas latinas (mais rápidas)
+                        const pauseTime = isLatinLanguage ? 400 : 600;
+                        await new Promise(resolve => setTimeout(resolve, pauseTime));
                         
                     } catch (error) {
                         console.warn(`Erro na busca ${i+1} (${language}):`, error);
                         continue; // Continua para a próxima estratégia
+                    }
+                    
+                    // Se já encontrou 10 referências com línguas latinas/principais, para aqui
+                    if (allPapers.length >= 10 && ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO'].includes(language)) {
+                        elements.searchInfoDiv.innerHTML = `<strong>⚡ Busca Rápida Concluída!</strong><br>✅ ${allPapers.length} referências encontradas rapidamente`;
+                        break;
                     }
                 }
                 
@@ -732,7 +762,7 @@
                         .map(([lang, count]) => `${lang}: ${count}`)
                         .join(' | ');
                     
-                    elements.searchInfoDiv.innerHTML = `<strong>🌍 Sucesso Multilíngue!</strong><br>✅ ${allPapers.length} referências encontradas<br><small>${languageStats}</small><br><em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>`;
+                    elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada Concluída!</strong><br>✅ ${allPapers.length} referências encontradas<br><small>${languageStats}</small><br><em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>`;
                 } else {
                     log('⚠️ Nenhuma referência encontrada mesmo com busca multilíngue.', 'warning');
                     elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos em múltiplos idiomas.`;
