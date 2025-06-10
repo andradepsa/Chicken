@@ -52,8 +52,8 @@
         #meioBtn:hover { background-color: #0056b3; }
         #fimBtn { background-color: #dc3545; }
         #fimBtn:hover { background-color: #c82333; }
-        #finalizeBtn { background-color: #ffc107; color: black; }
-        #finalizeBtn:hover { background-color: #e0a800; }
+        #rewriteBtn { background-color: #fd7e14; }
+        #rewriteBtn:hover { background-color: #e8681b; }
 
         /* Estilo para contador de páginas */
         .page-counter { 
@@ -164,11 +164,11 @@
                 
                 <p>Seção atual: <strong id="current-section-name"></strong></p>
                 
-                <!-- Novos botões simplificados -->
+                <!-- Botões simplificados -->
                 <button id="inicioBtn">🌟 INÍCIO</button>
                 <button id="meioBtn">📝 MEIO</button>
                 <button id="fimBtn">🎯 FIM</button>
-                <button id="finalizeBtn">⏭ Próxima Seção</button>
+                <button id="rewriteBtn" style="display: none; background-color: #fd7e14;">✏️ REESCREVER</button>
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">
                     💡 Clique nos parágrafos para adicionar referências<br>
@@ -240,7 +240,7 @@
             inicioBtn: document.getElementById('inicioBtn'),
             meioBtn: document.getElementById('meioBtn'),
             fimBtn: document.getElementById('fimBtn'),
-            finalizeBtn: document.getElementById('finalizeBtn'),
+            rewriteBtn: document.getElementById('rewriteBtn'),
             outputDiv: document.getElementById('content-output'),
             statusDiv: document.getElementById('status'),
             currentSectionNameSpan: document.getElementById('current-section-name'),
@@ -266,8 +266,10 @@
         let currentSection = 'introducao';
         let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
         let currentModalReferences = [];
-        let usedPhrases = new Set(); // Para controle de repetições
+        let usedPhrases = new Set();
         let sectionPhaseMap = { introducao: 'inicio', desenvolvimento: 'meio', conclusao: 'fim' };
+        let lastParagraphIndex = -1; // Para controlar reescrita
+        let sessionActive = false; // Controla se sessão está ativa
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -600,20 +602,12 @@ Output:`;
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
             try {
-                // Gera o primeiro parágrafo automaticamente
-                const prompt = createAntiRepetitionPrompt('inicio');
-                const content = await callPuterAI(prompt);
-                
-                // Adiciona frases à memória anti-repetição
-                addPhrasesToMemory(content);
-                
-                articleContent.introducao.push(content);
-                displayABNTDocument();
-                
+                // Apenas configura a interface, NÃO gera conteúdo automaticamente
                 document.getElementById('initial-form').style.display = 'none';
                 document.getElementById('interactive-controls').style.display = 'block';
                 elements.currentSectionNameSpan.textContent = 'Introdução';
-                log('✅ Artigo iniciado! Use os botões para continuar.', 'success');
+                sessionActive = false; // Sessão não está ativa ainda
+                log('✅ Configuração concluída! Clique em INÍCIO para começar a escrever.', 'success');
             } catch (error) {
                 elements.startBtn.disabled = false;
             }
@@ -650,7 +644,7 @@ Output:`;
             proceedWithArticleGeneration();
         });
 
-        // --- NOVOS EVENTOS PARA OS BOTÕES INÍCIO, MEIO, FIM ---
+        // --- EVENTOS PARA OS BOTÕES INÍCIO, MEIO, FIM ---
         async function handleParagraphGeneration(phase) {
             const buttonMap = { inicio: elements.inicioBtn, meio: elements.meioBtn, fim: elements.fimBtn };
             const btn = buttonMap[phase];
@@ -663,11 +657,47 @@ Output:`;
                 // Adiciona frases à memória anti-repetição
                 addPhrasesToMemory(content);
                 
+                // Se for INÍCIO, inicia nova sessão
+                if (phase === 'inicio') {
+                    sessionActive = true;
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                }
+                
                 articleContent[currentSection].push(content);
+                lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
+                
+                // Mostra botão reescrever após adicionar parágrafo
+                elements.rewriteBtn.style.display = 'block';
                 
                 const phaseLabels = { inicio: 'abertura', meio: 'desenvolvimento', fim: 'finalização' };
                 log(`✅ Parágrafo de ${phaseLabels[phase]} adicionado!`, 'success');
+                
+                // Se for FIM, termina a sessão
+                if (phase === 'fim') {
+                    sessionActive = false;
+                    elements.inicioBtn.disabled = false;
+                    elements.meioBtn.disabled = true;
+                    elements.fimBtn.disabled = true;
+                    log('🎯 Sessão finalizada! Clique em INÍCIO para nova sessão.', 'info');
+                    
+                    // Avança para próxima seção automaticamente se não for a última
+                    const currentIndex = sectionOrder.indexOf(currentSection);
+                    if (currentIndex < sectionOrder.length - 1) {
+                        currentSection = sectionOrder[currentIndex + 1];
+                        const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
+                        elements.currentSectionNameSpan.textContent = sectionDisplayName;
+                        log(`📝 Pronto para iniciar: ${sectionDisplayName}`, 'info');
+                    } else {
+                        // Última seção concluída - gerar resumo
+                        await generateResumoAndAbstract();
+                        displayABNTDocument();
+                        alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
+                        log(`🎓 Artigo concluído!`, 'success');
+                    }
+                }
+                
             } catch (error) {
                 log(`❌ Erro ao gerar parágrafo de ${phase}`, 'error');
             } finally {
@@ -675,9 +705,59 @@ Output:`;
             }
         }
 
-        elements.inicioBtn.addEventListener('click', () => handleParagraphGeneration('inicio'));
-        elements.meioBtn.addEventListener('click', () => handleParagraphGeneration('meio'));
-        elements.fimBtn.addEventListener('click', () => handleParagraphGeneration('fim'));
+        // Função para reescrever o último parágrafo
+        async function rewriteLastParagraph() {
+            if (lastParagraphIndex === -1 || !sessionActive) {
+                alert('Nenhum parágrafo para reescrever ou sessão inativa.');
+                return;
+            }
+            
+            elements.rewriteBtn.disabled = true;
+            
+            try {
+                // Remove o último parágrafo das frases utilizadas
+                const lastContent = articleContent[currentSection][lastParagraphIndex];
+                const lastPhrases = extractKeyPhrases(lastContent);
+                lastPhrases.forEach(phrase => usedPhrases.delete(phrase));
+                
+                // Gera novo conteúdo
+                const currentPhase = sessionActive ? 'meio' : 'inicio'; // Determina a fase atual
+                const prompt = createAntiRepetitionPrompt(currentPhase);
+                const newContent = await callPuterAI(prompt);
+                
+                // Substitui o conteúdo
+                addPhrasesToMemory(newContent);
+                articleContent[currentSection][lastParagraphIndex] = newContent;
+                displayABNTDocument();
+                
+                log('✅ Parágrafo reescrito com sucesso!', 'success');
+            } catch (error) {
+                log('❌ Erro ao reescrever parágrafo', 'error');
+            } finally {
+                elements.rewriteBtn.disabled = false;
+            }
+        }
+
+        elements.inicioBtn.addEventListener('click', () => {
+            if (!sessionActive) {
+                handleParagraphGeneration('inicio');
+            }
+        });
+        
+        elements.meioBtn.addEventListener('click', () => {
+            if (sessionActive) {
+                handleParagraphGeneration('meio');
+            }
+        });
+        
+        elements.fimBtn.addEventListener('click', () => {
+            if (sessionActive) {
+                handleParagraphGeneration('fim');
+            }
+        });
+        
+        elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
+        
         
         elements.finalizeBtn.addEventListener('click', async () => {
             const currentIndex = sectionOrder.indexOf(currentSection);
@@ -731,6 +811,9 @@ Output:`;
         });
 
         // --- INICIALIZAÇÃO ---
+        // Desabilita botões meio e fim inicialmente
+        elements.meioBtn.disabled = true;
+        elements.fimBtn.disabled = true;
         log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
     </script>
 </body>
