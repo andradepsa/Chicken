@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Artigo Científico com IA do Puter</title>
+    <title>Gerador de Artigo Científico com IA</title>
     <script src="https://js.puter.com/v2/"></script>
 
     <style>
@@ -21,7 +21,6 @@
             body { background-color: #fff; padding: 0; margin: 0; }
             .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls { display: none !important; }
             .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
-            .email-autor { display: none !important; }
             #footer { display: block; }
         }
         
@@ -30,15 +29,15 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         .form-group input, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
+        .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; }
         .control-panel button:hover:not(:disabled) { filter: brightness(90%); }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
         
         #interactive-controls button { margin-top: 10px; }
-        #startSectionBtn { background-color: #1a73e8; } /* Azul para Iniciar */
-        #developSectionBtn { background-color: #28a745; } /* Verde para Desenvolver */
-        #endSectionBtn { background-color: #fd7e14; } /* Laranja para Concluir */
-        #finishBtn { background-color: #dc3545; } /* Vermelho para Finalizar Artigo */
+        #startSectionBtn { background-color: #1a73e8; } 
+        #developSectionBtn { background-color: #28a745; }
+        #endSectionBtn { background-color: #fd7e14; }
+        #finishBtn { background-color: #dc3545; }
 
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
@@ -48,12 +47,9 @@
         
         .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
-        .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; line-height: 1.5; text-align: justify; }
+        .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; }
         .abnt-content p:hover { background-color: #f0f8ff; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
@@ -61,13 +57,10 @@
         <div class="control-panel">
             <div id="initial-form">
                 <h2>🎓 Gerador de Artigo ABNT</h2>
-                <p style="text-align:center; font-size:12px; margin-top:-10px; margin-bottom:20px; color:#6f42c1;"><strong>Powered by Puter.ai</strong></p>
-                
                 <div class="form-group"><label>Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
-                <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva um tema, mesmo que com erros"></div>
+                <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva um tema conciso"></div>
                 <div class="form-group"><label>Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
-                <div class="form-group"><label>Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
-                <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
+                <button id="startBtn">🚀 Iniciar Artigo</button>
             </div>
             
             <div id="interactive-controls" style="display: none;">
@@ -75,8 +68,7 @@
                 <button id="startSectionBtn">▶️ Iniciar Seção</button>
                 <button id="developSectionBtn">➕ Desenvolver Ideia</button>
                 <button id="endSectionBtn">🏁 Concluir Seção</button>
-                <button id="finishBtn" style="display: none;">✅ Finalizar Artigo</button>
-                <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">💡 Clique nos parágrafos para adicionar referências</div>
+                <button id="finishBtn" style="display: none;">✅ Finalizar e Gerar Resumo</button>
             </div>
 
             <div id="save-controls" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;"><button id="savePdfBtn">📄 Salvar como PDF</button></div>
@@ -87,37 +79,30 @@
             <div class="abnt-content" id="content-output"><!-- Conteúdo Gerado --></div>
             <div id="footer"></div>
         </div>
-        
-        <!-- Modais (referências e sugestão de tema) aqui -->
     </div>
 
     <script>
-        // --- ELEMENTOS DA UI ---
         const elements = {
-            // Botões de controle
             startBtn: document.getElementById('startBtn'),
             startSectionBtn: document.getElementById('startSectionBtn'),
             developSectionBtn: document.getElementById('developSectionBtn'),
             endSectionBtn: document.getElementById('endSectionBtn'),
             finishBtn: document.getElementById('finishBtn'),
             savePdfBtn: document.getElementById('savePdfBtn'),
-            // Divs e Spans
             outputDiv: document.getElementById('content-output'),
             statusDiv: document.getElementById('status'),
             currentSectionNameSpan: document.getElementById('current-section-name'),
             initialForm: document.getElementById('initial-form'),
             interactiveControls: document.getElementById('interactive-controls'),
+            footerDiv: document.getElementById('footer'),
         };
 
-        // --- ESTADO DA APLICAÇÃO ---
         let userInputs = {};
         let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
-        let finalReferences = []; 
         let currentSection = 'introducao';
         const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
         const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
 
-        // --- FUNÇÕES DE GERAÇÃO E LÓGICA PRINCIPAL (resumidas para clareza) ---
         async function callPuterAI(prompt) {
             try {
                 log('🤖 Gerando conteúdo com a IA...', 'info');
@@ -136,7 +121,6 @@
             elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div>`;
         }
 
-        // --- LÓGICA DE CONTROLE DA UI INTERATIVA ---
         function updateInteractiveUIState(state) {
             const { startSectionBtn, developSectionBtn, endSectionBtn } = elements;
             startSectionBtn.disabled = true;
@@ -153,116 +137,112 @@
                     endSectionBtn.disabled = false;
                     log(`Desenvolvendo a seção. Adicione parágrafos ou conclua.`, 'info');
                     break;
-                case 'section_concluded':
-                    // Todos ficam desabilitados enquanto a próxima seção é preparada
-                    log(`Seção "${sectionDisplayNames[currentSection]}" concluída!`, 'success');
-                    break;
                 case 'article_finished':
                     elements.interactiveControls.style.display = 'none';
                     elements.finishBtn.style.display = 'block';
                     log('🎓 Artigo concluído! Gere o resumo e salve em PDF.', 'success');
                     break;
+                case 'loading':
+                    log('Processando...', 'info');
+                    break;
             }
         }
 
-        // --- BOTÃO: INICIAR O PROCESSO GERAL ---
-        elements.startBtn.addEventListener('click', async () => {
+        elements.startBtn.addEventListener('click', () => {
             userInputs = {
+                universidade: document.getElementById('universidade').value,
                 titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value
-                //... outros campos
+                autor: document.getElementById('autor').value,
             };
-            if (!userInputs.titulo || !userInputs.autor) {
-                log('❌ Preencha título e autor.', 'error');
-                return;
-            }
-            elements.startBtn.disabled = true;
+            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
             
-            // Simula a otimização de tema e o início do artigo
             elements.initialForm.style.display = 'none';
             elements.interactiveControls.style.display = 'block';
             elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
+            elements.footerDiv.innerHTML = `${userInputs.universidade}, ${new Date().getFullYear()}`;
             updateInteractiveUIState('ready_to_start_section');
         });
 
-        // --- BOTÃO: INICIAR SEÇÃO (INÍCIO) ---
+        // =========================================================================
+        // <<< PROMPTS APRIMORADOS PARA QUALIDADE E CONCISÃO >>>
+        // =========================================================================
+
         elements.startSectionBtn.addEventListener('click', async () => {
-            updateInteractiveUIState('loading'); // Desabilita tudo temporariamente
+            updateInteractiveUIState('loading');
             
-            const prompt = `Escreva o parágrafo INICIAL e introdutório para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O parágrafo deve apresentar o que será discutido nesta seção de forma clara e concisa. Tamanho ideal: 80-120 palavras.`;
+            const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O objetivo é servir como um roteiro para o leitor, apresentando os pontos-chave que serão discutidos nesta seção sem rodeios ou generalidades. Seja conciso e informativo. Tamanho: 70-100 palavras.`;
             
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
-                displayABNTDocument(); // Função para renderizar o HTML
+                displayABNTDocument();
                 updateInteractiveUIState('developing_section');
             } catch (error) {
-                updateInteractiveUIState('ready_to_start_section'); // Volta ao estado anterior em caso de erro
+                updateInteractiveUIState('ready_to_start_section');
             }
         });
 
-        // --- BOTÃO: DESENVOLVER IDEIA (MEIO) ---
         elements.developSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
 
             const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
             const prompt = `
-                Você é um escritor acadêmico. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}".
+                Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}".
 
-                **Contexto (Últimos parágrafos):** "${lastTwoParagraphs}"
+                Contexto (Últimos parágrafos): "${lastTwoParagraphs}"
 
-                **INSTRUÇÃO CRÍTICA:** Evite a repetição de estruturas iniciais. NÃO comece o parágrafo com "Além de...", "Adicionalmente...", "Outro aspecto...", ou sinônimos. Crie uma transição original e um início de parágrafo estruturalmente novo.
-
-                O parágrafo deve desenvolver uma nova faceta do tema, ter 80-120 palavras e ser único.`;
+                **INSTRUÇÕES CRÍTICAS:**
+                1.  **NÃO ENCHA LINGUIÇA.** Sua missão é adicionar valor real. O novo parágrafo DEVE introduzir uma **ideia nova, um dado concreto, um exemplo prático, ou um contraponto** ao que foi dito antes.
+                2.  **EVITE REPETIÇÃO ESTRUTURAL.** Não comece com "Além de...", "Adicionalmente...", "Outro aspecto...". Crie uma transição original.
+                3.  **SEJA DIRETO.** Evite verbosidade, clichês e frases que não agregam informação.
+                
+                O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
 
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
-                updateInteractiveUIState('developing_section'); // Permanece no estado de desenvolvimento
+                updateInteractiveUIState('developing_section');
             } catch (error) {
                 updateInteractiveUIState('developing_section');
             }
         });
 
-        // --- BOTÃO: CONCLUIR SEÇÃO (FIM) ---
         elements.endSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
 
             const fullSectionText = articleContent[currentSection].join(' ');
-            const prompt = `Baseado no conteúdo da seção: "${fullSectionText}", escreva um parágrafo de CONCLUSÃO para a seção de "${sectionDisplayNames[currentSection]}". O parágrafo deve resumir os pontos principais discutidos e fornecer uma transição suave para a próxima parte do artigo. Tamanho: 80-120 palavras.`;
+            const prompt = `Escreva um parágrafo de CONCLUSÃO impactante e conciso para a seção de "${sectionDisplayNames[currentSection]}", baseado neste conteúdo: "${fullSectionText}". Em vez de apenas repetir, **sintetize as ideias-chave em uma nova formulação** que reforce a importância do que foi discutido. Finalize com uma transição clara para a próxima etapa do artigo. Tamanho: 70-100 palavras.`;
 
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
-                updateInteractiveUIState('section_concluded');
                 
-                // Prepara para a próxima etapa
                 const currentIndex = sectionOrder.indexOf(currentSection);
                 if (currentIndex < sectionOrder.length - 1) {
                     currentSection = sectionOrder[currentIndex + 1];
                     elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
-                    setTimeout(() => updateInteractiveUIState('ready_to_start_section'), 1000); // Dá tempo para o usuário ler o status
+                    updateInteractiveUIState('ready_to_start_section');
                 } else {
-                    // Todas as seções foram concluídas
                     updateInteractiveUIState('article_finished');
-                    // Aqui você pode chamar a função para gerar resumo/abstract
                 }
             } catch (error) {
                 updateInteractiveUIState('developing_section');
             }
         });
 
-        // --- BOTÃO FINAL ---
         elements.finishBtn.addEventListener('click', () => {
-             alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
+            // Aqui seria o local para chamar a geração de resumo, abstract, etc.
+             alert(`Artigo finalizado! Agora você pode salvá-lo como PDF.`);
              log(`🎓 Artigo concluído! Salve seu trabalho.`, 'success');
         });
 
-        // Função para exibir o documento (simplificada)
         function displayABNTDocument() {
-            let html = '';
+            let html = `<div style="text-align: center; font-weight: bold; margin-bottom: 2em;">${userInputs.universidade || ''}</div>`;
+            html += `<div style="text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 2em;">${userInputs.titulo || ''}</div>`;
+            html += `<div style="text-align: center; margin-bottom: 4em;">${userInputs.autor || ''}</div>`;
+            
             sectionOrder.forEach(key => {
                 if (articleContent[key].length > 0) {
                     html += `<div class="section-title">${sectionDisplayNames[key]}</div>`;
@@ -274,7 +254,10 @@
             elements.outputDiv.innerHTML = html;
         }
 
-        elements.savePdfBtn.addEventListener('click', () => window.print());
+        elements.savePdfBtn.addEventListener('click', () => {
+             alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".');
+             window.print();
+        });
 
     </script>
 </body>
