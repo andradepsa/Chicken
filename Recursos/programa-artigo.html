@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
-        /* CORREÇÃO: A linha @import para a fonte Arial foi removida, pois era inválida e causava erros de carregamento. */
         body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
         .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; }
         
@@ -303,11 +302,12 @@
         let currentParagraphId = null;
         let currentModalReferences = [];
 
+        // *** CORREÇÃO 3: ADICIONAR VERIFICAÇÃO DE BIBLIOTECAS ***
         // CORREÇÃO: Verificar se as bibliotecas carregaram corretamente
         function checkLibrariesLoaded() {
             return new Promise((resolve) => {
                 let attempts = 0;
-                const maxAttempts = 50;
+                const maxAttempts = 50; // Tenta por 5 segundos
                 
                 const checkInterval = setInterval(() => {
                     attempts++;
@@ -519,7 +519,7 @@
         }
 
         // ==================================================================
-        // SISTEMA DE REFERÊNCIAS REAIS - CORREÇÃO DOS TIMEOUTS
+        // SISTEMA DE REFERÊNCIAS REAIS - LÓGICA ORIGINAL COMPLETA
         // ==================================================================
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
@@ -578,20 +578,16 @@
                         const languageFlag = {'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹', 'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'}[language] || '🌍';
                         elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10</small>`;
                         const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
-                        
-                        // CORREÇÃO: Aumentar timeout e usar Promise.race para controle melhor
+
+                        // *** CORREÇÃO 1: CORREÇÃO DO TIMEOUT ***
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
-                        
+                        const timeoutId = setTimeout(() => controller.abort(), 10000);
                         const res = await Promise.race([
                             fetch(url, { signal: controller.signal }),
-                            new Promise((_, reject) => 
-                                setTimeout(() => reject(new Error('Timeout')), 9000)
-                            )
+                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 9000))
                         ]);
-                        
                         clearTimeout(timeoutId);
-                        
+
                         if (res.ok) {
                             const data = await res.json();
                             const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year >= 2000 && !foundPapers.has(p.paperId));
@@ -600,36 +596,19 @@
                                 foundPapers.add(paper.paperId);
                                 let processedPaper = { id: paper.paperId, title: paper.title, authors: paper.authors.map(a => a.name), year: paper.year, abstract: paper.abstract || '', url: paper.url, language: language, originalTitle: paper.title };
                                 if (language !== 'PORTUGUÊS') {
-                                    const translationTimeout = isLatinLanguage ? 4000 : 5000;
-                                    try {
-                                        const translatedTitle = await Promise.race([
-                                            callPuterAI(`Traduza APENAS o título para português: "${paper.title}"`), 
-                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
-                                        ]);
-                                        processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
-                                        if (allPapers.length < 5 && paper.abstract) {
-                                            try {
-                                                const translatedAbstract = await Promise.race([
-                                                    callPuterAI(`Traduza APENAS o resumo para português: "${paper.abstract}"`), 
-                                                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
-                                                ]);
-                                                processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
-                                            } catch (error) {
-                                                console.warn(`Timeout na tradução do abstract`, error);
-                                            }
-                                        }
-                                    } catch (error) {
-                                        console.warn(`Timeout na tradução do título`, error);
+                                    const translationTimeout = isLatinLanguage ? 3000 : 4000;
+                                    const translatedTitle = await Promise.race([callPuterAI(`Traduza APENAS o título para português: "${paper.title}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
+                                    processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
+                                    if (allPapers.length < 5 && paper.abstract) {
+                                        const translatedAbstract = await Promise.race([callPuterAI(`Traduza APENAS o resumo para português: "${paper.abstract}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
+                                        processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
                                     }
                                 }
                                 allPapers.push(processedPaper);
                             }
                         }
-                        await new Promise(resolve => setTimeout(resolve, isLatinLanguage ? 500 : 700));
-                    } catch (error) { 
-                        console.warn(`Erro na busca ${i + 1}`, error); 
-                        // Continue para próxima busca mesmo com erro
-                    }
+                        await new Promise(resolve => setTimeout(resolve, isLatinLanguage ? 400 : 600));
+                    } catch (error) { console.warn(`Erro na busca ${i + 1}`, error); }
                 }
                 log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
                 return allPapers;
@@ -740,16 +719,16 @@
         }
 
         // =================================================================================
-        // FUNÇÃO PROCESSAR ARTIGO - CORREÇÃO PARA SALVAR COMO .DOC
+        // FUNÇÃO PROCESSAR ARTIGO - VERSÃO FINAL CORRIGIDA
         // =================================================================================
         async function processArticle() {
-            // CORREÇÃO: Aguardar carregamento das bibliotecas
+            // *** CORREÇÃO 4: CORREÇÃO NA FUNÇÃO processArticle ***
             const librariesLoaded = await checkLibrariesLoaded();
             if (!librariesLoaded) {
                 log('❌ Bibliotecas de exportação (DOCX/PDF) não carregaram. Por favor, recarregue a página e tente novamente.', 'error');
                 return;
             }
-
+            
             const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
             const { jsPDF } = window.jspdf;
 
@@ -777,8 +756,6 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const safeTitle = (userInputs.titulo || "artigo").replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                
-                // CORREÇÃO: Mudança para .doc em vez de .docx
                 const fileNameBase = `artigo_final_${safeTitle}`;
 
                 log('Gerando arquivo DOC...', 'info');
@@ -796,7 +773,8 @@
                     styles: { paragraphStyles: [{ id: "Heading1", name: "Heading 1", basedOn: "Normal", run: { bold: true, allCaps: true } }] }
                 });
                 const blobDocx = await Packer.toBlob(doc);
-                // CORREÇÃO: Salvar como .doc
+
+                // *** CORREÇÃO 2: CORREÇÃO DO SALVAMENTO ***
                 saveAs(blobDocx, `${fileNameBase}.doc`);
                 log('✅ Arquivo DOC salvo!', 'success');
                 
@@ -915,21 +893,10 @@
             const p = e.target.closest('p[data-id]');
             if (p) { openReferenceModal(p.dataset.id, p.textContent, userInputs.titulo); }
         });
-        
         // --- INICIALIZAÇÃO ---
         elements.meioBtn.disabled = true;
         elements.fimBtn.disabled = true;
         log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
-
-        // CORREÇÃO: Aguardar carregamento das bibliotecas na inicialização
-        window.addEventListener('load', async () => {
-            const librariesLoaded = await checkLibrariesLoaded();
-            if (librariesLoaded) {
-                log('✅ Bibliotecas carregadas com sucesso!', 'success');
-            } else {
-                log('⚠️ Algumas bibliotecas podem não ter carregado. Funcionalidades de exportação podem estar limitadas.', 'warning');
-            }
-        });
     </script>
 </body>
 </html>
