@@ -18,6 +18,51 @@
             min-height: 100vh;
             color: #333;
         }
+        
+        /* Aviso de Carregamento em Tela Cheia */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(44, 62, 80, 0.85);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .loading-box {
+            background: white;
+            color: #2c3e50;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 400px;
+        }
+
+        .loading-box h2 {
+            margin-bottom: 15px;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3; /* Cinza claro */
+            border-top: 8px solid #3498db; /* Azul */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         .container {
             display: flex;
@@ -87,7 +132,7 @@
         }
 
         .topics-list.active {
-            max-height: 800px; /* Aumentado para acomodar mais tópicos */
+            max-height: 800px;
         }
 
         .topic-item {
@@ -820,6 +865,15 @@
         Gerando questões...
     </div>
 
+    <!-- Aviso de Carregamento em Tela Cheia -->
+    <div id="loading-overlay" style="display: none;">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            <h2>Aguarde um momento...</h2>
+            <p>A Inteligência Artificial está gerando suas questões personalizadas. Isso pode levar alguns segundos.</p>
+        </div>
+    </div>
+
     <script>
         // Estado da aplicação
         let currentTopic = null;
@@ -842,7 +896,8 @@
             quizResults: document.getElementById('quiz-results'),
             topicTitle: document.getElementById('topic-title'),
             topicDescription: document.getElementById('topic-description'),
-            statusIndicator: document.getElementById('status-indicator')
+            statusIndicator: document.getElementById('status-indicator'),
+            loadingOverlay: document.getElementById('loading-overlay')
         };
 
         // Inicialização
@@ -852,16 +907,11 @@
         });
 
         function setupEventListeners() {
-            // Menu lateral - headers dos anos
             document.querySelectorAll('.grade-header').forEach(header => {
                 header.addEventListener('click', function() {
                     const isActive = this.classList.contains('active');
-                    
-                    // Fecha todos
                     document.querySelectorAll('.grade-header').forEach(h => h.classList.remove('active'));
                     document.querySelectorAll('.topics-list').forEach(list => list.classList.remove('active'));
-
-                    // Abre ou fecha o clicado
                     if (!isActive) {
                         this.classList.add('active');
                         this.nextElementSibling.classList.add('active');
@@ -869,43 +919,38 @@
                 });
             });
 
-            // Itens dos tópicos
             document.querySelectorAll('.topic-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    selectTopic(this);
-                });
+                item.addEventListener('click', () => selectTopic(item));
             });
 
-            // Configurações do quiz
             document.getElementById('question-count').addEventListener('change', function() {
                 questionCount = parseInt(this.value);
             });
-
             document.getElementById('difficulty-level').addEventListener('change', function() {
                 difficulty = this.value;
             });
         }
+        
+        function showLoading() {
+            elements.loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            elements.loadingOverlay.style.display = 'none';
+        }
 
         function selectTopic(element) {
-            // Remove seleção anterior
-            document.querySelectorAll('.topic-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Seleciona o atual
+            document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
             element.classList.add('selected');
             
-            // Extrai dados dinamicamente do HTML
             currentTopic = element.dataset.topic;
             currentTopicTitle = element.textContent;
             const gradeHeader = element.closest('.grade-section').querySelector('.grade-header');
             currentGradeText = gradeHeader.querySelector('div > span:last-of-type').textContent.trim();
             
-            // Atualiza header
             elements.topicTitle.textContent = `📚 ${currentTopicTitle}`;
             elements.topicDescription.textContent = `${currentGradeText} - Conteúdo alinhado à BNCC`;
             
-            // Mostra configuração do quiz
             showQuizSetup();
         }
 
@@ -930,68 +975,27 @@
             const indicator = elements.statusIndicator;
             indicator.textContent = message;
             indicator.className = `status-indicator show ${type}`;
-            
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 3000);
+            setTimeout(() => indicator.classList.remove('show'), 3000);
         }
 
-        // Função principal para gerar questões com IA
         async function generateQuestionsWithAI() {
-            const prompt = `
-            Gere ${questionCount} questões de múltipla escolha sobre o tópico de matemática "${currentTopicTitle}", para alunos da série "${currentGradeText}".
-            
-            REGRAS:
-            1. Nível de dificuldade: ${difficulty}.
-            2. Cada questão deve ter exatamente 4 alternativas (A, B, C, D).
-            3. Apenas uma alternativa deve ser a correta.
-            4. Inclua uma explicação detalhada e pedagógica da resposta correta, adequada para a faixa etária de "${currentGradeText}".
-            5. Varie os tipos de questões (cálculo, conceitual, aplicação, resolução de problemas).
-            
-            FORMATO JSON OBRIGATÓRIO (sem texto antes ou depois, apenas o JSON):
-            {
-                "questions": [
-                    {
-                        "question": "Texto da questão aqui.",
-                        "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
-                        "correct": 0,
-                        "explanation": "Explicação detalhada e passo a passo da resposta correta."
-                    }
-                ]
-            }
-            
-            Gere todas as ${questionCount} questões agora:`;
+            const prompt = `Gere ${questionCount} questões de múltipla escolha sobre o tópico de matemática "${currentTopicTitle}", para alunos da série "${currentGradeText}".\n\nREGRAS:\n1. Nível de dificuldade: ${difficulty}.\n2. Cada questão deve ter exatamente 4 alternativas (A, B, C, D).\n3. Apenas uma alternativa deve ser a correta.\n4. Inclua uma explicação detalhada e pedagógica da resposta correta, adequada para a faixa etária de "${currentGradeText}".\n5. Varie os tipos de questões (cálculo, conceitual, aplicação, resolução de problemas).\n\nFORMATO JSON OBRIGATÓRIO (sem texto antes ou depois, apenas o JSON):\n{\n    "questions": [\n        {\n            "question": "Texto da questão aqui.",\n            "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],\n            "correct": 0,\n            "explanation": "Explicação detalhada e passo a passo da resposta correta."\n        }\n    ]\n}\n\nGere todas as ${questionCount} questões agora:`;
 
             try {
-                showStatus('🤖 Gerando questões com IA...', 'info');
-                
-                const response = await puter.ai.chat([{
-                    role: 'user',
-                    content: prompt
-                }]);
-                
+                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 const content = response.message.content.trim();
-                
-                // Extrai JSON da resposta de forma mais robusta
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('Formato JSON inválido na resposta da IA');
-                }
+                
+                if (!jsonMatch) throw new Error('Formato JSON inválido na resposta da IA');
                 
                 const questionsData = JSON.parse(jsonMatch[0]);
-                
-                if (!questionsData.questions || !Array.isArray(questionsData.questions)) {
-                    throw new Error('Estrutura de questões inválida na resposta da IA');
-                }
-                
+                if (!questionsData.questions || !Array.isArray(questionsData.questions)) throw new Error('Estrutura de questões inválida');
+
                 showStatus('✅ Questões geradas com sucesso!', 'success');
                 return questionsData.questions;
-                
             } catch (error) {
                 console.error('Erro ao gerar questões:', error);
                 showStatus('❌ Erro ao gerar questões. Usando fallback.', 'error');
-                
-                // Questões de fallback em caso de erro
                 return generateFallbackQuestions();
             }
         }
@@ -1001,9 +1005,7 @@
             for (let i = 1; i <= questionCount; i++) {
                 fallbackQuestions.push({
                     question: `(Fallback) Questão ${i} sobre ${currentTopicTitle}: Qual é o resultado de 2 + ${i}?`,
-                    options: [
-                        `A) ${i + 1}`, `B) ${i + 2}`, `C) ${i + 3}`, `D) ${i + 4}`
-                    ],
+                    options: [`A) ${i + 1}`, `B) ${i + 2}`, `C) ${i + 3}`, `D) ${i + 4}`],
                     correct: 1,
                     explanation: `A resposta correta é ${i + 2} porque 2 + ${i} = ${i + 2}.`
                 });
@@ -1017,22 +1019,28 @@
                 return;
             }
             
-            questions = await generateQuestionsWithAI();
-            
-            if (!questions || questions.length === 0) {
-                alert('Não foi possível gerar as questões. Tente novamente.');
-                return;
+            showLoading();
+            try {
+                questions = await generateQuestionsWithAI();
+                
+                if (!questions || questions.length === 0) {
+                    alert('Não foi possível gerar as questões. Tente novamente.');
+                    return;
+                }
+                
+                currentQuestionIndex = 0;
+                userAnswers = [];
+                score = { correct: 0, incorrect: 0 };
+                
+                hideAllScreens();
+                elements.quizArea.style.display = 'block';
+                
+                updateQuizHeader();
+                displayQuestion();
+
+            } finally {
+                hideLoading();
             }
-            
-            currentQuestionIndex = 0;
-            userAnswers = [];
-            score = { correct: 0, incorrect: 0 };
-            
-            hideAllScreens();
-            elements.quizArea.style.display = 'block';
-            
-            updateQuizHeader();
-            displayQuestion();
         }
 
         function updateQuizHeader() {
@@ -1044,13 +1052,11 @@
         function updateProgress() {
             const progress = ((currentQuestionIndex) / questions.length) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = 
-                `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('progress-text').textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
         }
 
         function updateScore() {
-            document.getElementById('score-display').innerHTML = 
-                `✅ ${score.correct} | ❌ ${score.incorrect}`;
+            document.getElementById('score-display').innerHTML = `✅ ${score.correct} | ❌ ${score.incorrect}`;
         }
 
         function displayQuestion() {
@@ -1060,7 +1066,6 @@
             }
             
             const question = questions[currentQuestionIndex];
-            
             document.getElementById('question-number').textContent = `Questão ${currentQuestionIndex + 1}`;
             document.getElementById('question-text').textContent = question.question;
             
@@ -1070,12 +1075,7 @@
             question.options.forEach((option, index) => {
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'option';
-                // Remove o prefixo "A) ", "B) " etc., se existir, para evitar duplicação.
-                optionDiv.innerHTML = `
-                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
-                    <div>${option.replace(/^[A-D]\)\s*/, '')}</div>
-                `;
-                
+                optionDiv.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + index)}</div><div>${option.replace(/^[A-D]\)\s*/, '')}</div>`;
                 optionDiv.addEventListener('click', () => selectAnswer(index, optionDiv));
                 optionsContainer.appendChild(optionDiv);
             });
@@ -1084,7 +1084,6 @@
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
             document.getElementById('next-btn').style.display = 'none';
-            
             updateProgress();
         }
 
@@ -1098,11 +1097,8 @@
             const options = document.querySelectorAll('.option');
             options.forEach((option, index) => {
                 option.style.pointerEvents = 'none';
-                if (index === question.correct) {
-                    option.classList.add('correct');
-                } else if (index === answerIndex && !isCorrect) {
-                    option.classList.add('incorrect');
-                }
+                if (index === question.correct) option.classList.add('correct');
+                else if (index === answerIndex && !isCorrect) option.classList.add('incorrect');
             });
             
             if (isCorrect) {
@@ -1113,16 +1109,11 @@
                 showStatus('❌ Resposta incorreta', 'error');
             }
             
-            userAnswers.push({
-                questionIndex: currentQuestionIndex,
-                selectedAnswer: answerIndex,
-                correct: isCorrect
-            });
+            userAnswers.push({ questionIndex: currentQuestionIndex, selectedAnswer: answerIndex, correct: isCorrect });
             
             document.getElementById('explanation-text').textContent = question.explanation;
             document.getElementById('explanation').classList.add('show');
             document.getElementById('next-btn').style.display = 'inline-block';
-            
             updateScore();
         }
 
@@ -1140,7 +1131,6 @@
             const resultMessageEl = document.getElementById('result-message');
             
             finalScoreEl.textContent = `${percentage}%`;
-            
             if (percentage >= 80) {
                 finalScoreEl.className = 'result-score excellent';
                 resultMessageEl.textContent = '🎉 Excelente! Você domina este tópico!';
@@ -1158,9 +1148,7 @@
         }
 
         function restartSameTopic() {
-            if (currentTopic) {
-                startQuiz();
-            }
+            if (currentTopic) startQuiz();
         }
 
         function resetQuiz() {
@@ -1169,7 +1157,6 @@
             currentGradeText = null;
             
             document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
-            
             elements.topicTitle.textContent = '🎯 Selecione um tópico para começar';
             elements.topicDescription.textContent = 'Escolha um tópico no menu lateral para gerar questões personalizadas com IA';
             
