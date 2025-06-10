@@ -267,9 +267,8 @@
         let sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
         let currentModalReferences = [];
         let usedPhrases = new Set();
-        let sectionPhaseMap = { introducao: 'inicio', desenvolvimento: 'meio', conclusao: 'fim' };
-        let lastParagraphIndex = -1; // Para controlar reescrita
-        let sessionActive = false; // Controla se sessão está ativa
+        let lastParagraphIndex = -1;
+        let sessionActive = false;
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -295,11 +294,8 @@
 
         // --- SISTEMA ANTI-REPETIÇÃO ---
         function extractKeyPhrases(text) {
-            // Remove citações e pontuação, converte para minúsculas
             const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
             const words = cleanText.split(/\s+/).filter(word => word.length > 3);
-            
-            // Extrai frases de 3-5 palavras consecutivas
             const phrases = [];
             for (let i = 0; i < words.length - 2; i++) {
                 phrases.push(words.slice(i, i + 3).join(' '));
@@ -353,7 +349,7 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
         // --- CONTADOR DE PÁGINAS ---
         function updatePageCount() {
             const contentHeight = elements.outputDiv.scrollHeight;
-            const pageHeight = 800; // Altura aproximada de uma página A4 em pixels
+            const pageHeight = 800;
             const pages = Math.max(1, Math.ceil(contentHeight / pageHeight));
             elements.pageCountSpan.textContent = pages;
         }
@@ -413,7 +409,7 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
-        // --- LÓGICA DE REFERÊNCIAS ---
+        // --- SISTEMA DE REFERÊNCIAS (COPIADO DO CÓDIGO FUNCIONANDO) ---
         function extractRelevantTerms(text, title = '') {
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho'];
             const combinedText = `${title} ${text}`.toLowerCase();
@@ -429,46 +425,16 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
                 const query = relevantTerms.join(' ');
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
                 elements.searchInfoDiv.style.display = 'block';
-                
                 const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
-                const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
-                
-                if (!response.ok) {
-                    throw new Error(`API retornou status ${response.status}`);
-                }
-                
+                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+                if (!response.ok) throw new Error(`API retornou status ${response.status}`);
                 const data = await response.json();
-                
-                if (!data.data || !Array.isArray(data.data)) {
-                    log('⚠️ Formato de resposta inesperado da API', 'warning');
-                    return [];
-                }
-                
-                const papers = data.data.filter(p => 
-                    p && 
-                    p.title && 
-                    p.authors && 
-                    Array.isArray(p.authors) && 
-                    p.authors.length > 0 && 
-                    p.year &&
-                    p.year > 1990
-                );
-                
-                const formattedPapers = papers.map(p => ({
-                    id: p.paperId || `temp_${Date.now()}_${Math.random()}`,
-                    title: p.title,
-                    authors: p.authors.map(a => a.name || 'Autor Desconhecido'),
-                    year: p.year,
-                    abstract: p.abstract || '',
-                    url: p.url || `https://semanticscholar.org/paper/${p.paperId}`
-                }));
-                
-                log(`${formattedPapers.length} referências encontradas!`, 'success');
-                return formattedPapers;
-                
+                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
+                log(`${papers.length} referências encontradas!`, 'success');
+                return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
             } catch (error) {
-                console.error('Erro detalhado ao buscar referências:', error);
-                log(`❌ Erro na busca: ${error.message}`, 'error');
+                console.error('Erro ao buscar referências:', error);
+                log('⚠️ Erro na busca de referências.', 'error');
                 return [];
             }
         }
@@ -478,109 +444,47 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
             elements.addReferencesBtn.disabled = true;
             elements.referenceModal.style.display = 'flex';
-            
-            try {
-                const references = await fetchParagraphReferences(paragraphText, articleTitle);
-                currentModalReferences = references;
-                
-                if (references.length === 0) {
-                    elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
-                    elements.addReferencesBtn.disabled = true;
-                } else {
-                    const hasUsedRefs = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id));
-                    elements.duplicateWarningDiv.style.display = hasUsedRefs ? 'block' : 'none';
-                    elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-                    
-                    elements.referenceList.innerHTML = references.map((ref, index) => {
-                        const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-                        return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                                    <input type="checkbox" id="ref-${index}" value="${index}">
-                                    <label for="ref-${index}">
-                                        <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
-                                        ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                        <br><em>${ref.title}</em>
-                                        <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                                    </label>
-                                </li>`;
-                    }).join('');
-                    elements.addReferencesBtn.disabled = false;
-                }
-            } catch (error) {
-                console.error('Erro ao buscar referências:', error);
-                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Erro ao buscar referências</strong></div>`;
-                elements.addReferencesBtn.disabled = true;
+            const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            currentModalReferences = references;
+            if (references.length === 0) {
+                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
+            } else {
+                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
+                elements.referenceList.innerHTML = references.map((ref, index) => {
+                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                                <input type="checkbox" id="ref-${index}" value="${index}">
+                                <label for="ref-${index}">
+                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
+                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
+                                    <br><em>${ref.title}</em>
+                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                </label>
+                            </li>`;
+                }).join('');
+                elements.addReferencesBtn.disabled = false;
             }
         }
 
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            
-            if (selectedIndices.length === 0) {
-                alert('Selecione ao menos uma referência.');
-                return;
-            }
-            
+            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            if (!paragraphElement) {
-                alert('Erro: Parágrafo não encontrado.');
-                elements.referenceModal.style.display = 'none';
-                return;
-            }
-            
-            try {
-                const [sectionKey, indexStr] = currentParagraphId.split('-');
-                const paragraphIndex = parseInt(indexStr);
-                
-                if (!articleContent[sectionKey] || !articleContent[sectionKey][paragraphIndex]) {
-                    alert('Erro: Conteúdo do parágrafo não encontrado.');
-                    return;
-                }
-                
-                const originalText = articleContent[sectionKey][paragraphIndex];
-                const selectedRefs = selectedIndices.map(index => currentModalReferences[index]).filter(ref => ref);
-                
-                if (selectedRefs.length === 0) {
-                    alert('Erro: Referências selecionadas não foram encontradas.');
-                    return;
-                }
-                
-                // Formata as citações
-                const citations = selectedRefs.map(ref => {
-                    const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                    if (ref.authors.length > 2) {
-                        return `${lastName} et al., ${ref.year}`;
-                    } else {
-                        const allLastNames = ref.authors.map(a => a.split(' ').pop().toUpperCase());
-                        return `${allLastNames.join('; ')}, ${ref.year}`;
-                    }
-                });
-                
-                // Remove citações existentes e adiciona as novas
-                const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-                const newText = `${cleanText} (${citations.join('; ')}).`;
-                
-                // Atualiza o conteúdo
-                paragraphElement.textContent = newText;
-                articleContent[sectionKey][paragraphIndex] = newText;
-                
-                // Adiciona referências à lista final (evita duplicatas)
-                selectedRefs.forEach(ref => {
-                    if (!finalReferences.some(eRef => eRef.id === ref.id)) {
-                        finalReferences.push(ref);
-                    }
-                });
-                
-                // Atualiza a exibição
-                displayABNTDocument();
-                elements.referenceModal.style.display = 'none';
-                
-                log(`✅ ${selectedIndices.length} referência(s) adicionada(s) com sucesso!`, 'success');
-                
-            } catch (error) {
-                console.error('Erro ao adicionar referências:', error);
-                alert('Erro ao adicionar referências. Tente novamente.');
-                log('❌ Erro ao processar referências', 'error');
-            }
+            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
+            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            const citations = selectedRefs.map(ref => {
+                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+            });
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
+            const [sectionKey, indexStr] = currentParagraphId.split('-');
+            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+            displayABNTDocument();
+            elements.referenceModal.style.display = 'none';
+            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
 
         function formatarReferenciasABNT() {
@@ -660,7 +564,6 @@ Output:`;
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left;">${formatarReferenciasABNT()}</div>`;
             }
             if (userInputs.email && userInputs.universidade) {
-                // Formatação ABNT correta: ¹ Nível, Instituição, email.
                 const instituicaoFormatada = userInputs.universidade.replace(/universidade/gi, 'Universidade').replace(/federal/gi, 'Federal').replace(/estadual/gi, 'Estadual').replace(/municipal/gi, 'Municipal');
                 const emailFormatado = userInputs.email.toLowerCase();
                 content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${instituicaoFormatada}, ${emailFormatado}.</div>`;
@@ -668,18 +571,16 @@ Output:`;
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
             
-            // Atualiza contador de páginas
             setTimeout(updatePageCount, 100);
         }
         
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
             try {
-                // Apenas configura a interface, NÃO gera conteúdo automaticamente
                 document.getElementById('initial-form').style.display = 'none';
                 document.getElementById('interactive-controls').style.display = 'block';
                 elements.currentSectionNameSpan.textContent = 'Introdução';
-                sessionActive = false; // Sessão não está ativa ainda
+                sessionActive = false;
                 log('✅ Configuração concluída! Clique em INÍCIO para começar a escrever.', 'success');
             } catch (error) {
                 elements.startBtn.disabled = false;
@@ -727,10 +628,8 @@ Output:`;
                 const prompt = createAntiRepetitionPrompt(phase);
                 const content = await callPuterAI(prompt);
                 
-                // Adiciona frases à memória anti-repetição
                 addPhrasesToMemory(content);
                 
-                // Se for INÍCIO, inicia nova sessão
                 if (phase === 'inicio') {
                     sessionActive = true;
                     elements.meioBtn.disabled = false;
@@ -741,13 +640,11 @@ Output:`;
                 lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
                 
-                // Mostra botão reescrever após adicionar parágrafo
                 elements.rewriteBtn.style.display = 'block';
                 
                 const phaseLabels = { inicio: 'abertura', meio: 'desenvolvimento', fim: 'finalização' };
                 log(`✅ Parágrafo de ${phaseLabels[phase]} adicionado!`, 'success');
                 
-                // Se for FIM, termina a sessão
                 if (phase === 'fim') {
                     sessionActive = false;
                     elements.inicioBtn.disabled = false;
@@ -755,7 +652,6 @@ Output:`;
                     elements.fimBtn.disabled = true;
                     log('🎯 Sessão finalizada! Clique em INÍCIO para nova sessão.', 'info');
                     
-                    // Avança para próxima seção automaticamente se não for a última
                     const currentIndex = sectionOrder.indexOf(currentSection);
                     if (currentIndex < sectionOrder.length - 1) {
                         currentSection = sectionOrder[currentIndex + 1];
@@ -763,7 +659,6 @@ Output:`;
                         elements.currentSectionNameSpan.textContent = sectionDisplayName;
                         log(`📝 Pronto para iniciar: ${sectionDisplayName}`, 'info');
                     } else {
-                        // Última seção concluída - gerar resumo
                         await generateResumoAndAbstract();
                         displayABNTDocument();
                         alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
@@ -778,7 +673,6 @@ Output:`;
             }
         }
 
-        // Função para reescrever o último parágrafo
         async function rewriteLastParagraph() {
             if (lastParagraphIndex === -1 || !sessionActive) {
                 alert('Nenhum parágrafo para reescrever ou sessão inativa.');
@@ -788,17 +682,14 @@ Output:`;
             elements.rewriteBtn.disabled = true;
             
             try {
-                // Remove o último parágrafo das frases utilizadas
                 const lastContent = articleContent[currentSection][lastParagraphIndex];
                 const lastPhrases = extractKeyPhrases(lastContent);
                 lastPhrases.forEach(phrase => usedPhrases.delete(phrase));
                 
-                // Gera novo conteúdo
-                const currentPhase = sessionActive ? 'meio' : 'inicio'; // Determina a fase atual
+                const currentPhase = sessionActive ? 'meio' : 'inicio';
                 const prompt = createAntiRepetitionPrompt(currentPhase);
                 const newContent = await callPuterAI(prompt);
                 
-                // Substitui o conteúdo
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection][lastParagraphIndex] = newContent;
                 displayABNTDocument();
@@ -831,51 +722,13 @@ Output:`;
         
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
         
-        
-        elements.finalizeBtn.addEventListener('click', async () => {
-            const currentIndex = sectionOrder.indexOf(currentSection);
-            if (currentIndex < sectionOrder.length - 1) {
-                currentSection = sectionOrder[currentIndex + 1];
-                const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
-                elements.currentSectionNameSpan.textContent = sectionDisplayName;
-                
-                // Gera parágrafo inicial da nova seção usando sistema anti-repetição
-                try {
-                    const prompt = createAntiRepetitionPrompt('inicio');
-                    const content = await callPuterAI(prompt);
-                    addPhrasesToMemory(content);
-                    articleContent[currentSection].push(content);
-                    displayABNTDocument();
-                    log(`✅ Seção '${sectionDisplayName}' iniciada!`, 'success');
-                } catch (error) {
-                    log(`❌ Erro ao iniciar seção ${sectionDisplayName}`, 'error');
-                }
-            } else {
-                // Finalização do artigo
-                elements.finalizeBtn.style.display = 'none';
-                elements.inicioBtn.disabled = true;
-                elements.meioBtn.disabled = true;
-                elements.fimBtn.disabled = true;
-                
-                await generateResumoAndAbstract();
-                displayABNTDocument();
-                
-                alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
-                log(`🎓 Artigo concluído com ${usedPhrases.size} expressões únicas registradas!`, 'success');
-            }
-        });
-        
+        // --- EVENT LISTENER PARA CLIQUES NOS PARÁGRAFOS (SISTEMA ORIGINAL) ---
         elements.outputDiv.addEventListener('click', (e) => {
-            console.log('Clique detectado:', e.target);
             const paragraph = e.target.closest('p[data-id]');
             if (paragraph) {
-                console.log('Parágrafo encontrado:', paragraph.dataset.id);
                 const paragraphId = paragraph.dataset.id;
                 const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
-                console.log('Texto do parágrafo:', paragraphText);
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
-            } else {
-                console.log('Nenhum parágrafo encontrado no clique');
             }
         });
         
@@ -889,7 +742,6 @@ Output:`;
         });
 
         // --- INICIALIZAÇÃO ---
-        // Desabilita botões meio e fim inicialmente
         elements.meioBtn.disabled = true;
         elements.fimBtn.disabled = true;
         log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
