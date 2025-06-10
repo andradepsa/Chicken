@@ -419,38 +419,82 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
         }
         
         async function fetchParagraphReferences(paragraphText, articleTitle) {
+            console.log('🔍 Iniciando busca de referências...');
+            console.log('📝 Texto:', paragraphText);
+            console.log('📋 Título:', articleTitle);
+            
             log('Buscando referências acadêmicas...', 'info');
             try {
                 const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
+                console.log('🎯 Termos relevantes:', relevantTerms);
+                
                 const query = relevantTerms.join(' ');
+                console.log('🔎 Query de busca:', query);
+                
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
                 elements.searchInfoDiv.style.display = 'block';
+                
                 const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+                console.log('🌐 URL da API:', url);
+                
                 const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-                if (!response.ok) throw new Error(`API retornou status ${response.status}`);
+                console.log('📡 Resposta da API:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    throw new Error(`API retornou status ${response.status}`);
+                }
+                
                 const data = await response.json();
+                console.log('📊 Dados recebidos:', data);
+                
                 const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
-                log(`${papers.length} referências encontradas!`, 'success');
-                return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
+                console.log('📚 Papers filtrados:', papers.length);
+                
+                const formattedPapers = papers.map(p => ({ 
+                    id: p.paperId, 
+                    title: p.title, 
+                    authors: p.authors.map(a => a.name), 
+                    year: p.year, 
+                    abstract: p.abstract || '', 
+                    url: p.url 
+                }));
+                
+                console.log('✅ Papers formatados:', formattedPapers);
+                log(`${formattedPapers.length} referências encontradas!`, 'success');
+                return formattedPapers;
+                
             } catch (error) {
-                console.error('Erro ao buscar referências:', error);
+                console.error('❌ Erro detalhado na busca:', error);
                 log('⚠️ Erro na busca de referências.', 'error');
                 return [];
             }
         }
         
         async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
+            console.log('🔄 Iniciando openReferenceModal...');
+            console.log('📝 Parâmetros recebidos:', { paragraphId, paragraphText, articleTitle });
+            
             currentParagraphId = paragraphId;
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
             elements.addReferencesBtn.disabled = true;
+            
+            console.log('👁️ Exibindo modal...');
             elements.referenceModal.style.display = 'flex';
+            
+            console.log('🔍 Iniciando busca de referências...');
             const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            console.log('📚 Referências encontradas:', references);
+            
             currentModalReferences = references;
+            
             if (references.length === 0) {
+                console.log('❌ Nenhuma referência encontrada');
                 elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
             } else {
+                console.log('✅ Processando referências para exibição...');
                 elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
                 elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
+                
                 elements.referenceList.innerHTML = references.map((ref, index) => {
                     const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
                     return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
@@ -464,6 +508,7 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
                             </li>`;
                 }).join('');
                 elements.addReferencesBtn.disabled = false;
+                console.log('✅ Modal de referências configurado com sucesso!');
             }
         }
 
@@ -722,13 +767,31 @@ Output:`;
         
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
         
-        // --- EVENT LISTENER PARA CLIQUES NOS PARÁGRAFOS (SISTEMA ORIGINAL) ---
+        // --- EVENT LISTENER PARA CLIQUES NOS PARÁGRAFOS (COM DEBUG) ---
         elements.outputDiv.addEventListener('click', (e) => {
+            console.log('🖱️ Clique detectado em:', e.target);
+            console.log('🔍 Elemento clicado:', e.target.tagName);
+            
             const paragraph = e.target.closest('p[data-id]');
+            console.log('📝 Parágrafo encontrado:', paragraph);
+            
             if (paragraph) {
                 const paragraphId = paragraph.dataset.id;
+                console.log('🆔 ID do parágrafo:', paragraphId);
+                
                 const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
-                openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+                console.log('📄 Texto do parágrafo:', paragraphText);
+                console.log('📋 Título do artigo:', userInputs.titulo);
+                
+                if (userInputs.titulo) {
+                    console.log('✅ Abrindo modal de referências...');
+                    openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+                } else {
+                    console.log('❌ Título do artigo não encontrado');
+                    alert('Erro: Título do artigo não encontrado. Reinicie o processo.');
+                }
+            } else {
+                console.log('❌ Nenhum parágrafo com data-id encontrado');
             }
         });
         
