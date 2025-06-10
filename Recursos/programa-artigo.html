@@ -67,7 +67,7 @@
 
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .error { background-color: #f8d7da; color: #721c24; }
         .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         
@@ -382,7 +382,7 @@
             phrases.forEach(phrase => usedPhrases.add(phrase));
         }
 
-        // --- NOVA FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
+        // --- EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
         async function extractThemeAndTopics(text, articleTitle) {
             try {
                 const prompt = `
@@ -401,14 +401,12 @@
                 const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
                 const result = JSON.parse(jsonString);
                 
-                // Garante que topics tenha até 5 itens, preenchendo com vazios se necessário
                 result.topics = result.topics.slice(0, 5);
                 while (result.topics.length < 5) result.topics.push("");
                 
                 return result;
             } catch (error) {
                 console.error('Erro ao extrair tema e assuntos:', error);
-                // Fallback para método básico
                 const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
                 const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
                 const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
@@ -419,7 +417,7 @@
             }
         }
 
-        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
+        // --- GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
         async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
@@ -912,9 +910,11 @@
             }
         }
 
+        // --- FUNÇÃO CORRIGIDA PARA ADICIONAR REFERÊNCIAS ---
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            if (selectedIndexes.length === 0) {
+            // Correção: Substituído 'selectedIndexes' por 'selectedIndices'
+            if (selectedIndices.length === 0) {
                 log('Selecione ao menos uma referência.', 'error');
                 return;
             }
@@ -940,7 +940,7 @@
                 }
             });
             
-            displayABNT();
+            displayABNTDocument();
             elements.referenceModal.style.display = 'none';
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
@@ -988,33 +988,33 @@
                 const keywordsPrompt = `Traduza as palavras-chave para o inglês: "${userInputs.palavrasChave}". Responda APENAS com as palavras traduzidas, separadas por ponto final, sem ponto no fim.`;
                 userInputs.keywords = await callPuterAI(keywordsPrompt);
                 
-                log('✅ Resumo e abstract gerados!', 'success');
+                log('✅ Resumo e abstrato gerado!', 'success');
             } catch (error) {
-                log('⚠️ Erro ao gerar resumo/abstract.', 'warning');
+                log('⚠️ Erro ao gerar resumo/abstract.', 'error');
             }
         }
 
         function displayABNTDocument() {
-            let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
+            let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor-content">${userInputs.autor || ''}<sup>1</sup></div>`;
             
             if (userInputs.resumo && userInputs.isFinalized) {
-                content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
-                content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
+                content += `<div class="resumo-título">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave}:</strong> ${userInputs.palavrasChave}.</div>`;
+                content += `<div class="abstract-título">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords</strong> ${userInputs.keywords}.</div>`;
             }
             
             const sections = [
-                { name: 'INTRODUÇÃO', key: 'introducao', number: '1' },
+                { name: 'INTRODUÇÃO', key: 'introdução', number: '1' },
                 { name: 'DESENVOLVIMENTO', key: 'desenvolvimento', number: '2' },
-                { name: 'CONCLUSÃO', key: 'conclusao', number: '3' }
+                { name: 'CONCLUSÃO', key: 'conclusão', number: '3' }
             ];
             
             sections.forEach(section => {
-                if (articleContent[section.key].length > 0) {
+                if (articleContent[section.key].length > 0)) {
                     content += `<div class="section-title">${section.number} ${section.name}</div>`;
                     articleContent[section.key].forEach((text, index) => {
                         content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
                     });
-                }
+                });
             });
 
             if (finalReferences.length > 0) {
@@ -1022,43 +1022,47 @@
             }
             
             if (userInputs.email && userInputs.universidade && userInputs.curso) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}}. E-mail: ${userInputs.email}.</div>`;
             } else if (userInputs.email && userInputs.universidade) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}}. E-mail: ${userInputs.email}.</div>`;
             }
             
             elements.outputDiv.innerHTML = content;
-            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
+            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
             
             setTimeout(updatePageCount, 100);
         }
         
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
-            document.getElementById('initial-form').style.display = 'none';
+            document.getElementById('initial-form')).documentElementById('interactive-controls').style.display = 'none';
             document.getElementById('interactive-controls').style.display = 'block';
-            elements.currentSectionName.textContent = 'Introdução';
+            elements.currentSectionNameSpan.textContent;
+ = 'Introdução';
             sessionActive = false;
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
-        }
+            }
 
         elements.startBtn.addEventListener('click', async () => {
             const formattedFields = formatABNTFields();
 
-            userInputs = {
-                universidade: formattedFields.universidade,
-                titulo: document.getElementById('titulo').value,
-                autor: formattedFields.autor,
-                email: formattedFields.email,
-                curso: formattedFields.curso,
+            userInputs.userInputs = {
+                universidade: 'formattedFields.universidade',
+                title: document.getElementById('titulo').value,
+                autor: 'formattedFields.autor',
+                email: 'formattedFields.email',
+                curso: 'cursoFormatado.curso',
                 nivelFormacao: document.getElementById('nivel-formacao').value
             };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
+            if (!userInputs.título || !userInputs.autor) {
+ log('❌ Preencha título e autor.', 'error');
+                return;
+            }
             elements.startBtn.disabled = true;
             
             try {
-                const topicData = await refineAndSuggestTopics(userInputs.titulo);
-                populateAndShowTopicModal(topicData, userInputs.titulo);
+                const topicData = await refineAndSuggestTopics(userInputs.título);
+                populateAndShowModalTopic(topicData, userInputs.título);
             } catch (error) {
                 await proceedWithArticleGeneration();
             }
@@ -1066,30 +1070,32 @@
 
         elements.confirmTopicBtn.addEventListener('click', () => {
             const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
-            userInputs.titulo = selectedTopic;
+            userInputs.userInputs.título = selectedTopic;
             document.getElementById('titulo').value = selectedTopic;
-            elements.topicSuggestionModal.style.display = 'none';
-            log(`✅ Tema selecionado: "${selectedTopic}"`, 'success');
+            elements.documentModal.style.display = 'none';
+            log('Tema selecionado: "${selectedTopic}"`, 'success');
             proceedWithArticleGeneration();
         });
         
         async function rewriteLastParagraph() {
-            if (lastParagraphIndex === -1) { alert('Nenhum parágrafo para reescrever.'); return; }
+            if (lastParagraphIndex === -1) {
+ alert('Nenhum parágrafo para reescrever.');
+ return; }
             elements.rewriteBtn.disabled = true;
             
             try {
                 const lastContent = articleContent[currentSection][lastParagraphIndex];
-                const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+                const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ú\s;,\d\-\.]+\)\.?$/g, '').trim();
                 
-                const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
-                const newContent = await callPuterAI(prompt);
+                const prompt = `Reescreva o seguinte parágrafo de forma completamente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
+                var newContent = await callPuterAI(prompt);
 
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection][lastParagraphIndex] = newContent;
                 displayABNTDocument();
-                log('✅ Parágrafo reescrito! Clique nele para adicionar referências.', 'success');
+                log('✅ Parágrafo reescrito! Clique no parágrafo para adicionar referências.', 'Parágrafo');
             } catch (error) {
-                log(`❌ Erro ao reescrever: ${error.message}`, 'error');
+                log('Erro ao reescrever parágrafo: ${error.message}', 'error');
             } finally {
                 elements.rewriteBtn.disabled = false;
             }
@@ -1117,10 +1123,10 @@
                 4. NÃO adicione citações ou referências - apenas o texto do parágrafo.
                 
                 Escreva o parágrafo completo agora:`;
-                const content = await callPuterAI(prompt);
+                const newContent = await callPuterAI(prompt);
                 
-                addPhrasesToMemory(content);
-                articleContent[currentSection].push(content);
+                addPhrasesToMemory(newContent);
+                articleContent[currentSection].push(newContent);
                 lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
                 elements.rewriteBtn.style.display = 'block';
