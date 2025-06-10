@@ -205,12 +205,12 @@
             <div class="modal-content">
                 <h3>📚 Adicionar Referências AUTOR-DATA</h3>
                 <div class="citation-example">
-                    <strong>📖 Sistema Inteligente de Busca:</strong><br>
-                    • Analisa a <strong>ideia principal</strong> da primeira frase<br>
-                    • Gera <strong>múltiplas estratégias</strong> de busca automática<br>
-                    • Testa até encontrar <strong>10 referências</strong> relacionadas<br>
-                    • Citação final: (SILVA; SANTOS, 2023)<br>
-                    <em>Sistema persiste até encontrar referências relevantes ao tema!</em>
+                    <strong>🌍 Sistema Global de Busca (Top 20 Idiomas):</strong><br>
+                    • 🇨🇳 Chinês, 🇺🇸 Inglês, 🇧🇷 Português, 🇪🇸 Espanhol, 🇮🇳 Hindi, 🇸🇦 Árabe<br>
+                    • 🇧🇩 Bengali, 🇷🇺 Russo, 🇯🇵 Japonês, 🇫🇷 Francês, 🇩🇪 Alemão, 🇰🇷 Coreano<br>
+                    • 🇮🇹 Italiano, 🇹🇷 Turco, 🇻🇳 Vietnamita, 🇮🇷 Persa<br>
+                    • Busca <strong>global</strong> até encontrar <strong>10 referências</strong><br>
+                    <em>Cobertura acadêmica mundial completa!</em>
                 </div>
                 <div id="search-info" class="search-info" style="display: none;"></div>
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
@@ -511,7 +511,7 @@
             }
         }
 
-        // Busca manual de referências para modal com múltiplas estratégias
+        // Busca manual de referências para modal com múltiplas estratégias e idiomas
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
@@ -528,39 +528,116 @@
                 // Remove citações existentes
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando:</strong> <em>"${originalText}"</em><br><small>Gerando múltiplas estratégias de busca...</small>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando:</strong> <em>"${originalText}"</em><br><small>Gerando estratégias em múltiplos idiomas...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
-                // Gera estratégias de busca usando IA
+                // Gera estratégias de busca em múltiplos idiomas usando IA
                 const strategiesPrompt = `
                 Analise esta frase: "${originalText}"
                 
-                Extraia a IDEIA PRINCIPAL e gere 20 termos/frases de busca diferentes para encontrar artigos acadêmicos relacionados.
+                Extraia a IDEIA PRINCIPAL e gere termos de busca nas seguintes línguas (top 20 idiomas mundiais):
+                
+                CHINÊS SIMPLIFICADO (3 termos):
+                INGLÊS (4 termos):
+                PORTUGUÊS (3 termos):
+                ESPANHOL (2 termos):
+                HINDI (2 termos):
+                ÁRABE (2 termos):
+                BENGALI (1 termo):
+                RUSSO (2 termos):
+                JAPONÊS (2 termos):
+                FRANCÊS (2 termos):
+                ALEMÃO (2 termos):
+                COREANO (1 termo):
+                ITALIANO (1 termo):
+                TURCO (1 termo):
+                VIETNAMITA (1 termo):
+                PERSA (1 termo):
                 
                 REGRAS:
-                1. Varie entre termos técnicos, conceitos gerais e específicos
-                2. Use sinônimos e termos em inglês quando relevante
-                3. Inclua termos mais amplos e mais específicos
-                4. Cada termo deve ter 2-6 palavras
+                1. Use termos técnicos e conceitos acadêmicos
+                2. Varie entre termos específicos e gerais
+                3. Cada termo deve ter 2-6 palavras
+                4. Foque nos conceitos-chave da frase
+                5. Para idiomas não-latinos, use transliteração quando necessário
                 
-                Retorne apenas os termos separados por quebra de linha, um por linha:`;
+                FORMATO DE RESPOSTA:
+                CHINÊS SIMPLIFICADO:
+                termo1
+                termo2
+                ...
+                INGLÊS:
+                term1
+                term2
+                ...
+                (continue para cada idioma)
+                `;
                 
                 const response = await callPuterAI(strategiesPrompt);
-                const searchTerms = response.split('\n').filter(term => term.trim().length > 0).slice(0, 20);
+                
+                // Processa a resposta para extrair termos por idioma
+                const searchTerms = [];
+                const lines = response.split('\n');
+                let currentSection = '';
+                
+                for (const line of lines) {
+                    const cleanLine = line.trim();
+                    if (cleanLine.match(/^(CHINÊS SIMPLIFICADO|INGLÊS|PORTUGUÊS|ESPANHOL|HINDI|ÁRABE|BENGALI|RUSSO|JAPONÊS|FRANCÊS|ALEMÃO|COREANO|ITALIANO|TURCO|VIETNAMITA|PERSA):/)) {
+                        currentSection = cleanLine.replace(':', '');
+                    } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
+                        searchTerms.push({
+                            term: cleanLine,
+                            language: currentSection
+                        });
+                    }
+                }
+                
+                // Se não conseguiu extrair termos estruturados, gera termos simples
+                if (searchTerms.length === 0) {
+                    const fallbackPrompt = `Extraia 20 termos de busca diferentes da frase: "${originalText}". Um termo por linha, variando entre português, inglês, espanhol, chinês, francês e outros idiomas relevantes:`;
+                    const fallbackResponse = await callPuterAI(fallbackPrompt);
+                    const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
+                    const languages = ['PORTUGUÊS', 'INGLÊS', 'ESPANHOL', 'CHINÊS SIMPLIFICADO', 'FRANCÊS', 'ALEMÃO', 'RUSSO', 'JAPONÊS'];
+                    terms.forEach((term, index) => {
+                        searchTerms.push({
+                            term: term.trim(),
+                            language: languages[index % languages.length]
+                        });
+                    });
+                }
                 
                 let allPapers = [];
                 let foundPapers = new Set(); // Para evitar duplicatas
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Testando ${searchTerms.length} estratégias de busca...</strong>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🌍 Testando ${searchTerms.length} termos em múltiplos idiomas...</strong>`;
                 
                 // Testa cada estratégia de busca até encontrar 10 referências únicas
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
-                    const searchTerm = searchTerms[i].trim();
+                    const { term, language } = searchTerms[i];
                     
                     try {
-                        elements.searchInfoDiv.innerHTML = `<strong>🔍 Estratégia ${i+1}/${searchTerms.length}:</strong> <em>"${searchTerm}"</em><br><small>Encontradas: ${allPapers.length}/10</small>`;
+                        const languageFlag = {
+                            'CHINÊS SIMPLIFICADO': '🇨🇳',
+                            'INGLÊS': '🇺🇸',
+                            'PORTUGUÊS': '🇧🇷',
+                            'ESPANHOL': '🇪🇸',
+                            'HINDI': '🇮🇳',
+                            'ÁRABE': '🇸🇦',
+                            'BENGALI': '🇧🇩',
+                            'RUSSO': '🇷🇺',
+                            'JAPONÊS': '🇯🇵',
+                            'FRANCÊS': '🇫🇷',
+                            'ALEMÃO': '🇩🇪',
+                            'COREANO': '🇰🇷',
+                            'ITALIANO': '🇮🇹',
+                            'TURCO': '🇹🇷',
+                            'VIETNAMITA': '🇻🇳',
+                            'PERSA': '🇮🇷'
+                        }[language] || '🌍';
                         
-                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(searchTerm)}&limit=5&fields=title,authors,year,abstract,url`;
+                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} - Termo ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10</small>`;
+                        
+                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=5&fields=title,authors,year,abstract,url`;
                         const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
                         
                         if (response.ok) {
@@ -570,6 +647,7 @@
                                 p.authors && 
                                 p.authors.length > 0 && 
                                 p.year &&
+                                p.year >= 2000 && // Filtro para artigos mais recentes
                                 !foundPapers.has(p.paperId) // Evita duplicatas
                             );
                             
@@ -583,27 +661,39 @@
                                         year: paper.year,
                                         abstract: paper.abstract || '',
                                         url: paper.url,
-                                        searchTerm: searchTerm // Para debug
+                                        searchTerm: term,
+                                        language: language
                                     });
                                 }
                             });
                         }
                         
                         // Pequena pausa entre requisições para não sobrecarregar a API
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        await new Promise(resolve => setTimeout(resolve, 300));
                         
                     } catch (error) {
-                        console.warn(`Erro na busca ${i+1}:`, error);
+                        console.warn(`Erro na busca ${i+1} (${language}):`, error);
                         continue; // Continua para a próxima estratégia
                     }
                 }
                 
                 if (allPapers.length > 0) {
-                    log(`✅ ${allPapers.length} referências encontradas!`, 'success');
-                    elements.searchInfoDiv.innerHTML = `<strong>✅ Sucesso!</strong> Encontradas ${allPapers.length} referências usando múltiplas estratégias de busca.`;
+                    log(`✅ ${allPapers.length} referências encontradas em múltiplos idiomas!`, 'success');
+                    
+                    // Conta referências por idioma para feedback
+                    const languageCounts = {};
+                    allPapers.forEach(paper => {
+                        languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
+                    });
+                    
+                    const languageStats = Object.entries(languageCounts)
+                        .map(([lang, count]) => `${lang}: ${count}`)
+                        .join(' | ');
+                    
+                    elements.searchInfoDiv.innerHTML = `<strong>🌍 Sucesso Multilíngue!</strong><br>✅ ${allPapers.length} referências encontradas<br><small>${languageStats}</small>`;
                 } else {
-                    log('⚠️ Nenhuma referência encontrada mesmo com múltiplas tentativas.', 'warning');
-                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong> mesmo testando ${searchTerms.length} estratégias diferentes.`;
+                    log('⚠️ Nenhuma referência encontrada mesmo com busca multilíngue.', 'warning');
+                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos em múltiplos idiomas.`;
                 }
                 
                 return allPapers;
