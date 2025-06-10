@@ -565,7 +565,9 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
 
         // --- LÓGICA DE CORREÇÃO E SUGESTÃO DE TEMAS ---
         async function refineAndSuggestTopics(originalTitle) {
+            console.log('🔍 Refinando tema:', originalTitle);
             log('Analisando tema e gerando sugestões...', 'info');
+            
             const prompt = `
                 Analise o tema para um artigo: "${originalTitle}".
                 1. Corrija erros de gramática/digitação e reformule-o para ser um título acadêmico claro e impactante. Este será o "tema corrigido".
@@ -573,12 +575,20 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
                 Retorne sua resposta APENAS no formato JSON, usando as chaves "corrected_title" e "suggestions".
                 Exemplo: {"corrected_title": "Título Corrigido", "suggestions": ["Sugestão 1", "Sugestão 2", ...]}
             `;
+            
             try {
+                console.log('🤖 Chamando IA do Puter...');
                 const response = await callPuterAI(prompt);
+                console.log('📝 Resposta da IA:', response);
+                
                 const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                return JSON.parse(jsonString);
+                console.log('🔧 JSON extraído:', jsonString);
+                
+                const parsed = JSON.parse(jsonString);
+                console.log('✅ JSON parseado:', parsed);
+                return parsed;
             } catch (error) {
-                console.error('Erro ao processar sugestões de temas:', error);
+                console.error('❌ Erro ao processar sugestões de temas:', error);
                 log('⚠️ Não foi possível gerar sugestões. Usando o tema original.', 'warning');
                 return { corrected_title: originalTitle, suggestions: [] };
             }
@@ -873,18 +883,29 @@ Output:`;
         
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
+            console.log('🎯 Função proceedWithArticleGeneration chamada');
             try {
+                console.log('👁️ Ocultando formulário inicial...');
                 document.getElementById('initial-form').style.display = 'none';
+                
+                console.log('📝 Mostrando controles interativos...');
                 document.getElementById('interactive-controls').style.display = 'block';
+                
+                console.log('📋 Configurando seção atual...');
                 elements.currentSectionNameSpan.textContent = 'Introdução';
                 sessionActive = false;
+                
+                console.log('✅ Interface configurada, pronta para escrita');
                 log('✅ Configuração concluída! Clique em INÍCIO para começar a escrever.', 'success');
             } catch (error) {
+                console.error('❌ Erro em proceedWithArticleGeneration:', error);
                 elements.startBtn.disabled = false;
             }
         }
 
         elements.startBtn.addEventListener('click', async () => {
+            console.log('🚀 Botão INICIAR clicado');
+            
             userInputs = {
                 universidade: document.getElementById('universidade').value,
                 titulo: document.getElementById('titulo').value,
@@ -892,16 +913,33 @@ Output:`;
                 email: document.getElementById('email').value,
                 nivelFormacao: document.getElementById('nivel-formacao').value
             };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
+            
+            console.log('📋 Dados coletados:', userInputs);
+            
+            if (!userInputs.titulo || !userInputs.autor) { 
+                log('❌ Preencha título e autor.', 'error'); 
+                console.log('❌ Validação falhou - faltam dados');
+                return; 
+            }
+            
+            console.log('✅ Validação passou, desabilitando botão...');
             elements.startBtn.disabled = true;
+            
             try {
+                console.log('🔄 Tentando refinar tema...');
                 const topicData = await refineAndSuggestTopics(userInputs.titulo);
+                console.log('📝 Dados do tema:', topicData);
+                
                 if (topicData.suggestions.length > 0) {
+                    console.log('📋 Mostrando sugestões de tema...');
                     populateAndShowTopicModal(topicData, userInputs.titulo);
                 } else {
+                    console.log('🎯 Sem sugestões, procedendo diretamente...');
                     await proceedWithArticleGeneration();
                 }
             } catch (error) {
+                console.error('❌ Erro na geração de sugestões:', error);
+                console.log('🔄 Tentando proceder sem sugestões...');
                 await proceedWithArticleGeneration();
             }
         });
