@@ -303,6 +303,27 @@
         let currentParagraphId = null;
         let currentModalReferences = [];
 
+        // CORREÇÃO: Verificar se as bibliotecas carregaram corretamente
+        function checkLibrariesLoaded() {
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    if (typeof window.docx !== 'undefined' && 
+                        typeof window.jspdf !== 'undefined' && 
+                        typeof saveAs !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        resolve(false);
+                    }
+                }, 100);
+            });
+        }
+
         // --- FUNÇÃO DE FORMATAÇÃO ABNT ---
         function formatABNTFields() {
             const universidadeInput = document.getElementById('universidade');
@@ -346,108 +367,6 @@
                     throw new Error('Resposta inválida da IA do Puter.');
                 }
                 return response.message.content.trim();
-            } catch (error) {
-                console.error('Erro na IA do Puter:', error);
-                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
-                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
-                } else {
-                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
-                }
-                throw error;
-            }
-        }
-
-        // --- SISTEMA ANTI-REPETIÇÃO ---
-        function extractKeyPhrases(text) {
-            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
-            const phrases = [];
-            for (let i = 0; i < words.length - 2; i++) {
-                phrases.push(words.slice(i, i + 3).join(' '));
-            }
-            return phrases;
-        }
-        function addPhrasesToMemory(text) {
-            const phrases = extractKeyPhrases(text);
-            phrases.forEach(phrase => usedPhrases.add(phrase));
-        }
-
-        // --- FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
-        async function extractThemeAndTopics(text, articleTitle) {
-            try {
-                const prompt = `
-                Analise a frase ou parágrafo: "${text}" no contexto do artigo intitulado "${articleTitle}".
-                1. Identifique o TEMA PRINCIPAL (uma frase curta que resume a ideia central).
-                2. Liste até 5 ASSUNTOS TRATADOS (subtemas ou conceitos relacionados, cada um com 2-5 palavras).
-                Retorne no formato JSON:
-                { "mainTheme": "...", "topics": ["...", "...", "...", "...", "..."] }`;
-                const response = await callPuterAI(prompt);
-                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                const result = JSON.parse(jsonString);
-                result.topics = result.topics.slice(0, 5);
-                while (result.topics.length < 5) result.topics.push("");
-                return result;
-            } catch (error) {
-                console.error('Erro ao extrair tema e assuntos:', error);
-                const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
-                const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-                const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
-                return {
-                    mainTheme: articleTitle || "Tema não identificado",
-                    topics: words.slice(0, 5).map(word => word)
-                };
-            }
-        }
-
-        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
-        async function generateParagraphStartOptions(phase) {
-            const allContent = Object.values(articleContent).flat().join(' ');
-            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
-            let sectionDescription = '';
-            switch (phase) {
-                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
-                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
-                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
-            }
-            const prompt = `
-            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
-            REGRAS:
-            1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
-            2. EVITE ideias já usadas, como: ${usedConcepts}.
-            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.`;
-            try {
-                const response = await callPuterAI(prompt);
-                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
-            } catch (error) {
-                console.error('Erro ao gerar opções:', error);
-                return ["Ocorreu um erro ao gerar opções, tente novamente."];
-            }
-        }
-        async function showParagraphStartModal(phase) {
-            currentGenerationPhase = phase;
-            const phaseTitles = {
-                inicio: '🌟 Como Começar a Introdução?',
-                meio: '📝 Como Continuar o Desenvolvimento?',
-                fim: '🎯 Como Finalizar a Seção?'
-            };
-            log(`Gerando opções para ${phase}...`, 'info');
-            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
-            elements.paragraphStartModal.style.display = 'flex';
-            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
-            try {
-                const startOptions = await generateParagraphStartOptions(phase);
-                let html = startOptions.map((option, index) => `
-                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
-                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
-                    </div>`).join('');
-                elements.paragraphStartsList.innerHTML = html;
-                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        elements.generateParagraphBtn.disabled = false;
-                        selectedParagraphStart = radio.value;
-                    });
-                });
             } catch (error) {
                 console.error('Erro ao gerar opções:', error);
                 elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
@@ -498,7 +417,7 @@
         }
 
         // ==================================================================
-        // SISTEMA DE REFERÊNCIAS REAIS - LÓGICA ORIGINAL COMPLETA
+        // SISTEMA DE REFERÊNCIAS REAIS - CORREÇÃO DOS TIMEOUTS
         // ==================================================================
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
@@ -557,7 +476,20 @@
                         const languageFlag = {'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹', 'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'}[language] || '🌍';
                         elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10</small>`;
                         const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
-                        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+                        
+                        // CORREÇÃO: Aumentar timeout e usar Promise.race para controle melhor
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos
+                        
+                        const res = await Promise.race([
+                            fetch(url, { signal: controller.signal }),
+                            new Promise((_, reject) => 
+                                setTimeout(() => reject(new Error('Timeout')), 9000)
+                            )
+                        ]);
+                        
+                        clearTimeout(timeoutId);
+                        
                         if (res.ok) {
                             const data = await res.json();
                             const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year >= 2000 && !foundPapers.has(p.paperId));
@@ -566,19 +498,36 @@
                                 foundPapers.add(paper.paperId);
                                 let processedPaper = { id: paper.paperId, title: paper.title, authors: paper.authors.map(a => a.name), year: paper.year, abstract: paper.abstract || '', url: paper.url, language: language, originalTitle: paper.title };
                                 if (language !== 'PORTUGUÊS') {
-                                    const translationTimeout = isLatinLanguage ? 3000 : 4000;
-                                    const translatedTitle = await Promise.race([callPuterAI(`Traduza APENAS o título para português: "${paper.title}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
-                                    processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
-                                    if (allPapers.length < 5 && paper.abstract) {
-                                        const translatedAbstract = await Promise.race([callPuterAI(`Traduza APENAS o resumo para português: "${paper.abstract}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
-                                        processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
+                                    const translationTimeout = isLatinLanguage ? 4000 : 5000;
+                                    try {
+                                        const translatedTitle = await Promise.race([
+                                            callPuterAI(`Traduza APENAS o título para português: "${paper.title}"`), 
+                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                        ]);
+                                        processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
+                                        if (allPapers.length < 5 && paper.abstract) {
+                                            try {
+                                                const translatedAbstract = await Promise.race([
+                                                    callPuterAI(`Traduza APENAS o resumo para português: "${paper.abstract}"`), 
+                                                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                                ]);
+                                                processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
+                                            } catch (error) {
+                                                console.warn(`Timeout na tradução do abstract`, error);
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.warn(`Timeout na tradução do título`, error);
                                     }
                                 }
                                 allPapers.push(processedPaper);
                             }
                         }
-                        await new Promise(resolve => setTimeout(resolve, isLatinLanguage ? 400 : 600));
-                    } catch (error) { console.warn(`Erro na busca ${i + 1}`, error); }
+                        await new Promise(resolve => setTimeout(resolve, isLatinLanguage ? 500 : 700));
+                    } catch (error) { 
+                        console.warn(`Erro na busca ${i + 1}`, error); 
+                        // Continue para próxima busca mesmo com erro
+                    }
                 }
                 log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
                 return allPapers;
@@ -689,13 +638,16 @@
         }
 
         // =================================================================================
-        // FUNÇÃO PROCESSAR ARTIGO - VERSÃO FINAL CORRIGIDA
+        // FUNÇÃO PROCESSAR ARTIGO - CORREÇÃO PARA SALVAR COMO .DOC
         // =================================================================================
         async function processArticle() {
-            if (typeof window.docx === 'undefined' || typeof window.jspdf === 'undefined') {
+            // CORREÇÃO: Aguardar carregamento das bibliotecas
+            const librariesLoaded = await checkLibrariesLoaded();
+            if (!librariesLoaded) {
                 log('❌ Bibliotecas de exportação (DOCX/PDF) não carregaram. Por favor, recarregue a página e tente novamente.', 'error');
                 return;
             }
+
             const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
             const { jsPDF } = window.jspdf;
 
@@ -723,9 +675,11 @@
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 const safeTitle = (userInputs.titulo || "artigo").replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                
+                // CORREÇÃO: Mudança para .doc em vez de .docx
                 const fileNameBase = `artigo_final_${safeTitle}`;
 
-                log('Gerando arquivo DOCX...', 'info');
+                log('Gerando arquivo DOC...', 'info');
                 const doc = new Document({
                     sections: [{
                         properties: { page: { margins: { top: 1701, right: 1134, bottom: 1134, left: 1701 } } },
@@ -740,8 +694,9 @@
                     styles: { paragraphStyles: [{ id: "Heading1", name: "Heading 1", basedOn: "Normal", run: { bold: true, allCaps: true } }] }
                 });
                 const blobDocx = await Packer.toBlob(doc);
-                saveAs(blobDocx, `${fileNameBase}.docx`);
-                log('✅ Arquivo DOCX salvo!', 'success');
+                // CORREÇÃO: Salvar como .doc
+                saveAs(blobDocx, `${fileNameBase}.doc`);
+                log('✅ Arquivo DOC salvo!', 'success');
                 
                 await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -858,10 +813,123 @@
             const p = e.target.closest('p[data-id]');
             if (p) { openReferenceModal(p.dataset.id, p.textContent, userInputs.titulo); }
         });
+        
         // --- INICIALIZAÇÃO ---
         elements.meioBtn.disabled = true;
         elements.fimBtn.disabled = true;
         log('🎯 Preencha os dados e clique em "Iniciar"', 'info');
+
+        // CORREÇÃO: Aguardar carregamento das bibliotecas na inicialização
+        window.addEventListener('load', async () => {
+            const librariesLoaded = await checkLibrariesLoaded();
+            if (librariesLoaded) {
+                log('✅ Bibliotecas carregadas com sucesso!', 'success');
+            } else {
+                log('⚠️ Algumas bibliotecas podem não ter carregado. Funcionalidades de exportação podem estar limitadas.', 'warning');
+            }
+        });
     </script>
 </body>
 </html>
+                console.error('Erro na IA do Puter:', error);
+                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
+                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
+                } else {
+                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
+                }
+                throw error;
+            }
+        }
+
+        // --- SISTEMA ANTI-REPETIÇÃO ---
+        function extractKeyPhrases(text) {
+            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
+            const phrases = [];
+            for (let i = 0; i < words.length - 2; i++) {
+                phrases.push(words.slice(i, i + 3).join(' '));
+            }
+            return phrases;
+        }
+        function addPhrasesToMemory(text) {
+            const phrases = extractKeyPhrases(text);
+            phrases.forEach(phrase => usedPhrases.add(phrase));
+        }
+
+        // --- FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
+        async function extractThemeAndTopics(text, articleTitle) {
+            try {
+                const prompt = `
+                Analise a frase ou parágrafo: "${text}" no contexto do artigo intitulado "${articleTitle}".
+                1. Identifique o TEMA PRINCIPAL (uma frase curta que resume a ideia central).
+                2. Liste até 5 ASSUNTOS TRATADOS (subtemas ou conceitos relacionados, cada um com 2-5 palavras).
+                Retorne no formato JSON:
+                { "mainTheme": "...", "topics": ["...", "...", "...", "...", "..."] }`;
+                const response = await callPuterAI(prompt);
+                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
+                const result = JSON.parse(jsonString);
+                result.topics = result.topics.slice(0, 5);
+                while (result.topics.length < 5) result.topics.push("");
+                return result;
+            } catch (error) {
+                console.error('Erro ao extrair tema e assuntos:', error);
+                const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
+                const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
+                const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
+                return {
+                    mainTheme: articleTitle || "Tema não identificado",
+                    topics: words.slice(0, 5).map(word => word)
+                };
+            }
+        }
+
+        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
+        async function generateParagraphStartOptions(phase) {
+            const allContent = Object.values(articleContent).flat().join(' ');
+            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+            let sectionDescription = '';
+            switch (phase) {
+                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
+                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
+                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
+            }
+            const prompt = `
+            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
+            REGRAS:
+            1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
+            2. EVITE ideias já usadas, como: ${usedConcepts}.
+            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.`;
+            try {
+                const response = await callPuterAI(prompt);
+                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
+            } catch (error) {
+                console.error('Erro ao gerar opções:', error);
+                return ["Ocorreu um erro ao gerar opções, tente novamente."];
+            }
+        }
+        async function showParagraphStartModal(phase) {
+            currentGenerationPhase = phase;
+            const phaseTitles = {
+                inicio: '🌟 Como Começar a Introdução?',
+                meio: '📝 Como Continuar o Desenvolvimento?',
+                fim: '🎯 Como Finalizar a Seção?'
+            };
+            log(`Gerando opções para ${phase}...`, 'info');
+            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
+            elements.paragraphStartModal.style.display = 'flex';
+            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
+            try {
+                const startOptions = await generateParagraphStartOptions(phase);
+                let html = startOptions.map((option, index) => `
+                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
+                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
+                    </div>`).join('');
+                elements.paragraphStartsList.innerHTML = html;
+                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        elements.generateParagraphBtn.disabled = false;
+                        selectedParagraphStart = radio.value;
+                    });
+                });
+            } catch (error) {
