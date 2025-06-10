@@ -67,7 +67,7 @@
 
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         
@@ -111,7 +111,7 @@
         <div class="control-panel">
             <div id="initial-form">
                 <h2>🎓 Gerador de Artigo ABNT</h2>
-                <p style="text-align:center; font-size:12px; margin-top:-10px; margin-bottom:20px; color:#6f42c1;"><strong>Powered by Puter.ai</strong></p>
+                <p style="text-align: center; font-size: 12px; margin-top: -10px; margin-bottom: 20px; color: #6f42c1;"><strong>Powered by Puter.ai</strong></p>
                 
                 <div class="form-group">
                     <label>Universidade:</label>
@@ -190,7 +190,7 @@
         
         <div class="page-container">
             <div class="abnt-content" id="content-output">
-                <p style="text-align:center; color: #777; padding-top: 0;">
+                <p style="text-align: center; color: #777; padding-top: 0;">
                     📄 <strong>Para Começar:</strong><br><br>
                     <strong>1. Preencha os Dados:</strong> Título e Autor são essenciais.<br>
                     <strong>2. Clique em "Iniciar e Otimizar Tema":</strong> Nossa IA irá analisar, corrigir e sugerir melhorias para o seu tema.<br>
@@ -229,8 +229,7 @@
             <div class="modal-content">
                 <h3>✨ Sugestões para o seu Tema</h3>
                 <p>Analisamos seu tema para aprimorá-lo. Escolha a melhor opção abaixo para continuar:</p>
-                <div id="topic-list" style="margin: 20px 0;">
-                </div>
+                <div id="topic-list" style="margin: 20px 0;"></div>
                 <button id="confirm-topic-btn">✅ Confirmar Tema e Iniciar</button>
             </div>
         </div>
@@ -238,11 +237,10 @@
         <div id="paragraph-start-modal" class="modal">
             <div class="modal-content">
                 <h3 id="paragraph-modal-title">📝 Escolha como iniciar o próximo parágrafo</h3>
-                <p style="background-color:#e8f4f8; padding:10px; border-radius: 4px; margin-bottom:15px;">
+                <p style="background-color: #e8f4f8; padding: 10px; border-radius: 4px; margin-bottom: 15px;">
                     <strong>💡 Dica:</strong> O sistema gerará um <strong>parágrafo sem citações</strong>. Depois clique no parágrafo para adicionar referências reais.
                 </p>
-                <div id="paragraph-starts-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;">
-                </div>
+                <div id="paragraph-starts-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;"></div>
                 <button id="generate-paragraph-btn" disabled>✅ Gerar Parágrafo</button>
                 <button class="close-btn" id="close-paragraph-modal-btn">❌ Cancelar</button>
             </div>
@@ -430,53 +428,51 @@
             }
             
             const prompt = `
-            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
+            Para um artigo sobre "${userInputs.titulo}", gere 8 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}
             
             REGRAS:
             1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
             2. EVITE ideias já usadas, como: ${usedConcepts}.
-            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.
+            3. FORMATO: Retorne apenas as 8 opções numeradas, uma por linha.
             
-            Gere as 10 opções agora:`;
+            Gere as opções agora:`;
 
             try {
                 const response = await callPuterAI(prompt);
-                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
+                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '')).trim().slice(0, 8));
             } catch (error) {
                 console.error('Erro ao gerar opções:', error);
-                return ["Ocorreu um erro ao gerar opções, tente novamente."];
+                return ['Ocorreu um erro ao gerar opções, tente novamente.'];
             }
         }
-        
+
         async function showParagraphStartModal(phase) {
             currentGenerationPhase = phase;
             const phaseTitles = {
-                inicio: '🌟 Como Começar a Introdução?',
-                meio: '📝 Como Continuar o Desenvolvimento?',
-                fim: '🎯 Como Finalizar a Seção?'
+                inicio: ['🌟 Como Começar a Introdução?'],
+                meio: ['📝 Como Continuar o Desenvolvimento?'],
+                fim: ['🎯 Como Finalizar a Seção?']
             };
 
             log(`Gerando opções para ${phase}...`, 'info');
             elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
             elements.paragraphStartModal.style.display = 'flex';
             elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
-            
+
             try {
                 const startOptions = await generateParagraphStartOptions(phase);
                 let html = '';
                 startOptions.forEach((option, index) => {
                     html += `
                         <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                            <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
-                            <label for="start-${index}" style="cursor:pointer; margin-left:8px;">
-                                ${index + 1}. ${option}...
-                            </label>
-                        </div>
-                    `;
+                            <input type="radio" id="start-${index}" name="start-option" value="${option}">
+                            <label for="start-${index}" style="cursor: pointer; margin-left:8px;">
+                            ${index + 1}. ${option}...
+                        </div>`;
                 });
                 
                 elements.paragraphStartsList.innerHTML = html;
-                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
+                document.querySelectorAll('input[name="start-option"]').forEach(radio => {
                     radio.addEventListener('change', () => {
                         elements.generateParagraphBtn.disabled = false;
                         selectedParagraphStart = radio.value;
@@ -491,11 +487,11 @@
         
         function triggerParagraphOptions(phase) {
             if (phase === 'inicio' && sessionActive) {
-                alert('Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.');
+                log('⚠️ Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.', 'warning');
                 return;
             }
             if ((phase === 'meio' || phase === 'fim') && !sessionActive) {
-                alert('Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.');
+                log('⚠️ Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.', 'warning');
                 return;
             }
             showParagraphStartModal(phase);
@@ -514,6 +510,7 @@
             elements.statusDiv.className = type;
             elements.statusDiv.innerHTML = `<div>${getStatusIcon(type)} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
         }
+
         function getStatusIcon(type) {
             const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             return icons[type] || 'ℹ️';
@@ -534,7 +531,7 @@
         }
 
         function populateAndShowTopicModal(topicData, originalTitle) {
-            let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div style="margin-bottom:10px;"><input type="radio" id="topic-0" name="topic-choice" value="${topicData.corrected_title}" checked><label for="topic-0" style="font-weight:bold;">${topicData.corrected_title} (Sugestão Corrigida)</label></div>`;
+            let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div style="margin-bottom:10px;"><input type="radio" id="topic-0" name="topic-choice" value="${topicData.corrected_title}" checked><label for="topic-0" style="font-weight: bold;">${topicData.corrected_title} (Sugestão Corrigida)</label></div>`;
             topicData.suggestions.forEach((suggestion, index) => {
                 html += `<div style="margin-bottom:10px;"><input type="radio" id="topic-${index + 1}" name="topic-choice" value="${suggestion}"><label for="topic-${index + 1}">${suggestion}</label></div>`;
             });
@@ -548,7 +545,10 @@
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
             const combinedText = `${title} ${text}`.toLowerCase();
             const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => {
+                acc[word] = (acc[word] || 0) + 1;
+                return acc;
+            }, {});
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
@@ -562,10 +562,10 @@
                     throw new Error("Não foi possível extrair termos de busca da frase.");
                 }
 
-                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title,authors,year,url`;
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title,authors,year, url`;
                 const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
 
-                if (!response.ok) throw new Error(`API do Semantic Scholar retornou status ${response.status}`);
+                if (!response.ok) throw new Error(`API do tamanho Scholar retornado status ${response.status}`);
                 
                 const data = await response.json();
                 const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
@@ -591,7 +591,7 @@
 
             } catch (error) {
                 console.error('Erro ao buscar referência real:', error);
-                log(`⚠️ Falha na busca por referência: ${error.message}`, 'warning');
+                log(`⚠️ Falha na busca por referência: ${error.message}`, 'error');
                 return null;
             }
         }
@@ -608,17 +608,17 @@
                 
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando} texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
-                const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
+                const { mainTheme, topics } = await extractThemeAndText(originalText, articleTitle);
                 
                 let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
                 elements.searchInfoDiv.innerHTML = `
                     <strong>🔍 Análise do Texto:</strong><br>
                     <em>"${originalText}"</em><br>
                     <strong>Tema Principal:</strong> ${mainTheme}<br>
-                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
+                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado'}</li></ul>
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 
@@ -669,7 +669,7 @@
                     const cleanLine = line.trim();
                     if (cleanLine.match(/^(PORTUGUÊS|ESPANHOL|INGLÊS|FRANCÊS|ITALIANO|ALEMÃO|RUSSO|CHINÊS SIMPLIFICADO|JAPONÊS|ÁRABE):/)) {
                         currentSection = cleanLine.replace(':', '');
-                    } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
+                    } else if (cleanLine && !cleanLine.includes(':') && currentSection)) {
                         searchTerms.push({
                             term: cleanLine,
                             language: currentSection
@@ -708,14 +708,14 @@
                 let allPapers = [];
                 let foundPapers = new Set();
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🚖 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
                 
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
                     
-                    if (allPapers.length >= 10) break;
+                    if (paraPapers.length >= 10) break;
                     
-                    const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
+                    const isLatinLanguage = ['português', 'espanhol', 'FRANCÊS', 'ITALIANO'].includes(language);
                     const priorityText = isLatinLanguage ? '🏃‍♂️ RÁPIDA' : '🌍 GLOBAL';
                     
                     try {
@@ -735,6 +735,7 @@
                         elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} ${priorityText} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
                         
                         const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
+                        
                         const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
                         
                         if (response.ok) {
@@ -901,7 +902,7 @@
                             <strong>${ref.authors[0]}${ref.authors.length > 1 ? ' et al.' : ''} (${ref.year})</strong> ${languageFlag}
                             ${isUsed ? '<span style="color:#6c757d;"> [JÁ USADA]</span>' : ''}
                             <br><em>${displayTitle}</em> ${translationStatus}
-                            ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
+                            ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}</small>
                             <br><small>${displayAbstract ? displayAbstract.substring(0, 120) + '...' : 'Sem resumo'}</small>
                         </label>
                     </li>`;
@@ -910,10 +911,10 @@
             }
         }
 
-        // --- FUNÇÃO CORRIGIDA PARA ADICIONAR REFERÊNCIAS ---
+        // --- FUNÇÃO PARA ADICIONAR REFERÊNCIAS ---
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            // Correção: Substituído 'selectedIndexes' por 'selectedIndices'
+            
             if (selectedIndices.length === 0) {
                 log('Selecione ao menos uma referência.', 'error');
                 return;
@@ -956,16 +957,16 @@
                     const lastName = names.pop().toUpperCase();
                     return `${lastName}, ${names.join(' ')}`;
                 });
-                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
+                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : `${authorsFormatted.join('; ')}`;
                 
                 let titleFormatted;
                 if (ref.language === 'PORTUGUÊS') {
                     titleFormatted = `<strong>${ref.title}</strong>`;
                 } else {
-                    titleFormatted = `<strong>${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
+                    titleFormatted = `<strong${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
                 }
                 
-                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para acessar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
+                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para acessar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.} `;
             }).join('<br><br>');
         }
         
@@ -979,42 +980,42 @@
                 const resumoPrompt = `Baseado no artigo sobre "${userInputs.titulo}" com o conteúdo: "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português. APENAS o texto do resumo.`;
                 userInputs.resumo = await callPuterAI(resumoPrompt);
                 
-                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final, sem ponto no fim.`;
+                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraía 3 palavras-chave em português. Responda apenas com as palavras separadas por ponto final, sem ponto no fim.`;
                 userInputs.palavrasChave = await callPuterAI(palavrasPrompt);
-
-                const abstractPrompt = `Traduza o resumo para o inglês acadêmico: "${userInputs.resumo}". APENAS o texto do abstract.`;
+                
+                const abstractPrompt = `Traduzir o resumo para o inglês acadêmico: "${userInputs.resumo}"`. APENAS o texto do abstract.`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
-
-                const keywordsPrompt = `Traduza as palavras-chave para o inglês: "${userInputs.palavrasChave}". Responda APENAS com as palavras traduzidas, separadas por ponto final, sem ponto no fim.`;
+                
+                const keywordsPrompt = `Traduzir as palavras-chave para o inglês: "${userInputs.palavrasChave}"`. Responda APENAS com as palavras traduzidas, separadas por ponto final, sem ponto no final.
                 userInputs.keywords = await callPuterAI(keywordsPrompt);
                 
-                log('✅ Resumo e abstrato gerado!', 'success');
+                log('✅ Resumo e abstract gerado!', 'success');
             } catch (error) {
                 log('⚠️ Erro ao gerar resumo/abstract.', 'error');
             }
         }
 
         function displayABNTDocument() {
-            let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor-content">${userInputs.autor || ''}<sup>1</sup></div>`;
+            let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
             
             if (userInputs.resumo && userInputs.isFinalized) {
-                content += `<div class="resumo-título">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave}:</strong> ${userInputs.palavrasChave}.</div>`;
-                content += `<div class="abstract-título">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords</strong> ${userInputs.keywords}.</div>`;
+                content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
+                content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
             
             const sections = [
-                { name: 'INTRODUÇÃO', key: 'introdução', number: '1' },
+                { name: 'INTRODUÇÃO', key: 'introducao', number: '1' },
                 { name: 'DESENVOLVIMENTO', key: 'desenvolvimento', number: '2' },
-                { name: 'CONCLUSÃO', key: 'conclusão', number: '3' }
+                { name: 'CONCLUSÃO', key: 'conclusao', number: '3' }
             ];
             
             sections.forEach(section => {
-                if (articleContent[section.key].length > 0)) {
+                if (articleContent[section.key].length > 0) {
                     content += `<div class="section-title">${section.number} ${section.name}</div>`;
                     articleContent[section.key].forEach((text, index) => {
                         content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
                     });
-                });
+                }
             });
 
             if (finalReferences.length > 0) {
@@ -1022,65 +1023,68 @@
             }
             
             if (userInputs.email && userInputs.universidade && userInputs.curso) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}}. E-mail: ${userInputs.email}.</div>`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             } else if (userInputs.email && userInputs.universidade) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}}. E-mail: ${userInputs.email}.</div>`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             }
             
             elements.outputDiv.innerHTML = content;
-            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
+            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
             
             setTimeout(updatePageCount, 100);
         }
         
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
-            document.getElementById('initial-form')).documentElementById('interactive-controls').style.display = 'none';
+            document.getElementById('initial-form').style.display = 'none';
             document.getElementById('interactive-controls').style.display = 'block';
-            elements.currentSectionNameSpan.textContent;
- = 'Introdução';
+            elements.currentSectionNameSpan.textContent = 'Introdução';
             sessionActive = false;
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
-            }
+        }
 
         elements.startBtn.addEventListener('click', async () => {
             const formattedFields = formatABNTFields();
 
-            userInputs.userInputs = {
-                universidade: 'formattedFields.universidade',
-                title: document.getElementById('titulo').value,
-                autor: 'formattedFields.autor',
-                email: 'formattedFields.email',
-                curso: 'cursoFormatado.curso',
+            userInputs = {
+                universidade: formattedFields.universidade,
+                titulo: document.getElementById('titulo').value.trim(),
+                autor: formattedFields.autor,
+                email: formattedFields.email,
+                curso: formattedFields.curso,
                 nivelFormacao: document.getElementById('nivel-formacao').value
             };
-            if (!userInputs.título || !userInputs.autor) {
- log('❌ Preencha título e autor.', 'error');
+
+            if (!userInputs.titulo || !userInputs.autor) {
+                log('❌ Preencha título e autor.', 'error');
                 return;
             }
+
             elements.startBtn.disabled = true;
             
             try {
-                const topicData = await refineAndSuggestTopics(userInputs.título);
-                populateAndShowModalTopic(topicData, userInputs.título);
+                const topicData = await refineAndSuggestTopics(userInputs.titulo);
+                populateAndShowTopicModal(topicData, userInputs.titulo);
             } catch (error) {
+                console.error('Erro ao sugerir tópicos:', error);
                 await proceedWithArticleGeneration();
             }
         });
 
         elements.confirmTopicBtn.addEventListener('click', () => {
             const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
-            userInputs.userInputs.título = selectedTopic;
+            userInputs.titulo = selectedTopic;
             document.getElementById('titulo').value = selectedTopic;
-            elements.documentModal.style.display = 'none';
-            log('Tema selecionado: "${selectedTopic}"`, 'success');
+            elements.topicSuggestionModal.style.display = 'none';
+            log(`Tema selecionado: ${selectedTopic}`, 'success');
             proceedWithArticleGeneration();
         });
         
         async function rewriteLastParagraph() {
             if (lastParagraphIndex === -1) {
- alert('Nenhum parágrafo para reescrever.');
- return; }
+                log('Nenhum parágrafo para reescrever.', 'warning');
+                return;
+            }
             elements.rewriteBtn.disabled = true;
             
             try {
@@ -1088,14 +1092,14 @@
                 const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ú\s;,\d\-\.]+\)\.?$/g, '').trim();
                 
                 const prompt = `Reescreva o seguinte parágrafo de forma completamente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
-                var newContent = await callPuterAI(prompt);
+                const newContent = await callPuterAI(prompt);
 
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection][lastParagraphIndex] = newContent;
                 displayABNTDocument();
-                log('✅ Parágrafo reescrito! Clique no parágrafo para adicionar referências.', 'Parágrafo');
+                log('✅ Parágrafo reescrito! Clique no parágrafo para adicionar referências.', 'success');
             } catch (error) {
-                log('Erro ao reescrever parágrafo: ${error.message}', 'error');
+                log(`Erro ao reescrever parágrafo: ${error.message}`, 'error');
             } finally {
                 elements.rewriteBtn.disabled = false;
             }
@@ -1107,7 +1111,11 @@
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
         
         elements.generateParagraphBtn.addEventListener('click', async () => {
-            if (!selectedParagraphStart) return;
+            if (!selectedParagraphStart) {
+                log('Selecione um início de parágrafo.', 'error');
+                return;
+            }
+            
             elements.paragraphStartModal.style.display = 'none';
             const allButtons = [elements.inicioBtn, elements.meioBtn, elements.fimBtn, elements.rewriteBtn];
             allButtons.forEach(btn => btn.disabled = true);
@@ -1118,18 +1126,19 @@
                 Escreva um parágrafo acadêmico para um artigo sobre "${userInputs.titulo}".
                 REGRAS:
                 1. O parágrafo DEVE começar com a frase: "${selectedParagraphStart}"
-                2. Desenvolva a ideia inicial de forma coerente, com 80-120 palavras totais.
+                2. Desenvolva a ideia de forma coerente, com 80-120 palavras totais.
                 3. NÃO repita ideias já presentes no CONTEÚDO EXISTENTE: "${allContent}"
                 4. NÃO adicione citações ou referências - apenas o texto do parágrafo.
                 
                 Escreva o parágrafo completo agora:`;
+
                 const newContent = await callPuterAI(prompt);
                 
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection].push(newContent);
                 lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
-                elements.rewriteBtn.style.display = 'block';
+                elements.rewriteBtn.style.display = 'inline-block';
                 
                 log(`✅ Parágrafo criado! Clique nele para adicionar referências.`, 'success');
 
@@ -1146,12 +1155,12 @@
                         currentSection = sectionOrder[currentIndex + 1];
                         elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + 
                             currentSection.slice(1).replace('conclusao', 'Conclusão');
-                        log(`📝 Pronto para iniciar: ${elements.currentSectionNameSpan.textContent}`, 'info');
+                        log(`📝 Pronto para começar: ${elements.currentSectionNameSpan.textContent}`, 'info');
                     } else {
                         await generateResumoAndAbstract();
                         userInputs.isFinalized = true;
                         displayABNTDocument();
-                        log(`🎓 Artigo concluído! Salve como PDF.`, 'success');
+                        log('🎓 Artigo concluído! Salve como PDF.', 'success');
                     }
                 } else {
                     elements.meioBtn.disabled = false;
@@ -1184,10 +1193,10 @@
         elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
 
         elements.outputDiv.addEventListener('click', (e) => {
-            if (e.target.closest('p[data-id]')) {
-                const paragraph = e.target.closest('p[data-id]');
+            const paragraph = e.target.closest('p[data-id]');
+            if (paragraph) {
                 const paragraphId = paragraph.dataset.id;
-                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
+                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ú\s;,\d\-]+\)\s*\.?$/g, '').trim();
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
             }
         });
