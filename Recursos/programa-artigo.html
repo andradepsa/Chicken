@@ -14,7 +14,10 @@
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        /* --- CSS ALTERADO para incluir o <select> --- */
+        .form-group input, .form-group select, .form-group button { 
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; 
+        }
         .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; }
         .control-panel button:hover:not(:disabled) { filter: brightness(90%); }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
@@ -43,20 +46,8 @@
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
         .abnt-content p { margin-bottom: 1.5em; text-indent: 1.25cm; }
         
-        /* --- ESTILO CORRIGIDO PARA NOTA DE RODAPÉ (ABNT NBR 10520) --- */
-        .email-autor {
-            text-align: left;
-            font-size: 10pt; /* Tamanho 10pt para nota de rodapé */
-            line-height: 1.2; /* Espaçamento simples */
-        }
-        .email-autor::before {
-            content: "";
-            display: block;
-            width: 5cm; /* Traço separador com 5cm de largura */
-            margin-top: 2em; /* Espaço entre o texto principal e o traço */
-            margin-bottom: 1em; /* Espaço entre o traço e o texto da nota */
-            border-top: 1px solid #000;
-        }
+        .email-autor { text-align: left; font-size: 10pt; line-height: 1.2; }
+        .email-autor::before { content: ""; display: block; width: 5cm; margin-top: 2em; margin-bottom: 1em; border-top: 1px solid #000; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
         .modal-content { background: white; padding: 20px; border-radius: 8px; width: 700px; max-height: 80vh; overflow-y: auto; }
@@ -70,10 +61,25 @@
         <div class="control-panel">
             <div id="initial-form">
                 <h2>🎓 Gerador de Artigo ABNT</h2>
-                <div class="form-group"><label>Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
-                <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
-                <div class="form-group"><label>Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
-                <div class="form-group"><label>Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
+                <div class="form-group"><label for="universidade">Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
+                <div class="form-group"><label for="titulo">Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
+                <div class="form-group"><label for="autor">Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
+                
+                <!-- =============== CAMPO ADICIONADO =============== -->
+                <div class="form-group">
+                    <label for="qualificacao">Qualificação:</label>
+                    <select id="qualificacao">
+                        <option value="graduando">Graduando(a)</option>
+                        <option value="especializando">Especializando(a)</option>
+                        <option value="mestrando">Mestrando(a)</option>
+                        <option value="doutorando">Doutorando(a)</option>
+                        <option value="professor">Professor(a)</option>
+                        <option value="pesquisador">Pesquisador(a)</option>
+                    </select>
+                </div>
+                <!-- ============================================== -->
+
+                <div class="form-group"><label for="email">Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
                 <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
             </div>
             <div id="interactive-controls" style="display: none;">
@@ -113,7 +119,21 @@
         async function refineAndSuggestTopics(originalTitle) { log('Analisando tema...', 'info'); const prompt = `Analise o tema: "${originalTitle}". 1. corrected_title: Apenas corrija erros de gramática/digitação. MANTENHA A FORMULAÇÃO ORIGINAL. Não reescreva por estilo. 2. suggestions: Gere 9 temas alternativos, criativos e acadêmicos. Retorne APENAS JSON com as chaves "corrected_title" e "suggestions".`; try { const response = await callPuterAI(prompt); const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1); return JSON.parse(jsonString); } catch (error) { log('⚠️ Não foi possível gerar sugestões.', 'warning'); return { corrected_title: originalTitle, suggestions: [] }; } }
         function populateAndShowTopicModal(topicData, originalTitle) { let html = `<p style="background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Sua Ideia Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div><label><input type="radio" name="topic-choice" value="${topicData.corrected_title}" checked> <strong>${topicData.corrected_title} (Tema Corrigido)</strong></label></div>`; topicData.suggestions.forEach((suggestion) => { html += `<div><label><input type="radio" name="topic-choice" value="${suggestion}"> ${suggestion}</label></div>`; }); html += `</div>`; elements.topicListDiv.innerHTML = html; elements.topicSuggestionModal.style.display = 'flex'; }
         function proceedToWritingInterface() { elements.initialForm.style.display = 'none'; elements.interactiveControls.style.display = 'block'; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; displayABNTDocument(); updateInteractiveUIState('ready_to_start_section'); }
-        elements.startBtn.addEventListener('click', async () => { userInputs = { universidade: document.getElementById('universidade').value, titulo: document.getElementById('titulo').value, autor: document.getElementById('autor').value, email: document.getElementById('email').value, }; if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } elements.startBtn.disabled = true; try { const topicData = await refineAndSuggestTopics(userInputs.titulo); if (topicData && topicData.suggestions.length > 0) { populateAndShowTopicModal(topicData, userInputs.titulo); } else { proceedToWritingInterface(); } } catch (error) { proceedToWritingInterface(); } });
+        
+        elements.startBtn.addEventListener('click', async () => { 
+            // *** ALTERAÇÃO 1: Capturar o novo campo de qualificação ***
+            userInputs = { 
+                universidade: document.getElementById('universidade').value, 
+                titulo: document.getElementById('titulo').value, 
+                autor: document.getElementById('autor').value, 
+                qualificacao: document.getElementById('qualificacao').value, // NOVO
+                email: document.getElementById('email').value, 
+            }; 
+            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } 
+            elements.startBtn.disabled = true; 
+            try { const topicData = await refineAndSuggestTopics(userInputs.titulo); if (topicData && topicData.suggestions.length > 0) { populateAndShowTopicModal(topicData, userInputs.titulo); } else { proceedToWritingInterface(); } } catch (error) { proceedToWritingInterface(); } 
+        });
+
         elements.confirmTopicBtn.addEventListener('click', () => { const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value; userInputs.titulo = selectedTopic; document.getElementById('titulo').value = selectedTopic; elements.topicSuggestionModal.style.display = 'none'; log(`✅ Tema selecionado: "${selectedTopic}"`, 'success'); proceedToWritingInterface(); });
         elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". Objetivo: servir como roteiro para o leitor, apresentando os pontos-chave da seção sem rodeios. Tamanho: 70-100 palavras.`; try { const content = await callPuterAI(prompt); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
         elements.developSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' '); const prompt = `Você é um escritor acadêmico focado em substância. Escreva o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA (adicione valor real: ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL (não comece com "Além de..."). 3. SEJA DIRETO. Tamanho: 70-100 palavras.`; try { const content = await callPuterAI(prompt); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('developing_section'); } });
@@ -121,31 +141,27 @@
         elements.finishBtn.addEventListener('click', () => { alert(`Artigo finalizado!`); log(`🎓 Artigo concluído!`, 'success'); });
         elements.savePdfBtn.addEventListener('click', () => { alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".'); window.print(); });
 
-        // ==========================================================
-        // ===== FUNÇÃO displayABNTDocument() TOTALMENTE CORRIGIDA =====
-        // ==========================================================
         function displayABNTDocument() {
-            // Cabeçalho do trabalho
             let html = `<div class="nome-universidade">${userInputs.universidade || ''}</div>
                         <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
                         <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
 
-            let sectionCounter = 1; // Contador para a numeração das seções (ABNT NBR 6024)
+            let sectionCounter = 1; 
 
-            // Conteúdo do artigo com seções numeradas
             sectionOrder.forEach(key => {
                 if (articleContent[key].length > 0) {
-                    // Adiciona a numeração e o nome da seção em maiúsculas
                     html += `<div class="section-title">${sectionCounter} ${sectionDisplayNames[key].toUpperCase()}</div>`;
                     articleContent[key].forEach(pText => html += `<p>${pText}</p>`);
                     sectionCounter++;
                 }
             });
 
-            // Nota de rodapé (qualificação do autor) - FORMATO CORRIGIDO ABNT
-            if (userInputs.email) {
-                // O e-mail não deve ser em maiúsculas e o texto deve ser mais descritivo
-                html += `<div class="email-autor"><sup>1</sup>Qualificação do autor (Ex: Professor, Doutorando, etc). Instituição: ${userInputs.universidade || ''}. E-mail: ${userInputs.email}</div>`;
+            // *** ALTERAÇÃO 2: Usar a qualificação selecionada na nota de rodapé ***
+            if (userInputs.email && userInputs.qualificacao) {
+                const selectElement = document.getElementById('qualificacao');
+                const qualificacaoTexto = selectElement.options[selectElement.selectedIndex].text; // Pega o texto visível da opção (ex: "Mestrando(a)")
+                
+                html += `<div class="email-autor"><sup>1</sup>${qualificacaoTexto}. Instituição: ${userInputs.universidade || ''}. E-mail: ${userInputs.email}</div>`;
             }
 
             elements.outputDiv.innerHTML = html;
