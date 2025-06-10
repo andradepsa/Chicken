@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 Plataforma de Matemática com IA</title>
+    <title>📚 Plataforma de Matemática com IA (BNCC)</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         * {
@@ -22,7 +22,7 @@
         .container {
             display: flex;
             height: 100vh;
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             box-shadow: 0 0 30px rgba(0,0,0,0.2);
@@ -30,7 +30,7 @@
 
         /* Menu Lateral */
         .sidebar {
-            width: 300px;
+            width: 320px;
             background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
             color: white;
             overflow-y: auto;
@@ -431,70 +431,6 @@
             background: #e74c3c;
         }
 
-        /* NOVO: Modal de Geração de Questões */
-        .generation-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none; /* Alterado para flex por JS */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            color: #333;
-        }
-
-        .generation-overlay.show {
-            display: flex;
-        }
-
-        .generation-modal {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .generation-modal h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .loader {
-            border: 8px solid #f3f3f3; /* Light grey */
-            border-top: 8px solid #3498db; /* Blue */
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1.5s linear infinite;
-            margin: 20px auto;
-        }
-
-        #generation-status-text {
-            font-size: 18px;
-            font-weight: 500;
-            margin-top: 15px;
-            color: #555;
-            min-height: 25px;
-        }
-
-        .generation-modal .small-text {
-            margin-top: 25px;
-            font-size: 14px;
-            color: #777;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -530,231 +466,217 @@
 </head>
 <body>
     <div class="container">
-        <!-- Menu Lateral (conteúdo omitido para brevidade, mas deve estar aqui) -->
+        <!-- Menu Lateral -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>🧮 Matemática IA</h1>
-                <p>Powered by Puter.ai</p>
+                <p>Conteúdo BNCC 2024</p>
             </div>
 
-            <!-- 1º Ano -->
+            <!-- 1º Ano (EF1) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="1-ano">
                     <div>
-                        <span class="grade-icon">📘</span>
+                        <span class="grade-icon">📚</span>
                         <span>1º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="1-ano-numeros-100">Números naturais até 100</div>
-                    <div class="topic-item" data-topic="1-ano-sistema-monetario">Sistema monetário (noções)</div>
-                    <div class="topic-item" data-topic="1-ano-composicao-numeros">Composição e decomposição</div>
-                    <div class="topic-item" data-topic="1-ano-adicao-subtracao-concreto">Adição e subtração</div>
-                    <div class="topic-item" data-topic="1-ano-graficos-simples">Leitura de tabelas e gráficos</div>
+                    <div class="topic-item" data-topic="1-ano-numeros-naturais">Contagem e comparação de números até 100</div>
+                    <div class="topic-item" data-topic="1-ano-adicao-subtracao">Adição e subtração (estratégias e objetos)</div>
+                    <div class="topic-item" data-topic="1-ano-medidas-moedas">Noções de medidas e sistema monetário</div>
+                    <div class="topic-item" data-topic="1-ano-probabilidade-inicial">Probabilidade (certo, possível, impossível)</div>
                 </div>
             </div>
 
-            <!-- 2º Ano -->
+            <!-- 2º Ano (EF2) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="2-ano">
                     <div>
-                        <span class="grade-icon">📗</span>
+                        <span class="grade-icon">📖</span>
                         <span>2º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="2-ano-calculo-mental-1000">Contagem e cálculo até 1.000</div>
-                    <div class="topic-item" data-topic="2-ano-adicao-subtracao-reagrupamento">Adição e subtração com reagrupamento</div>
-                    <div class="topic-item" data-topic="2-ano-inicio-multiplicacao-divisao">Início da multiplicação e divisão</div>
-                    <div class="topic-item" data-topic="2-ano-medidas-comprimento-tempo">Medidas de comprimento e tempo</div>
-                    <div class="topic-item" data-topic="2-ano-problemas-tabelas">Problemas com dados em tabelas</div>
+                    <div class="topic-item" data-topic="2-ano-numeros-tres-ordens">Números naturais com até 3 ordens</div>
+                    <div class="topic-item" data-topic="2-ano-adicao-subtracao-completa">Adição e subtração completas</div>
+                    <div class="topic-item" data-topic="2-ano-sequencias-deslocamento">Sequências numéricas e deslocamento</div>
+                    <div class="topic-item" data-topic="2-ano-tabelas-graficos">Construção de tabelas e gráficos simples</div>
                 </div>
             </div>
-            
-            <!-- 3º Ano -->
+
+            <!-- 3º Ano (EF3) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="3-ano">
                     <div>
-                        <span class="grade-icon">📘</span>
+                        <span class="grade-icon">📐</span>
                         <span>3º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="3-ano-quatro-operacoes">Consolidação das 4 operações</div>
-                    <div class="topic-item" data-topic="3-ano-sistema-monetario">Sistema monetário</div>
-                    <div class="topic-item" data-topic="3-ano-medidas-massa-tempo">Medidas de comprimento, massa e tempo</div>
-                    <div class="topic-item" data-topic="3-ano-producao-graficos">Leitura e produção de gráficos</div>
-                    <div class="topic-item" data-topic="3-ano-padroes-numericos">Padrões numéricos e sequências</div>
-                    <div class="topic-item" data-topic="3-ano-figuras-planas">Figuras geométricas planas</div>
+                    <div class="topic-item" data-topic="3-ano-multiplicacao-fatos">Fatos básicos da multiplicação e reta numérica</div>
+                    <div class="topic-item" data-topic="3-ano-resolucao-problemas">Problemas com as 4 operações</div>
+                    <div class="topic-item" data-topic="3-ano-interpretacao-graficos">Interpretação de tabelas e gráficos</div>
                 </div>
             </div>
 
-            <!-- 4º Ano -->
+            <!-- 4º Ano (EF4) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="4-ano">
                     <div>
-                        <span class="grade-icon">📙</span>
+                        <span class="grade-icon">🔢</span>
                         <span>4º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="4-ano-multiplicacao-divisao-maiores">Multiplicação e divisão (nº maiores)</div>
-                    <div class="topic-item" data-topic="4-ano-fracoes-equivalentes">Frações unitárias e equivalentes</div>
-                    <div class="topic-item" data-topic="4-ano-perimetro">Perímetro de figuras planas</div>
-                    <div class="topic-item" data-topic="4-ano-graficos-colunas">Interpretação de gráficos de colunas</div>
-                    <div class="topic-item" data-topic="4-ano-classificacao-solidos">Classificação de sólidos e figuras</div>
+                    <div class="topic-item" data-topic="4-ano-multiplicacao-divisao">Multiplicação e divisão (contextos)</div>
+                    <div class="topic-item" data-topic="4-ano-fracoes-perimetro">Noções de frações, perímetro e sólidos</div>
+                    <div class="topic-item" data-topic="4-ano-probabilidade-dados">Coleta e interpretação de dados</div>
                 </div>
             </div>
 
-            <!-- 5º Ano -->
+            <!-- 5º Ano (EF5) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="5-ano">
                     <div>
-                        <span class="grade-icon">📕</span>
+                        <span class="grade-icon">🎯</span>
                         <span>5º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="5-ano-operacoes-decimais">Operações com decimais</div>
-                    <div class="topic-item" data-topic="5-ano-porcentagens">Porcentagens (10%, 25%, 50%)</div>
-                    <div class="topic-item" data-topic="5-ano-problemas-complexos">Resolução de problemas complexos</div>
-                    <div class="topic-item" data-topic="5-ano-fracoes-equivalencias">Frações e suas equivalências</div>
-                    <div class="topic-item" data-topic="5-ano-graficos-multiplos">Gráficos com múltiplas variáveis</div>
+                    <div class="topic-item" data-topic="5-ano-numeros-decimais">Naturais (até milhar) e introdução a decimais</div>
+                    <div class="topic-item" data-topic="5-ano-operacoes-decimais-porcentagem">Operações com decimais e porcentagens</div>
+                    <div class="topic-item" data-topic="5-ano-analise-graficos">Análise e interpretação de gráficos</div>
                 </div>
             </div>
 
-            <!-- 6º Ano -->
+            <!-- 6º Ano (EF6) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="6-ano">
                     <div>
-                        <span class="grade-icon">📘</span>
+                        <span class="grade-icon">🏆</span>
                         <span>6º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="6-ano-numeros-racionais">Números naturais e racionais positivos</div>
-                    <div class="topic-item" data-topic="6-ano-operacoes-decimais">Operações fundamentais com decimais</div>
-                    <div class="topic-item" data-topic="6-ano-nocao-algebra">Noções iniciais de álgebra</div>
-                    <div class="topic-item" data-topic="6-ano-graficos-tabelas">Gráficos e tabelas</div>
-                    <div class="topic-item" data-topic="6-ano-medidas-area-volume">Medidas de área e volume</div>
+                    <div class="topic-item" data-topic="6-ano-operacoes-decimais-fracoes">Operações com decimais e frações</div>
+                    <div class="topic-item" data-topic="6-ano-multiplos-divisores">Múltiplos e divisores</div>
+                    <div class="topic-item" data-topic="6-ano-potencia-estimativa">Noções de potência e estimativas</div>
+                    <div class="topic-item" data-topic="6-ano-algebra-expressoes">Introdução à álgebra (expressões simples)</div>
                 </div>
             </div>
-            
-            <!-- 7º Ano -->
+
+            <!-- 7º Ano (EF7) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="7-ano">
                     <div>
-                        <span class="grade-icon">📗</span>
+                        <span class="grade-icon">🧪</span>
                         <span>7º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="7-ano-fracoes-decimais-porcentagens">Frações, decimais e porcentagens</div>
-                    <div class="topic-item" data-topic="7-ano-proporcionalidade">Proporcionalidade e regra de três</div>
-                    <div class="topic-item" data-topic="7-ano-expressoes-algebricas">Expressões algébricas simples</div>
-                    <div class="topic-item" data-topic="7-ano-equacoes-1-grau">Equações do 1º grau simples</div>
-                    <div class="topic-item" data-topic="7-ano-angulos-poligonos">Ângulos, polígonos e simetria</div>
+                    <div class="topic-item" data-topic="7-ano-fracoes-equivalentes-equacoes">Frações equivalentes e equações do 1º grau</div>
+                    <div class="topic-item" data-topic="7-ano-proporcionalidade-regra-tres">Proporcionalidade e regra de três</div>
+                    <div class="topic-item" data-topic="7-ano-angulos-poligonos">Estudo de ângulos e polígonos</div>
                 </div>
             </div>
-
-            <!-- 8º Ano -->
+            
+            <!-- 8º Ano (EF8) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="8-ano">
                     <div>
-                        <span class="grade-icon">📙</span>
+                        <span class="grade-icon">📈</span>
                         <span>8º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="8-ano-potenciacao-notacao">Potenciação, notação científica</div>
-                    <div class="topic-item" data-topic="8-ano-fracoes-algebricas">Operações com frações algébricas</div>
-                    <div class="topic-item" data-topic="8-ano-sistemas-equacoes-1-grau">Sistemas de equações do 1º grau</div>
-                    <div class="topic-item" data-topic="8-ano-relacoes-metricas-triangulo">Relações métricas no triângulo</div>
-                    <div class="topic-item" data-topic="8-ano-probabilidade-simples">Análise combinatória e probabilidade</div>
+                    <div class="topic-item" data-topic="8-ano-potenciacao-notacao-cientifica">Potenciação e notação científica</div>
+                    <div class="topic-item" data-topic="8-ano-sistemas-lineares-relacoes-metricas">Sistemas lineares e relações métricas</div>
+                    <div class="topic-item" data-topic="8-ano-combinacoes-probabilidade">Combinações simples e probabilidade</div>
                 </div>
             </div>
-
-            <!-- 9º Ano -->
+            
+            <!-- 9º Ano (EF9) -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="9-ano">
                     <div>
-                        <span class="grade-icon">📕</span>
+                        <span class="grade-icon">⚛️</span>
                         <span>9º Ano</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="9-ano-funcoes-afim-quadratica">Funções afim e quadrática (intro)</div>
-                    <div class="topic-item" data-topic="9-ano-teorema-pitagoras">Teorema de Pitágoras</div>
-                    <div class="topic-item" data-topic="9-ano-trigonometria-triangulo">Trigonometria no triângulo retângulo</div>
-                    <div class="topic-item" data-topic="9-ano-graficos-complexos">Leitura e análise de gráficos</div>
-                    <div class="topic-item" data-topic="9-ano-matrizes-estatistica">Matrizes e estatística básica</div>
+                    <div class="topic-item" data-topic="9-ano-funcao-afim-quadratica">Funções afim e introdução à quadrática</div>
+                    <div class="topic-item" data-topic="9-ano-teorema-pitagoras-trigonometria">Teorema de Pitágoras e trigonometria básica</div>
+                    <div class="topic-item" data-topic="9-ano-matrizes-estatistica-descritiva">Matrizes básicas e estatística descritiva</div>
                 </div>
             </div>
 
-            <!-- 1º Ano Ensino Médio -->
+            <!-- 1ª Série (EM1) -->
             <div class="grade-section">
-                <div class="grade-header" data-grade="1-medio">
+                <div class="grade-header" data-grade="em-1">
                     <div>
-                        <span class="grade-icon">⚛️</span>
-                        <span>1º Ano (Médio)</span>
+                        <span class="grade-icon">🎓</span>
+                        <span>1º Ano (EM)</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="1-medio-conjuntos-numericos">Conjuntos numéricos</div>
-                    <div class="topic-item" data-topic="1-medio-equacoes-1-2-grau">Equações do 1º e 2º grau</div>
-                    <div class="topic-item" data-topic="1-medio-funcao-afim">Função afim</div>
-                    <div class="topic-item" data-topic="1-medio-geometria-plana-espacial">Geometria plana e espacial</div>
-                    <div class="topic-item" data-topic="1-medio-estatistica-media-moda">Estatística: média, moda, mediana</div>
+                    <div class="topic-item" data-topic="em1-conjuntos-numericos">Conjuntos numéricos (IN, ℤ, ℚ, ℝ)</div>
+                    <div class="topic-item" data-topic="em1-equacoes-inequacoes">Equações do 1º/2º grau e inequações lineares</div>
+                    <div class="topic-item" data-topic="em1-funcao-afim">Função afim (gráfico, aplicações)</div>
+                    <div class="topic-item" data-topic="em1-geometria-plana-espacial">Geometria plana e noções de espacial</div>
+                    <div class="topic-item" data-topic="em1-estatistica-basica">Estatística básica (média, moda, mediana)</div>
                 </div>
             </div>
-            
-            <!-- 2º Ano Ensino Médio -->
+
+            <!-- 2ª Série (EM2) -->
             <div class="grade-section">
-                <div class="grade-header" data-grade="2-medio">
+                <div class="grade-header" data-grade="em-2">
                     <div>
-                        <span class="grade-icon">➗</span>
-                        <span>2º Ano (Médio)</span>
+                        <span class="grade-icon">🚀</span>
+                        <span>2º Ano (EM)</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="2-medio-funcao-quad-exp-log">Função quadrática, exp, log</div>
-                    <div class="topic-item" data-topic="2-medio-inequacoes-sistemas">Inequações e sistemas</div>
-                    <div class="topic-item" data-topic="2-medio-geometria-analitica-trig">Geometria analítica e trigonometria</div>
-                    <div class="topic-item" data-topic="2-medio-probabilidade-combinatoria">Probabilidade e combinatória</div>
+                    <div class="topic-item" data-topic="em2-funcoes-exp-log">Função quadrática, exponencial e logarítmica</div>
+                    <div class="topic-item" data-topic="em2-sistemas-inequacoes">Sistemas lineares e inequações algébricas</div>
+                    <div class="topic-item" data-topic="em2-geometria-analitica">Geometria analítica (reta, distância)</div>
+                    <div class="topic-item" data-topic="em2-trigonometria-combinatoria">Trigonometria, combinatória e probabilidade</div>
                 </div>
             </div>
-            
-            <!-- 3º Ano Ensino Médio -->
+
+            <!-- 3ª Série (EM3) -->
             <div class="grade-section">
-                <div class="grade-header" data-grade="3-medio">
+                <div class="grade-header" data-grade="em-3">
                     <div>
-                        <span class="grade-icon">♾️</span>
-                        <span>3º Ano (Médio)</span>
+                        <span class="grade-icon">🌌</span>
+                        <span>3º Ano (EM)</span>
                     </div>
                     <span>▼</span>
                 </div>
                 <div class="topics-list">
-                    <div class="topic-item" data-topic="3-medio-pa-pg">PA e PG</div>
-                    <div class="topic-item" data-topic="3-medio-matrizes-determinantes">Matrizes, determinantes, sistemas</div>
-                    <div class="topic-item" data-topic="3-medio-funcoes-mod-comp-inv">Funções modular, composta, inversa</div>
-                    <div class="topic-item" data-topic="3-medio-trigonometria-ciclo">Trigonometria no ciclo</div>
-                    <div class="topic-item" data-topic="3-medio-estatistica-distribuicoes">Estatística: distribuições</div>
+                    <div class="topic-item" data-topic="em3-sequencias-matrizes">Sequências (PA/PG), matrizes e determinantes</div>
+                    <div class="topic-item" data-topic="em3-funcoes-avancadas">Funções: modular, composta, inversa</div>
+                    <div class="topic-item" data-topic="em3-trigonometria-ciclo">Trigonometria no ciclo e leis do seno/cosseno</div>
+                    <div class="topic-item" data-topic="em3-geometria-espacial">Geometria espacial (sólidos, volume, área)</div>
+                    <div class="topic-item" data-topic="em3-matematica-financeira">Matemática financeira (juros)</div>
+                    <div class="topic-item" data-topic="em3-estatistica-algoritmos">Estatística avançada e noções de algoritmos</div>
                 </div>
             </div>
+
         </div>
 
-        <!-- Área Principal (conteúdo omitido para brevidade, mas deve estar aqui) -->
+        <!-- Área Principal -->
         <div class="main-content">
             <div class="header">
                 <h2 id="topic-title">🎯 Selecione um tópico para começar</h2>
@@ -766,9 +688,9 @@
                 <div id="welcome-screen" class="welcome-screen">
                     <h2>🚀 Bem-vindo à Plataforma de Matemática com IA!</h2>
                     <p>
-                        Nossa plataforma utiliza inteligência artificial avançada para gerar questões personalizadas
-                        de matemática para diferentes níveis escolares. Selecione um tópico no menu lateral e 
-                        configure quantas questões deseja praticar.
+                        Nossa plataforma utiliza inteligência artificial para gerar questões personalizadas de matemática, 
+                        agora com conteúdo alinhado à <strong>Base Nacional Comum Curricular (BNCC)</strong>. 
+                        Selecione um tópico no menu lateral e configure seu quiz.
                     </p>
                     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 30px;">
                         <div style="text-align: center; padding: 20px; background: #e3f2fd; border-radius: 10px;">
@@ -898,21 +820,11 @@
         Gerando questões...
     </div>
 
-    <!-- NOVO: Modal de Geração de Questões -->
-    <div class="generation-overlay" id="generation-overlay">
-        <div class="generation-modal">
-            <h2>Gerando seu Quiz com IA</h2>
-            <div class="loader"></div>
-            <p id="generation-status-text">Iniciando...</p>
-            <p class="small-text">Isso pode levar alguns segundos. Por favor, não feche ou atualize a página.</p>
-        </div>
-    </div>
-
-
     <script>
         // Estado da aplicação
         let currentTopic = null;
-        let currentGrade = null;
+        let currentTopicTitle = null;
+        let currentGradeText = null;
         let questions = [];
         let currentQuestionIndex = 0;
         let userAnswers = [];
@@ -930,86 +842,7 @@
             quizResults: document.getElementById('quiz-results'),
             topicTitle: document.getElementById('topic-title'),
             topicDescription: document.getElementById('topic-description'),
-            statusIndicator: document.getElementById('status-indicator'),
-            // NOVO: Elementos do Modal de Geração
-            generationOverlay: document.getElementById('generation-overlay'),
-            generationStatusText: document.getElementById('generation-status-text')
-        };
-
-        // Dados dos tópicos (conteúdo omitido para brevidade, mas deve estar aqui)
-        const topicData = {
-            // 1º Ano
-            '1-ano-numeros-100': { title: 'Números Naturais até 100', description: 'Leitura, escrita, comparação e ordenação', grade: '1º Ano' },
-            '1-ano-sistema-monetario': { title: 'Sistema Monetário (Noções)', description: 'Reconhecimento de cédulas e moedas', grade: '1º Ano' },
-            '1-ano-composicao-numeros': { title: 'Composição e Decomposição', description: 'Composição e decomposição de números naturais', grade: '1º Ano' },
-            '1-ano-adicao-subtracao-concreto': { title: 'Adição e Subtração', description: 'Operações com material concreto e representações', grade: '1º Ano' },
-            '1-ano-graficos-simples': { title: 'Leitura de Gráficos Simples', description: 'Interpretação de dados em tabelas e gráficos de colunas', grade: '1º Ano' },
-            // 2º Ano
-            '2-ano-calculo-mental-1000': { title: 'Contagem e Cálculo até 1.000', description: 'Ampliação da contagem e cálculo mental', grade: '2º Ano' },
-            '2-ano-adicao-subtracao-reagrupamento': { title: 'Adição e Subtração com Reagrupamento', description: 'Cálculos de adição e subtração com "vai um" e "empresta"', grade: '2º Ano' },
-            '2-ano-inicio-multiplicacao-divisao': { title: 'Início da Multiplicação e Divisão', description: 'Ideias de juntar quantidades iguais e de repartir', grade: '2º Ano' },
-            '2-ano-medidas-comprimento-tempo': { title: 'Medidas de Comprimento e Tempo', description: 'Uso de instrumentos de medida e leitura de horas', grade: '2º Ano' },
-            '2-ano-problemas-tabelas': { title: 'Problemas com Dados em Tabelas', description: 'Resolução de problemas com dados de tabelas simples', grade: '2º Ano' },
-            // 3º Ano
-            '3-ano-quatro-operacoes': { title: 'Consolidação das 4 Operações', description: 'Cálculos e problemas envolvendo as quatro operações', grade: '3º Ano' },
-            '3-ano-sistema-monetario': { title: 'Sistema Monetário', description: 'Problemas de compra e venda, troco', grade: '3º Ano' },
-            '3-ano-medidas-massa-tempo': { title: 'Medidas de Comprimento, Massa e Tempo', description: 'Unidades de medida e conversões simples', grade: '3º Ano' },
-            '3-ano-producao-graficos': { title: 'Leitura e Produção de Gráficos', description: 'Interpretação e construção de gráficos de barras e colunas', grade: '3º Ano' },
-            '3-ano-padroes-numericos': { title: 'Padrões Numéricos e Sequências', description: 'Identificação de regularidades em sequências', grade: '3º Ano' },
-            '3-ano-figuras-planas': { title: 'Figuras Geométricas Planas', description: 'Reconhecimento de quadrados, retângulos, triângulos e círculos', grade: '3º Ano' },
-            // 4º Ano
-            '4-ano-multiplicacao-divisao-maiores': { title: 'Multiplicação e Divisão (nº maiores)', description: 'Operações com números maiores, incluindo múltiplos dígitos', grade: '4º Ano' },
-            '4-ano-fracoes-equivalentes': { title: 'Frações Unitárias e Equivalentes', description: 'Introdução ao conceito de frações e suas equivalências', grade: '4º Ano' },
-            '4-ano-perimetro': { title: 'Perímetro de Figuras Planas', description: 'Cálculo do perímetro de polígonos', grade: '4º Ano' },
-            '4-ano-graficos-colunas': { title: 'Interpretação de Gráficos de Colunas', description: 'Análise de dados em gráficos de colunas', grade: '4º Ano' },
-            '4-ano-classificacao-solidos': { title: 'Classificação de Sólidos e Figuras', description: 'Classificação de sólidos geométricos e figuras planas', grade: '4º Ano' },
-            // 5º Ano
-            '5-ano-operacoes-decimais': { title: 'Operações com Decimais', description: 'Adição, subtração, multiplicação e divisão com números decimais', grade: '5º Ano' },
-            '5-ano-porcentagens': { title: 'Porcentagens', description: 'Cálculo de porcentagens simples (10%, 25%, 50%)', grade: '5º Ano' },
-            '5-ano-problemas-complexos': { title: 'Resolução de Problemas Complexos', description: 'Problemas envolvendo múltiplas etapas e operações', grade: '5º Ano' },
-            '5-ano-fracoes-equivalencias': { title: 'Frações e Suas Equivalências', description: 'Comparação, ordenação e equivalência de frações', grade: '5º Ano' },
-            '5-ano-graficos-multiplos': { title: 'Gráficos com Múltiplas Variáveis', description: 'Construção e interpretação de gráficos mais complexos', grade: '5º Ano' },
-            // 6º Ano
-            '6-ano-numeros-racionais': { title: 'Números Naturais e Racionais Positivos', description: 'Operações e propriedades dos números racionais positivos', grade: '6º Ano' },
-            '6-ano-operacoes-decimais': { title: 'Operações com Decimais', description: 'Operações fundamentais com números decimais', grade: '6º Ano' },
-            '6-ano-nocao-algebra': { title: 'Noções Iniciais de Álgebra', description: 'Uso de letras para representar números e propriedades', grade: '6º Ano' },
-            '6-ano-graficos-tabelas': { title: 'Gráficos e Tabelas', description: 'Interpretação e construção de gráficos de setores e linhas', grade: '6º Ano' },
-            '6-ano-medidas-area-volume': { title: 'Medidas de Área e Volume', description: 'Cálculo de área de polígonos e volume de paralelepípedos', grade: '6º Ano' },
-            // 7º Ano
-            '7-ano-fracoes-decimais-porcentagens': { title: 'Frações, Decimais e Porcentagens', description: 'Relações entre as representações de números racionais', grade: '7º Ano' },
-            '7-ano-proporcionalidade': { title: 'Proporcionalidade e Regra de Três', description: 'Grandezas direta e inversamente proporcionais', grade: '7º Ano' },
-            '7-ano-expressoes-algebricas': { title: 'Expressões Algébricas Simples', description: 'Valor numérico de expressões e simplificação', grade: '7º Ano' },
-            '7-ano-equacoes-1-grau': { title: 'Equações do 1º Grau Simples', description: 'Resolução de equações do tipo ax + b = c', grade: '7º Ano' },
-            '7-ano-angulos-poligonos': { title: 'Ângulos, Polígonos e Simetria', description: 'Classificação de ângulos, polígonos e eixos de simetria', grade: '7º Ano' },
-            // 8º Ano
-            '8-ano-potenciacao-notacao': { title: 'Potenciação e Notação Científica', description: 'Propriedades da potenciação e representação de números muito grandes/pequenos', grade: '8º Ano' },
-            '8-ano-fracoes-algebricas': { title: 'Operações com Frações Algébricas', description: 'Simplificação e operações com frações algébricas', grade: '8º Ano' },
-            '8-ano-sistemas-equacoes-1-grau': { title: 'Sistemas de Equações do 1º Grau', description: 'Resolução de sistemas com duas incógnitas', grade: '8º Ano' },
-            '8-ano-relacoes-metricas-triangulo': { title: 'Relações Métricas no Triângulo', description: 'Relações métricas no triângulo retângulo', grade: '8º Ano' },
-            '8-ano-probabilidade-simples': { title: 'Análise Combinatória e Probabilidade', description: 'Princípio multiplicativo e cálculo de probabilidade simples', grade: '8º Ano' },
-            // 9º Ano
-            '9-ano-funcoes-afim-quadratica': { title: 'Funções Afim e Quadrática (Intro)', description: 'Introdução ao conceito de funções, gráficos e propriedades', grade: '9º Ano' },
-            '9-ano-teorema-pitagoras': { title: 'Teorema de Pitágoras', description: 'Aplicações do Teorema de Pitágoras', grade: '9º Ano' },
-            '9-ano-trigonometria-triangulo': { title: 'Trigonometria no Triângulo Retângulo', description: 'Seno, cosseno e tangente', grade: '9º Ano' },
-            '9-ano-graficos-complexos': { title: 'Leitura e Análise de Gráficos', description: 'Análise crítica de informações em gráficos complexos', grade: '9º Ano' },
-            '9-ano-matrizes-estatistica': { title: 'Matrizes e Estatística Básica', description: 'Noções de matrizes e medidas de tendência central', grade: '9º Ano' },
-            // 1º Ano (Médio)
-            '1-medio-conjuntos-numericos': { title: 'Conjuntos Numéricos', description: 'Naturais, inteiros, racionais, irracionais e reais', grade: '1º Ano (Ensino Médio)' },
-            '1-medio-equacoes-1-2-grau': { title: 'Equações do 1º e 2º Grau', description: 'Resolução e problemas de aplicação', grade: '1º Ano (Ensino Médio)' },
-            '1-medio-funcao-afim': { title: 'Função Afim', description: 'Gráfico, coeficientes, zero da função e aplicações', grade: '1º Ano (Ensino Médio)' },
-            '1-medio-geometria-plana-espacial': { title: 'Geometria Plana e Espacial', description: 'Áreas, volumes e posições relativas', grade: '1º Ano (Ensino Médio)' },
-            '1-medio-estatistica-media-moda': { title: 'Estatística: Média, Moda, Mediana', description: 'Cálculo de medidas de tendência central', grade: '1º Ano (Ensino Médio)' },
-            // 2º Ano (Médio)
-            '2-medio-funcao-quad-exp-log': { title: 'Função Quadrática, Exponencial e Logarítmica', description: 'Gráficos, propriedades e equações', grade: '2º Ano (Ensino Médio)' },
-            '2-medio-inequacoes-sistemas': { title: 'Inequações e Sistemas', description: 'Resolução de inequações e sistemas lineares', grade: '2º Ano (Ensino Médio)' },
-            '2-medio-geometria-analitica-trig': { title: 'Geometria Analítica e Trigonometria', description: 'Estudo da reta, circunferência e relações trigonométricas', grade: '2º Ano (Ensino Médio)' },
-            '2-medio-probabilidade-combinatoria': { title: 'Probabilidade e Combinatória', description: 'Análise combinatória e probabilidade da união', grade: '2º Ano (Ensino Médio)' },
-            // 3º Ano (Médio)
-            '3-medio-pa-pg': { title: 'PA e PG', description: 'Progressões aritméticas e geométricas', grade: '3º Ano (Ensino Médio)' },
-            '3-medio-matrizes-determinantes': { title: 'Matrizes, Determinantes e Sistemas', description: 'Operações, cálculo de determinantes e resolução de sistemas', grade: '3º Ano (Ensino Médio)' },
-            '3-medio-funcoes-mod-comp-inv': { title: 'Funções Modular, Composta e Inversa', description: 'Estudo e gráficos de funções', grade: '3º Ano (Ensino Médio)' },
-            '3-medio-trigonometria-ciclo': { title: 'Trigonometria no Ciclo Trigonométrico', description: 'Funções trigonométricas, arcos e equações', grade: '3º Ano (Ensino Médio)' },
-            '3-medio-estatistica-distribuicoes': { title: 'Estatística: Distribuições', description: 'Distribuições de frequência e análise de dados', grade: '3º Ano (Ensino Médio)' }
+            statusIndicator: document.getElementById('status-indicator')
         };
 
         // Inicialização
@@ -1019,33 +852,60 @@
         });
 
         function setupEventListeners() {
+            // Menu lateral - headers dos anos
             document.querySelectorAll('.grade-header').forEach(header => {
-                header.addEventListener('click', function() { toggleGradeSection(this); });
+                header.addEventListener('click', function() {
+                    const isActive = this.classList.contains('active');
+                    
+                    // Fecha todos
+                    document.querySelectorAll('.grade-header').forEach(h => h.classList.remove('active'));
+                    document.querySelectorAll('.topics-list').forEach(list => list.classList.remove('active'));
+
+                    // Abre ou fecha o clicado
+                    if (!isActive) {
+                        this.classList.add('active');
+                        this.nextElementSibling.classList.add('active');
+                    }
+                });
             });
+
+            // Itens dos tópicos
             document.querySelectorAll('.topic-item').forEach(item => {
-                item.addEventListener('click', function() { selectTopic(this.dataset.topic, this); });
+                item.addEventListener('click', function() {
+                    selectTopic(this);
+                });
             });
-            document.getElementById('question-count').addEventListener('change', function() { questionCount = parseInt(this.value); });
-            document.getElementById('difficulty-level').addEventListener('change', function() { difficulty = this.value; });
+
+            // Configurações do quiz
+            document.getElementById('question-count').addEventListener('change', function() {
+                questionCount = parseInt(this.value);
+            });
+
+            document.getElementById('difficulty-level').addEventListener('change', function() {
+                difficulty = this.value;
+            });
         }
 
-        function toggleGradeSection(clickedHeader) {
-            const isActive = clickedHeader.classList.contains('active');
-            document.querySelectorAll('.grade-header').forEach(h => h.classList.remove('active'));
-            document.querySelectorAll('.topics-list').forEach(list => list.classList.remove('active'));
-            if (!isActive) {
-                clickedHeader.classList.add('active');
-                clickedHeader.nextElementSibling.classList.add('active');
-            }
-        }
-
-        function selectTopic(topicId, element) {
-            document.querySelectorAll('.topic-item').forEach(item => item.classList.remove('selected'));
+        function selectTopic(element) {
+            // Remove seleção anterior
+            document.querySelectorAll('.topic-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Seleciona o atual
             element.classList.add('selected');
-            currentTopic = topicId;
-            const topic = topicData[topicId];
-            elements.topicTitle.textContent = `📚 ${topic.title}`;
-            elements.topicDescription.textContent = `${topic.grade} - ${topic.description}`;
+            
+            // Extrai dados dinamicamente do HTML
+            currentTopic = element.dataset.topic;
+            currentTopicTitle = element.textContent;
+            const gradeHeader = element.closest('.grade-section').querySelector('.grade-header');
+            currentGradeText = gradeHeader.querySelector('div > span:last-of-type').textContent.trim();
+            
+            // Atualiza header
+            elements.topicTitle.textContent = `📚 ${currentTopicTitle}`;
+            elements.topicDescription.textContent = `${currentGradeText} - Conteúdo alinhado à BNCC`;
+            
+            // Mostra configuração do quiz
             showQuizSetup();
         }
 
@@ -1070,72 +930,85 @@
             const indicator = elements.statusIndicator;
             indicator.textContent = message;
             indicator.className = `status-indicator show ${type}`;
-            setTimeout(() => indicator.classList.remove('show'), 3000);
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 3000);
         }
 
-        // NOVO: Função para mostrar o modal com etapas
-        async function showGenerationSteps(callback) {
-            elements.generationOverlay.classList.add('show');
+        // Função principal para gerar questões com IA
+        async function generateQuestionsWithAI() {
+            const prompt = `
+            Gere ${questionCount} questões de múltipla escolha sobre o tópico de matemática "${currentTopicTitle}", para alunos da série "${currentGradeText}".
             
-            const steps = [
-                { msg: "Analisando seu pedido...", delay: 0 },
-                { msg: "Enviando parâmetros para a IA...", delay: 1000 },
-                { msg: "Aguardando a IA criar as questões...", delay: 2000 },
-                { msg: "Isso pode levar um momento...", delay: 5000 },
-            ];
-
-            // Exibe as mensagens com um pequeno atraso entre elas
-            for (const step of steps) {
-                await new Promise(resolve => setTimeout(() => {
-                    elements.generationStatusText.textContent = step.msg;
-                    resolve();
-                }, step.delay));
+            REGRAS:
+            1. Nível de dificuldade: ${difficulty}.
+            2. Cada questão deve ter exatamente 4 alternativas (A, B, C, D).
+            3. Apenas uma alternativa deve ser a correta.
+            4. Inclua uma explicação detalhada e pedagógica da resposta correta, adequada para a faixa etária de "${currentGradeText}".
+            5. Varie os tipos de questões (cálculo, conceitual, aplicação, resolução de problemas).
+            
+            FORMATO JSON OBRIGATÓRIO (sem texto antes ou depois, apenas o JSON):
+            {
+                "questions": [
+                    {
+                        "question": "Texto da questão aqui.",
+                        "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
+                        "correct": 0,
+                        "explanation": "Explicação detalhada e passo a passo da resposta correta."
+                    }
+                ]
             }
             
-            // Executa a função principal de geração de questões
-            await callback();
-
-            elements.generationStatusText.textContent = "Finalizando...";
-            await new Promise(resolve => setTimeout(resolve, 500)); // Pequena pausa final
-
-            elements.generationOverlay.classList.remove('show');
-        }
-
-        async function generateQuestionsWithAI(topic, count, difficulty) {
-            // ... (A função generateQuestionsWithAI permanece a mesma, mas sem os showStatus)
-            const topicInfo = topicData[topic] || { title: topic, grade: 'Ensino' };
-            const prompt = `
-            Gere ${count} questões de múltipla escolha sobre "${topicInfo.title}" para alunos do ${topicInfo.grade} no Brasil.
-            REGRAS:
-            1. Nível de dificuldade: ${difficulty}
-            2. Cada questão deve ter exatamente 4 alternativas (A, B, C, D)
-            3. Apenas uma alternativa correta
-            4. Inclua explicação detalhada da resposta correta
-            5. Use linguagem e contexto adequados para a série e o país (Brasil). Se for sobre sistema monetário, use Real (R$).
-            6. Varie os tipos de questões (cálculo, conceitual, aplicação, problemas)
-            FORMATO JSON OBRIGATÓRIO (sem nenhum texto antes ou depois do JSON):
-            { "questions": [ { "question": "...", "options": [...], "correct": 0, "explanation": "..." } ] }
-            Gere todas as ${count} questões agora:`;
+            Gere todas as ${questionCount} questões agora:`;
 
             try {
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
+                showStatus('🤖 Gerando questões com IA...', 'info');
+                
+                const response = await puter.ai.chat([{
+                    role: 'user',
+                    content: prompt
+                }]);
+                
                 const content = response.message.content.trim();
+                
+                // Extrai JSON da resposta de forma mais robusta
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error('Formato JSON inválido');
-                const questionsData = JSON.parse(jsonMatch[0]);
-                if (!questionsData.questions || !Array.isArray(questionsData.questions)) {
-                    throw new Error('Estrutura de questões inválida');
+                if (!jsonMatch) {
+                    throw new Error('Formato JSON inválido na resposta da IA');
                 }
+                
+                const questionsData = JSON.parse(jsonMatch[0]);
+                
+                if (!questionsData.questions || !Array.isArray(questionsData.questions)) {
+                    throw new Error('Estrutura de questões inválida na resposta da IA');
+                }
+                
+                showStatus('✅ Questões geradas com sucesso!', 'success');
                 return questionsData.questions;
+                
             } catch (error) {
                 console.error('Erro ao gerar questões:', error);
-                showStatus('❌ Erro ao gerar questões', 'error');
-                return generateFallbackQuestions(topicInfo, count);
+                showStatus('❌ Erro ao gerar questões. Usando fallback.', 'error');
+                
+                // Questões de fallback em caso de erro
+                return generateFallbackQuestions();
             }
         }
 
-        function generateFallbackQuestions(topicInfo, count) {
-            // ... (A função de fallback permanece a mesma)
+        function generateFallbackQuestions() {
+            const fallbackQuestions = [];
+            for (let i = 1; i <= questionCount; i++) {
+                fallbackQuestions.push({
+                    question: `(Fallback) Questão ${i} sobre ${currentTopicTitle}: Qual é o resultado de 2 + ${i}?`,
+                    options: [
+                        `A) ${i + 1}`, `B) ${i + 2}`, `C) ${i + 3}`, `D) ${i + 4}`
+                    ],
+                    correct: 1,
+                    explanation: `A resposta correta é ${i + 2} porque 2 + ${i} = ${i + 2}.`
+                });
+            }
+            return fallbackQuestions;
         }
 
         async function startQuiz() {
@@ -1143,20 +1016,14 @@
                 alert('Por favor, selecione um tópico primeiro!');
                 return;
             }
-
-            // MODIFICADO: Envolve a geração de questões com o modal de etapas
-            await showGenerationSteps(async () => {
-                questions = await generateQuestionsWithAI(currentTopic, questionCount, difficulty);
-            });
             
-            if (questions.length === 0) {
-                showStatus('Não foi possível gerar as questões. Tente novamente.', 'error');
+            questions = await generateQuestionsWithAI();
+            
+            if (!questions || questions.length === 0) {
+                alert('Não foi possível gerar as questões. Tente novamente.');
                 return;
             }
             
-            showStatus('✅ Quiz pronto! Bom estudo!', 'success');
-
-            // Inicializa o quiz
             currentQuestionIndex = 0;
             userAnswers = [];
             score = { correct: 0, incorrect: 0 };
@@ -1169,8 +1036,7 @@
         }
 
         function updateQuizHeader() {
-            const topic = topicData[currentTopic] || { title: currentTopic };
-            document.getElementById('quiz-topic-title').textContent = `📚 ${topic.title}`;
+            document.getElementById('quiz-topic-title').textContent = `📚 ${currentTopicTitle}`;
             updateProgress();
             updateScore();
         }
@@ -1178,11 +1044,13 @@
         function updateProgress() {
             const progress = ((currentQuestionIndex) / questions.length) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('progress-text').textContent = 
+                `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
         }
 
         function updateScore() {
-            document.getElementById('score-display').innerHTML = `✅ ${score.correct} | ❌ ${score.incorrect}`;
+            document.getElementById('score-display').innerHTML = 
+                `✅ ${score.correct} | ❌ ${score.incorrect}`;
         }
 
         function displayQuestion() {
@@ -1192,6 +1060,7 @@
             }
             
             const question = questions[currentQuestionIndex];
+            
             document.getElementById('question-number').textContent = `Questão ${currentQuestionIndex + 1}`;
             document.getElementById('question-text').textContent = question.question;
             
@@ -1201,7 +1070,12 @@
             question.options.forEach((option, index) => {
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'option';
-                optionDiv.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + index)}</div><div>${option.replace(/^[A-D]\)\s*/, '')}</div>`;
+                // Remove o prefixo "A) ", "B) " etc., se existir, para evitar duplicação.
+                optionDiv.innerHTML = `
+                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                    <div>${option.replace(/^[A-D]\)\s*/, '')}</div>
+                `;
+                
                 optionDiv.addEventListener('click', () => selectAnswer(index, optionDiv));
                 optionsContainer.appendChild(optionDiv);
             });
@@ -1210,34 +1084,40 @@
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
             document.getElementById('next-btn').style.display = 'none';
-            document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'auto');
             
             updateProgress();
         }
 
         function selectAnswer(answerIndex, optionElement) {
             if (isAnswered) return;
-            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
-            optionElement.classList.add('selected');
-            selectedAnswer = answerIndex;
-            checkAnswer();
-        }
-
-        function checkAnswer() {
-            if (selectedAnswer === null || isAnswered) return;
-            
             isAnswered = true;
+            
             const question = questions[currentQuestionIndex];
-            const isCorrect = selectedAnswer === question.correct;
+            const isCorrect = answerIndex === question.correct;
             
             const options = document.querySelectorAll('.option');
             options.forEach((option, index) => {
                 option.style.pointerEvents = 'none';
-                if (index === question.correct) option.classList.add('correct');
-                else if (index === selectedAnswer && !isCorrect) option.classList.add('incorrect');
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === answerIndex && !isCorrect) {
+                    option.classList.add('incorrect');
+                }
             });
             
-            if (isCorrect) score.correct++; else score.incorrect++;
+            if (isCorrect) {
+                score.correct++;
+                showStatus('✅ Resposta correta!', 'success');
+            } else {
+                score.incorrect++;
+                showStatus('❌ Resposta incorreta', 'error');
+            }
+            
+            userAnswers.push({
+                questionIndex: currentQuestionIndex,
+                selectedAnswer: answerIndex,
+                correct: isCorrect
+            });
             
             document.getElementById('explanation-text').textContent = question.explanation;
             document.getElementById('explanation').classList.add('show');
@@ -1260,6 +1140,7 @@
             const resultMessageEl = document.getElementById('result-message');
             
             finalScoreEl.textContent = `${percentage}%`;
+            
             if (percentage >= 80) {
                 finalScoreEl.className = 'result-score excellent';
                 resultMessageEl.textContent = '🎉 Excelente! Você domina este tópico!';
@@ -1277,17 +1158,18 @@
         }
 
         function restartSameTopic() {
-            if (currentTopic) startQuiz();
+            if (currentTopic) {
+                startQuiz();
+            }
         }
 
         function resetQuiz() {
             currentTopic = null;
-            questions = [];
-            currentQuestionIndex = 0;
-            userAnswers = [];
-            score = { correct: 0, incorrect: 0 };
+            currentTopicTitle = null;
+            currentGradeText = null;
             
-            document.querySelectorAll('.topic-item').forEach(item => item.classList.remove('selected'));
+            document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
+            
             elements.topicTitle.textContent = '🎯 Selecione um tópico para começar';
             elements.topicDescription.textContent = 'Escolha um tópico no menu lateral para gerar questões personalizadas com IA';
             
