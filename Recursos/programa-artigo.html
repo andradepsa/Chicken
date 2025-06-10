@@ -171,7 +171,7 @@
                 <button id="rewriteBtn" style="display: none; background-color: #fd7e14;">✏️ REESCREVER</button>
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">
-                    💡 <span id="reference-status">Inicie uma sessão para adicionar referências</span><br>
+                    💡 Clique nos parágrafos para adicionar referências<br>
                     🔍 Sistema anti-repetição ativado
                 </div>
             </div>
@@ -256,7 +256,6 @@
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
-            referenceStatusSpan: document.getElementById('reference-status'),
         };
 
         // --- ESTADO DA APLICAÇÃO ---
@@ -475,39 +474,18 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
             if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
-            
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            if (!paragraphElement) {
-                alert('Erro: Parágrafo não encontrado.');
-                return;
-            }
-            
-            // Pega o texto original do parágrafo sem citações existentes
-            const [sectionKey, indexStr] = currentParagraphId.split('-');
-            const originalText = articleContent[sectionKey][parseInt(indexStr)];
+            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
-            
-            // Formata as citações
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
                 return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
             });
-            
-            // Remove citações existentes e adiciona as novas
             const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            const newText = `${cleanText} (${citations.join('; ')}).`;
-            
-            // Atualiza o conteúdo
-            paragraphElement.textContent = newText;
-            articleContent[sectionKey][parseInt(indexStr)] = newText;
-            
-            // Adiciona referências à lista final
-            selectedRefs.forEach(ref => { 
-                if (!finalReferences.some(eRef => eRef.id === ref.id)) { 
-                    finalReferences.push(ref); 
-                } 
-            });
-            
+            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
+            const [sectionKey, indexStr] = currentParagraphId.split('-');
+            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
             displayABNTDocument();
             elements.referenceModal.style.display = 'none';
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
@@ -665,7 +643,6 @@ Output:`;
                     sessionActive = true;
                     elements.meioBtn.disabled = false;
                     elements.fimBtn.disabled = false;
-                    elements.referenceStatusSpan.textContent = 'Clique nos parágrafos para adicionar referências';
                 }
                 
                 articleContent[currentSection].push(content);
@@ -684,7 +661,6 @@ Output:`;
                     elements.inicioBtn.disabled = false;
                     elements.meioBtn.disabled = true;
                     elements.fimBtn.disabled = true;
-                    elements.referenceStatusSpan.textContent = 'Inicie uma sessão para adicionar referências';
                     log('🎯 Sessão finalizada! Clique em INÍCIO para nova sessão.', 'info');
                     
                     // Avança para próxima seção automaticamente se não for a última
@@ -799,7 +775,7 @@ Output:`;
         
         elements.outputDiv.addEventListener('click', (e) => {
             const paragraph = e.target.closest('p[data-id]');
-            if (paragraph && sessionActive) {
+            if (paragraph) {
                 const paragraphId = paragraph.dataset.id;
                 const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
