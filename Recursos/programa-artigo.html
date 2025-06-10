@@ -429,16 +429,46 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
                 const query = relevantTerms.join(' ');
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
                 elements.searchInfoDiv.style.display = 'block';
+                
                 const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
-                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-                if (!response.ok) throw new Error(`API retornou status ${response.status}`);
+                const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+                
+                if (!response.ok) {
+                    throw new Error(`API retornou status ${response.status}`);
+                }
+                
                 const data = await response.json();
-                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
-                log(`${papers.length} referências encontradas!`, 'success');
-                return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
+                
+                if (!data.data || !Array.isArray(data.data)) {
+                    log('⚠️ Formato de resposta inesperado da API', 'warning');
+                    return [];
+                }
+                
+                const papers = data.data.filter(p => 
+                    p && 
+                    p.title && 
+                    p.authors && 
+                    Array.isArray(p.authors) && 
+                    p.authors.length > 0 && 
+                    p.year &&
+                    p.year > 1990
+                );
+                
+                const formattedPapers = papers.map(p => ({
+                    id: p.paperId || `temp_${Date.now()}_${Math.random()}`,
+                    title: p.title,
+                    authors: p.authors.map(a => a.name || 'Autor Desconhecido'),
+                    year: p.year,
+                    abstract: p.abstract || '',
+                    url: p.url || `https://semanticscholar.org/paper/${p.paperId}`
+                }));
+                
+                log(`${formattedPapers.length} referências encontradas!`, 'success');
+                return formattedPapers;
+                
             } catch (error) {
-                console.error('Erro ao buscar referências:', error);
-                log('⚠️ Erro na busca de referências.', 'error');
+                console.error('Erro detalhado ao buscar referências:', error);
+                log(`❌ Erro na busca: ${error.message}`, 'error');
                 return [];
             }
         }
@@ -448,47 +478,109 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
             elements.addReferencesBtn.disabled = true;
             elements.referenceModal.style.display = 'flex';
-            const references = await fetchParagraphReferences(paragraphText, articleTitle);
-            currentModalReferences = references;
-            if (references.length === 0) {
-                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
-            } else {
-                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-                elements.referenceList.innerHTML = references.map((ref, index) => {
-                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                                <input type="checkbox" id="ref-${index}" value="${index}">
-                                <label for="ref-${index}">
-                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
-                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                    <br><em>${ref.title}</em>
-                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                                </label>
-                            </li>`;
-                }).join('');
-                elements.addReferencesBtn.disabled = false;
+            
+            try {
+                const references = await fetchParagraphReferences(paragraphText, articleTitle);
+                currentModalReferences = references;
+                
+                if (references.length === 0) {
+                    elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
+                    elements.addReferencesBtn.disabled = true;
+                } else {
+                    const hasUsedRefs = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id));
+                    elements.duplicateWarningDiv.style.display = hasUsedRefs ? 'block' : 'none';
+                    elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
+                    
+                    elements.referenceList.innerHTML = references.map((ref, index) => {
+                        const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                        return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                                    <input type="checkbox" id="ref-${index}" value="${index}">
+                                    <label for="ref-${index}">
+                                        <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
+                                        ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
+                                        <br><em>${ref.title}</em>
+                                        <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                    </label>
+                                </li>`;
+                    }).join('');
+                    elements.addReferencesBtn.disabled = false;
+                }
+            } catch (error) {
+                console.error('Erro ao buscar referências:', error);
+                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Erro ao buscar referências</strong></div>`;
+                elements.addReferencesBtn.disabled = true;
             }
         }
 
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            
+            if (selectedIndices.length === 0) {
+                alert('Selecione ao menos uma referência.');
+                return;
+            }
+            
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
-            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
-            const citations = selectedRefs.map(ref => {
-                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
-            });
-            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
-            const [sectionKey, indexStr] = currentParagraphId.split('-');
-            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
-            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
-            displayABNTDocument();
-            elements.referenceModal.style.display = 'none';
-            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
+            if (!paragraphElement) {
+                alert('Erro: Parágrafo não encontrado.');
+                elements.referenceModal.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const [sectionKey, indexStr] = currentParagraphId.split('-');
+                const paragraphIndex = parseInt(indexStr);
+                
+                if (!articleContent[sectionKey] || !articleContent[sectionKey][paragraphIndex]) {
+                    alert('Erro: Conteúdo do parágrafo não encontrado.');
+                    return;
+                }
+                
+                const originalText = articleContent[sectionKey][paragraphIndex];
+                const selectedRefs = selectedIndices.map(index => currentModalReferences[index]).filter(ref => ref);
+                
+                if (selectedRefs.length === 0) {
+                    alert('Erro: Referências selecionadas não foram encontradas.');
+                    return;
+                }
+                
+                // Formata as citações
+                const citations = selectedRefs.map(ref => {
+                    const lastName = ref.authors[0].split(' ').pop().toUpperCase();
+                    if (ref.authors.length > 2) {
+                        return `${lastName} et al., ${ref.year}`;
+                    } else {
+                        const allLastNames = ref.authors.map(a => a.split(' ').pop().toUpperCase());
+                        return `${allLastNames.join('; ')}, ${ref.year}`;
+                    }
+                });
+                
+                // Remove citações existentes e adiciona as novas
+                const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+                const newText = `${cleanText} (${citations.join('; ')}).`;
+                
+                // Atualiza o conteúdo
+                paragraphElement.textContent = newText;
+                articleContent[sectionKey][paragraphIndex] = newText;
+                
+                // Adiciona referências à lista final (evita duplicatas)
+                selectedRefs.forEach(ref => {
+                    if (!finalReferences.some(eRef => eRef.id === ref.id)) {
+                        finalReferences.push(ref);
+                    }
+                });
+                
+                // Atualiza a exibição
+                displayABNTDocument();
+                elements.referenceModal.style.display = 'none';
+                
+                log(`✅ ${selectedIndices.length} referência(s) adicionada(s) com sucesso!`, 'success');
+                
+            } catch (error) {
+                console.error('Erro ao adicionar referências:', error);
+                alert('Erro ao adicionar referências. Tente novamente.');
+                log('❌ Erro ao processar referências', 'error');
+            }
         }
 
         function formatarReferenciasABNT() {
@@ -774,11 +866,16 @@ Output:`;
         });
         
         elements.outputDiv.addEventListener('click', (e) => {
+            console.log('Clique detectado:', e.target);
             const paragraph = e.target.closest('p[data-id]');
             if (paragraph) {
+                console.log('Parágrafo encontrado:', paragraph.dataset.id);
                 const paragraphId = paragraph.dataset.id;
                 const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
+                console.log('Texto do parágrafo:', paragraphText);
                 openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+            } else {
+                console.log('Nenhum parágrafo encontrado no clique');
             }
         });
         
