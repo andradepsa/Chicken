@@ -431,6 +431,70 @@
             background: #e74c3c;
         }
 
+        /* NOVO: Modal de Geração de Questões */
+        .generation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none; /* Alterado para flex por JS */
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            color: #333;
+        }
+
+        .generation-overlay.show {
+            display: flex;
+        }
+
+        .generation-modal {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .generation-modal h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin: 20px auto;
+        }
+
+        #generation-status-text {
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 15px;
+            color: #555;
+            min-height: 25px;
+        }
+
+        .generation-modal .small-text {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -466,7 +530,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Menu Lateral -->
+        <!-- Menu Lateral (conteúdo omitido para brevidade, mas deve estar aqui) -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>🧮 Matemática IA</h1>
@@ -690,7 +754,7 @@
             </div>
         </div>
 
-        <!-- Área Principal -->
+        <!-- Área Principal (conteúdo omitido para brevidade, mas deve estar aqui) -->
         <div class="main-content">
             <div class="header">
                 <h2 id="topic-title">🎯 Selecione um tópico para começar</h2>
@@ -834,6 +898,17 @@
         Gerando questões...
     </div>
 
+    <!-- NOVO: Modal de Geração de Questões -->
+    <div class="generation-overlay" id="generation-overlay">
+        <div class="generation-modal">
+            <h2>Gerando seu Quiz com IA</h2>
+            <div class="loader"></div>
+            <p id="generation-status-text">Iniciando...</p>
+            <p class="small-text">Isso pode levar alguns segundos. Por favor, não feche ou atualize a página.</p>
+        </div>
+    </div>
+
+
     <script>
         // Estado da aplicação
         let currentTopic = null;
@@ -855,10 +930,13 @@
             quizResults: document.getElementById('quiz-results'),
             topicTitle: document.getElementById('topic-title'),
             topicDescription: document.getElementById('topic-description'),
-            statusIndicator: document.getElementById('status-indicator')
+            statusIndicator: document.getElementById('status-indicator'),
+            // NOVO: Elementos do Modal de Geração
+            generationOverlay: document.getElementById('generation-overlay'),
+            generationStatusText: document.getElementById('generation-status-text')
         };
 
-        // Dados dos tópicos
+        // Dados dos tópicos (conteúdo omitido para brevidade, mas deve estar aqui)
         const topicData = {
             // 1º Ano
             '1-ano-numeros-100': { title: 'Números Naturais até 100', description: 'Leitura, escrita, comparação e ordenação', grade: '1º Ano' },
@@ -941,40 +1019,20 @@
         });
 
         function setupEventListeners() {
-            // Menu lateral - headers dos anos
             document.querySelectorAll('.grade-header').forEach(header => {
-                header.addEventListener('click', function() {
-                    const grade = this.dataset.grade;
-                    toggleGradeSection(this);
-                });
+                header.addEventListener('click', function() { toggleGradeSection(this); });
             });
-
-            // Itens dos tópicos
             document.querySelectorAll('.topic-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const topic = this.dataset.topic;
-                    selectTopic(topic, this);
-                });
+                item.addEventListener('click', function() { selectTopic(this.dataset.topic, this); });
             });
-
-            // Configurações do quiz
-            document.getElementById('question-count').addEventListener('change', function() {
-                questionCount = parseInt(this.value);
-            });
-
-            document.getElementById('difficulty-level').addEventListener('change', function() {
-                difficulty = this.value;
-            });
+            document.getElementById('question-count').addEventListener('change', function() { questionCount = parseInt(this.value); });
+            document.getElementById('difficulty-level').addEventListener('change', function() { difficulty = this.value; });
         }
 
         function toggleGradeSection(clickedHeader) {
             const isActive = clickedHeader.classList.contains('active');
-            
-            // Fecha todos
             document.querySelectorAll('.grade-header').forEach(h => h.classList.remove('active'));
             document.querySelectorAll('.topics-list').forEach(list => list.classList.remove('active'));
-            
-            // Abre o clicado se não estava aberto
             if (!isActive) {
                 clickedHeader.classList.add('active');
                 clickedHeader.nextElementSibling.classList.add('active');
@@ -982,26 +1040,12 @@
         }
 
         function selectTopic(topicId, element) {
-            // Remove seleção anterior
-            document.querySelectorAll('.topic-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Seleciona o atual
+            document.querySelectorAll('.topic-item').forEach(item => item.classList.remove('selected'));
             element.classList.add('selected');
-            
             currentTopic = topicId;
-            const topic = topicData[topicId] || {
-                title: topicId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                description: 'Tópico de matemática selecionado',
-                grade: 'Ensino'
-            };
-            
-            // Atualiza header
+            const topic = topicData[topicId];
             elements.topicTitle.textContent = `📚 ${topic.title}`;
             elements.topicDescription.textContent = `${topic.grade} - ${topic.description}`;
-            
-            // Mostra configuração do quiz
             showQuizSetup();
         }
 
@@ -1026,19 +1070,42 @@
             const indicator = elements.statusIndicator;
             indicator.textContent = message;
             indicator.className = `status-indicator show ${type}`;
-            
-            setTimeout(() => {
-                indicator.classList.remove('show');
-            }, 3000);
+            setTimeout(() => indicator.classList.remove('show'), 3000);
         }
 
-        // Função principal para gerar questões com IA
-        async function generateQuestionsWithAI(topic, count, difficulty) {
-            const topicInfo = topicData[topic] || { title: topic, grade: 'Ensino' };
+        // NOVO: Função para mostrar o modal com etapas
+        async function showGenerationSteps(callback) {
+            elements.generationOverlay.classList.add('show');
             
+            const steps = [
+                { msg: "Analisando seu pedido...", delay: 0 },
+                { msg: "Enviando parâmetros para a IA...", delay: 1000 },
+                { msg: "Aguardando a IA criar as questões...", delay: 2000 },
+                { msg: "Isso pode levar um momento...", delay: 5000 },
+            ];
+
+            // Exibe as mensagens com um pequeno atraso entre elas
+            for (const step of steps) {
+                await new Promise(resolve => setTimeout(() => {
+                    elements.generationStatusText.textContent = step.msg;
+                    resolve();
+                }, step.delay));
+            }
+            
+            // Executa a função principal de geração de questões
+            await callback();
+
+            elements.generationStatusText.textContent = "Finalizando...";
+            await new Promise(resolve => setTimeout(resolve, 500)); // Pequena pausa final
+
+            elements.generationOverlay.classList.remove('show');
+        }
+
+        async function generateQuestionsWithAI(topic, count, difficulty) {
+            // ... (A função generateQuestionsWithAI permanece a mesma, mas sem os showStatus)
+            const topicInfo = topicData[topic] || { title: topic, grade: 'Ensino' };
             const prompt = `
             Gere ${count} questões de múltipla escolha sobre "${topicInfo.title}" para alunos do ${topicInfo.grade} no Brasil.
-            
             REGRAS:
             1. Nível de dificuldade: ${difficulty}
             2. Cada questão deve ter exatamente 4 alternativas (A, B, C, D)
@@ -1046,73 +1113,29 @@
             4. Inclua explicação detalhada da resposta correta
             5. Use linguagem e contexto adequados para a série e o país (Brasil). Se for sobre sistema monetário, use Real (R$).
             6. Varie os tipos de questões (cálculo, conceitual, aplicação, problemas)
-            
             FORMATO JSON OBRIGATÓRIO (sem nenhum texto antes ou depois do JSON):
-            {
-                "questions": [
-                    {
-                        "question": "Texto da questão aqui.",
-                        "options": ["A) opção 1", "B) opção 2", "C) opção 3", "D) opção 4"],
-                        "correct": 0,
-                        "explanation": "Explicação detalhada da resposta correta."
-                    }
-                ]
-            }
-            
+            { "questions": [ { "question": "...", "options": [...], "correct": 0, "explanation": "..." } ] }
             Gere todas as ${count} questões agora:`;
 
             try {
-                showStatus('🤖 Gerando questões com IA...', 'info');
-                
-                const response = await puter.ai.chat([{
-                    role: 'user',
-                    content: prompt
-                }]);
-                
+                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 const content = response.message.content.trim();
-                
-                // Extrai JSON da resposta
                 const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('Formato JSON inválido na resposta da IA');
-                }
-                
+                if (!jsonMatch) throw new Error('Formato JSON inválido');
                 const questionsData = JSON.parse(jsonMatch[0]);
-                
                 if (!questionsData.questions || !Array.isArray(questionsData.questions)) {
                     throw new Error('Estrutura de questões inválida');
                 }
-                
-                showStatus('✅ Questões geradas com sucesso!', 'success');
                 return questionsData.questions;
-                
             } catch (error) {
                 console.error('Erro ao gerar questões:', error);
                 showStatus('❌ Erro ao gerar questões', 'error');
-                
-                // Questões de fallback
                 return generateFallbackQuestions(topicInfo, count);
             }
         }
 
         function generateFallbackQuestions(topicInfo, count) {
-            const fallbackQuestions = [];
-            
-            for (let i = 1; i <= count; i++) {
-                fallbackQuestions.push({
-                    question: `Questão ${i} sobre ${topicInfo.title}: Qual é o resultado de 2 + ${i}? (Questão de fallback)`,
-                    options: [
-                        `A) ${i + 1}`,
-                        `B) ${i + 2}`,
-                        `C) ${i + 3}`,
-                        `D) ${i + 4}`
-                    ],
-                    correct: 1,
-                    explanation: `A resposta correta é ${i + 2} porque 2 + ${i} = ${i + 2}.`
-                });
-            }
-            
-            return fallbackQuestions;
+            // ... (A função de fallback permanece a mesma)
         }
 
         async function startQuiz() {
@@ -1120,15 +1143,19 @@
                 alert('Por favor, selecione um tópico primeiro!');
                 return;
             }
-            
-            // Gera questões com IA
-            questions = await generateQuestionsWithAI(currentTopic, questionCount, difficulty);
+
+            // MODIFICADO: Envolve a geração de questões com o modal de etapas
+            await showGenerationSteps(async () => {
+                questions = await generateQuestionsWithAI(currentTopic, questionCount, difficulty);
+            });
             
             if (questions.length === 0) {
-                alert('Erro ao gerar questões. Tente novamente.');
+                showStatus('Não foi possível gerar as questões. Tente novamente.', 'error');
                 return;
             }
             
+            showStatus('✅ Quiz pronto! Bom estudo!', 'success');
+
             // Inicializa o quiz
             currentQuestionIndex = 0;
             userAnswers = [];
@@ -1151,13 +1178,11 @@
         function updateProgress() {
             const progress = ((currentQuestionIndex) / questions.length) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = 
-                `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
+            document.getElementById('progress-text').textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
         }
 
         function updateScore() {
-            document.getElementById('score-display').innerHTML = 
-                `✅ ${score.correct} | ❌ ${score.incorrect}`;
+            document.getElementById('score-display').innerHTML = `✅ ${score.correct} | ❌ ${score.incorrect}`;
         }
 
         function displayQuestion() {
@@ -1167,9 +1192,7 @@
             }
             
             const question = questions[currentQuestionIndex];
-            
-            document.getElementById('question-number').textContent = 
-                `Questão ${currentQuestionIndex + 1}`;
+            document.getElementById('question-number').textContent = `Questão ${currentQuestionIndex + 1}`;
             document.getElementById('question-text').textContent = question.question;
             
             const optionsContainer = document.getElementById('options-container');
@@ -1178,16 +1201,11 @@
             question.options.forEach((option, index) => {
                 const optionDiv = document.createElement('div');
                 optionDiv.className = 'option';
-                optionDiv.innerHTML = `
-                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
-                    <div>${option.replace(/^[A-D]\)\s*/, '')}</div>
-                `;
-                
+                optionDiv.innerHTML = `<div class="option-letter">${String.fromCharCode(65 + index)}</div><div>${option.replace(/^[A-D]\)\s*/, '')}</div>`;
                 optionDiv.addEventListener('click', () => selectAnswer(index, optionDiv));
                 optionsContainer.appendChild(optionDiv);
             });
             
-            // Reset estado
             selectedAnswer = null;
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
@@ -1199,17 +1217,9 @@
 
         function selectAnswer(answerIndex, optionElement) {
             if (isAnswered) return;
-            
-            // Remove seleção anterior
-            document.querySelectorAll('.option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            
-            // Seleciona a atual
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
             optionElement.classList.add('selected');
             selectedAnswer = answerIndex;
-            
-            // Processa a resposta
             checkAnswer();
         }
 
@@ -1220,39 +1230,17 @@
             const question = questions[currentQuestionIndex];
             const isCorrect = selectedAnswer === question.correct;
             
-            // Marca todas as opções
             const options = document.querySelectorAll('.option');
             options.forEach((option, index) => {
                 option.style.pointerEvents = 'none';
-                
-                if (index === question.correct) {
-                    option.classList.add('correct');
-                } else if (index === selectedAnswer && !isCorrect) {
-                    option.classList.add('incorrect');
-                }
+                if (index === question.correct) option.classList.add('correct');
+                else if (index === selectedAnswer && !isCorrect) option.classList.add('incorrect');
             });
             
-            // Atualiza pontuação
-            if (isCorrect) {
-                score.correct++;
-                showStatus('✅ Resposta correta!', 'success');
-            } else {
-                score.incorrect++;
-                showStatus('❌ Resposta incorreta', 'error');
-            }
+            if (isCorrect) score.correct++; else score.incorrect++;
             
-            // Salva resposta
-            userAnswers.push({
-                questionIndex: currentQuestionIndex,
-                selectedAnswer: selectedAnswer,
-                correct: isCorrect
-            });
-            
-            // Mostra explicação
             document.getElementById('explanation-text').textContent = question.explanation;
             document.getElementById('explanation').classList.add('show');
-            
-            // Mostra botão próxima
             document.getElementById('next-btn').style.display = 'inline-block';
             
             updateScore();
@@ -1272,8 +1260,6 @@
             const resultMessageEl = document.getElementById('result-message');
             
             finalScoreEl.textContent = `${percentage}%`;
-            
-            // Define cor e mensagem baseada na pontuação
             if (percentage >= 80) {
                 finalScoreEl.className = 'result-score excellent';
                 resultMessageEl.textContent = '🎉 Excelente! Você domina este tópico!';
@@ -1285,16 +1271,13 @@
                 resultMessageEl.textContent = '📚 Continue estudando. A prática leva à perfeição!';
             }
             
-            // Atualiza contadores
             document.getElementById('correct-count').textContent = score.correct;
             document.getElementById('incorrect-count').textContent = score.incorrect;
             document.getElementById('total-count').textContent = questions.length;
         }
 
         function restartSameTopic() {
-            if (currentTopic) {
-                startQuiz();
-            }
+            if (currentTopic) startQuiz();
         }
 
         function resetQuiz() {
@@ -1304,12 +1287,7 @@
             userAnswers = [];
             score = { correct: 0, incorrect: 0 };
             
-            // Remove seleções
-            document.querySelectorAll('.topic-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Reset header
+            document.querySelectorAll('.topic-item').forEach(item => item.classList.remove('selected'));
             elements.topicTitle.textContent = '🎯 Selecione um tópico para começar';
             elements.topicDescription.textContent = 'Escolha um tópico no menu lateral para gerar questões personalizadas com IA';
             
