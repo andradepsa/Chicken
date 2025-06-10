@@ -46,8 +46,8 @@
         /* --- ESTILO CORRIGIDO PARA NOTA DE RODAPÉ (ABNT NBR 10520) --- */
         .email-autor {
             text-align: left;
-            font-size: 10pt;
-            line-height: 1.2;
+            font-size: 10pt; /* Tamanho 10pt para nota de rodapé */
+            line-height: 1.2; /* Espaçamento simples */
         }
         .email-autor::before {
             content: "";
@@ -103,7 +103,6 @@
     </div>
 
     <script>
-        // --- O JAVASCRIPT PERMANECE O MESMO, SEM ALTERAÇÕES ---
         const elements = {
             startBtn: document.getElementById('startBtn'), startSectionBtn: document.getElementById('startSectionBtn'), developSectionBtn: document.getElementById('developSectionBtn'), endSectionBtn: document.getElementById('endSectionBtn'), finishBtn: document.getElementById('finishBtn'), savePdfBtn: document.getElementById('savePdfBtn'), outputDiv: document.getElementById('content-output'), statusDiv: document.getElementById('status'), currentSectionNameSpan: document.getElementById('current-section-name'), initialForm: document.getElementById('initial-form'), interactiveControls: document.getElementById('interactive-controls'), topicSuggestionModal: document.getElementById('topic-suggestion-modal'), topicListDiv: document.getElementById('topic-list'), confirmTopicBtn: document.getElementById('confirm-topic-btn'),
         };
@@ -122,10 +121,33 @@
         elements.finishBtn.addEventListener('click', () => { alert(`Artigo finalizado!`); log(`🎓 Artigo concluído!`, 'success'); });
         elements.savePdfBtn.addEventListener('click', () => { alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".'); window.print(); });
 
+        // ==========================================================
+        // ===== FUNÇÃO displayABNTDocument() TOTALMENTE CORRIGIDA =====
+        // ==========================================================
         function displayABNTDocument() {
-            let html = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
-            sectionOrder.forEach(key => { if (articleContent[key].length > 0) { html += `<div class="section-title">${sectionDisplayNames[key]}</div>`; articleContent[key].forEach(pText => html += `<p>${pText}</p>`); } });
-            if (userInputs.email) { html += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email.toUpperCase()}</div>`; }
+            // Cabeçalho do trabalho
+            let html = `<div class="nome-universidade">${userInputs.universidade || ''}</div>
+                        <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
+                        <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
+
+            let sectionCounter = 1; // Contador para a numeração das seções (ABNT NBR 6024)
+
+            // Conteúdo do artigo com seções numeradas
+            sectionOrder.forEach(key => {
+                if (articleContent[key].length > 0) {
+                    // Adiciona a numeração e o nome da seção em maiúsculas
+                    html += `<div class="section-title">${sectionCounter} ${sectionDisplayNames[key].toUpperCase()}</div>`;
+                    articleContent[key].forEach(pText => html += `<p>${pText}</p>`);
+                    sectionCounter++;
+                }
+            });
+
+            // Nota de rodapé (qualificação do autor) - FORMATO CORRIGIDO ABNT
+            if (userInputs.email) {
+                // O e-mail não deve ser em maiúsculas e o texto deve ser mais descritivo
+                html += `<div class="email-autor"><sup>1</sup>Qualificação do autor (Ex: Professor, Doutorando, etc). Instituição: ${userInputs.universidade || ''}. E-mail: ${userInputs.email}</div>`;
+            }
+
             elements.outputDiv.innerHTML = html;
         }
     </script>
