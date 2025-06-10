@@ -64,12 +64,7 @@
                 <div class="form-group"><label for="universidade">Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
                 <div class="form-group"><label for="titulo">Título:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
                 <div class="form-group"><label for="autor">Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
-                <div class="form-group">
-                    <label for="qualificacao">Qualificação:</label>
-                    <select id="qualificacao">
-                        <option value="graduando">Graduando(a)</option><option value="especializando">Especializando(a)</option><option value="mestrando">Mestrando(a)</option><option value="doutorando">Doutorando(a)</option><option value="professor">Professor(a)</option><option value="pesquisador">Pesquisador(a)</option>
-                    </select>
-                </div>
+                <div class="form-group"><label for="qualificacao">Qualificação:</label><select id="qualificacao"><option value="graduando">Graduando(a)</option><option value="especializando">Especializando(a)</option><option value="mestrando">Mestrando(a)</option><option value="doutorando">Doutorando(a)</option><option value="professor">Professor(a)</option><option value="pesquisador">Pesquisador(a)</option></select></div>
                 <div class="form-group"><label for="email">Email:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
                 <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
             </div>
@@ -84,26 +79,11 @@
             <div id="status" class="info">🎯 Preencha os dados e clique em "Iniciar"</div>
         </div>
         <div class="page-container"><div class="abnt-content" id="content-output"></div></div>
-        
         <div id="reference-modal" class="modal"><div class="modal-content"><h3>📚 Adicionar Referências</h3><div class="citation-example"><strong>Exemplo:</strong> (SILVA, 2023).</div><div class="search-info" style="display: none;"></div><div class="duplicate-warning" style="display: none;"></div><p>Selecione:</p><ul id="reference-list"></ul><button id="add-references-btn">✅ Adicionar</button><button class="close-btn" id="close-modal-btn">❌ Fechar</button></div></div>
-        
-        <!-- ========================================== -->
-        <!-- === MODAL DE SUGESTÃO DE TEMA DE VOLTA === -->
-        <!-- ========================================== -->
-        <div id="topic-suggestion-modal" class="modal">
-            <div class="modal-content">
-                <h3>✨ Sugestões para o seu Tema</h3>
-                <p>Analisamos seu tema. Escolha a melhor opção abaixo:</p>
-                <div id="topic-list" style="margin: 20px 0;"></div>
-                <button id="confirm-topic-btn">✅ Confirmar Tema e Iniciar</button>
-            </div>
-        </div>
+        <div id="topic-suggestion-modal" class="modal"><div class="modal-content"><h3>✨ Sugestões para o seu Tema</h3><p>Analisamos seu tema. Escolha a melhor opção abaixo:</p><div id="topic-list" style="margin: 20px 0;"></div><button id="confirm-topic-btn">✅ Confirmar Tema e Iniciar</button></div></div>
     </div>
-
     <script>
-        const elements = {
-            startBtn: document.getElementById('startBtn'), startSectionBtn: document.getElementById('startSectionBtn'), developSectionBtn: document.getElementById('developSectionBtn'), endSectionBtn: document.getElementById('endSectionBtn'), finishBtn: document.getElementById('finishBtn'), outputDiv: document.getElementById('content-output'), statusDiv: document.getElementById('status'), currentSectionNameSpan: document.getElementById('current-section-name'), initialForm: document.getElementById('initial-form'), interactiveControls: document.getElementById('interactive-controls'), referenceModal: document.getElementById('reference-modal'), referenceList: document.getElementById('reference-list'), addReferencesBtn: document.getElementById('add-references-btn'), closeModalBtn: document.getElementById('close-modal-btn'), searchInfoDiv: document.querySelector('.search-info'), duplicateWarningDiv: document.querySelector('.duplicate-warning'), savePdfBtn: document.getElementById('savePdfBtn'), topicSuggestionModal: document.getElementById('topic-suggestion-modal'), topicListDiv: document.getElementById('topic-list'), confirmTopicBtn: document.getElementById('confirm-topic-btn'),
-        };
+        const elements = { startBtn: document.getElementById('startBtn'), startSectionBtn: document.getElementById('startSectionBtn'), developSectionBtn: document.getElementById('developSectionBtn'), endSectionBtn: document.getElementById('endSectionBtn'), finishBtn: document.getElementById('finishBtn'), outputDiv: document.getElementById('content-output'), statusDiv: document.getElementById('status'), currentSectionNameSpan: document.getElementById('current-section-name'), initialForm: document.getElementById('initial-form'), interactiveControls: document.getElementById('interactive-controls'), referenceModal: document.getElementById('reference-modal'), referenceList: document.getElementById('reference-list'), addReferencesBtn: document.getElementById('add-references-btn'), closeModalBtn: document.getElementById('close-modal-btn'), searchInfoDiv: document.querySelector('.search-info'), duplicateWarningDiv: document.querySelector('.duplicate-warning'), savePdfBtn: document.getElementById('savePdfBtn'), topicSuggestionModal: document.getElementById('topic-suggestion-modal'), topicListDiv: document.getElementById('topic-list'), confirmTopicBtn: document.getElementById('confirm-topic-btn'), };
         let userInputs = {}; let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] }; let finalReferences = []; let currentParagraphId = null; let currentSection = 'introducao'; const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao']; const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }; let currentModalReferences = [];
         function toProperCase(str) { if (!str) return ''; return str.trim().toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '); }
         async function callPuterAI(prompt) { try { log('🤖 Gerando conteúdo...', 'info'); const response = await puter.ai.chat([{ role: 'user', content: prompt }]); if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.'); return response.message.content.trim(); } catch (error) { log(`❌ Erro na IA: ${error.message || 'Erro.'}`, 'error'); throw error; } }
@@ -118,40 +98,38 @@
         async function generateResumoAndAbstract() { try { log('Gerando resumo e abstract...', 'info'); const allContent = Object.values(articleContent).flat().join(' '); if(allContent.length < 100) return log('⚠️ Conteúdo insuficiente para resumo.', 'warning'); userInputs.resumo = await callPuterAI(`Baseado no artigo "${userInputs.titulo}" com o conteúdo: "${allContent}", escreva um resumo ABNT de 150-250 palavras.`); userInputs.palavrasChave = await callPuterAI(`Extraia 5 palavras-chave do resumo: "${userInputs.resumo}". Responda SÓ com as palavras separadas por ponto final, sem ponto no final.`); userInputs.abstract = await callPuterAI(`Traduza para inglês: "${userInputs.resumo}"`); userInputs.keywords = await callPuterAI(`Traduza para inglês: "${userInputs.palavrasChave}"`); log('✅ Resumo e abstract gerados!', 'success'); } catch (error) { log('⚠️ Erro ao gerar resumo.', 'warning'); } }
         function displayABNTDocument() { let content = `<div class="nome-universidade">${userInputs.universidade}</div><div class="titulo-trabalho">${userInputs.titulo}</div><div class="autor">${userInputs.autor}<sup>1</sup></div>`; if (userInputs.resumo) { content += `<div class="resumo-titulo">Resumo</div><p>${userInputs.resumo}</p><div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`; } if (userInputs.abstract) { content += `<div class="abstract-titulo">Abstract</div><p>${userInputs.abstract}</p><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`; } let sectionCounter = 1; sectionOrder.forEach(key => { if (articleContent[key].length > 0) { content += `<div class="section-title">${sectionCounter++} ${sectionDisplayNames[key].toUpperCase()}</div>`; articleContent[key].forEach((text, index) => { content += `<p data-id="${key}-${index}" title="Clique para adicionar referências">${text}</p>`; }); } }); if (finalReferences.length > 0) { content += `<div class="section-title">REFERÊNCIAS</div><div style="font-size:12pt; text-align:left;">${formatarReferenciasABNT()}</div>`; } if (userInputs.email) { const q = document.getElementById('qualificacao').options[document.getElementById('qualificacao').selectedIndex].text; content += `<div class="email-autor"><sup>1</sup>${q}. Instituição: ${userInputs.universidade}. E-mail: ${userInputs.email}</div>`; } elements.outputDiv.innerHTML = content; }
         function updateInteractiveUIState(state) { const { startSectionBtn, developSectionBtn, endSectionBtn, finishBtn, interactiveControls } = elements; startSectionBtn.disabled = true; developSectionBtn.disabled = true; endSectionBtn.disabled = true; finishBtn.style.display = 'none'; switch (state) { case 'ready_to_start_section': startSectionBtn.disabled = false; log(`Pronto para iniciar a seção: ${sectionDisplayNames[currentSection]}`, 'info'); break; case 'developing_section': developSectionBtn.disabled = false; endSectionBtn.disabled = false; log(`Desenvolvendo seção. Adicione parágrafos ou conclua.`, 'info'); break; case 'article_finished': interactiveControls.style.display = 'none'; finishBtn.style.display = 'block'; log('Artigo concluído! Clique para gerar o resumo.', 'success'); break; case 'loading': log('Processando...', 'info'); break; } }
+        elements.startBtn.addEventListener('click', async () => { const uInput = document.getElementById('universidade'), aInput = document.getElementById('autor'), eInput = document.getElementById('email'); uInput.value = toProperCase(uInput.value); aInput.value = toProperCase(aInput.value); eInput.value = eInput.value.trim().toLowerCase(); userInputs = { universidade: uInput.value, titulo: document.getElementById('titulo').value.trim(), autor: aInput.value, qualificacao: document.getElementById('qualificacao').value, email: eInput.value }; if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } elements.startBtn.disabled = true; try { const topicData = await refineAndSuggestTopics(userInputs.titulo); populateAndShowTopicModal(topicData, userInputs.titulo); } catch (error) { proceedToWritingInterface(); } });
+        elements.confirmTopicBtn.addEventListener('click', () => { const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value; userInputs.titulo = selectedTopic; document.getElementById('titulo').value = selectedTopic; elements.topicSuggestionModal.style.display = 'none'; proceedToWritingInterface(); });
+        function proceedToWritingInterface() { elements.initialForm.style.display = 'none'; elements.interactiveControls.style.display = 'block'; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); log(`✅ Tema confirmado: "${userInputs.titulo}"`, 'success'); }
+        elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); try { const content = await callPuterAI(`Escreva um parágrafo INICIAL para a seção "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}".`); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
         
-        // --- FLUXO PRINCIPAL CORRIGIDO ---
-        elements.startBtn.addEventListener('click', async () => {
-            const uInput = document.getElementById('universidade'), aInput = document.getElementById('autor'), eInput = document.getElementById('email');
-            uInput.value = toProperCase(uInput.value); aInput.value = toProperCase(aInput.value); eInput.value = eInput.value.trim().toLowerCase();
-            userInputs = { universidade: uInput.value, titulo: document.getElementById('titulo').value.trim(), autor: aInput.value, qualificacao: document.getElementById('qualificacao').value, email: eInput.value };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
-            elements.startBtn.disabled = true;
+        // --- PROMPT DO BOTÃO "DESENVOLVER IDEIA" TOTALMENTE REFORMULADO ---
+        elements.developSectionBtn.addEventListener('click', async () => {
+            updateInteractiveUIState('loading');
+            const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
+            
+            const prompt = `
+            Você é um escritor acadêmico focado em substância, não em preenchimento. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre o tema "${userInputs.titulo}".
+
+            CONTEXTO (últimos parágrafos escritos):
+            "${lastTwoParagraphs}"
+
+            INSTRUÇÕES CRÍTICAS PARA EVITAR REPETIÇÃO:
+            1.  **NÃO REPITA:** Não reafirme a mesma ideia com outras palavras.
+            2.  **ADICIONE VALOR REAL:** Introduza uma ideia NOVA e específica. Por exemplo: um dado histórico, uma aplicação prática concreta (ex: em criptografia), o nome de um matemático relevante (ex: Pitágoras, Euler), um subcampo (ex: topologia, teoria dos números), ou um conceito específico (ex: a Sequência de Fibonacci).
+            3.  **EVITE CONECTIVOS FRACOS:** Não comece o parágrafo com "Além disso...", "Adicionalmente...", ou "Outro ponto importante é...". Faça uma transição mais fluida e direta.
+            4.  **SEJA DIRETO:** Foque em desenvolver UMA ideia principal por parágrafo de forma clara e concisa (70-100 palavras).`;
+            
             try {
-                const topicData = await refineAndSuggestTopics(userInputs.titulo);
-                populateAndShowTopicModal(topicData, userInputs.titulo);
+                const content = await callPuterAI(prompt);
+                articleContent[currentSection].push(content);
+                displayABNTDocument();
+                updateInteractiveUIState('developing_section');
             } catch (error) {
-                proceedToWritingInterface();
+                updateInteractiveUIState('developing_section');
             }
         });
-
-        elements.confirmTopicBtn.addEventListener('click', () => {
-            const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
-            userInputs.titulo = selectedTopic; // Atualiza o título com a escolha do usuário
-            document.getElementById('titulo').value = selectedTopic; // Reflete a mudança no campo do formulário
-            elements.topicSuggestionModal.style.display = 'none';
-            proceedToWritingInterface();
-        });
-
-        function proceedToWritingInterface() {
-            elements.initialForm.style.display = 'none';
-            elements.interactiveControls.style.display = 'block';
-            elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
-            updateInteractiveUIState('ready_to_start_section');
-            log(`✅ Tema confirmado: "${userInputs.titulo}"`, 'success');
-        }
-
-        elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); try { const content = await callPuterAI(`Escreva um parágrafo INICIAL para a seção "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}".`); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
-        elements.developSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const lastP = articleContent[currentSection].slice(-1).join(' '); try { const content = await callPuterAI(`Baseado em "${lastP}", escreva o PRÓXIMO parágrafo para a seção "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}".`); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('developing_section'); } });
+        
         elements.endSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const fullText = articleContent[currentSection].join(' '); try { const content = await callPuterAI(`Escreva um parágrafo de CONCLUSÃO para a seção "${sectionDisplayNames[currentSection]}", baseado em: "${fullText}".`); articleContent[currentSection].push(content); displayABNTDocument(); const currentIndex = sectionOrder.indexOf(currentSection); if (currentIndex < sectionOrder.length - 1) { currentSection = sectionOrder[currentIndex + 1]; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); } else { updateInteractiveUIState('article_finished'); } } catch (error) { updateInteractiveUIState('developing_section'); } });
         elements.finishBtn.addEventListener('click', async () => { elements.finishBtn.disabled = true; await generateResumoAndAbstract(); displayABNTDocument(); log('🎓 Artigo finalizado!', 'success'); });
         elements.outputDiv.addEventListener('click', (e) => { const p = e.target.closest('p[data-id]'); if(p) openReferenceModal(p.dataset.id, p.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim(), userInputs.titulo); });
