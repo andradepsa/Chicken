@@ -134,7 +134,79 @@
             overflow-y: auto;
         }
 
-        /* Tela Inicial */
+        /* Tela de Carregamento */
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid #e9ecef;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-steps {
+            max-width: 400px;
+            margin: 30px auto;
+            text-align: left;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .loading-step.active {
+            background: #e8f4fd;
+            opacity: 1;
+            transform: scale(1.02);
+        }
+
+        .loading-step.completed {
+            background: #d4edda;
+            opacity: 1;
+        }
+
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 14px;
+            background: #dee2e6;
+            color: #6c757d;
+        }
+
+        .loading-step.active .step-icon {
+            background: #3498db;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loading-step.completed .step-icon {
+            background: #27ae60;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
         .welcome-screen {
             text-align: center;
             max-width: 600px;
@@ -720,7 +792,43 @@
                     </div>
                 </div>
 
-                <!-- Configuração do Quiz -->
+                <!-- Tela de Carregamento -->
+                <div id="loading-screen" class="welcome-screen" style="display: none;">
+                    <div style="text-align: center;">
+                        <div class="loading-spinner"></div>
+                        <h2 style="color: #3498db; margin: 30px 0 20px 0;">🤖 IA Gerando suas Questões...</h2>
+                        <p style="font-size: 18px; color: #555; margin-bottom: 20px;">
+                            Nossa inteligência artificial está criando <strong id="loading-count">20</strong> questões personalizadas sobre <strong id="loading-topic">Matemática</strong>
+                        </p>
+                        <div class="loading-steps">
+                            <div class="loading-step active" id="step-1">
+                                <div class="step-icon">✅</div>
+                                <span>Analisando o tópico selecionado</span>
+                            </div>
+                            <div class="loading-step" id="step-2">
+                                <div class="step-icon">⏳</div>
+                                <span>Gerando questões com IA</span>
+                            </div>
+                            <div class="loading-step" id="step-3">
+                                <div class="step-icon">⏳</div>
+                                <span>Criando alternativas e explicações</span>
+                            </div>
+                            <div class="loading-step" id="step-4">
+                                <div class="step-icon">⏳</div>
+                                <span>Finalizando seu quiz personalizado</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 30px; padding: 20px; background: #e8f4fd; border-radius: 10px; border-left: 4px solid #3498db;">
+                            <p style="margin: 0; color: #2c3e50;">
+                                <strong>💡 Dica:</strong> Cada questão é única e gerada especialmente para você!<br>
+                                <strong>⏱️ Tempo estimado:</strong> 15-30 segundos
+                            </p>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <small style="color: #888;">Powered by Puter.ai • Aguarde, estamos quase prontos...</small>
+                        </div>
+                    </div>
+                </div>
                 <div id="quiz-setup" class="quiz-setup" style="display: none;">
                     <h3>🎯 Configurar Quiz</h3>
                     <div class="form-group">
@@ -841,10 +949,12 @@
         let questionCount = 20;
         let difficulty = 'medio';
         let isAnswered = false;
+        let loadingInterval = null;
 
         // Elementos DOM
         const elements = {
             welcomeScreen: document.getElementById('welcome-screen'),
+            loadingScreen: document.getElementById('loading-screen'),
             quizSetup: document.getElementById('quiz-setup'),
             quizArea: document.getElementById('quiz-area'),
             quizResults: document.getElementById('quiz-results'),
@@ -999,9 +1109,60 @@
 
         function hideAllScreens() {
             elements.welcomeScreen.style.display = 'none';
+            elements.loadingScreen.style.display = 'none';
             elements.quizSetup.style.display = 'none';
             elements.quizArea.style.display = 'none';
             elements.quizResults.style.display = 'none';
+        }
+
+        function showLoadingScreen() {
+            hideAllScreens();
+            elements.loadingScreen.style.display = 'block';
+            
+            // Atualiza informações da tela de carregamento
+            const topic = topicData[currentTopic] || { title: currentTopic };
+            document.getElementById('loading-count').textContent = questionCount;
+            document.getElementById('loading-topic').textContent = topic.title;
+            
+            // Simula progresso dos passos
+            simulateLoadingSteps();
+        }
+
+        function simulateLoadingSteps() {
+            const steps = ['step-1', 'step-2', 'step-3', 'step-4'];
+            let currentStep = 0;
+            
+            // Limpa steps anteriores
+            steps.forEach(stepId => {
+                const step = document.getElementById(stepId);
+                step.classList.remove('active', 'completed');
+                step.querySelector('.step-icon').textContent = '⏳';
+            });
+            
+            // Ativa primeiro step
+            document.getElementById('step-1').classList.add('active');
+            document.getElementById('step-1').querySelector('.step-icon').textContent = '🔄';
+            
+            loadingInterval = setInterval(() => {
+                // Completa step atual
+                const currentStepEl = document.getElementById(steps[currentStep]);
+                currentStepEl.classList.remove('active');
+                currentStepEl.classList.add('completed');
+                currentStepEl.querySelector('.step-icon').textContent = '✅';
+                
+                currentStep++;
+                
+                // Ativa próximo step se existir
+                if (currentStep < steps.length) {
+                    const nextStepEl = document.getElementById(steps[currentStep]);
+                    nextStepEl.classList.add('active');
+                    nextStepEl.querySelector('.step-icon').textContent = '🔄';
+                } else {
+                    // Todos os steps concluídos
+                    clearInterval(loadingInterval);
+                    showStatus('✅ Quiz pronto! Carregando questões...', 'success');
+                }
+            }, 2000); // 2 segundos por step
         }
 
         function showStatus(message, type = 'info') {
@@ -1044,7 +1205,8 @@
             Gere todas as ${count} questões agora:`;
 
             try {
-                showStatus('🤖 Gerando questões com IA...', 'info');
+                // Aguarda um tempo mínimo para mostrar a tela de carregamento
+                await new Promise(resolve => setTimeout(resolve, 8000)); // 8 segundos mínimo
                 
                 const response = await puter.ai.chat([{
                     role: 'user',
@@ -1065,12 +1227,26 @@
                     throw new Error('Estrutura de questões inválida');
                 }
                 
+                // Para o interval de loading
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                }
+                
                 showStatus('✅ Questões geradas com sucesso!', 'success');
                 return questionsData.questions;
                 
             } catch (error) {
                 console.error('Erro ao gerar questões:', error);
-                showStatus('❌ Erro ao gerar questões', 'error');
+                
+                // Para o interval de loading
+                if (loadingInterval) {
+                    clearInterval(loadingInterval);
+                }
+                
+                showStatus('❌ Erro ao gerar questões, usando questões de exemplo', 'error');
+                
+                // Aguarda um tempo antes de mostrar fallback
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 // Questões de fallback
                 return generateFallbackQuestions(topicInfo, count);
@@ -1103,11 +1279,15 @@
                 return;
             }
             
+            // Mostra tela de carregamento
+            showLoadingScreen();
+            
             // Gera questões com IA
             questions = await generateQuestionsWithAI(currentTopic, questionCount, difficulty);
             
             if (questions.length === 0) {
                 alert('Erro ao gerar questões. Tente novamente.');
+                showQuizSetup();
                 return;
             }
             
@@ -1279,6 +1459,12 @@
         }
 
         function resetQuiz() {
+            // Para qualquer loading em andamento
+            if (loadingInterval) {
+                clearInterval(loadingInterval);
+                loadingInterval = null;
+            }
+            
             currentTopic = null;
             questions = [];
             currentQuestionIndex = 0;
