@@ -273,7 +273,7 @@
             currentSectionNameSpan: document.getElementById('current-section-name'),
             pageCountSpan: document.getElementById('page-count'),
             savePdfBtn: document.getElementById('savePdfBtn'),
-            processArticleBtn: document.getElementById('processArticleBtn'), // NOVO ELEMENTO ADICIONADO
+            processArticleBtn: document.getElementById('processArticleBtn'),
             footerDiv: document.getElementById('footer'),
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
@@ -312,6 +312,7 @@
             const emailInput = document.getElementById('email');
             const cursoInput = document.getElementById('curso');
 
+            // Formata Universidade: Primeira letra de cada palavra em maiúscula, exceto preposições
             let universidade = universidadeInput.value.trim();
             universidade = universidade.replace(/\w\S*/g, word => 
                 ['de', 'da', 'do', 'dos', 'das', 'e', 'em', 'para', 'por'].includes(word.toLowerCase()) 
@@ -320,6 +321,7 @@
             );
             universidadeInput.value = universidade;
 
+            // Formata Autor: Sobrenome em maiúsculas, prenome com inicial maiúscula
             let autor = autorInput.value.trim();
             if (autor) {
                 const names = autor.split(' ');
@@ -335,12 +337,14 @@
                 autorInput.value = autor;
             }
 
+            // Formata Email: Tudo em minúsculas
             let email = emailInput.value.trim();
             if (email) {
                 email = email.toLowerCase();
                 emailInput.value = email;
             }
 
+            // Formata Curso: Primeira letra de cada palavra em maiúscula
             let curso = cursoInput.value.trim();
             if (curso) {
                 curso = curso.replace(/\w\S*/g, word => 
@@ -409,12 +413,14 @@
                 const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
                 const result = JSON.parse(jsonString);
                 
+                // Garante que topics tenha até 5 itens, preenchendo com vazios se necessário
                 result.topics = result.topics.slice(0, 5);
                 while (result.topics.length < 5) result.topics.push("");
                 
                 return result;
             } catch (error) {
                 console.error('Erro ao extrair tema e assuntos:', error);
+                // Fallback para método básico
                 const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
                 const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
                 const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
@@ -552,76 +558,31 @@
         }
 
         // ==================================================================
-        // SISTEMA DE REFERÊNCIAS REAIS - INTEGRADO COM ANÁLISE DE TEMA
+        // SISTEMA DE REFERÊNCIAS REAIS - VERSÃO ORIGINAL RESTAURADA
         // ==================================================================
-        function extractRelevantTerms(text, title = '') {
-            const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
-            const combinedText = `${title} ${text}`.toLowerCase();
-            const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
-            return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
-        }
-        
-        async function fetchSingleRealReference(startPhrase) {
-            log('Buscando referência real...', 'info');
-            try {
-                const relevantTerms = extractRelevantTerms(startPhrase, userInputs.titulo);
-                const query = relevantTerms.join(' ');
-                
-                if (!query) {
-                    throw new Error("Não foi possível extrair termos de busca da frase.");
-                }
-
-                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title,authors,year,url`;
-                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-
-                if (!response.ok) throw new Error(`API do Semantic Scholar retornou status ${response.status}`);
-                
-                const data = await response.json();
-                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
-
-                if (papers.length === 0) {
-                    throw new Error("Nenhuma referência encontrada para os termos.");
-                }
-
-                const paper = papers[0];
-                const reference = {
-                    id: paper.paperId,
-                    title: paper.title,
-                    authors: paper.authors.map(a => a.name),
-                    year: paper.year,
-                    url: paper.url
-                };
-
-                if (!finalReferences.some(ref => ref.id === reference.id)) {
-                    finalReferences.push(reference);
-                }
-                
-                return reference;
-
-            } catch (error) {
-                console.error('Erro ao buscar referência real:', error);
-                log(`⚠️ Falha na busca por referência: ${error.message}`, 'warning');
-                return null;
-            }
-        }
-
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
+                // Extrai a primeira frase até o primeiro ponto final
                 const firstSentence = paragraphText.split('.')[0].trim();
+                
+                // Se a primeira frase for muito curta, usa as duas primeiras frases
                 let originalText = firstSentence;
                 if (firstSentence.length < 30) {
                     const sentences = paragraphText.split('.');
                     originalText = sentences.slice(0, 2).join('.').trim();
                 }
+                
+                // Remove citações existentes
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
+                // Extrai tema principal e assuntos
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
                 const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
                 
+                // Exibe tema e assuntos no modal
                 let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
                 elements.searchInfoDiv.innerHTML = `
                     <strong>🔍 Análise do Texto:</strong><br>
@@ -631,6 +592,7 @@
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 
+                // Gera estratégias de busca com base no tema e assuntos
                 const strategiesPrompt = `
                 Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
                 gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
@@ -671,6 +633,7 @@
                 
                 const response = await callPuterAI(strategiesPrompt);
                 
+                // Processa a resposta para extrair termos por idioma
                 const searchTerms = [];
                 const lines = response.split('\n');
                 let currentSection = '';
@@ -687,6 +650,7 @@
                     }
                 }
                 
+                // Organiza termos por prioridade
                 const priorityOrder = {
                     'PORTUGUÊS': 1, 'ESPANHOL': 2, 'INGLÊS': 3, 'FRANCÊS': 4, 'ITALIANO': 5,
                     'ALEMÃO': 6, 'RUSSO': 7, 'CHINÊS SIMPLIFICADO': 8, 'JAPONÊS': 9, 'ÁRABE': 10
@@ -694,6 +658,7 @@
                 
                 searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
                 
+                // Fallback se não houver termos estruturados
                 if (searchTerms.length === 0) {
                     const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
                     const fallbackResponse = await callPuterAI(fallbackPrompt);
@@ -709,6 +674,7 @@
                 
                 elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
                 
+                // Testa cada estratégia de busca
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
                     if (allPapers.length >= 10) break;
@@ -914,103 +880,78 @@
         }
 
         // =================================================================================
-        // NOVA FUNÇÃO: PROCESSAR ARTIGO - IMPLEMENTAÇÃO DA SOLICITAÇÃO
+        // NOVA FUNÇÃO: PROCESSAR ARTIGO - VERSÃO FINAL CORRIGIDA
         // =================================================================================
         async function processArticle() {
+            // Garante que as bibliotecas externas estão disponíveis
+            if (typeof window.docx === 'undefined' || typeof window.jspdf === 'undefined') {
+                log('❌ Bibliotecas de exportação (DOCX/PDF) não carregaram. Por favor, recarregue a página e tente novamente.', 'error');
+                return;
+            }
+            const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
+            const { jsPDF } = window.jspdf;
+
             const btn = elements.processArticleBtn;
             btn.disabled = true;
             btn.innerHTML = '🤖 Processando...';
 
             try {
-                // 1. Cópia do Texto: Extrai o texto de .abnt-content via innerText.
+                // 1. Cópia do Texto
                 log('Iniciando processamento completo do artigo...', 'info');
-                await new Promise(resolve => setTimeout(resolve, 500)); // Pequena pausa para UI
                 const articleText = elements.outputDiv.innerText;
+                if (articleText.length < 200) { throw new Error("O artigo é muito curto para ser processado."); }
 
-                if (articleText.length < 200) {
-                    throw new Error("O artigo é muito curto para ser processado.");
-                }
-
-                // 2. Análise Textual: Usa callPuterAI para identificar problemas com fallback.
+                // 2. Análise Textual com IA
                 log('Analisando o texto com IA...', 'info');
-                let analysisResult = '';
                 try {
-                    const analysisPrompt = `Analise o seguinte texto acadêmico em português. Identifique sucintamente 3 a 5 pontos de melhoria, como frases excessivamente longas, repetição de palavras, clareza e coesão. Seja breve e direto. Texto: "${articleText.substring(0, 4000)}"`;
-                    analysisResult = await callPuterAI(analysisPrompt);
+                    const analysisPrompt = `Analise o seguinte texto acadêmico. Identifique sucintamente 3 a 5 pontos de melhoria (frases longas, repetições, clareza). Seja breve. Texto: "${articleText.substring(0, 4000)}"`;
+                    const analysisResult = await callPuterAI(analysisPrompt);
                     log(`🔍 Análise da IA: "${analysisResult}"`, 'info');
                 } catch (e) {
-                    log('⚠️ IA de análise falhou. Usando fallback.', 'warning');
+                    log('⚠️ Análise com IA falhou, continuando com fallback.', 'warning');
                     const wordCount = articleText.split(/\s+/).length;
                     const sentenceCount = (articleText.match(/[.!?]+/g) || []).length;
-                    analysisResult = `Análise básica: ${wordCount} palavras, ${sentenceCount} frases. Média de ${Math.round(wordCount/sentenceCount)} palavras por frase.`;
-                    log(analysisResult, 'warning');
+                    log(`Análise básica: ${wordCount} palavras, ${sentenceCount} frases.`, 'warning');
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
-                // 3. Reescrita: Reescreve o texto com correções via IA.
-                log('Reescrevendo o artigo para melhor fluidez e coesão...', 'info');
-                
-                const rewritePrompt = `
-                Você é um editor acadêmico especialista em normas ABNT. Sua tarefa é reescrever o texto a seguir, melhorando a fluidez, clareza e vocabulário, mantendo o sentido original.
-                
-                REGRAS ESSENCIAIS:
-                1. MANTENHA todas as citações no formato (SOBRENOME, ANO) ou (SOBRENOME et al., ANO) exatamente onde estão. NÃO as remova ou altere.
-                2. MANTENHA a estrutura de seções (INTRODUÇÃO, DESENVOLVIMENTO, CONCLUSÃO, REFERÊNCIAS).
-                3. O artigo tem o título "${userInputs.titulo}" e foi escrito por "${userInputs.autor}". Use este contexto.
-                4. NÃO adicione novas informações, apenas aprimore a escrita do conteúdo fornecido.
-                5. Retorne APENAS o texto reescrito, pronto para ser publicado. Não inclua comentários ou explicações sobre o que você fez.
-                
-                Texto a ser reescrito:
-                "${articleText}"`;
-
+                // 3. Reescrita com IA
+                log('Reescrevendo o artigo para melhor fluidez...', 'info');
+                const rewritePrompt = `Reescreva o texto a seguir para melhorar fluidez, clareza e vocabulário, mantendo o sentido original, as citações (SOBRENOME, ANO) e a estrutura de seções. Contexto: Título "${userInputs.titulo}", Autor "${userInputs.autor}". Retorne APENAS o texto reescrito. Texto: "${articleText}"`;
                 const rewrittenText = await callPuterAI(rewritePrompt);
-                log('✅ Texto reescrito com sucesso! Atualizando visualização...', 'success');
-                elements.outputDiv.innerText = rewrittenText; // Atualiza a tela com o texto reescrito
+                log('✅ Texto reescrito! Gerando arquivos...', 'success');
+                elements.outputDiv.innerText = rewrittenText; // Atualiza a tela com o texto final
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // 4. Salvamento: Gera arquivos DOC e PDF.
                 const safeTitle = (userInputs.titulo || "artigo").replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 const fileNameBase = `artigo_final_${safeTitle}`;
 
-                // --- Geração DOCX ---
+                // 4. Salvamento em DOCX
                 log('Gerando arquivo DOCX...', 'info');
-                const doc = new docx.Document({
+                const doc = new Document({
                     sections: [{
-                        properties: {
-                            page: {
-                                margins: { top: 1134, right: 756, bottom: 756, left: 1134 }, // Margens em Twips (3cm, 2cm, 2cm, 3cm)
-                            },
-                        },
+                        properties: { page: { margins: { top: 1701, right: 1134, bottom: 1134, left: 1701 } } }, // Margens 3cm/2cm
                         children: rewrittenText.split('\n').filter(p => p.trim() !== '').map(paragraphText => {
-                            const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS)$/i.test(paragraphText.trim());
-                            return new docx.Paragraph({
-                                children: [new docx.TextRun({ text: paragraphText, font: "Arial", size: 24 })], // 12pt = 24 half-points
-                                spacing: { after: 200, line: 360, lineRule: "auto" }, // Espaçamento 1.5
-                                indentation: isTitle ? {} : { firstLine: 709 }, // 1.25cm em Twips
+                            const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS|RESUMO|ABSTRACT)$/i.test(paragraphText.trim().replace(':', ''));
+                            return new Paragraph({
+                                children: [new TextRun({ text: paragraphText, font: "Arial", size: 24 })], // 12pt
+                                spacing: { line: 360, lineRule: "auto" }, // 1.5 spacing
+                                indentation: isTitle ? {} : { firstLine: 709 }, // 1.25cm
                                 style: isTitle ? "Heading1" : "Normal",
-                                alignment: docx.AlignmentType.JUSTIFIED,
+                                alignment: AlignmentType.JUSTIFIED,
                             });
                         }),
                     }],
-                    styles: {
-                        paragraphStyles: [{
-                            id: "Heading1",
-                            name: "Heading 1",
-                            basedOn: "Normal",
-                            next: "Normal",
-                            run: { bold: true, allCaps: true, size: 24, font: "Arial" },
-                        }]
-                    }
+                    styles: { paragraphStyles: [{ id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", run: { bold: true, allCaps: true } }] }
                 });
-                const blobDocx = await docx.Packer.toBlob(doc);
+                const blobDocx = await Packer.toBlob(doc);
                 saveAs(blobDocx, `${fileNameBase}.docx`);
                 log('✅ Arquivo DOCX salvo!', 'success');
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // --- Geração PDF ---
+                // 5. Salvamento em PDF
                 log('Gerando arquivo PDF...', 'info');
-                const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 pdf.setFont('Arial', 'normal');
                 pdf.setFontSize(12);
@@ -1022,24 +963,18 @@
                 const paragraphs = rewrittenText.split('\n').filter(p => p.trim() !== '');
 
                 for (const p of paragraphs) {
-                    const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS)$/i.test(p.trim());
-                    if (isTitle) {
-                        pdf.setFont('Arial', 'bold');
-                    }
+                    const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS|RESUMO|ABSTRACT)$/i.test(p.trim().replace(':', ''));
+                    pdf.setFont('Arial', isTitle ? 'bold' : 'normal');
                     
-                    const lines = pdf.splitTextToSize(p, printableWidth - (isTitle ? 0 : 12.5));
-                    
-                    if (currentY + (lines.length * 7) > (297 - 20)) { // 12pt (4.2mm) * 1.5 = ~6.3mm. 7mm é um bom valor.
+                    // O recuo é aplicado no `x` da função text, não na largura
+                    const lines = pdf.splitTextToSize(p, printableWidth);
+                    if (currentY + (lines.length * 6.35) > (297 - 20)) { // 12pt (4.23mm) * 1.5 = ~6.35mm.
                         pdf.addPage();
                         currentY = topMargin;
                     }
                     
                     pdf.text(lines, isTitle ? leftMargin : leftMargin + 12.5, currentY);
-                    currentY += lines.length * 7;
-                    
-                    if (isTitle) {
-                       pdf.setFont('Arial', 'normal');
-                    }
+                    currentY += lines.length * 6.35; // Avança o Y
                 }
                 
                 pdf.save(`${fileNameBase}.pdf`);
@@ -1075,13 +1010,10 @@
             };
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
             elements.startBtn.disabled = true;
-            
             try {
                 const topicData = await refineAndSuggestTopics(userInputs.titulo);
                 populateAndShowTopicModal(topicData, userInputs.titulo);
-            } catch (error) {
-                await proceedWithArticleGeneration();
-            }
+            } catch (error) { await proceedWithArticleGeneration(); }
         });
 
         elements.confirmTopicBtn.addEventListener('click', () => {
@@ -1096,23 +1028,17 @@
         async function rewriteLastParagraph() {
             if (lastParagraphIndex === -1) { alert('Nenhum parágrafo para reescrever.'); return; }
             elements.rewriteBtn.disabled = true;
-            
             try {
                 const lastContent = articleContent[currentSection][lastParagraphIndex];
                 const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-                
                 const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
                 const newContent = await callPuterAI(prompt);
-
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection][lastParagraphIndex] = newContent;
                 displayABNTDocument();
                 log('✅ Parágrafo reescrito! Clique nele para adicionar referências.', 'success');
-            } catch (error) {
-                log(`❌ Erro ao reescrever: ${error.message}`, 'error');
-            } finally {
-                elements.rewriteBtn.disabled = false;
-            }
+            } catch (error) { log(`❌ Erro ao reescrever: ${error.message}`, 'error'); } 
+            finally { elements.rewriteBtn.disabled = false; }
         }
 
         elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
@@ -1147,14 +1073,9 @@
                 
                 log(`✅ Parágrafo criado! Clique nele para adicionar referências.`, 'success');
 
-                if (currentGenerationPhase === 'inicio') {
-                    sessionActive = true;
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                } else if (currentGenerationPhase === 'fim') {
+                if (currentGenerationPhase === 'inicio') { sessionActive = true; } 
+                else if (currentGenerationPhase === 'fim') {
                     sessionActive = false;
-                    elements.inicioBtn.disabled = false;
-                    
                     const currentIndex = sectionOrder.indexOf(currentSection);
                     if (currentIndex < sectionOrder.length - 1) {
                         currentSection = sectionOrder[currentIndex + 1];
@@ -1166,26 +1087,16 @@
                         displayABNTDocument();
                         log(`🎓 Artigo concluído! Salve como PDF.`, 'success');
                     }
-                } else {
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
                 }
                 
-            } catch (error) {
-                log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error');
-                if(sessionActive){
-                    elements.inicioBtn.disabled = true;
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                } else {
-                    elements.inicioBtn.disabled = false;
-                    elements.meioBtn.disabled = true;
-                    elements.fimBtn.disabled = true;
-                }
-            } finally {
+            } catch (error) { log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error'); } 
+            finally {
+                elements.inicioBtn.disabled = sessionActive;
+                elements.meioBtn.disabled = !sessionActive;
+                elements.fimBtn.disabled = !sessionActive;
+                elements.rewriteBtn.disabled = false;
                 selectedParagraphStart = '';
                 elements.generateParagraphBtn.disabled = true;
-                elements.rewriteBtn.disabled = false;
             }
         });
 
@@ -1194,14 +1105,10 @@
             log('Gerando um PDF de rascunho. Para a versão final, use o processamento com IA.', 'info');
             window.print(); 
         });
-
-        // NOVO EVENTO PARA O BOTÃO DE PROCESSAMENTO
         elements.processArticleBtn.addEventListener('click', processArticle);
-
         elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
         elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
         elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
-
         elements.outputDiv.addEventListener('click', (e) => {
             if (e.target.closest('p[data-id]')) {
                 const paragraph = e.target.closest('p[data-id]');
