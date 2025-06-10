@@ -232,11 +232,11 @@
             <div class="modal-content">
                 <h3 id="paragraph-modal-title">📝 Escolha como iniciar o próximo parágrafo</h3>
                 <p style="background-color:#e8f4f8; padding:10px; border-radius:4px; margin-bottom:15px;">
-                    <strong>💡 Dica:</strong> O sistema buscará um <strong>artigo científico real</strong> com base na sua escolha para criar um parágrafo já com a citação.
+                    <strong>💡 Dica:</strong> O sistema gerará um <strong>parágrafo sem citações</strong>. Depois clique no parágrafo para adicionar referências reais.
                 </p>
                 <div id="paragraph-starts-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;">
                 </div>
-                <button id="generate-paragraph-btn" disabled>✅ Gerar Parágrafo Citado</button>
+                <button id="generate-paragraph-btn" disabled>✅ Gerar Parágrafo</button>
                 <button class="close-btn" id="close-paragraph-modal-btn">❌ Cancelar</button>
             </div>
         </div>
@@ -693,28 +693,16 @@
             
             try {
                 const lastContent = articleContent[currentSection][lastParagraphIndex];
-                const citationMatch = lastContent.match(/\(([A-ZÀ-Ù\s;,\d\-]+)\)\.?$/);
-                if (citationMatch) {
-                    const citationText = citationMatch[1];
-                    const authorLastName = citationText.split(',')[0].split(';')[0].trim();
-                    const refIdToRemove = finalReferences.find(ref => ref.authors[0].toUpperCase().includes(authorLastName))?.id;
-                    if(refIdToRemove) {
-                        finalReferences = finalReferences.filter(ref => ref.id !== refIdToRemove);
-                    }
-                }
+                // Remove citações existentes antes de reescrever
+                const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
                 
-                const newReference = await fetchSingleRealReference("reescrever parágrafo sobre " + userInputs.titulo);
-                if (!newReference) throw new Error("Não foi possível buscar nova referência para reescrever.");
-
-                const newCitation = `(${newReference.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${newReference.year})`;
-                
-                const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central. O novo parágrafo DEVE terminar com a citação ${newCitation}. Parágrafo original: "${lastContent}"`;
+                const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
                 const newContent = await callPuterAI(prompt);
 
                 addPhrasesToMemory(newContent);
                 articleContent[currentSection][lastParagraphIndex] = newContent;
                 displayABNTDocument();
-                log('✅ Parágrafo reescrito com sucesso!', 'success');
+                log('✅ Parágrafo reescrito! Clique nele para adicionar referências.', 'success');
             } catch (error) {
                 log(`❌ Erro ao reescrever: ${error.message}`, 'error');
             } finally {
@@ -734,19 +722,14 @@
             allButtons.forEach(btn => btn.disabled = true);
             
             try {
-                const reference = await fetchSingleRealReference(selectedParagraphStart);
-                if (!reference) throw new Error("Referência real não encontrada.");
-
-                const citationText = `(${reference.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${reference.year})`;
-                
                 const allContent = Object.values(articleContent).flat().join(' ');
                 const prompt = `
                 Escreva um parágrafo acadêmico para um artigo sobre "${userInputs.titulo}".
                 REGRAS:
                 1. O parágrafo DEVE começar com a frase: "${selectedParagraphStart}"
-                2. O parágrafo DEVE terminar com a citação: "${citationText}"
-                3. Desenvolva a ideia inicial de forma coerente, com 80-120 palavras totais.
-                4. NÃO repita ideias já presentes no CONTEÚDO EXISTENTE: "${allContent}"
+                2. Desenvolva a ideia inicial de forma coerente, com 80-120 palavras totais.
+                3. NÃO repita ideias já presentes no CONTEÚDO EXISTENTE: "${allContent}"
+                4. NÃO adicione citações ou referências - apenas o texto do parágrafo.
                 
                 Escreva o parágrafo completo agora:`;
                 const content = await callPuterAI(prompt);
@@ -757,8 +740,7 @@
                 displayABNTDocument();
                 elements.rewriteBtn.style.display = 'block';
                 
-                log(`✅ Parágrafo criado com referência real!`, 'success');
-                log(`⚠️ Verifique a fonte: ${reference.authors[0].split(' ').pop()}, ${reference.year}.`, 'warning');
+                log(`✅ Parágrafo criado! Clique nele para adicionar referências.`, 'success');
 
                 if (currentGenerationPhase === 'inicio') {
                     sessionActive = true;
