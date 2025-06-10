@@ -205,9 +205,11 @@
             <div class="modal-content">
                 <h3>📚 Adicionar Referências AUTOR-DATA</h3>
                 <div class="citation-example">
-                    <strong>📖 Exemplo de citação no parágrafo:</strong><br>
-                    "...crucial para o avanço científico e tecnológico (SILVA; SANTOS, 2023)."<br>
-                    <em>As referências serão automaticamente adicionadas à bibliografia final.</em>
+                    <strong>📖 Como funciona:</strong><br>
+                    • A busca usa a <strong>primeira frase do parágrafo</strong> como tema<br>
+                    • Selecione referências relacionadas ao conteúdo<br>
+                    • A citação será adicionada no formato: (SILVA; SANTOS, 2023)<br>
+                    <em>As referências completas aparecem automaticamente na bibliografia final.</em>
                 </div>
                 <div id="search-info" class="search-info" style="display: none;"></div>
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
@@ -512,11 +514,23 @@
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
-                const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
-                const query = relevantTerms.join(' ');
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
+                // Extrai a primeira frase até o primeiro ponto final
+                const firstSentence = paragraphText.split('.')[0].trim();
+                
+                // Se a primeira frase for muito curta, usa as duas primeiras frases
+                let searchQuery = firstSentence;
+                if (firstSentence.length < 30) {
+                    const sentences = paragraphText.split('.');
+                    searchQuery = sentences.slice(0, 2).join('.').trim();
+                }
+                
+                // Remove citações existentes da busca
+                searchQuery = searchQuery.replace(/\([^)]*\)/g, '').trim();
+                
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>"${searchQuery}"</em>`;
                 elements.searchInfoDiv.style.display = 'block';
-                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+                
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(searchQuery)}&limit=10&fields=title,authors,year,abstract,url`;
                 const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
                 if (!response.ok) throw new Error(`API retornou status ${response.status}`);
                 const data = await response.json();
