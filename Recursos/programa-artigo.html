@@ -153,6 +153,7 @@
                 <p>Analisamos seu tema para aprimorá-lo. Escolha a melhor opção abaixo:</p>
                 <div id="topic-list"></div>
                 <button id="confirm-topic-btn" class="confirm-btn">✅ Confirmar Tema e Iniciar</button>
+                 <button class="close-btn">❌ Cancelar</button>
             </div>
         </div>
 
@@ -283,7 +284,6 @@
         }
         
         // --- FUNÇÕES DE INICIALIZAÇÃO E SETUP ---
-        // ESTAS FUNÇÕES ESTAVAM FALTANDO
         async function refineAndSuggestTopics(originalTitle) {
             log('Analisando tema e gerando sugestões...', 'info');
             const prompt = `Analise o tema para um artigo: "${originalTitle}". 1. Corrija-o para ser um título acadêmico claro. 2. Gere 9 temas alternativos. Retorne APENAS no formato JSON: {"corrected_title": "...", "suggestions": ["...", ...]}`;
@@ -307,6 +307,19 @@
             showModal(elements.topicSuggestionModal);
         }
 
+        // --- FUNÇÕES AUXILIARES DE FEEDBACK (Log, etc.) ---
+        function log(message, type = 'info') {
+            elements.statusDiv.className = type;
+            elements.statusDiv.innerHTML = `<div>${getStatusIcon(type)} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
+        }
+        // **********************************************************
+        // FUNÇÃO CORRIGIDA - Esta função estava faltando
+        // **********************************************************
+        function getStatusIcon(type) {
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            return icons[type] || 'ℹ️';
+        }
+        
         // --- LÓGICA PRINCIPAL DO FLUXO DE GERAÇÃO ---
         function triggerParagraphOptions(phase) {
             if (phase === 'inicio' && sessionActive) {
@@ -453,12 +466,12 @@
         // --- FUNÇÕES DE EXIBIÇÃO E UTILIDADES ---
         function updatePageCount() {
             const contentHeight = elements.outputDiv.scrollHeight;
-            const pageHeight = 800; // Valor aproximado
+            const pageHeight = 800;
             const pages = Math.max(1, Math.ceil(contentHeight / pageHeight));
             elements.pageCountSpan.textContent = pages;
         }
         
-        async function generateResumoAndAbstract() { /* Função omitida para brevidade, mas pode ser adicionada */ }
+        async function generateResumoAndAbstract() { /* Pode ser implementado depois */ }
 
         function displayABNTDocument() {
             let content = `<div style="text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em;">${userInputs.universidade || ''}</div>`;
@@ -494,7 +507,7 @@
             document.getElementById('interactive-controls').style.display = 'block';
             elements.currentSectionNameSpan.textContent = 'Introdução';
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
-            displayABNTDocument(); // Exibe o template ABNT inicial
+            displayABNTDocument();
         }
 
         // --- EVENT LISTENERS ---
@@ -524,7 +537,7 @@
         elements.confirmTopicBtn.addEventListener('click', () => {
             const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
             userInputs.titulo = selectedTopic;
-            document.getElementById('titulo').value = selectedTopic; // Atualiza o campo no formulário
+            document.getElementById('titulo').value = selectedTopic;
             hideModal(elements.topicSuggestionModal);
             proceedWithArticleGeneration();
         });
