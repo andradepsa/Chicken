@@ -294,14 +294,41 @@
 
         // --- SISTEMA ANTI-REPETIÇÃO ---
         function extractKeyPhrases(text) {
+            // Sistema mais rigoroso de extração de frases
             const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
             const words = cleanText.split(/\s+/).filter(word => word.length > 3);
             const phrases = [];
-            for (let i = 0; i < words.length - 2; i++) {
-                phrases.push(words.slice(i, i + 3).join(' '));
-                if (i < words.length - 3) phrases.push(words.slice(i, i + 4).join(' '));
-                if (i < words.length - 4) phrases.push(words.slice(i, i + 5).join(' '));
+            
+            // Extrai frases de 2-6 palavras consecutivas
+            for (let i = 0; i < words.length - 1; i++) {
+                phrases.push(words.slice(i, i + 2).join(' ')); // 2 palavras
+                if (i < words.length - 2) phrases.push(words.slice(i, i + 3).join(' ')); // 3 palavras
+                if (i < words.length - 3) phrases.push(words.slice(i, i + 4).join(' ')); // 4 palavras
+                if (i < words.length - 4) phrases.push(words.slice(i, i + 5).join(' ')); // 5 palavras
+                if (i < words.length - 5) phrases.push(words.slice(i, i + 6).join(' ')); // 6 palavras
             }
+            
+            // Também extrai conceitos-chave específicos
+            const conceptPatterns = [
+                /matemática.*disciplina/gi,
+                /capacita.*indivíduos/gi,
+                /pensamento.*crítico/gi,
+                /análise.*crítica/gi,
+                /raciocínio.*lógico/gi,
+                /resolução.*problemas/gi,
+                /dessa forma/gi,
+                /além disso/gi,
+                /ao trabalhar/gi,
+                /essa abordagem/gi
+            ];
+            
+            conceptPatterns.forEach(pattern => {
+                const matches = text.match(pattern);
+                if (matches) {
+                    matches.forEach(match => phrases.push(match.toLowerCase()));
+                }
+            });
+            
             return phrases;
         }
 
@@ -314,36 +341,85 @@
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedPhrasesArray = Array.from(usedPhrases);
             
+            // Extrai frases e conceitos já utilizados de forma mais rigorosa
+            const usedConcepts = extractUsedConcepts(allContent);
+            
             let phaseInstructions = '';
             switch(phase) {
                 case 'inicio':
-                    phaseInstructions = 'Este é um parágrafo de INÍCIO/ABERTURA da seção. Deve apresentar e contextualizar o tema de forma introdutória.';
+                    phaseInstructions = 'Este é um parágrafo de INÍCIO/ABERTURA da seção. Deve apresentar e contextualizar o tema de forma introdutória com IDEIAS TOTALMENTE NOVAS.';
                     break;
                 case 'meio':
-                    phaseInstructions = 'Este é um parágrafo de DESENVOLVIMENTO/MEIO da seção. Deve expandir, detalhar ou aprofundar as ideias já apresentadas, SEM repetir conceitos.';
+                    phaseInstructions = 'Este é um parágrafo de DESENVOLVIMENTO/MEIO da seção. Deve expandir com ASPECTOS COMPLETAMENTE DIFERENTES do que já foi escrito. NUNCA repita ideias anteriores.';
                     break;
                 case 'fim':
-                    phaseInstructions = 'Este é um parágrafo de FINALIZAÇÃO da seção. Deve sintetizar, concluir ou fazer transição, usando conectivos de fechamento.';
+                    phaseInstructions = 'Este é um parágrafo de FINALIZAÇÃO da seção. Deve sintetizar e concluir com PERSPECTIVAS ORIGINAIS, usando conectivos de fechamento.';
                     break;
             }
 
             return `
-INSTRUÇÕES CRÍTICAS PARA ESCRITA ACADÊMICA:
+INSTRUÇÕES CRÍTICAS PARA ESCRITA ACADÊMICA SEM REPETIÇÕES:
 
 ${phaseInstructions}
 
 ARTIGO: "${userInputs.titulo}"
 CONTEÚDO JÁ ESCRITO: "${allContent}"
 
-REGRAS OBRIGATÓRIAS:
-1. NUNCA repita as seguintes expressões já usadas: [${usedPhrasesArray.slice(-20).join(', ')}]
-2. EVITE palavras e conceitos muito similares aos já escritos
-3. Use sinônimos, reformule ideias de forma original
-4. Mantenha coerência acadêmica com formalidade científica
-5. 80-120 palavras, sem citações
-6. Varie estruturas sintáticas (não comece todos os períodos igual)
+CONCEITOS JÁ UTILIZADOS (NUNCA REPITA): ${usedConcepts.join(', ')}
+FRASES PROIBIDAS: ${usedPhrasesArray.slice(-30).join(' | ')}
 
-ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
+REGRAS OBRIGATÓRIAS:
+1. JAMAIS use os conceitos já mencionados acima
+2. NUNCA comece frases repetindo estruturas já usadas
+3. VARIE completamente a estrutura das frases
+4. Use sinônimos e reformulações ORIGINAIS
+5. Aborde ÂNGULOS TOTALMENTE DIFERENTES do tema
+6. 80-120 palavras, linguagem acadêmica formal
+7. SEJA COMPLETAMENTE ORIGINAL - não repita nenhuma ideia anterior
+
+ESTRATÉGIAS PARA NOVOS ÂNGULOS (adapte ao seu tema):
+- Perspectiva histórica e evolutiva
+- Impactos sociais e culturais
+- Aplicações práticas e tecnológicas
+- Aspectos econômicos e políticos
+- Dimensões éticas e filosóficas
+- Comparações internacionais
+- Desafios e oportunidades futuras
+- Metodologias e abordagens inovadoras
+
+ESCREVA um parágrafo ÚNICO e TOTALMENTE ORIGINAL sobre "${userInputs.titulo}":`;
+        }
+
+        function extractUsedConcepts(text) {
+            // Extrai conceitos principais já utilizados de forma genérica
+            const genericConcepts = [
+                'linguagem universal', 'formação de habilidades', 'capacita indivíduos', 
+                'interpretar dados', 'tomada de decisões', 'raciocínio lógico',
+                'pensamento crítico', 'resolução de problemas', 'análise crítica',
+                'sistemas complexos', 'interdisciplinar', 'inovação', 'criatividade',
+                'competências essenciais', 'modelagem', 'abstração', 'generalização',
+                'investigação', 'experimentação', 'autonomia intelectual',
+                'flexibilidade cognitiva', 'argumentação', 'fundamentar decisões',
+                'desenvolvimento', 'sociedade', 'impacto', 'importância',
+                'contribuição', 'benefícios', 'vantagens', 'processo',
+                'metodologia', 'abordagem', 'estratégia', 'implementação'
+            ];
+            
+            // Extrai também frases-chave específicas do texto
+            const specificPhrases = [];
+            const sentences = text.split('.').slice(0, 5); // Primeiras 5 frases
+            sentences.forEach(sentence => {
+                const words = sentence.toLowerCase().split(' ').filter(w => w.length > 4);
+                if (words.length >= 3) {
+                    specificPhrases.push(words.slice(0, 3).join(' '));
+                }
+            });
+            
+            const usedConcepts = genericConcepts.filter(concept => 
+                text.toLowerCase().includes(concept.toLowerCase())
+            );
+            
+            return [...usedConcepts, ...specificPhrases];
         }
 
         // --- CONTADOR DE PÁGINAS ---
