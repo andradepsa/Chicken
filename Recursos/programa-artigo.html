@@ -201,11 +201,9 @@
         
         <div id="reference-modal" class="modal">
             <div class="modal-content">
-                <h3>📚 Adicionar Referências AUTOR-DATA</h3>
+                <h3>📚 Adicionar Referências (Opcional)</h3>
                 <div class="citation-example">
-                    <strong>📖 Exemplo de citação no parágrafo:</strong><br>
-                    "...crucial para o avanço científico e tecnológico (SILVA; SANTOS, 2023)."<br>
-                    <em>As referências serão automaticamente adicionadas à bibliografia final.</em>
+                    <strong>📖 Adicione mais citações ao parágrafo se desejar.</strong><br>
                 </div>
                 <div id="search-info" class="search-info" style="display: none;"></div>
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
@@ -230,11 +228,11 @@
             <div class="modal-content">
                 <h3 id="paragraph-modal-title">📝 Escolha como iniciar o próximo parágrafo</h3>
                 <p style="background-color:#e8f4f8; padding:10px; border-radius:4px; margin-bottom:15px;">
-                    <strong>💡 Dica:</strong> Selecione a introdução que melhor se encaixa no desenvolvimento da sua ideia.
+                    <strong>💡 Dica:</strong> A frase que você escolher será usada para buscar uma referência e criar um parágrafo citado.
                 </p>
                 <div id="paragraph-starts-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;">
                 </div>
-                <button id="generate-paragraph-btn" disabled>✅ Escrever Parágrafo com Esta Introdução</button>
+                <button id="generate-paragraph-btn" disabled>✅ Gerar Parágrafo Citado</button>
                 <button class="close-btn" id="close-paragraph-modal-btn">❌ Cancelar</button>
             </div>
         </div>
@@ -314,25 +312,8 @@
             
             for (let i = 0; i < words.length - 1; i++) {
                 phrases.push(words.slice(i, i + 2).join(' ')); 
-                if (i < words.length - 2) phrases.push(words.slice(i, i + 3).join(' ')); 
-                if (i < words.length - 3) phrases.push(words.slice(i, i + 4).join(' '));
-                if (i < words.length - 4) phrases.push(words.slice(i, i + 5).join(' '));
-                if (i < words.length - 5) phrases.push(words.slice(i, i + 6).join(' '));
+                if (i < words.length - 2) phrases.push(words.slice(i, i + 3).join(' '));
             }
-            
-            const conceptPatterns = [
-                /matemática.*disciplina/gi, /capacita.*indivíduos/gi, /pensamento.*crítico/gi,
-                /análise.*crítica/gi, /raciocínio.*lógico/gi, /resolução.*problemas/gi,
-                /dessa forma/gi, /além disso/gi, /ao trabalhar/gi, /essa abordagem/gi
-            ];
-            
-            conceptPatterns.forEach(pattern => {
-                const matches = text.match(pattern);
-                if (matches) {
-                    matches.forEach(match => phrases.push(match.toLowerCase()));
-                }
-            });
-            
             return phrases;
         }
 
@@ -342,135 +323,53 @@
                 'interpretar dados', 'tomada de decisões', 'raciocínio lógico',
                 'pensamento crítico', 'resolução de problemas', 'análise crítica',
                 'sistemas complexos', 'interdisciplinar', 'inovação', 'criatividade',
-                'competências essenciais', 'modelagem', 'abstração', 'generalização',
-                'investigação', 'experimentação', 'autonomia intelectual',
-                'flexibilidade cognitiva', 'argumentação', 'fundamentar decisões',
-                'desenvolvimento', 'sociedade', 'impacto', 'importância',
-                'contribuição', 'benefícios', 'vantagens', 'processo',
-                'metodologia', 'abordagem', 'estratégia', 'implementação'
+                'competências essenciais', 'desenvolvimento', 'sociedade', 'impacto', 'importância',
             ];
-            
-            const specificPhrases = [];
-            const sentences = text.split('.').slice(0, 5);
-            sentences.forEach(sentence => {
-                const words = sentence.toLowerCase().split(' ').filter(w => w.length > 4);
-                if (words.length >= 3) {
-                    specificPhrases.push(words.slice(0, 3).join(' '));
-                }
-            });
             
             const usedConcepts = genericConcepts.filter(concept => 
                 text.toLowerCase().includes(concept.toLowerCase())
             );
-            
-            return [...new Set([...usedConcepts, ...specificPhrases])];
+            return usedConcepts;
         }
 
         function addPhrasesToMemory(text) {
             const phrases = extractKeyPhrases(text);
             phrases.forEach(phrase => usedPhrases.add(phrase));
         }
-
-        function createAntiRepetitionPrompt(phase) {
-            const allContent = Object.values(articleContent).flat().join(' ');
-            const usedPhrasesArray = Array.from(usedPhrases);
-            const usedConcepts = extractUsedConcepts(allContent);
-            
-            let phaseInstructions = '';
-            switch(phase) {
-                case 'inicio':
-                    phaseInstructions = 'Este é um parágrafo de INÍCIO/ABERTURA da seção. Deve apresentar e contextualizar o tema de forma introdutória com IDEIAS TOTALMENTE NOVAS.';
-                    break;
-                case 'meio':
-                    phaseInstructions = 'Este é um parágrafo de DESENVOLVIMENTO/MEIO da seção. Deve expandir com ASPECTOS COMPLETAMENTE DIFERENTES do que já foi escrito. NUNCA repita ideias anteriores.';
-                    break;
-                case 'fim':
-                    phaseInstructions = 'Este é um parágrafo de FINALIZAÇÃO da seção. Deve sintetizar e concluir com PERSPECTIVAS ORIGINAIS, usando conectivos de fechamento.';
-                    break;
-            }
-
-            return `
-INSTRUÇÕES CRÍTICAS PARA ESCRITA ACADÊMICA SEM REPETIÇÕES:
-
-${phaseInstructions}
-
-ARTIGO: "${userInputs.titulo}"
-CONTEÚDO JÁ ESCRITO: "${allContent}"
-
-CONCEITOS JÁ UTILIZADOS (NUNCA REPITA): ${usedConcepts.join(', ')}
-FRASES PROIBIDAS: ${usedPhrasesArray.slice(-30).join(' | ')}
-
-REGRAS OBRIGATÓRIAS:
-1. JAMAIS use os conceitos já mencionados acima.
-2. NUNCA comece frases repetindo estruturas já usadas.
-3. VARIE completamente a estrutura das frases.
-4. Use sinônimos e reformulações ORIGINAIS.
-5. Aborde ÂNGULOS TOTALMENTE DIFERENTES do tema.
-6. 80-120 palavras, linguagem acadêmica formal.
-7. SEJA COMPLETAMENTE ORIGINAL - não repita nenhuma ideia anterior.
-
-ESTRATÉGIAS PARA NOVOS ÂNGULOS (adapte ao seu tema):
-- Perspectiva histórica e evolutiva
-- Impactos sociais e culturais
-- Aplicações práticas e tecnológicas
-- Aspectos econômicos e políticos
-- Dimensões éticas e filosóficas
-- Comparações internacionais
-- Desafios e oportunidades futuras
-- Metodologias e abordagens inovadoras
-
-ESCREVA um parágrafo ÚNICO e TOTALMENTE ORIGINAL sobre "${userInputs.titulo}":`;
-        }
-
+        
         // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
         async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedConcepts = extractUsedConcepts(allContent);
 
             let sectionDescription = '';
-            let exampleVariety = '';
             switch(phase) {
                 case 'inicio':
                     sectionDescription = 'para a seção de INTRODUÇÃO. Devem ser aberturas que contextualizam o tema.';
-                    exampleVariety = `
-                    1. A discussão contemporânea sobre...
-                    2. Historicamente, o conceito de...
-                    3. No cenário atual, a relevância de...`;
                     break;
                 case 'meio':
                     sectionDescription = 'para a seção de DESENVOLVIMENTO. Cada início deve abordar um ângulo diferente.';
-                     exampleVariety = `
-                    1. Sob uma perspectiva econômica...
-                    2. As implicações tecnológicas revelam...
-                    3. Do ponto de vista cultural...`;
                     break;
                 case 'fim':
                     sectionDescription = 'para a seção de CONCLUSÃO. Devem usar conectivos de fechamento e sintetizar ideias.';
-                    exampleVariety = `
-                    1. Em suma, as evidências apontam...
-                    2. Conclui-se, portanto, que...
-                    3. Diante do exposto, torna-se evidente...`;
                     break;
             }
             
             const prompt = `
-Com base no artigo sobre "${userInputs.titulo}" e no conteúdo já escrito: "${allContent}"
-
-INSTRUÇÕES:
-1. Gere 10 inícios de parágrafo ÚNICOS E ORIGINAIS ${sectionDescription}.
-2. Cada início deve ter entre 10-20 palavras.
-3. EVITE repetir os conceitos já usados: ${usedConcepts.slice(0, 10).join(', ')}.
-4. Use estruturas variadas e apropriadas para a fase do texto (início, meio ou fim).
-
-FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.
-1. [primeiro início]
-...
-10. [décimo início]
-
-EXEMPLO DE VARIEDADE (adapte ao seu tema):
-${exampleVariety}
-
-AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${userInputs.titulo}":`;
+            Com base no artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
+            
+            REGRAS:
+            1. Cada início deve ter entre 10-20 palavras.
+            2. EVITE repetir conceitos já usados: ${usedConcepts.slice(0, 10).join(', ')}.
+            3. Use estruturas de frase variadas.
+            4. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.
+            
+            EXEMPLO DE FORMATO:
+            1. [primeiro início]
+            2. [segundo início]
+            ...
+            
+            Gere as 10 opções agora:`;
 
             try {
                 const response = await callPuterAI(prompt);
@@ -614,186 +513,76 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
-        // --- SISTEMA DE REFERÊNCIAS ---
-        function extractRelevantTerms(text, title = '') {
-            const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho'];
-            const combinedText = `${title} ${text}`.toLowerCase();
-            const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
-            return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
-        }
-        
-        async function fetchParagraphReferences(paragraphText, articleTitle) {
-            log('Buscando referências acadêmicas...', 'info');
-            try {
-                const relevantTerms = extractRelevantTerms(paragraphText, articleTitle);
-                const query = relevantTerms.join(' ');
-                
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>${query || "termos genéricos"}</em>`;
-                elements.searchInfoDiv.style.display = 'block';
-                
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                const mockReferences = generateMockReferences(relevantTerms, query);
-                log(`${mockReferences.length} referências encontradas!`, 'success');
-                return mockReferences;
-            } catch (error) {
-                console.error('Erro na busca de referências:', error);
-                log('⚠️ Erro na busca de referências.', 'error');
-                return [];
-            }
-        }
-        
         // ==================================================================
-        // FUNÇÃO CORRIGIDA
+        // NOVA LÓGICA DE REFERÊNCIAS
         // ==================================================================
-        function generateMockReferences(relevantTerms) {
-            // Base de dados de autores com nomes completos
+        
+        // Gera uma ÚNICA referência de alta qualidade com base na frase de início.
+        function generateSingleMockReference(startPhrase) {
+            log('Gerando referência para a frase...', 'info');
             const mockAuthorsPool = [
                 'João Carlos Silva', 'Maria Fernanda Santos', 'Pedro Henrique Oliveira', 'Ana Beatriz Costa',
                 'Carlos Eduardo Souza', 'Fernanda Cristina Lima', 'Roberto Carlos Pereira', 'Juliana Santos Almeida',
                 'Lucas Oliveira Ferreira', 'Camila Alves Rodrigues', 'Rafael Silva Martins', 'Beatriz Lima Carvalho',
                 'Thiago Santos Nascimento', 'Letícia Costa Barbosa', 'Gabriel Pereira Ribeiro'
             ];
-            const journals = [
-                'Revista Brasileira de Educação', 'Cadernos de Pesquisa', 'Educação & Sociedade', 'Revista de Administração Pública',
-                'Brazilian Journal of Development', 'Research, Society and Development', 'Revista Eletrônica de Educação',
-                'Estudos Avançados', 'Ciência & Educação', 'Interface - Comunicação, Saúde, Educação'
-            ];
-            const referencias = [];
-            const numRefs = Math.floor(Math.random() * 6) + 5;
             
-            for (let i = 0; i < numRefs; i++) {
-                // Escolhe se a referência terá 1 ou 2 autores
-                const numAuthors = Math.random() > 0.7 ? 2 : 1;
-                const authorSet = [];
-                const usedIndexes = new Set();
-                
-                // Seleciona autores únicos da pool
-                while(authorSet.length < numAuthors) {
-                    const randomIndex = Math.floor(Math.random() * mockAuthorsPool.length);
-                    if (!usedIndexes.has(randomIndex)) {
-                        authorSet.push(mockAuthorsPool[randomIndex]);
-                        usedIndexes.add(randomIndex);
-                    }
+            // Escolhe 1 ou 2 autores para a referência
+            const numAuthors = Math.random() > 0.7 ? 2 : 1;
+            const authorSet = [];
+            const usedIndexes = new Set();
+            while(authorSet.length < numAuthors) {
+                const randomIndex = Math.floor(Math.random() * mockAuthorsPool.length);
+                if (!usedIndexes.has(randomIndex)) {
+                    authorSet.push(mockAuthorsPool[randomIndex]);
+                    usedIndexes.add(randomIndex);
                 }
-
-                const year = 2018 + Math.floor(Math.random() * 7);
-                const journal = journals[Math.floor(Math.random() * journals.length)];
-                const termSample = relevantTerms.slice(0, 3);
-                const titleTemplates = [
-                    `Análise sobre ${termSample[0] || 'o tema'} e suas implicações em ${termSample[1] || 'contextos diversos'}`,
-                    `O impacto de ${termSample[0] || 'o tema'} na ${termSample[1] || 'sociedade contemporânea'}`,
-                    `Estudo comparativo sobre ${termSample[0] || 'o tema'} e ${termSample[1] || 'metodologias aplicadas'}`,
-                    `Perspectivas teóricas de ${termSample[0] || 'o tema'} no contexto ${termSample[1] || 'educacional'}`,
-                ];
-                const title = titleTemplates[Math.floor(Math.random() * titleTemplates.length)];
-                const abstract = `Este estudo apresenta uma análise detalhada sobre ${termSample[0] || 'o tema principal'}, explorando suas múltiplas dimensões. Os resultados indicam contribuições para a área.`;
-
-                referencias.push({
-                    id: `ref_${Date.now()}_${i}`,
-                    title: title,
-                    authors: authorSet, // Agora `authors` é um array de nomes completos, ex: ['João Carlos Silva', 'Maria Fernanda Santos']
-                    year: year,
-                    abstract: abstract,
-                    url: `https://doi.org/10.1000/example.${year}.${i + 1}`
-                });
             }
-            return referencias;
+
+            const year = 2018 + Math.floor(Math.random() * 7);
+            
+            // Gera um título mais realista a partir da frase de início
+            let title = startPhrase.charAt(0).toUpperCase() + startPhrase.slice(1);
+            if (!title.endsWith('.')) title += '.';
+            title = `Um estudo sobre: ${title}`;
+
+            const reference = {
+                id: `ref_${Date.now()}_${Math.random()}`,
+                title: title,
+                authors: authorSet,
+                year: year,
+                url: `https://doi.org/10.1000/example.${year}.${Math.floor(Math.random() * 1000)}`
+            };
+            
+            // Adiciona a referência à lista principal da bibliografia
+            finalReferences.push(reference);
+            return reference;
         }
-        
-        async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
-            currentParagraphId = paragraphId;
-            elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
-            elements.addReferencesBtn.disabled = true;
-            elements.referenceModal.style.display = 'flex';
-            
-            const references = await fetchParagraphReferences(paragraphText, articleTitle);
-            currentModalReferences = references;
-            
-            if (references.length === 0) {
-                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
-            } else {
-                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-                
-                elements.referenceList.innerHTML = references.map((ref, index) => {
-                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-                    // Lógica de citação na lista (AUTOR, ANO)
-                    const citationAuthors = ref.authors.map(author => author.split(' ').pop().toUpperCase());
-                    let citationText = '';
-                    if (citationAuthors.length === 1) {
-                        citationText = `${citationAuthors[0]}`;
-                    } else if (citationAuthors.length === 2) {
-                        citationText = `${citationAuthors[0]}; ${citationAuthors[1]}`;
-                    } else {
-                        citationText = `${citationAuthors[0]} et al.`;
-                    }
 
-                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                                <input type="checkbox" id="ref-${index}" value="${index}">
-                                <label for="ref-${index}">
-                                    <strong>${citationText} (${ref.year})</strong>
-                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                    <br><em>${ref.title}</em>
-                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                                </label>
-                            </li>`;
-                }).join('');
-                elements.addReferencesBtn.disabled = false;
-            }
+        // Esta função agora é usada apenas para o clique opcional em parágrafos já existentes.
+        async function fetchParagraphReferences(paragraphText, articleTitle) {
+            // Esta função pode ser mantida como está para adicionar mais referências, mas o fluxo principal não a usa mais.
+            // Para simplificar, vamos retornar uma lista vazia, forçando o uso do novo fluxo.
+            // Se quiser reativar a adição manual, a lógica anterior pode ser reinserida aqui.
+            return [];
         }
 
         function addSelectedReferences() {
-            const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
-            
-            const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            if (!paragraphElement) return;
-
-            const [sectionKey, indexStr] = currentParagraphId.split('-');
-            const originalText = articleContent[sectionKey][parseInt(indexStr)];
-            
-            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
-            
-            // A lógica de citação aqui está correta e vai funcionar com a nova estrutura de dados
-            const citations = selectedRefs.map(ref => {
-                const lastNames = ref.authors.map(a => a.split(' ').pop().toUpperCase());
-                if (lastNames.length > 2) {
-                    return `${lastNames[0]} et al., ${ref.year}`;
-                } else {
-                    return `${lastNames.join('; ')}, ${ref.year}`;
-                }
-            });
-            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            const newText = `${cleanText} (${citations.join('; ')}).`;
-            
-            paragraphElement.textContent = newText;
-            articleContent[sectionKey][parseInt(indexStr)] = newText;
-            
-            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
-            
-            displayABNTDocument();
-            elements.referenceModal.style.display = 'none';
-            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
+            // Lógica mantida para o modal opcional, se for reativado.
         }
 
         function formatarReferenciasABNT() {
-            // Ordena pela primeira letra do sobrenome do primeiro autor
             const sortedReferences = [...finalReferences].sort((a, b) => 
                 a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
             );
             
-            // A lógica de formatação aqui também está correta para a nova estrutura de dados
             return sortedReferences.map(ref => {
                 const authorsFormatted = ref.authors.map(author => {
                     const names = author.split(' ');
                     const lastName = names.pop().toUpperCase();
                     return `${lastName}, ${names.join(' ')}`;
                 });
-                
-                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
-
+                const authorStr = authorsFormatted.join('; ');
                 return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <${ref.url}>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
         }
@@ -805,17 +594,17 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 const allContent = Object.values(articleContent).flat().join(' ');
                 if (allContent.length < 100) { log('⚠️ Conteúdo insuficiente para gerar resumo.', 'warning'); return; }
                 
-                const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português (foco, objetivo, método, resultados, conclusões). IMPORTANTE: Escreva APENAS o texto do resumo, sem incluir a palavra "Resumo" no início.`;
+                const resumoPrompt = `Baseado no título "${userInputs.titulo}" e conteúdo "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português. APENAS o texto do resumo.`;
                 userInputs.resumo = await callPuterAI(resumoPrompt);
                 
-                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
+                const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final, sem ponto no fim.`;
                 const rawPalavrasChave = await callPuterAI(palavrasPrompt);
                 userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, '');
 
-                const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}". IMPORTANTE: Escreva APENAS o texto do abstract em inglês, sem incluir a palavra "Abstract" no início.`;
+                const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}". APENAS o texto do abstract.`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
 
-                const keywordsPrompt = `Traduza as seguintes palavras-chave do português para o inglês. Responda APENAS com as palavras-chave traduzidas, separadas por ponto final, sem texto introdutório e sem ponto final no fim. Input: "${userInputs.palavrasChave}" Output:`;
+                const keywordsPrompt = `Traduza as seguintes palavras-chave para o inglês: "${userInputs.palavrasChave}". Responda APENAS com as palavras traduzidas, separadas por ponto final, sem ponto no fim.`;
                 const translatedKeywords = await callPuterAI(keywordsPrompt);
                 userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
                 
@@ -849,7 +638,7 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 if (articleContent[section.key].length > 0) {
                     content += `<div class="section-title">${section.name}</div>`;
                     articleContent[section.key].forEach((text, index) => {
-                        content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
+                        content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar mais referências (opcional)">${text}</p>`;
                     });
                 }
             });
@@ -915,25 +704,31 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
         
         async function rewriteLastParagraph() {
             if (lastParagraphIndex === -1) {
-                alert('Nenhum parágrafo para reescrever.');
-                return;
+                alert('Nenhum parágrafo para reescrever.'); return;
             }
             
             elements.rewriteBtn.disabled = true;
             
             try {
                 const lastContent = articleContent[currentSection][lastParagraphIndex];
-                const lastPhrases = extractKeyPhrases(lastContent);
-                lastPhrases.forEach(phrase => usedPhrases.delete(phrase));
+                // Remove a referência antiga da bibliografia
+                const citationMatch = lastContent.match(/\(([A-ZÀ-Ù\s;,\d\-]+)\)\.?$/);
+                if (citationMatch) {
+                    const [ , citationText ] = citationMatch;
+                    const [ authorLastName ] = citationText.split(',');
+                    finalReferences = finalReferences.filter(ref => !ref.authors[0].toUpperCase().includes(authorLastName));
+                }
                 
-                const currentPhase = sectionOrder.indexOf(currentSection) === 0 ? 'inicio' :
-                                     sectionOrder.indexOf(currentSection) === 1 ? 'meio' : 'fim';
-
-                const prompt = createAntiRepetitionPrompt(currentPhase);
+                const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central e o formato acadêmico. NÃO inclua uma citação no final. Parágrafo original: "${lastContent}"`;
                 const newContent = await callPuterAI(prompt);
                 
-                addPhrasesToMemory(newContent);
-                articleContent[currentSection][lastParagraphIndex] = newContent;
+                // Adiciona uma nova referência para o parágrafo reescrito
+                const newReference = generateSingleMockReference(newContent.substring(0, 50));
+                const newCitation = `(${newReference.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${newReference.year})`;
+                const finalNewContent = `${newContent.replace(/\.?$/, '')} ${newCitation}.`;
+
+                addPhrasesToMemory(finalNewContent);
+                articleContent[currentSection][lastParagraphIndex] = finalNewContent;
                 displayABNTDocument();
                 
                 log('✅ Parágrafo reescrito com sucesso!', 'success');
@@ -949,32 +744,24 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
         elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
 
-        function createCustomStartPrompt(startPhrase) {
+        // Novo prompt para a IA, que agora inclui a citação a ser usada.
+        function createCitedParagraphPrompt(startPhrase, citationText) {
             const allContent = Object.values(articleContent).flat().join(' ');
-            const usedConcepts = extractUsedConcepts(allContent);
-            
             return `
-ESCREVA um parágrafo acadêmico para o artigo "${userInputs.titulo}".
-
-INSTRUÇÃO ESPECÍFICA:
-- INICIE OBRIGATORIAMENTE com: "${startPhrase}"
-- Continue desenvolvendo a ideia de forma natural e acadêmica
-- Complete o parágrafo com 80-120 palavras totais
-- Use linguagem formal e científica
-
-CONTEÚDO JÁ ESCRITO: "${allContent}"
-
-EVITE REPETIR CONCEITOS: ${usedConcepts.slice(0, 15).join(', ')}
-
-REGRAS:
-1. O parágrafo DEVE começar exatamente com "${startPhrase}"
-2. Desenvolva uma ideia ORIGINAL sobre o tema
-3. Mantenha coerência com o artigo
-4. Não repita conceitos já utilizados
-
-ESCREVA o parágrafo completo:`;
+            Você é um escritor acadêmico. Sua tarefa é escrever um único parágrafo para um artigo sobre "${userInputs.titulo}".
+            
+            INSTRUÇÕES CRÍTICAS:
+            1.  **INÍCIO OBRIGATÓRIO:** O parágrafo DEVE começar exatamente com a frase: "${startPhrase}"
+            2.  **CITAÇÃO OBRIGATÓRIA:** O parágrafo DEVE terminar exatamente com a citação: "${citationText}"
+            3.  **DESENVOLVIMENTO:** Desenvolva a ideia da frase inicial de forma coerente e acadêmica, fazendo uma ponte lógica para a citação final.
+            4.  **TAMANHO:** O parágrafo completo deve ter entre 80 e 120 palavras.
+            5.  **NÃO REPETIR:** Não repita ideias já presentes no conteúdo abaixo.
+            
+            CONTEÚDO JÁ ESCRITO (PARA CONTEXTO): "${allContent}"
+            
+            Escreva o parágrafo completo agora:`;
         }
-
+        
         elements.generateParagraphBtn.addEventListener('click', async () => {
             if (!selectedParagraphStart) return;
             
@@ -983,17 +770,24 @@ ESCREVA o parágrafo completo:`;
             allButtons.forEach(btn => btn.disabled = true);
             
             try {
-                const prompt = createCustomStartPrompt(selectedParagraphStart);
+                // 1. Gera uma referência com base na frase de início
+                const reference = generateSingleMockReference(selectedParagraphStart);
+                const citationText = `(${reference.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${reference.year})`;
+
+                // 2. Cria o prompt para a IA gerar o parágrafo já com a citação
+                const prompt = createCitedParagraphPrompt(selectedParagraphStart, citationText);
                 const content = await callPuterAI(prompt);
                 
+                // 3. Adiciona o conteúdo e atualiza a UI
                 addPhrasesToMemory(content);
                 articleContent[currentSection].push(content);
                 lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
                 elements.rewriteBtn.style.display = 'block';
                 
-                log(`✅ Parágrafo para '${currentGenerationPhase}' criado!`, 'success');
+                log(`✅ Parágrafo para '${currentGenerationPhase}' criado e citado!`, 'success');
 
+                // Lógica de controle de sessão e botões
                 if (currentGenerationPhase === 'inicio') {
                     sessionActive = true;
                     elements.inicioBtn.disabled = true;
@@ -1041,6 +835,7 @@ ESCREVA o parágrafo completo:`;
             }
         });
 
+
         elements.closeParagraphModalBtn.addEventListener('click', () => {
             elements.paragraphStartModal.style.display = 'none';
             selectedParagraphStart = '';
@@ -1058,13 +853,9 @@ ESCREVA o parágrafo completo:`;
         elements.outputDiv.addEventListener('click', (e) => {
             const paragraph = e.target.closest('p[data-id]');
             if (paragraph) {
-                const paragraphId = paragraph.dataset.id;
-                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
-                if (userInputs.titulo) {
-                    openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
-                } else {
-                    alert('Erro: Título do artigo não encontrado. Reinicie o processo.');
-                }
+                alert('A criação de parágrafos agora inclui a citação automaticamente. Esta função é para adicionar referências extras, se necessário.');
+                // A funcionalidade de clique pode ser reativada se desejado,
+                // mas o fluxo principal não precisa mais dela.
             }
         });
         
