@@ -879,14 +879,14 @@
                 });
                 const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
                 
-                // Formata título conforme ABNT: original + tradução se aplicável
+                // Formata título conforme ABNT: original + [tradução] apenas para idiomas estrangeiros
                 let titleFormatted;
-                if (ref.language === 'PORTUGUÊS' || !ref.translatedTitle) {
-                    // Se for português ou não tiver tradução, usa só o título
+                if (ref.language === 'PORTUGUÊS') {
+                    // Para referências em português, usa apenas o título original
                     titleFormatted = `<strong>${ref.title}</strong>`;
                 } else {
-                    // Se for estrangeiro com tradução, mostra: Título Original [Título Traduzido]
-                    titleFormatted = `<strong>${ref.originalTitle}</strong> [${ref.translatedTitle}]`;
+                    // Para idiomas estrangeiros, mostra título original + [tradução] se disponível
+                    titleFormatted = `<strong>${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
                 }
                 
                 return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
