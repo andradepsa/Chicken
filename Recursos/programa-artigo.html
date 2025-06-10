@@ -282,7 +282,7 @@
         let lastParagraphIndex = -1;
         let sessionActive = false;
         let selectedParagraphStart = '';
-        let currentGenerationPhase = ''; // ALTERAÇÃO: Controla a fase (inicio, meio, fim) para o modal
+        let currentGenerationPhase = ''; 
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -423,7 +423,6 @@ ESCREVA um parágrafo ÚNICO e TOTALMENTE ORIGINAL sobre "${userInputs.titulo}":
         }
 
         // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
-        // ALTERAÇÃO: A função agora aceita um parâmetro 'phase' para gerar opções específicas.
         async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedConcepts = extractUsedConcepts(allContent);
@@ -495,8 +494,7 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 "A literatura especializada aponta"
             ];
         }
-
-        // ALTERAÇÃO: A função agora aceita a fase e atualiza o título do modal.
+        
         async function showParagraphStartModal(phase) {
             currentGenerationPhase = phase;
             const phaseTitles = {
@@ -538,7 +536,6 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
             }
         }
         
-        // ALTERAÇÃO: Nova função para controlar o fluxo de chamada do modal
         function triggerParagraphOptions(phase) {
             if (phase === 'inicio' && sessionActive) {
                 alert('Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.');
@@ -646,13 +643,17 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 return [];
             }
         }
-
+        
+        // ==================================================================
+        // FUNÇÃO CORRIGIDA
+        // ==================================================================
         function generateMockReferences(relevantTerms) {
-            const mockAuthors = [
-                ['Silva', 'João Carlos'], ['Santos', 'Maria Fernanda'], ['Oliveira', 'Pedro Henrique'], ['Costa', 'Ana Beatriz'],
-                ['Souza', 'Carlos Eduardo'], ['Lima', 'Fernanda Cristina'], ['Pereira', 'Roberto Carlos'], ['Almeida', 'Juliana Santos'],
-                ['Ferreira', 'Lucas Oliveira'], ['Rodrigues', 'Camila Alves'], ['Martins', 'Rafael Silva'], ['Carvalho', 'Beatriz Lima'],
-                ['Nascimento', 'Thiago Santos'], ['Barbosa', 'Letícia Costa'], ['Ribeiro', 'Gabriel Pereira']
+            // Base de dados de autores com nomes completos
+            const mockAuthorsPool = [
+                'João Carlos Silva', 'Maria Fernanda Santos', 'Pedro Henrique Oliveira', 'Ana Beatriz Costa',
+                'Carlos Eduardo Souza', 'Fernanda Cristina Lima', 'Roberto Carlos Pereira', 'Juliana Santos Almeida',
+                'Lucas Oliveira Ferreira', 'Camila Alves Rodrigues', 'Rafael Silva Martins', 'Beatriz Lima Carvalho',
+                'Thiago Santos Nascimento', 'Letícia Costa Barbosa', 'Gabriel Pereira Ribeiro'
             ];
             const journals = [
                 'Revista Brasileira de Educação', 'Cadernos de Pesquisa', 'Educação & Sociedade', 'Revista de Administração Pública',
@@ -663,22 +664,39 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
             const numRefs = Math.floor(Math.random() * 6) + 5;
             
             for (let i = 0; i < numRefs; i++) {
-                const authorSet = mockAuthors[Math.floor(Math.random() * mockAuthors.length)];
+                // Escolhe se a referência terá 1 ou 2 autores
+                const numAuthors = Math.random() > 0.7 ? 2 : 1;
+                const authorSet = [];
+                const usedIndexes = new Set();
+                
+                // Seleciona autores únicos da pool
+                while(authorSet.length < numAuthors) {
+                    const randomIndex = Math.floor(Math.random() * mockAuthorsPool.length);
+                    if (!usedIndexes.has(randomIndex)) {
+                        authorSet.push(mockAuthorsPool[randomIndex]);
+                        usedIndexes.add(randomIndex);
+                    }
+                }
+
                 const year = 2018 + Math.floor(Math.random() * 7);
                 const journal = journals[Math.floor(Math.random() * journals.length)];
                 const termSample = relevantTerms.slice(0, 3);
                 const titleTemplates = [
-                    `Análise sobre ${termSample[0]} e suas implicações em ${termSample[1] || 'contextos acadêmicos'}`,
-                    `O impacto de ${termSample[0]} na ${termSample[1] || 'sociedade contemporânea'}`,
-                    `Estudo comparativo sobre ${termSample[0]} e ${termSample[1] || 'metodologias aplicadas'}`,
-                    `Perspectivas teóricas de ${termSample[0]} no contexto ${termSample[1] || 'educacional'}`,
+                    `Análise sobre ${termSample[0] || 'o tema'} e suas implicações em ${termSample[1] || 'contextos diversos'}`,
+                    `O impacto de ${termSample[0] || 'o tema'} na ${termSample[1] || 'sociedade contemporânea'}`,
+                    `Estudo comparativo sobre ${termSample[0] || 'o tema'} e ${termSample[1] || 'metodologias aplicadas'}`,
+                    `Perspectivas teóricas de ${termSample[0] || 'o tema'} no contexto ${termSample[1] || 'educacional'}`,
                 ];
                 const title = titleTemplates[Math.floor(Math.random() * titleTemplates.length)];
-                const abstract = `Este estudo apresenta uma análise detalhada sobre ${termSample[0]}, explorando suas múltiplas dimensões. Os resultados indicam contribuições para a área.`;
+                const abstract = `Este estudo apresenta uma análise detalhada sobre ${termSample[0] || 'o tema principal'}, explorando suas múltiplas dimensões. Os resultados indicam contribuições para a área.`;
 
                 referencias.push({
-                    id: `ref_${Date.now()}_${i}`, title: title, authors: authorSet, year: year,
-                    abstract: abstract, url: `https://doi.org/10.1000/example.${year}.${i + 1}`
+                    id: `ref_${Date.now()}_${i}`,
+                    title: title,
+                    authors: authorSet, // Agora `authors` é um array de nomes completos, ex: ['João Carlos Silva', 'Maria Fernanda Santos']
+                    year: year,
+                    abstract: abstract,
+                    url: `https://doi.org/10.1000/example.${year}.${i + 1}`
                 });
             }
             return referencias;
@@ -701,10 +719,21 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 
                 elements.referenceList.innerHTML = references.map((ref, index) => {
                     const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    // Lógica de citação na lista (AUTOR, ANO)
+                    const citationAuthors = ref.authors.map(author => author.split(' ').pop().toUpperCase());
+                    let citationText = '';
+                    if (citationAuthors.length === 1) {
+                        citationText = `${citationAuthors[0]}`;
+                    } else if (citationAuthors.length === 2) {
+                        citationText = `${citationAuthors[0]}; ${citationAuthors[1]}`;
+                    } else {
+                        citationText = `${citationAuthors[0]} et al.`;
+                    }
+
                     return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
                                 <input type="checkbox" id="ref-${index}" value="${index}">
                                 <label for="ref-${index}">
-                                    <strong>${ref.authors[0].split(' ').pop()}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
+                                    <strong>${citationText} (${ref.year})</strong>
                                     ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
                                     <br><em>${ref.title}</em>
                                     <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
@@ -726,9 +755,15 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
             const originalText = articleContent[sectionKey][parseInt(indexStr)];
             
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            
+            // A lógica de citação aqui está correta e vai funcionar com a nova estrutura de dados
             const citations = selectedRefs.map(ref => {
-                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+                const lastNames = ref.authors.map(a => a.split(' ').pop().toUpperCase());
+                if (lastNames.length > 2) {
+                    return `${lastNames[0]} et al., ${ref.year}`;
+                } else {
+                    return `${lastNames.join('; ')}, ${ref.year}`;
+                }
             });
             const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
             const newText = `${cleanText} (${citations.join('; ')}).`;
@@ -744,14 +779,21 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
         }
 
         function formatarReferenciasABNT() {
-            const sortedReferences = [...finalReferences].sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()));
+            // Ordena pela primeira letra do sobrenome do primeiro autor
+            const sortedReferences = [...finalReferences].sort((a, b) => 
+                a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
+            );
+            
+            // A lógica de formatação aqui também está correta para a nova estrutura de dados
             return sortedReferences.map(ref => {
-                const authors = ref.authors.map(author => {
+                const authorsFormatted = ref.authors.map(author => {
                     const names = author.split(' ');
                     const lastName = names.pop().toUpperCase();
                     return `${lastName}, ${names.join(' ')}`;
                 });
-                const authorStr = authors.length > 3 ? `${authors[0]} et al.` : authors.join('; ');
+                
+                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
+
                 return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <${ref.url}>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
         }
@@ -872,7 +914,6 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
         });
         
         async function rewriteLastParagraph() {
-            // ALTERAÇÃO: Removido o cheque `!sessionActive`. Agora o botão funciona mesmo após clicar em FIM.
             if (lastParagraphIndex === -1) {
                 alert('Nenhum parágrafo para reescrever.');
                 return;
@@ -885,7 +926,6 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
                 const lastPhrases = extractKeyPhrases(lastContent);
                 lastPhrases.forEach(phrase => usedPhrases.delete(phrase));
                 
-                // Determina a fase com base na seção atual, para o prompt de reescrita
                 const currentPhase = sectionOrder.indexOf(currentSection) === 0 ? 'inicio' :
                                      sectionOrder.indexOf(currentSection) === 1 ? 'meio' : 'fim';
 
@@ -904,7 +944,6 @@ AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${user
             }
         }
 
-        // ALTERAÇÃO: Event listeners agora chamam a função unificada `triggerParagraphOptions`
         elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
         elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
         elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
@@ -955,7 +994,6 @@ ESCREVA o parágrafo completo:`;
                 
                 log(`✅ Parágrafo para '${currentGenerationPhase}' criado!`, 'success');
 
-                // ALTERAÇÃO: Lógica de controle de sessão e botões movida para cá.
                 if (currentGenerationPhase === 'inicio') {
                     sessionActive = true;
                     elements.inicioBtn.disabled = true;
@@ -988,7 +1026,6 @@ ESCREVA o parágrafo completo:`;
                 
             } catch (error) {
                 log(`❌ Erro ao gerar parágrafo`, 'error');
-                // Re-habilita os botões com base no estado da sessão
                 if (sessionActive) {
                     elements.inicioBtn.disabled = true;
                     elements.meioBtn.disabled = false;
