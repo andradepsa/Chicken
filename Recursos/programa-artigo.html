@@ -205,11 +205,12 @@
             <div class="modal-content">
                 <h3>📚 Adicionar Referências AUTOR-DATA</h3>
                 <div class="citation-example">
-                    <strong>📖 Como funciona:</strong><br>
-                    • A busca usa a <strong>primeira frase do parágrafo</strong> como tema<br>
-                    • Selecione referências relacionadas ao conteúdo<br>
-                    • A citação será adicionada no formato: (SILVA; SANTOS, 2023)<br>
-                    <em>As referências completas aparecem automaticamente na bibliografia final.</em>
+                    <strong>📖 Sistema Inteligente de Busca:</strong><br>
+                    • Analisa a <strong>ideia principal</strong> da primeira frase<br>
+                    • Gera <strong>múltiplas estratégias</strong> de busca automática<br>
+                    • Testa até encontrar <strong>10 referências</strong> relacionadas<br>
+                    • Citação final: (SILVA; SANTOS, 2023)<br>
+                    <em>Sistema persiste até encontrar referências relevantes ao tema!</em>
                 </div>
                 <div id="search-info" class="search-info" style="display: none;"></div>
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
@@ -510,7 +511,7 @@
             }
         }
 
-        // Busca manual de referências para modal
+        // Busca manual de referências para modal com múltiplas estratégias
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
@@ -518,25 +519,95 @@
                 const firstSentence = paragraphText.split('.')[0].trim();
                 
                 // Se a primeira frase for muito curta, usa as duas primeiras frases
-                let searchQuery = firstSentence;
+                let originalText = firstSentence;
                 if (firstSentence.length < 30) {
                     const sentences = paragraphText.split('.');
-                    searchQuery = sentences.slice(0, 2).join('.').trim();
+                    originalText = sentences.slice(0, 2).join('.').trim();
                 }
                 
-                // Remove citações existentes da busca
-                searchQuery = searchQuery.replace(/\([^)]*\)/g, '').trim();
+                // Remove citações existentes
+                originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Buscando por:</strong> <em>"${searchQuery}"</em>`;
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando:</strong> <em>"${originalText}"</em><br><small>Gerando múltiplas estratégias de busca...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
-                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(searchQuery)}&limit=10&fields=title,authors,year,abstract,url`;
-                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-                if (!response.ok) throw new Error(`API retornou status ${response.status}`);
-                const data = await response.json();
-                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
-                log(`${papers.length} referências encontradas!`, 'success');
-                return papers.map(p => ({ id: p.paperId, title: p.title, authors: p.authors.map(a => a.name), year: p.year, abstract: p.abstract || '', url: p.url }));
+                // Gera estratégias de busca usando IA
+                const strategiesPrompt = `
+                Analise esta frase: "${originalText}"
+                
+                Extraia a IDEIA PRINCIPAL e gere 20 termos/frases de busca diferentes para encontrar artigos acadêmicos relacionados.
+                
+                REGRAS:
+                1. Varie entre termos técnicos, conceitos gerais e específicos
+                2. Use sinônimos e termos em inglês quando relevante
+                3. Inclua termos mais amplos e mais específicos
+                4. Cada termo deve ter 2-6 palavras
+                
+                Retorne apenas os termos separados por quebra de linha, um por linha:`;
+                
+                const response = await callPuterAI(strategiesPrompt);
+                const searchTerms = response.split('\n').filter(term => term.trim().length > 0).slice(0, 20);
+                
+                let allPapers = [];
+                let foundPapers = new Set(); // Para evitar duplicatas
+                
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Testando ${searchTerms.length} estratégias de busca...</strong>`;
+                
+                // Testa cada estratégia de busca até encontrar 10 referências únicas
+                for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
+                    const searchTerm = searchTerms[i].trim();
+                    
+                    try {
+                        elements.searchInfoDiv.innerHTML = `<strong>🔍 Estratégia ${i+1}/${searchTerms.length}:</strong> <em>"${searchTerm}"</em><br><small>Encontradas: ${allPapers.length}/10</small>`;
+                        
+                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(searchTerm)}&limit=5&fields=title,authors,year,abstract,url`;
+                        const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const papers = (data.data || []).filter(p => 
+                                p.title && 
+                                p.authors && 
+                                p.authors.length > 0 && 
+                                p.year &&
+                                !foundPapers.has(p.paperId) // Evita duplicatas
+                            );
+                            
+                            papers.forEach(paper => {
+                                if (allPapers.length < 10) {
+                                    foundPapers.add(paper.paperId);
+                                    allPapers.push({
+                                        id: paper.paperId,
+                                        title: paper.title,
+                                        authors: paper.authors.map(a => a.name),
+                                        year: paper.year,
+                                        abstract: paper.abstract || '',
+                                        url: paper.url,
+                                        searchTerm: searchTerm // Para debug
+                                    });
+                                }
+                            });
+                        }
+                        
+                        // Pequena pausa entre requisições para não sobrecarregar a API
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                        
+                    } catch (error) {
+                        console.warn(`Erro na busca ${i+1}:`, error);
+                        continue; // Continua para a próxima estratégia
+                    }
+                }
+                
+                if (allPapers.length > 0) {
+                    log(`✅ ${allPapers.length} referências encontradas!`, 'success');
+                    elements.searchInfoDiv.innerHTML = `<strong>✅ Sucesso!</strong> Encontradas ${allPapers.length} referências usando múltiplas estratégias de busca.`;
+                } else {
+                    log('⚠️ Nenhuma referência encontrada mesmo com múltiplas tentativas.', 'warning');
+                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong> mesmo testando ${searchTerms.length} estratégias diferentes.`;
+                }
+                
+                return allPapers;
+                
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
                 log('⚠️ Erro na busca de referências.', 'error');
