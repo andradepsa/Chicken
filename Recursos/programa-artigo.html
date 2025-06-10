@@ -948,6 +948,7 @@
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
 
+        // --- FUNÇÃO CORRIGIDA ---
         function formatarReferenciasABNT() {
             const sortedReferences = [...finalReferences].sort((a, b) => 
                 a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
@@ -961,12 +962,11 @@
                 });
                 const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
                 
-                let titleFormatted;
-                if (ref.language === 'PORTUGUÊS') {
-                    titleFormatted = `<strong>${ref.title}</strong>`;
-                } else {
-                    titleFormatted = `<strong>${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
-                }
+                // --- LÓGICA CORRIGIDA ---
+                // Para a lista de referências final, usa-se sempre o título original.
+                // A propriedade 'originalTitle' guarda o título no idioma nativo do artigo,
+                // e a 'translatedTitle' (útil no modal de seleção) é corretamente excluída aqui.
+                const titleFormatted = `<strong>${ref.originalTitle}</strong>`;
                 
                 return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
