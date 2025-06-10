@@ -270,16 +270,37 @@
             }
         }
 
+        // ==================================================================
+        // FUNÇÃO DE FORMATAÇÃO ABNT CORRIGIDA
+        // ==================================================================
         function formatarReferenciasABNT() {
             return [...finalReferences]
                 .sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()))
                 .map(ref => {
-                    const authorStr = ref.authors.map(author => {
+                    let authorStr;
+                    const authorsFormatted = ref.authors.map(author => {
                         const names = author.split(' ');
                         const lastName = names.pop().toUpperCase();
                         return `${lastName}, ${names.join(' ')}`;
-                    }).join('; ');
-                    return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR')}.`;
+                    });
+
+                    if (authorsFormatted.length > 3) {
+                        authorStr = `${authorsFormatted[0]} et al.`;
+                    } else {
+                        authorStr = authorsFormatted.join('; ');
+                    }
+
+                    // Limpa o título de duplicações entre colchetes
+                    const cleanTitle = ref.title.replace(/\s*\[.+\]\s*$/, '').trim();
+                    
+                    // Formata a data de acesso manualmente
+                    const now = new Date();
+                    const day = now.getDate();
+                    const year = now.getFullYear();
+                    const month = now.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+                    const accessDate = `${day} ${month}. ${year}`;
+                    
+                    return `${authorStr}. <strong>${cleanTitle}</strong>. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${accessDate}.`;
                 }).join('<br><br>');
         }
         
