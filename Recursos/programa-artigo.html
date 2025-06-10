@@ -39,7 +39,7 @@
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
+        .form-group input, .form-group button, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; }
         .control-panel button:hover { background-color: #1765cc; }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
@@ -130,6 +130,20 @@
                 <div class="form-group">
                     <label>Email do Autor:</label>
                     <input id="email" type="email" value="seu.email@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Nível de Formação:</label>
+                    <select id="nivel-formacao">
+                        <option value="Graduando">Graduando (cursando graduação)</option>
+                        <option value="Graduado">Graduado (formado)</option>
+                        <option value="Especialista">Especialista (pós-graduação lato sensu)</option>
+                        <option value="Especializando">Especializando (cursando especialização)</option>
+                        <option value="Mestrando">Mestrando (cursando mestrado)</option>
+                        <option value="Mestre">Mestre (formado)</option>
+                        <option value="Doutorando">Doutorando (cursando doutorado)</option>
+                        <option value="Doutor">Doutor (formado)</option>
+                        <option value="Pós-Doutor">Pós-Doutor</option>
+                    </select>
                 </div>
 
                 <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
@@ -458,18 +472,39 @@ ESCREVA um parágrafo ÚNICO e ORIGINAL:`;
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
             if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
-            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
+            if (!paragraphElement) {
+                alert('Erro: Parágrafo não encontrado.');
+                return;
+            }
+            
+            // Pega o texto original do parágrafo sem citações existentes
+            const [sectionKey, indexStr] = currentParagraphId.split('-');
+            const originalText = articleContent[sectionKey][parseInt(indexStr)];
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            
+            // Formata as citações
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
                 return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
             });
+            
+            // Remove citações existentes e adiciona as novas
             const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
-            const [sectionKey, indexStr] = currentParagraphId.split('-');
-            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
-            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+            const newText = `${cleanText} (${citations.join('; ')}).`;
+            
+            // Atualiza o conteúdo
+            paragraphElement.textContent = newText;
+            articleContent[sectionKey][parseInt(indexStr)] = newText;
+            
+            // Adiciona referências à lista final
+            selectedRefs.forEach(ref => { 
+                if (!finalReferences.some(eRef => eRef.id === ref.id)) { 
+                    finalReferences.push(ref); 
+                } 
+            });
+            
             displayABNTDocument();
             elements.referenceModal.style.display = 'none';
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
@@ -552,7 +587,8 @@ Output:`;
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left;">${formatarReferenciasABNT()}</div>`;
             }
             if (userInputs.email) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
+                // Formatação ABNT correta com numeração sobrescrita
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade || ''}, ${userInputs.email}.</div>`;
             }
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, jun. 2025`;
@@ -564,6 +600,7 @@ Output:`;
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
             try {
+                // Gera o primeiro parágrafo automaticamente
                 const prompt = createAntiRepetitionPrompt('inicio');
                 const content = await callPuterAI(prompt);
                 
@@ -576,7 +613,7 @@ Output:`;
                 document.getElementById('initial-form').style.display = 'none';
                 document.getElementById('interactive-controls').style.display = 'block';
                 elements.currentSectionNameSpan.textContent = 'Introdução';
-                log('✅ Artigo iniciado com sucesso!', 'success');
+                log('✅ Artigo iniciado! Use os botões para continuar.', 'success');
             } catch (error) {
                 elements.startBtn.disabled = false;
             }
@@ -587,7 +624,8 @@ Output:`;
                 universidade: document.getElementById('universidade').value,
                 titulo: document.getElementById('titulo').value,
                 autor: document.getElementById('autor').value,
-                email: document.getElementById('email').value
+                email: document.getElementById('email').value,
+                nivelFormacao: document.getElementById('nivel-formacao').value
             };
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
             elements.startBtn.disabled = true;
