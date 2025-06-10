@@ -17,34 +17,22 @@
             margin-bottom: 2cm;
             margin-left: 3cm;
             margin-right: 2cm;
-        }
-        @page :first {
             @bottom-center {
-                content: element(first-page-footer);
+                content: element(footer);
                 font-family: Arial, sans-serif;
                 font-size: 10pt;
                 color: #000;
                 text-align: center;
             }
         }
-        #first-page-footer {
-            position: running(first-page-footer);
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            text-align: center;
-            width: 100%;
-            display: none;
-        }
-        #footer {
-            display: none;
-        }
+        #footer { position: running(footer); font-family: Arial, sans-serif; font-size: 10pt; text-align: center; width: 100%; display: none; }
 
         @media print {
             body { background-color: #fff; padding: 0; margin: 0; }
             .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls, #paragraph-start-modal { display: none !important; }
             .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
             .email-autor { display: none !important; }
-            #first-page-footer { display: block; }
+            #footer { display: block; }
         }
         
         .control-panel { position: sticky; top: 20px; width: 400px; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
@@ -179,7 +167,7 @@
                 
                 <button id="inicioBtn">🌟 INÍCIO</button>
                 <button id="meioBtn">📝 MEIO</button>
-                <button id "fimBtn">🎯 FIM</button>
+                <button id="fimBtn">🎯 FIM</button>
                 <button id="rewriteBtn" style="display: none; background-color: #fd7e14;">✏️ REESCREVER</button>
                 
                 <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #666;">
@@ -213,7 +201,6 @@
                     📚 Busca automática no Semantic Scholar
                 </p>
             </div>
-            <div id="first-page-footer"></div>
             <div id="footer"></div>
         </div>
 
@@ -233,7 +220,7 @@
                 <div id="duplicate-warning" class="duplicate-warning" style="display: none;"></div>
                 <p>Selecione as referências para adicionar ao final do parágrafo:</p>
                 <ul id="reference-list"></ul>
-                <button id "add-references-btn">✅ Adicionar ao Final do Parágrafo</button>
+                <button id="add-references-btn">✅ Adicionar ao Final do Parágrafo</button>
                 <button class="close-btn" id="close-modal-btn">❌ Fechar</button>
             </div>
         </div>
@@ -275,7 +262,6 @@
             currentSectionNameSpan: document.getElementById('current-section-name'),
             pageCountSpan: document.getElementById('page-count'),
             savePdfBtn: document.getElementById('savePdfBtn'),
-            firstPageFooter: document.getElementById('first-page-footer'),
             footerDiv: document.getElementById('footer'),
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
@@ -559,7 +545,9 @@
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
-        // --- SISTEMA DE REFERÊNCIAS REAIS ---
+        // ==================================================================
+        // SISTEMA DE REFERÊNCIAS REAIS - INTEGRADO COM ANÁLISE DE TEMA
+        // ==================================================================
         function extractRelevantTerms(text, title = '') {
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
             const combinedText = `${title} ${text}`.toLowerCase();
@@ -568,6 +556,7 @@
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
+        // Busca automática de referência para geração de parágrafos
         async function fetchSingleRealReference(startPhrase) {
             log('Buscando referência real...', 'info');
             try {
@@ -612,23 +601,30 @@
             }
         }
 
+        // Busca manual de referências com análise de tema e assuntos
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
+                // Extrai a primeira frase até o primeiro ponto final
                 const firstSentence = paragraphText.split('.')[0].trim();
+                
+                // Se a primeira frase for muito curta, usa as duas primeiras frases
                 let originalText = firstSentence;
                 if (firstSentence.length < 30) {
                     const sentences = paragraphText.split('.');
                     originalText = sentences.slice(0, 2).join('.').trim();
                 }
                 
+                // Remove citações existentes
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
+                // Extrai tema principal e assuntos
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
                 const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
                 
+                // Exibe tema e assuntos no modal
                 let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
                 elements.searchInfoDiv.innerHTML = `
                     <strong>🔍 Análise do Texto:</strong><br>
@@ -638,6 +634,7 @@
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 
+                // Gera estratégias de busca com base no tema e assuntos
                 const strategiesPrompt = `
                 Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
                 gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
@@ -678,6 +675,7 @@
                 
                 const response = await callPuterAI(strategiesPrompt);
                 
+                // Processa a resposta para extrair termos por idioma
                 const searchTerms = [];
                 const lines = response.split('\n');
                 let currentSection = '';
@@ -694,6 +692,7 @@
                     }
                 }
                 
+                // Organiza termos por prioridade
                 const priorityOrder = {
                     'PORTUGUÊS': 1,
                     'ESPANHOL': 2, 
@@ -709,6 +708,7 @@
                 
                 searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
                 
+                // Fallback se não houver termos estruturados
                 if (searchTerms.length === 0) {
                     const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
                     const fallbackResponse = await callPuterAI(fallbackPrompt);
@@ -727,6 +727,7 @@
                 
                 elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
                 
+                // Testa cada estratégia de busca
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
                     
@@ -1018,19 +1019,13 @@
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
             }
             
-            elements.outputDiv.innerHTML = content;
-
-            // Rodapé da primeira página
-            let firstPageFooterContent = '';
             if (userInputs.email && userInputs.universidade && userInputs.curso) {
-                firstPageFooterContent = `<sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             } else if (userInputs.email && userInputs.universidade) {
-                firstPageFooterContent = `<sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             }
-            elements.firstPageFooter.innerHTML = firstPageFooterContent;
-
-            // Rodapé geral (vazio)
-            elements.footerDiv.innerHTML = '';
+            elements.outputDiv.innerHTML = content;
+            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
             
             setTimeout(updatePageCount, 100);
         }
@@ -1045,6 +1040,7 @@
         }
 
         elements.startBtn.addEventListener('click', async () => {
+            // Formata os campos antes de capturar os valores
             const formattedFields = formatABNTFields();
 
             userInputs = {
