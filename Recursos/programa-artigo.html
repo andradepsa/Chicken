@@ -302,13 +302,11 @@
         let currentParagraphId = null;
         let currentModalReferences = [];
 
-        // *** CORREÇÃO 3: ADICIONAR VERIFICAÇÃO DE BIBLIOTECAS ***
-        // CORREÇÃO: Verificar se as bibliotecas carregaram corretamente
+        // --- VERIFICAÇÃO DE BIBLIOTECAS ---
         function checkLibrariesLoaded() {
             return new Promise((resolve) => {
                 let attempts = 0;
                 const maxAttempts = 50; // Tenta por 5 segundos
-                
                 const checkInterval = setInterval(() => {
                     attempts++;
                     if (typeof window.docx !== 'undefined' && 
@@ -324,405 +322,194 @@
             });
         }
 
-        // --- FUNÇÃO DE FORMATAÇÃO ABNT ---
+        // --- FUNÇÕES GERAIS ---
         function formatABNTFields() {
             const universidadeInput = document.getElementById('universidade');
             const autorInput = document.getElementById('autor');
             const emailInput = document.getElementById('email');
             const cursoInput = document.getElementById('curso');
-            let universidade = universidadeInput.value.trim();
-            universidade = universidade.replace(/\w\S*/g, word => ['de', 'da', 'do', 'dos', 'das', 'e', 'em', 'para', 'por'].includes(word.toLowerCase()) ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+            let universidade = universidadeInput.value.trim().replace(/\w\S*/g, w => ['de', 'da', 'do', 'dos', 'das', 'e'].includes(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
             universidadeInput.value = universidade;
             let autor = autorInput.value.trim();
             if (autor) {
                 const names = autor.split(' ');
-                if (names.length > 1) {
-                    const lastName = names.pop().toUpperCase();
-                    const firstNames = names.map(name => name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()).join(' ');
-                    autor = `${lastName}, ${firstNames}`;
-                } else {
-                    autor = autor.toUpperCase();
-                }
+                autor = names.length > 1 ? `${names.pop().toUpperCase()}, ${names.map(n=>n.charAt(0).toUpperCase() + n.slice(1).toLowerCase()).join(' ')}` : autor.toUpperCase();
                 autorInput.value = autor;
             }
-            let email = emailInput.value.trim();
-            if (email) {
-                email = email.toLowerCase();
-                emailInput.value = email;
-            }
-            let curso = cursoInput.value.trim();
-            if (curso) {
-                curso = curso.replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
-                cursoInput.value = curso;
-            }
-            return { universidade, autor, email, curso };
+            if (emailInput.value) emailInput.value = emailInput.value.trim().toLowerCase();
+            if (cursoInput.value) cursoInput.value = cursoInput.value.trim().replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+            return { universidade, autor, email: emailInput.value, curso: cursoInput.value };
         }
 
-        // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
             try {
                 log('🤖 Gerando conteúdo com a IA do Puter...', 'info');
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                if (!response || !response.message || !response.message.content) {
-                    throw new Error('Resposta inválida da IA do Puter.');
-                }
+                if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.');
                 return response.message.content.trim();
             } catch (error) {
                 console.error('Erro na IA do Puter:', error);
-                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
-                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
-                } else {
-                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
-                }
+                log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
                 throw error;
             }
         }
 
-        // --- SISTEMA ANTI-REPETIÇÃO ---
-        function extractKeyPhrases(text) {
-            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
-            const phrases = [];
-            for (let i = 0; i < words.length - 2; i++) {
-                phrases.push(words.slice(i, i + 3).join(' '));
-            }
-            return phrases;
-        }
-        function addPhrasesToMemory(text) {
-            const phrases = extractKeyPhrases(text);
-            phrases.forEach(phrase => usedPhrases.add(phrase));
-        }
-
-        // --- FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
-        async function extractThemeAndTopics(text, articleTitle) {
-            try {
-                const prompt = `
-                Analise a frase ou parágrafo: "${text}" no contexto do artigo intitulado "${articleTitle}".
-                1. Identifique o TEMA PRINCIPAL (uma frase curta que resume a ideia central).
-                2. Liste até 5 ASSUNTOS TRATADOS (subtemas ou conceitos relacionados, cada um com 2-5 palavras).
-                Retorne no formato JSON:
-                { "mainTheme": "...", "topics": ["...", "...", "...", "...", "..."] }`;
-                const response = await callPuterAI(prompt);
-                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                const result = JSON.parse(jsonString);
-                result.topics = result.topics.slice(0, 5);
-                while (result.topics.length < 5) result.topics.push("");
-                return result;
-            } catch (error) {
-                console.error('Erro ao extrair tema e assuntos:', error);
-                const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
-                const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-                const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
-                return {
-                    mainTheme: articleTitle || "Tema não identificado",
-                    topics: words.slice(0, 5).map(word => word)
-                };
-            }
-        }
-
-        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
-        async function generateParagraphStartOptions(phase) {
-            const allContent = Object.values(articleContent).flat().join(' ');
-            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
-            let sectionDescription = '';
-            switch (phase) {
-                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
-                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
-                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
-            }
-            const prompt = `
-            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
-            REGRAS:
-            1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
-            2. EVITE ideias já usadas, como: ${usedConcepts}.
-            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.`;
-            try {
-                const response = await callPuterAI(prompt);
-                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
-            } catch (error) {
-                console.error('Erro ao gerar opções:', error);
-                return ["Ocorreu um erro ao gerar opções, tente novamente."];
-            }
-        }
-        async function showParagraphStartModal(phase) {
-            currentGenerationPhase = phase;
-            const phaseTitles = {
-                inicio: '🌟 Como Começar a Introdução?',
-                meio: '📝 Como Continuar o Desenvolvimento?',
-                fim: '🎯 Como Finalizar a Seção?'
-            };
-            log(`Gerando opções para ${phase}...`, 'info');
-            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
-            elements.paragraphStartModal.style.display = 'flex';
-            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
-            try {
-                const startOptions = await generateParagraphStartOptions(phase);
-                let html = startOptions.map((option, index) => `
-                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
-                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
-                    </div>`).join('');
-                elements.paragraphStartsList.innerHTML = html;
-                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        elements.generateParagraphBtn.disabled = false;
-                        selectedParagraphStart = radio.value;
-                    });
-                });
-            } catch (error) {
-                console.error('Erro ao gerar opções:', error);
-                elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
-            }
-        }
-        function triggerParagraphOptions(phase) {
-            if (phase === 'inicio' && sessionActive) { alert('Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.'); return; }
-            if ((phase === 'meio' || phase === 'fim') && !sessionActive) { alert('Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.'); return; }
-            showParagraphStartModal(phase);
-        }
-
-        // --- FUNÇÕES AUXILIARES DE UI ---
-        function updatePageCount() {
-            const contentHeight = elements.outputDiv.scrollHeight;
-            const pages = Math.max(1, Math.ceil(contentHeight / 800));
-            elements.pageCountSpan.textContent = pages;
-        }
         function log(message, type = 'info') {
-            elements.statusDiv.className = type;
-            elements.statusDiv.innerHTML = `<div>${getStatusIcon(type)} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
-        }
-        function getStatusIcon(type) {
             const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-            return icons[type] || 'ℹ️';
+            elements.statusDiv.className = type;
+            elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
         }
-
-        // --- LÓGICA DE CORREÇÃO E SUGESTÃO DE TEMAS ---
+        
+        // --- LÓGICA DE GERAÇÃO DE CONTEÚDO ---
         async function refineAndSuggestTopics(originalTitle) {
             log('Analisando tema e gerando sugestões...', 'info');
-            const prompt = `Analise o tema para um artigo: "${originalTitle}". 1. Corrija-o para ser um título acadêmico claro. 2. Gere 9 temas alternativos. Retorne APENAS no formato JSON: {"corrected_title": "...", "suggestions": ["...", ...]}`;
+            const prompt = `Analise o tema: "${originalTitle}". 1. Corrija-o para um título acadêmico. 2. Gere 9 temas alternativos. Retorne APENAS JSON: {"corrected_title": "...", "suggestions": ["...", ...]}`;
             try {
                 const response = await callPuterAI(prompt);
-                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                return JSON.parse(jsonString);
+                return JSON.parse(response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1));
             } catch (error) {
                 log('⚠️ Não foi possível gerar sugestões. Usando o tema original.', 'warning');
                 return { corrected_title: originalTitle, suggestions: [] };
             }
         }
+
         function populateAndShowTopicModal(topicData, originalTitle) {
-            let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div style="margin-bottom:10px;"><input type="radio" id="topic-0" name="topic-choice" value="${topicData.corrected_title}" checked><label for="topic-0" style="font-weight:bold;">${topicData.corrected_title} (Sugestão Corrigida)</label></div>`;
-            topicData.suggestions.forEach((suggestion, index) => {
-                html += `<div style="margin-bottom:10px;"><input type="radio" id="topic-${index + 1}" name="topic-choice" value="${suggestion}"><label for="topic-${index + 1}">${suggestion}</label></div>`;
-            });
-            html += '</div>';
+            let html = `<p style="background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Original:</strong> <em>${originalTitle}</em></p><div><input type="radio" id="topic-0" name="topic-choice" value="${topicData.corrected_title}" checked><label for="topic-0" style="font-weight:bold;">${topicData.corrected_title} (Sugestão Corrigida)</label></div>`;
+            html += topicData.suggestions.map((suggestion, index) => `<div><input type="radio" id="topic-${index + 1}" name="topic-choice" value="${suggestion}"><label for="topic-${index + 1}">${suggestion}</label></div>`).join('');
             elements.topicListDiv.innerHTML = html;
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
-        // ==================================================================
-        // SISTEMA DE REFERÊNCIAS REAIS - LÓGICA ORIGINAL COMPLETA
-        // ==================================================================
-        async function fetchParagraphReferences(paragraphText, articleTitle) {
-            log('Buscando referências acadêmicas...', 'info');
+        async function generateParagraphStartOptions(phase) {
+            let sectionDescription = '';
+            if (phase === 'inicio') sectionDescription = 'para a INTRODUÇÃO.';
+            if (phase === 'meio') sectionDescription = 'para o DESENVOLVIMENTO.';
+            if (phase === 'fim') sectionDescription = 'para a CONCLUSÃO.';
+            const prompt = `Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}. Cada um com 10-20 palavras. EVITE ideias já usadas: ${Array.from(usedPhrases).slice(-10).join(', ')}. Retorne apenas a lista numerada.`;
             try {
-                const firstSentence = paragraphText.split('.')[0].trim();
-                let originalText = firstSentence;
-                if (firstSentence.length < 30) {
-                    const sentences = paragraphText.split('.');
-                    originalText = sentences.slice(0, 2).join('.').trim();
-                }
-                originalText = originalText.replace(/\([^)]*\)/g, '').trim();
-                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
-                elements.searchInfoDiv.style.display = 'block';
-                const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
-                let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
-                elements.searchInfoDiv.innerHTML = `
-                    <strong>🔍 Análise do Texto:</strong><br>
-                    <em>"${originalText}"</em><br>
-                    <strong>Tema Principal:</strong> ${mainTheme}<br>
-                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
-                    <small>Gerando termos de busca otimizados...</small>`;
-                const strategiesPrompt = `
-                Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
-                gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
-                PRIORIDADE ALTA: PORTUGUÊS (4 termos): ESPANHOL (4 termos): INGLÊS (4 termos): FRANCÊS (3 termos): ITALIANO (3 termos):
-                PRIORIDADE MÉDIA: ALEMÃO (2 termos): RUSSO (2 termos):
-                PRIORIDADE BAIXA: CHINÊS SIMPLIFICADO (2 termos): JAPONÊS (1 termo): ÁRABE (1 termo):
-                REGRAS: termos técnicos, 2-6 palavras. Foque no tema.
-                FORMATO: IDIOMA: termo1, termo2, ...`;
-                const response = await callPuterAI(strategiesPrompt);
-                const searchTerms = [];
-                const lines = response.split('\n');
-                let currentSection = '';
-                for (const line of lines) {
-                    const cleanLine = line.trim();
-                    if (cleanLine.match(/^(PORTUGUÊS|ESPANHOL|INGLÊS|FRANCÊS|ITALIANO|ALEMÃO|RUSSO|CHINÊS SIMPLIFICADO|JAPONÊS|ÁRABE):/)) {
-                        currentSection = cleanLine.replace(':', '');
-                    } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
-                        searchTerms.push({ term: cleanLine, language: currentSection });
-                    }
-                }
-                const priorityOrder = { 'PORTUGUÊS': 1, 'ESPANHOL': 2, 'INGLÊS': 3, 'FRANCÊS': 4, 'ITALIANO': 5, 'ALEMÃO': 6, 'RUSSO': 7, 'CHINÊS SIMPLIFICADO': 8, 'JAPONÊS': 9, 'ÁRABE': 10 };
-                searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
-                if (searchTerms.length === 0) {
-                    const fallbackResponse = await callPuterAI(`Extraia 15 termos de busca acadêmicos de "${mainTheme}" e "${topics.join(', ')}". Priorize pt, es, en.`);
-                    const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
-                    terms.forEach((term, index) => searchTerms.push({ term: term.trim(), language: ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS'][index % 4] }));
-                }
-                let allPapers = [];
-                let foundPapers = new Set();
-                elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
-                for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
-                    const { term, language } = searchTerms[i];
-                    const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
-                    try {
-                        const languageFlag = {'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹', 'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'}[language] || '🌍';
-                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10</small>`;
-                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
+                const response = await callPuterAI(prompt);
+                return response.split('\n').filter(line => line.match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim());
+            } catch (error) {
+                return ["Ocorreu um erro ao gerar opções, tente novamente."];
+            }
+        }
 
-                        // *** CORREÇÃO 1: CORREÇÃO DO TIMEOUT ***
+        async function showParagraphStartModal(phase) {
+            currentGenerationPhase = phase;
+            const titles = { inicio: '🌟 Iniciar a Introdução', meio: '📝 Continuar o Desenvolvimento', fim: '🎯 Finalizar a Seção' };
+            elements.paragraphModalTitle.textContent = titles[phase];
+            elements.paragraphStartModal.style.display = 'flex';
+            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
+            const startOptions = await generateParagraphStartOptions(phase);
+            elements.paragraphStartsList.innerHTML = startOptions.map((opt, i) => `<div><input type="radio" name="paragraph-start" id="start-${i}" value="${opt}"><label for="start-${i}">${i + 1}. ${opt}...</label></div>`).join('');
+            document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => radio.addEventListener('change', (e) => {
+                elements.generateParagraphBtn.disabled = false;
+                selectedParagraphStart = e.target.value;
+            }));
+        }
+
+        // ==================================================================
+        // SISTEMA DE REFERÊNCIAS REAIS - COM CORREÇÃO DE CORS
+        // ==================================================================
+        async function fetchParagraphReferences(paragraphText) {
+            log('Buscando referências acadêmicas...', 'info');
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/'; // Proxy para evitar erros de CORS
+            
+            try {
+                const cleanText = paragraphText.replace(/\([^)]*\)/g, '').trim().split('.').slice(0, 2).join('.');
+                const prompt = `Analise: "${cleanText}". Extraia o TEMA PRINCIPAL e 5 ASSUNTOS. Formato JSON: {"mainTheme": "...", "topics": [...]}`;
+                const analysis = JSON.parse(await callPuterAI(prompt));
+                
+                const termsPrompt = `Baseado no tema "${analysis.mainTheme}" e tópicos "${analysis.topics.join(', ')}", gere 10 termos de busca acadêmicos (2-6 palavras) em PT, ES, EN.`;
+                const searchTerms = (await callPuterAI(termsPrompt)).split('\n').map(t => t.replace(/^\d+\.\s*/, ''));
+
+                let allPapers = [], foundPapers = new Set();
+                for (const term of searchTerms) {
+                    if (allPapers.length >= 10) break;
+                    try {
+                        const apiUrl = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=3&fields=title,authors,year,abstract,url`;
+                        
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000);
-                        const res = await Promise.race([
-                            fetch(url, { signal: controller.signal }),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 9000))
-                        ]);
+                        const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10s
+                        const res = await fetch(proxyUrl + apiUrl, { signal: controller.signal });
                         clearTimeout(timeoutId);
 
                         if (res.ok) {
                             const data = await res.json();
-                            const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year >= 2000 && !foundPapers.has(p.paperId));
+                            const papers = (data.data || []).filter(p => p.title && p.authors?.length > 0 && p.year && !foundPapers.has(p.paperId));
                             for (const paper of papers) {
                                 if (allPapers.length >= 10) break;
                                 foundPapers.add(paper.paperId);
-                                let processedPaper = { id: paper.paperId, title: paper.title, authors: paper.authors.map(a => a.name), year: paper.year, abstract: paper.abstract || '', url: paper.url, language: language, originalTitle: paper.title };
-                                if (language !== 'PORTUGUÊS') {
-                                    const translationTimeout = isLatinLanguage ? 3000 : 4000;
-                                    const translatedTitle = await Promise.race([callPuterAI(`Traduza APENAS o título para português: "${paper.title}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
-                                    processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
-                                    if (allPapers.length < 5 && paper.abstract) {
-                                        const translatedAbstract = await Promise.race([callPuterAI(`Traduza APENAS o resumo para português: "${paper.abstract}"`), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
-                                        processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
-                                    }
-                                }
-                                allPapers.push(processedPaper);
+                                allPapers.push({ ...paper, authors: paper.authors.map(a => a.name) });
                             }
                         }
-                        await new Promise(resolve => setTimeout(resolve, isLatinLanguage ? 400 : 600));
-                    } catch (error) { console.warn(`Erro na busca ${i + 1}`, error); }
+                    } catch (e) { console.error(`Busca por "${term}" falhou:`, e); }
                 }
-                log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
+                log(`✅ ${allPapers.length} referências encontradas!`, 'success');
                 return allPapers;
             } catch (error) {
-                console.error('Erro ao buscar referências:', error);
                 log('⚠️ Erro na busca de referências.', 'error');
                 return [];
             }
         }
-        async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
+
+        async function openReferenceModal(paragraphId, paragraphText) {
             currentParagraphId = paragraphId;
-            elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
-            elements.addReferencesBtn.disabled = true;
             elements.referenceModal.style.display = 'flex';
-            const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
+            const references = await fetchParagraphReferences(paragraphText);
             currentModalReferences = references;
             if (references.length === 0) {
-                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
+                elements.referenceList.innerHTML = '<div class="no-results">❌ Nenhuma referência encontrada.</div>';
             } else {
-                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-                elements.referenceList.innerHTML = references.map((ref, index) => {
-                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-                    const langFlag = {'PORTUGUÊS':'🇧🇷','ESPANHOL':'🇪🇸','INGLÊS':'🇺🇸','FRANCÊS':'🇫🇷','ITALIANO':'🇮🇹'}[ref.language] || '🌍';
-                    const transStatus = ref.language === 'PORTUGUÊS' ? '<span style="color:#28a745;">🇧🇷 Original</span>' : '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
-                    let dTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
-                    let dAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
-                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                        <input type="checkbox" id="ref-${index}" value="${index}">
-                        <label for="ref-${index}">
-                            <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${langFlag}
-                            ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                            <br><em>${dTitle}</em> ${transStatus}
-                            ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
-                            <br><small style="color:#666;">${dAbstract ? dAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                        </label>
-                    </li>`;
-                }).join('');
-                elements.addReferencesBtn.disabled = false;
+                elements.referenceList.innerHTML = references.map((ref, i) => `<li><input type="checkbox" id="ref-${i}" value="${i}"><label for="ref-${i}"><strong>${ref.authors[0]} et al. (${ref.year})</strong><br><em>${ref.title}</em></label></li>`).join('');
             }
         }
+
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            if (selectedIndices.length === 0) return;
             const pElem = document.querySelector(`p[data-id="${currentParagraphId}"]`);
             const [sectionKey, indexStr] = currentParagraphId.split('-');
             const originalText = articleContent[sectionKey][parseInt(indexStr)];
-            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
-            const citations = selectedRefs.map(ref => {
-                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
-            });
-            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            pElem.textContent = `${cleanText} (${citations.join('; ')}).`;
+            const selectedRefs = selectedIndices.map(i => currentModalReferences[i]);
+            const citations = selectedRefs.map(ref => `${ref.authors[0].split(' ').pop().toUpperCase()} et al., ${ref.year}`);
+            pElem.textContent = `${originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '')} (${citations.join('; ')}).`;
             articleContent[sectionKey][parseInt(indexStr)] = pElem.textContent;
-            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) finalReferences.push(ref); });
             displayABNTDocument();
             elements.referenceModal.style.display = 'none';
-            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
+
+        // --- EXIBIÇÃO E FORMATAÇÃO FINAL ---
         function formatarReferenciasABNT() {
-            return [...finalReferences].sort((a, b) => a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase()))
-                .map(ref => {
-                    const authorsF = ref.authors.map(author => { const names = author.split(' '); return `${names.pop().toUpperCase()}, ${names.join(' ')}`; });
-                    const authorStr = authorsF.length > 3 ? `${authorsF[0]} et al.` : authorsF.join('; ');
-                    const titleF = ref.language === 'PORTUGUÊS' ? `<strong>${ref.title}</strong>` : `<strong>${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
-                    return `${authorStr}. ${titleF}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR')}.`;
-                }).join('<br><br>');
+            return [...finalReferences].sort((a,b) => a.authors[0].localeCompare(b.authors[0])).map(ref => {
+                const authorStr = ref.authors.length > 3 ? `${ref.authors[0].split(' ').pop().toUpperCase()}, ${ref.authors[0].split(' ').slice(0,-1).join(' ')} et al.` : ref.authors.map(a => `${a.split(' ').pop().toUpperCase()}, ${a.split(' ').slice(0,-1).join(' ')}`).join('; ');
+                return `${authorStr}. <strong>${ref.title}</strong>. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank">${ref.url}</a>.`;
+            }).join('<br><br>');
         }
         
-        // --- GERAÇÃO E EXIBIÇÃO DO CONTEÚDO ---
-        async function generateResumoAndAbstract() {
-            try {
-                log('Gerando resumo e abstract...', 'info');
-                const allContent = Object.values(articleContent).flat().join(' ');
-                if (allContent.length < 100) return;
-                userInputs.resumo = await callPuterAI(`Baseado no artigo "${userInputs.titulo}" com o conteúdo: "${allContent}", escreva um resumo de 150-200 palavras em português.`);
-                userInputs.palavrasChave = await callPuterAI(`Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português, separadas por ponto final.`);
-                userInputs.abstract = await callPuterAI(`Traduza o resumo para inglês acadêmico: "${userInputs.resumo}".`);
-                userInputs.keywords = await callPuterAI(`Traduza as palavras-chave para inglês: "${userInputs.palavrasChave}".`);
-                log('✅ Resumo e abstract gerados!', 'success');
-            } catch (error) { log('⚠️ Erro ao gerar resumo/abstract.', 'warning'); }
-        }
         function displayABNTDocument() {
             let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
-            if (userInputs.resumo && userInputs.isFinalized) {
+            if (userInputs.resumo) {
                 content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
                 content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
-            const sections = [{ name: 'INTRODUÇÃO', key: 'introducao' }, { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' }, { name: 'CONCLUSÃO', key: 'conclusao' }];
-            sections.forEach(section => {
-                if (articleContent[section.key].length > 0) {
-                    content += `<div class="section-title">${section.name}</div>`;
-                    articleContent[section.key].forEach((text, index) => {
-                        content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
-                    });
+            ['introducao', 'desenvolvimento', 'conclusao'].forEach(key => {
+                if (articleContent[key].length > 0) {
+                    content += `<div class="section-title">${key.toUpperCase()}</div>`;
+                    content += articleContent[key].map((p, i) => `<p data-id="${key}-${i}">${p}</p>`).join('');
                 }
             });
-            if (finalReferences.length > 0) {
-                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
-            }
-            if (userInputs.email && userInputs.universidade) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}${userInputs.curso ? ` em ${userInputs.curso}`:''} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
-            }
+            if (finalReferences.length > 0) content += `<div class="section-title">REFERÊNCIAS</div><div>${formatarReferenciasABNT()}</div>`;
+            content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao || ''} em ${userInputs.curso || ''} pela ${userInputs.universidade || ''}. E-mail: ${userInputs.email || ''}.</div>`;
             elements.outputDiv.innerHTML = content;
-            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
-            setTimeout(updatePageCount, 100);
         }
 
         // =================================================================================
-        // FUNÇÃO PROCESSAR ARTIGO - VERSÃO FINAL CORRIGIDA
+        // FUNÇÃO PROCESSAR ARTIGO - COM TODAS AS CORREÇÕES
         // =================================================================================
         async function processArticle() {
-            // *** CORREÇÃO 4: CORREÇÃO NA FUNÇÃO processArticle ***
             const librariesLoaded = await checkLibrariesLoaded();
             if (!librariesLoaded) {
                 log('❌ Bibliotecas de exportação (DOCX/PDF) não carregaram. Por favor, recarregue a página e tente novamente.', 'error');
@@ -730,169 +517,94 @@
             }
             
             const { Document, Packer, Paragraph, TextRun, AlignmentType } = window.docx;
-            const { jsPDF } = window.jspdf;
-
             const btn = elements.processArticleBtn;
             btn.disabled = true;
             btn.innerHTML = '🤖 Processando...';
 
             try {
-                log('Iniciando processamento completo do artigo...', 'info');
+                log('Copiando e analisando o conteúdo...', 'info');
                 const articleText = elements.outputDiv.innerText;
-                if (articleText.length < 200) { throw new Error("O artigo é muito curto para ser processado."); }
-
-                log('Analisando o texto com IA...', 'info');
-                try {
-                    await callPuterAI(`Analise o texto e identifique 3-5 pontos de melhoria: "${articleText.substring(0, 4000)}"`);
-                } catch (e) { log('⚠️ Análise com IA falhou, continuando.', 'warning'); }
+                if (!articleText || articleText.length < 100) throw new Error("Conteúdo insuficiente para processar.");
                 
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-                log('Reescrevendo o artigo para melhor fluidez...', 'info');
-                const rewritePrompt = `Reescreva o texto a seguir para melhorar fluidez, clareza e vocabulário, mantendo o sentido original, as citações (SOBRENOME, ANO) e a estrutura de seções. Contexto: Título "${userInputs.titulo}", Autor "${userInputs.autor}". Retorne APENAS o texto reescrito. Texto: "${articleText}"`;
-                const rewrittenText = await callPuterAI(rewritePrompt);
-                log('✅ Texto reescrito! Gerando arquivos...', 'success');
-                elements.outputDiv.innerText = rewrittenText;
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const correctionPrompt = `Reescreva o seguinte texto acadêmico, corrigindo gramática, fluidez e repetições. MANTENHA as citações (AUTOR, ANO) e a estrutura de seções (INTRODUÇÃO, etc.). Melhore apenas a qualidade da escrita. Texto: "${articleText}"`;
+                const correctedText = await callPuterAI(correctionPrompt);
+                log('✅ Texto corrigido! Gerando arquivo DOC...', 'success');
 
                 const safeTitle = (userInputs.titulo || "artigo").replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                const fileNameBase = `artigo_final_${safeTitle}`;
+                const fileNameBase = `artigo_${safeTitle}`;
 
-                log('Gerando arquivo DOC...', 'info');
                 const doc = new Document({
                     sections: [{
                         properties: { page: { margins: { top: 1701, right: 1134, bottom: 1134, left: 1701 } } },
-                        children: rewrittenText.split('\n').filter(p => p.trim() !== '').map(p => new Paragraph({
-                            children: [new TextRun({ text: p, font: "Arial", size: 24 })],
-                            spacing: { line: 360, lineRule: "auto" },
-                            indentation: { firstLine: /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS|RESUMO|ABSTRACT)/i.test(p) ? 0 : 709 },
-                            style: /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS)/i.test(p) ? "Heading1" : "Normal",
-                            alignment: AlignmentType.JUSTIFIED,
-                        })),
+                        children: correctedText.split('\n').filter(p => p.trim() !== '').map(p => {
+                            const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS|RESUMO|ABSTRACT)/i.test(p);
+                            return new Paragraph({
+                                children: [new TextRun({ text: p, font: "Arial", size: 24 })],
+                                spacing: { line: 360, lineRule: "auto" },
+                                indentation: { firstLine: isTitle ? 0 : 709 },
+                                alignment: AlignmentType.JUSTIFIED,
+                                style: isTitle ? "Heading1" : "Normal"
+                            });
+                        })
                     }],
-                    styles: { paragraphStyles: [{ id: "Heading1", name: "Heading 1", basedOn: "Normal", run: { bold: true, allCaps: true } }] }
+                    styles: { paragraphStyles: [{ id: "Heading1", name: "Heading 1", run: { bold: true, allCaps: true } }] }
                 });
-                const blobDocx = await Packer.toBlob(doc);
 
-                // *** CORREÇÃO 2: CORREÇÃO DO SALVAMENTO ***
-                saveAs(blobDocx, `${fileNameBase}.doc`);
-                log('✅ Arquivo DOC salvo!', 'success');
-                
-                await new Promise(resolve => setTimeout(resolve, 500));
+                const blob = await Packer.toBlob(doc);
+                saveAs(blob, `${fileNameBase}.doc`);
+                log('✅ Arquivo DOC salvo com sucesso!', 'success');
 
-                log('Gerando arquivo PDF...', 'info');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                pdf.setFont('Arial', 'normal');
-                pdf.setFontSize(12);
-                const leftMargin = 30, topMargin = 30, rightMargin = 20, printableWidth = 210 - leftMargin - rightMargin;
-                let currentY = topMargin;
-                rewrittenText.split('\n').filter(p => p.trim() !== '').forEach(p => {
-                    const isTitle = /^(INTRODUÇÃO|DESENVOLVIMENTO|CONCLUSÃO|REFERÊNCIAS|RESUMO|ABSTRACT)/i.test(p);
-                    pdf.setFont('Arial', isTitle ? 'bold' : 'normal');
-                    const lines = pdf.splitTextToSize(p, printableWidth);
-                    if (currentY + (lines.length * 6.35) > (297 - 20)) {
-                        pdf.addPage();
-                        currentY = topMargin;
-                    }
-                    pdf.text(lines, isTitle ? leftMargin : leftMargin + 12.5, currentY);
-                    currentY += lines.length * 6.35;
-                });
-                pdf.save(`${fileNameBase}.pdf`);
-                log('✅ Arquivo PDF salvo!', 'success');
+                elements.outputDiv.innerHTML = correctedText.replace(/\n/g, '<p></p>');
+
             } catch (error) {
                 log(`❌ Erro no processamento: ${error.message}`, 'error');
-                console.error("Erro detalhado:", error);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '🤖 Processar e Salvar (IA)';
             }
         }
         
-        // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
-        async function proceedWithArticleGeneration() {
-            document.getElementById('initial-form').style.display = 'none';
-            document.getElementById('interactive-controls').style.display = 'block';
-            elements.currentSectionNameSpan.textContent = 'Introdução';
-            sessionActive = false;
-            log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
-        }
+        // --- EVENT LISTENERS E FLUXO PRINCIPAL ---
         elements.startBtn.addEventListener('click', async () => {
             userInputs = { ...formatABNTFields(), titulo: document.getElementById('titulo').value, nivelFormacao: document.getElementById('nivel-formacao').value };
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
-            elements.startBtn.disabled = true;
-            try {
-                const topicData = await refineAndSuggestTopics(userInputs.titulo);
-                populateAndShowTopicModal(topicData, userInputs.titulo);
-            } catch (error) { await proceedWithArticleGeneration(); }
+            const topicData = await refineAndSuggestTopics(userInputs.titulo);
+            populateAndShowTopicModal(topicData, userInputs.titulo);
         });
+
         elements.confirmTopicBtn.addEventListener('click', () => {
             userInputs.titulo = document.querySelector('input[name="topic-choice"]:checked').value;
             document.getElementById('titulo').value = userInputs.titulo;
             elements.topicSuggestionModal.style.display = 'none';
+            document.getElementById('initial-form').style.display = 'none';
+            document.getElementById('interactive-controls').style.display = 'block';
             log(`✅ Tema selecionado: "${userInputs.titulo}"`, 'success');
-            proceedWithArticleGeneration();
         });
-        async function rewriteLastParagraph() {
-            if (lastParagraphIndex === -1) { return; }
-            elements.rewriteBtn.disabled = true;
-            try {
-                const cleanText = articleContent[currentSection][lastParagraphIndex].replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-                const newContent = await callPuterAI(`Reescreva o parágrafo de forma diferente, mantendo a ideia: "${cleanText}"`);
-                articleContent[currentSection][lastParagraphIndex] = newContent;
-                displayABNTDocument();
-                log('✅ Parágrafo reescrito!', 'success');
-            } catch (error) { log(`❌ Erro ao reescrever: ${error.message}`, 'error'); } 
-            finally { elements.rewriteBtn.disabled = false; }
-        }
-        elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
-        elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
-        elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
-        elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
+
         elements.generateParagraphBtn.addEventListener('click', async () => {
             if (!selectedParagraphStart) return;
             elements.paragraphStartModal.style.display = 'none';
-            [elements.inicioBtn, elements.meioBtn, elements.fimBtn, elements.rewriteBtn].forEach(b => b.disabled = true);
-            try {
-                const content = await callPuterAI(`Escreva um parágrafo acadêmico sobre "${userInputs.titulo}", começando com: "${selectedParagraphStart}". Desenvolva a ideia em 80-120 palavras, sem repetir ideias de: "${Object.values(articleContent).flat().join(' ')}"`);
-                articleContent[currentSection].push(content);
-                lastParagraphIndex = articleContent[currentSection].length - 1;
-                displayABNTDocument();
-                elements.rewriteBtn.style.display = 'block';
-                log(`✅ Parágrafo criado!`, 'success');
-                if (currentGenerationPhase === 'inicio') { sessionActive = true; }
-                else if (currentGenerationPhase === 'fim') {
-                    sessionActive = false;
-                    const currentIndex = sectionOrder.indexOf(currentSection);
-                    if (currentIndex < sectionOrder.length - 1) {
-                        currentSection = sectionOrder[currentIndex + 1];
-                        elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1).replace('conclusao', 'Conclusão');
-                    } else {
-                        await generateResumoAndAbstract();
-                        userInputs.isFinalized = true;
-                        displayABNTDocument();
-                        log(`🎓 Artigo concluído!`, 'success');
-                    }
-                }
-            } catch (error) { log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error'); } 
-            finally {
-                elements.inicioBtn.disabled = sessionActive;
-                elements.meioBtn.disabled = !sessionActive;
-                elements.fimBtn.disabled = !sessionActive;
-                elements.rewriteBtn.disabled = false;
-                selectedParagraphStart = '';
-                elements.generateParagraphBtn.disabled = true;
-            }
+            const content = await callPuterAI(`Escreva um parágrafo sobre "${userInputs.titulo}", começando com: "${selectedParagraphStart}". Desenvolva em 80-120 palavras, sem repetir ideias de: "${Object.values(articleContent).flat().join(' ')}"`);
+            articleContent[currentSection].push(content);
+            displayABNTDocument();
+            log('✅ Parágrafo criado!', 'success');
         });
-        elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
-        elements.savePdfBtn.addEventListener('click', () => { window.print(); });
-        elements.processArticleBtn.addEventListener('click', processArticle);
-        elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
-        elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
-        elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
+
         elements.outputDiv.addEventListener('click', (e) => {
             const p = e.target.closest('p[data-id]');
-            if (p) { openReferenceModal(p.dataset.id, p.textContent, userInputs.titulo); }
+            if (p) openReferenceModal(p.dataset.id, p.textContent);
         });
+        
+        elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
+        elements.processArticleBtn.addEventListener('click', processArticle);
+        elements.inicioBtn.addEventListener('click', () => showParagraphStartModal('inicio'));
+        elements.meioBtn.addEventListener('click', () => showParagraphStartModal('meio'));
+        elements.fimBtn.addEventListener('click', async () => {
+            await generateResumoAndAbstract();
+            displayABNTDocument();
+            log('🎓 Artigo finalizado com resumo e abstract!', 'success');
+        });
+        
         // --- INICIALIZAÇÃO ---
         elements.meioBtn.disabled = true;
         elements.fimBtn.disabled = true;
