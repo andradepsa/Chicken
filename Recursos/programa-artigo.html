@@ -19,8 +19,9 @@
 
         @media print {
             body { background-color: #fff; padding: 0; margin: 0; }
-            .control-panel, #reference-modal, #topic-suggestion-modal, #save-controls { display: none !important; }
+            .control-panel, #save-controls { display: none !important; }
             .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
+            .email-autor { display: block !important; }
             #footer { display: block; }
         }
         
@@ -46,10 +47,16 @@
         .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         
         .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
+        
+        /* --- ESTILOS ABNT RESTAURADOS --- */
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
-        .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; }
-        .abnt-content p:hover { background-color: #f0f8ff; }
+        .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
+        .titulo-trabalho { font-size: 14pt; text-align: center; font-weight: bold; text-transform: none; margin-bottom: 2em; }
+        .autor { text-align: center; font-size: 12pt; margin-bottom: 4em; }
+        .autor sup { font-size: 10pt; }
+        .email-autor { text-align: left; font-size: 10pt; margin-top: 2em; border-top: 1px solid #000; padding-top: 10px; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
+        .abnt-content p { margin-bottom: 1.5em; text-indent: 1.25cm; }
     </style>
 </head>
 <body>
@@ -60,6 +67,8 @@
                 <div class="form-group"><label>Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
                 <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva um tema conciso"></div>
                 <div class="form-group"><label>Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
+                <!-- CAMPO DE E-MAIL RESTAURADO -->
+                <div class="form-group"><label>Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
                 <button id="startBtn">🚀 Iniciar Artigo</button>
             </div>
             
@@ -153,25 +162,23 @@
                 universidade: document.getElementById('universidade').value,
                 titulo: document.getElementById('titulo').value,
                 autor: document.getElementById('autor').value,
+                // CAPTURA DO E-MAIL RESTAURADA
+                email: document.getElementById('email').value,
             };
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
             
             elements.initialForm.style.display = 'none';
             elements.interactiveControls.style.display = 'block';
             elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
-            elements.footerDiv.innerHTML = `${userInputs.universidade}, ${new Date().getFullYear()}`;
+            elements.footerDiv.innerHTML = `${userInputs.universidade || 'Universidade'}, ${new Date().getFullYear()}`;
+            displayABNTDocument(); // Exibe o cabeçalho inicial
             updateInteractiveUIState('ready_to_start_section');
         });
 
-        // =========================================================================
-        // <<< PROMPTS APRIMORADOS PARA QUALIDADE E CONCISÃO >>>
-        // =========================================================================
-
+        // Prompts continuam aprimorados para qualidade e concisão
         elements.startSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
-            
-            const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O objetivo é servir como um roteiro para o leitor, apresentando os pontos-chave que serão discutidos nesta seção sem rodeios ou generalidades. Seja conciso e informativo. Tamanho: 70-100 palavras.`;
-            
+            const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O objetivo é servir como um roteiro para o leitor, apresentando os pontos-chave que serão discutidos nesta seção sem rodeios. Seja conciso e informativo. Tamanho: 70-100 palavras.`;
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
@@ -184,20 +191,8 @@
 
         elements.developSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
-
             const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
-            const prompt = `
-                Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}".
-
-                Contexto (Últimos parágrafos): "${lastTwoParagraphs}"
-
-                **INSTRUÇÕES CRÍTICAS:**
-                1.  **NÃO ENCHA LINGUIÇA.** Sua missão é adicionar valor real. O novo parágrafo DEVE introduzir uma **ideia nova, um dado concreto, um exemplo prático, ou um contraponto** ao que foi dito antes.
-                2.  **EVITE REPETIÇÃO ESTRUTURAL.** Não comece com "Além de...", "Adicionalmente...", "Outro aspecto...". Crie uma transição original.
-                3.  **SEJA DIRETO.** Evite verbosidade, clichês e frases que não agregam informação.
-                
-                O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
-
+            const prompt = `Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA. Adicione valor real (ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL. Não comece com "Além de...". 3. SEJA DIRETO. O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
@@ -210,15 +205,12 @@
 
         elements.endSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
-
             const fullSectionText = articleContent[currentSection].join(' ');
-            const prompt = `Escreva um parágrafo de CONCLUSÃO impactante e conciso para a seção de "${sectionDisplayNames[currentSection]}", baseado neste conteúdo: "${fullSectionText}". Em vez de apenas repetir, **sintetize as ideias-chave em uma nova formulação** que reforce a importância do que foi discutido. Finalize com uma transição clara para a próxima etapa do artigo. Tamanho: 70-100 palavras.`;
-
+            const prompt = `Escreva um parágrafo de CONCLUSÃO impactante e conciso para a seção de "${sectionDisplayNames[currentSection]}", baseado neste conteúdo: "${fullSectionText}". Sintetize as ideias-chave em uma nova formulação que reforce a importância do que foi discutido e finalize com uma transição clara. Tamanho: 70-100 palavras.`;
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
-                
                 const currentIndex = sectionOrder.indexOf(currentSection);
                 if (currentIndex < sectionOrder.length - 1) {
                     currentSection = sectionOrder[currentIndex + 1];
@@ -233,15 +225,16 @@
         });
 
         elements.finishBtn.addEventListener('click', () => {
-            // Aqui seria o local para chamar a geração de resumo, abstract, etc.
              alert(`Artigo finalizado! Agora você pode salvá-lo como PDF.`);
              log(`🎓 Artigo concluído! Salve seu trabalho.`, 'success');
         });
 
         function displayABNTDocument() {
-            let html = `<div style="text-align: center; font-weight: bold; margin-bottom: 2em;">${userInputs.universidade || ''}</div>`;
-            html += `<div style="text-align: center; font-weight: bold; font-size: 14pt; margin-bottom: 2em;">${userInputs.titulo || ''}</div>`;
-            html += `<div style="text-align: center; margin-bottom: 4em;">${userInputs.autor || ''}</div>`;
+            let html = `
+                <div class="nome-universidade">${userInputs.universidade || ''}</div>
+                <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
+                <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
+            `;
             
             sectionOrder.forEach(key => {
                 if (articleContent[key].length > 0) {
@@ -251,6 +244,12 @@
                     });
                 }
             });
+
+            // GERAÇÃO DA NOTA DE RODAPÉ RESTAURADA
+            if (userInputs.email) {
+                html += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
+            }
+
             elements.outputDiv.innerHTML = html;
         }
 
