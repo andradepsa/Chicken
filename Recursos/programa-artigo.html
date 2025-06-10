@@ -412,9 +412,6 @@
                 const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
 
-                // --- CORREÇÃO APLICADA ---
-                // O prompt anterior era muito simples. Este novo prompt inclui exemplos (few-shot)
-                // para guiar a IA, usando as palavras que você indicou, garantindo maior precisão na tradução.
                 const keywordsPrompt = `
 Traduza as seguintes palavras-chave do português para o inglês.
 Responda APENAS com as palavras-chave traduzidas, separadas por ponto final. Não inclua texto introdutório como "Keywords:" e não termine a lista com um ponto.
@@ -430,7 +427,6 @@ Agora traduza o seguinte:
 Input: "${userInputs.palavrasChave}"
 Output:`;
                 const translatedKeywords = await callPuterAI(keywordsPrompt);
-                // Limpa a resposta da IA para garantir que apenas o conteúdo desejado seja salvo
                 userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
                 
                 log('✅ Resumo e abstract gerados!', 'success');
@@ -447,8 +443,6 @@ Output:`;
             `;
             if (userInputs.resumo) {
                 content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div>`;
-                // --- CORREÇÃO APLICADA ---
-                // Adicionado um ponto final para seguir a norma ABNT corretamente.
                 if (userInputs.palavrasChave) content += `<div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
                 if (userInputs.abstract) content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div>`;
                 if (userInputs.keywords) content += `<div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
@@ -526,8 +520,9 @@ Output:`;
             const sectionName = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' }[currentSection];
             const fullArticleText = Object.values(articleContent).flat().join(' ');
             let actionText = type === 'continue' ? 'o PRÓXIMO parágrafo' : 'um parágrafo de FINALIZAÇÃO';
-            let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
-            const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ser único, ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
+            // <<< ALTERAÇÃO APLICADA AQUI
+            let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes. CRÍTICO: Comece este novo parágrafo de uma maneira completamente ÚNICA e DIFERENTE dos parágrafos anteriores. Varie a estrutura e as palavras iniciais para evitar qualquer repetição no começo das frases.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
+            const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
