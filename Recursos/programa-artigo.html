@@ -4,27 +4,13 @@
     <meta charset="UTF-8">
     <title>Gerador de Artigo Científico com IA</title>
     <script src="https://js.puter.com/v2/"></script>
-
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
         body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
         .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; }
-        
-        @page {
-            size: A4;
-            margin-top: 3cm; margin-bottom: 2cm; margin-left: 3cm; margin-right: 2cm;
-            @bottom-center { content: element(footer); font-family: Arial, sans-serif; font-size: 10pt; color: #000; text-align: center; }
-        }
+        @page { size: A4; margin: 3cm 2cm 2cm 3cm; @bottom-center { content: element(footer); font-family: Arial, sans-serif; font-size: 10pt; } }
         #footer { position: running(footer); font-family: Arial, sans-serif; font-size: 10pt; text-align: center; width: 100%; display: none; }
-
-        @media print {
-            body { background-color: #fff; padding: 0; margin: 0; }
-            .control-panel, #save-controls { display: none !important; }
-            .page-container { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border: none; }
-            .email-autor { display: block !important; }
-            #footer { display: block; }
-        }
-        
+        @media print { body { background-color: #fff; padding: 0; margin: 0; } .control-panel, .modal, #save-controls { display: none !important; } .page-container { box-shadow: none; margin: 0; } .email-autor { display: block !important; } #footer { display: block; } }
         .control-panel { position: sticky; top: 20px; width: 400px; background: #f9f9f9; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 10; }
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
@@ -33,30 +19,31 @@
         .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; }
         .control-panel button:hover:not(:disabled) { filter: brightness(90%); }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
-        
         #interactive-controls button { margin-top: 10px; }
         #startSectionBtn { background-color: #1a73e8; } 
         #developSectionBtn { background-color: #28a745; }
         #endSectionBtn { background-color: #fd7e14; }
         #finishBtn { background-color: #dc3545; }
-
         #status { font-weight: bold; text-align: center; margin-top: 10px; min-height: 20px; font-size: 12px; padding: 10px; border-radius: 4px; }
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
         .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        
         .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
-        
-        /* --- ESTILOS ABNT RESTAURADOS --- */
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
-        .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
-        .titulo-trabalho { font-size: 14pt; text-align: center; font-weight: bold; text-transform: none; margin-bottom: 2em; }
-        .autor { text-align: center; font-size: 12pt; margin-bottom: 4em; }
+        .nome-universidade, .titulo-trabalho, .autor { text-align: center; }
+        .nome-universidade { font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
+        .titulo-trabalho { font-size: 14pt; font-weight: bold; margin-bottom: 2em; }
+        .autor { font-size: 12pt; margin-bottom: 4em; }
         .autor sup { font-size: 10pt; }
         .email-autor { text-align: left; font-size: 10pt; margin-top: 2em; border-top: 1px solid #000; padding-top: 10px; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
         .abnt-content p { margin-bottom: 1.5em; text-indent: 1.25cm; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 700px; max-height: 80vh; overflow-y: auto; }
+        #topic-list label { cursor: pointer; display: block; padding: 5px; border-radius: 4px; }
+        #topic-list input[type="radio"] { margin-right: 10px; }
+        #topic-list div:hover { background-color: #f0f8ff; }
     </style>
 </head>
 <body>
@@ -65,13 +52,11 @@
             <div id="initial-form">
                 <h2>🎓 Gerador de Artigo ABNT</h2>
                 <div class="form-group"><label>Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
-                <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva um tema conciso"></div>
+                <div class="form-group"><label>Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
                 <div class="form-group"><label>Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
-                <!-- CAMPO DE E-MAIL RESTAURADO -->
                 <div class="form-group"><label>Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
-                <button id="startBtn">🚀 Iniciar Artigo</button>
+                <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
             </div>
-            
             <div id="interactive-controls" style="display: none;">
                 <h2>📝 Escrevendo: <strong id="current-section-name"></strong></h2>
                 <button id="startSectionBtn">▶️ Iniciar Seção</button>
@@ -79,14 +64,22 @@
                 <button id="endSectionBtn">🏁 Concluir Seção</button>
                 <button id="finishBtn" style="display: none;">✅ Finalizar e Gerar Resumo</button>
             </div>
-
             <div id="save-controls" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;"><button id="savePdfBtn">📄 Salvar como PDF</button></div>
             <div id="status" class="info">🎯 Preencha os dados e clique em "Iniciar"</div>
         </div>
-        
         <div class="page-container">
-            <div class="abnt-content" id="content-output"><!-- Conteúdo Gerado --></div>
+            <div class="abnt-content" id="content-output"></div>
             <div id="footer"></div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA SUGESTÕES DE TEMA -->
+    <div id="topic-suggestion-modal" class="modal">
+        <div class="modal-content">
+            <h3>✨ Sugestões para o seu Tema</h3>
+            <p>Analisamos sua ideia para aprimorá-la. Escolha a melhor opção abaixo para continuar:</p>
+            <div id="topic-list" style="margin: 20px 0;"></div>
+            <button id="confirm-topic-btn" style="background-color: #28a745;">✅ Confirmar Tema e Iniciar</button>
         </div>
     </div>
 
@@ -104,6 +97,10 @@
             initialForm: document.getElementById('initial-form'),
             interactiveControls: document.getElementById('interactive-controls'),
             footerDiv: document.getElementById('footer'),
+            // Elementos do Modal de Temas
+            topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
+            topicListDiv: document.getElementById('topic-list'),
+            confirmTopicBtn: document.getElementById('confirm-topic-btn'),
         };
 
         let userInputs = {};
@@ -112,70 +109,81 @@
         const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao'];
         const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
 
-        async function callPuterAI(prompt) {
-            try {
-                log('🤖 Gerando conteúdo com a IA...', 'info');
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.');
-                return response.message.content.trim();
-            } catch (error) {
-                log(`❌ Erro na IA: ${error.message || 'Erro desconhecido.'}`, 'error');
-                throw error;
-            }
-        }
+        async function callPuterAI(prompt) { /* ... (sem alterações) ... */ }
+        function log(message, type = 'info') { /* ... (sem alterações) ... */ }
+        function updateInteractiveUIState(state) { /* ... (sem alterações) ... */ }
         
-        function log(message, type = 'info') {
-            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-            elements.statusDiv.className = type;
-            elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div>`;
-        }
-
-        function updateInteractiveUIState(state) {
-            const { startSectionBtn, developSectionBtn, endSectionBtn } = elements;
-            startSectionBtn.disabled = true;
-            developSectionBtn.disabled = true;
-            endSectionBtn.disabled = true;
-
-            switch (state) {
-                case 'ready_to_start_section':
-                    startSectionBtn.disabled = false;
-                    log(`Pronto para iniciar a seção: ${sectionDisplayNames[currentSection]}`, 'info');
-                    break;
-                case 'developing_section':
-                    developSectionBtn.disabled = false;
-                    endSectionBtn.disabled = false;
-                    log(`Desenvolvendo a seção. Adicione parágrafos ou conclua.`, 'info');
-                    break;
-                case 'article_finished':
-                    elements.interactiveControls.style.display = 'none';
-                    elements.finishBtn.style.display = 'block';
-                    log('🎓 Artigo concluído! Gere o resumo e salve em PDF.', 'success');
-                    break;
-                case 'loading':
-                    log('Processando...', 'info');
-                    break;
+        async function refineAndSuggestTopics(originalTitle) {
+            log('Analisando tema e gerando sugestões...', 'info');
+            const prompt = `
+                Analise o tema para um artigo: "${originalTitle}".
+                1. Corrija erros e reformule-o para ser um título acadêmico claro e impactante. Este será o "tema corrigido".
+                2. Gere 9 temas alternativos criativos com base na ideia principal.
+                Retorne sua resposta APENAS em formato JSON com as chaves "corrected_title" e "suggestions".
+                Exemplo: {"corrected_title": "Título Corrigido", "suggestions": ["Sugestão 1", ...]}
+            `;
+            try {
+                const response = await callPuterAI(prompt);
+                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
+                return JSON.parse(jsonString);
+            } catch (error) {
+                log('⚠️ Não foi possível gerar sugestões. Usando o tema original.', 'warning');
+                return { corrected_title: originalTitle, suggestions: [] };
             }
         }
 
-        elements.startBtn.addEventListener('click', () => {
-            userInputs = {
-                universidade: document.getElementById('universidade').value,
-                titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value,
-                // CAPTURA DO E-MAIL RESTAURADA
-                email: document.getElementById('email').value,
-            };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
-            
+        function populateAndShowTopicModal(topicData, originalTitle) {
+            let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Sua Ideia Original:</strong> <em>${originalTitle}</em></p>`;
+            html += `<div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">`;
+            html += `<div><label><input type="radio" name="topic-choice" value="${topicData.corrected_title}" checked> <strong>${topicData.corrected_title} (Sugestão Corrigida)</strong></label></div>`;
+            topicData.suggestions.forEach((suggestion, index) => {
+                html += `<div><label><input type="radio" name="topic-choice" value="${suggestion}"> ${suggestion}</label></div>`;
+            });
+            html += `</div>`;
+            elements.topicListDiv.innerHTML = html;
+            elements.topicSuggestionModal.style.display = 'flex';
+        }
+
+        function proceedToWritingInterface() {
             elements.initialForm.style.display = 'none';
             elements.interactiveControls.style.display = 'block';
             elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection];
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Universidade'}, ${new Date().getFullYear()}`;
-            displayABNTDocument(); // Exibe o cabeçalho inicial
+            displayABNTDocument();
             updateInteractiveUIState('ready_to_start_section');
+        }
+
+        elements.startBtn.addEventListener('click', async () => {
+            userInputs = {
+                universidade: document.getElementById('universidade').value,
+                titulo: document.getElementById('titulo').value,
+                autor: document.getElementById('autor').value,
+                email: document.getElementById('email').value,
+            };
+            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
+            
+            elements.startBtn.disabled = true;
+            try {
+                const topicData = await refineAndSuggestTopics(userInputs.titulo);
+                if (topicData && topicData.suggestions.length > 0) {
+                    populateAndShowTopicModal(topicData, userInputs.titulo);
+                } else {
+                    proceedToWritingInterface();
+                }
+            } catch (error) {
+                proceedToWritingInterface();
+            }
         });
 
-        // Prompts continuam aprimorados para qualidade e concisão
+        elements.confirmTopicBtn.addEventListener('click', () => {
+            const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
+            userInputs.titulo = selectedTopic;
+            document.getElementById('titulo').value = selectedTopic; // Atualiza o campo original
+            elements.topicSuggestionModal.style.display = 'none';
+            log(`✅ Tema selecionado: "${selectedTopic}"`, 'success');
+            proceedToWritingInterface();
+        });
+
         elements.startSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
             const prompt = `Escreva um parágrafo INICIAL, claro e objetivo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". O objetivo é servir como um roteiro para o leitor, apresentando os pontos-chave que serão discutidos nesta seção sem rodeios. Seja conciso e informativo. Tamanho: 70-100 palavras.`;
@@ -192,7 +200,7 @@
         elements.developSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
             const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
-            const prompt = `Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" de um artigo sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA. Adicione valor real (ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL. Não comece com "Além de...". 3. SEJA DIRETO. O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
+            const prompt = `Você é um escritor acadêmico focado em substância. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}". Contexto: "${lastTwoParagraphs}". INSTRUÇÕES CRÍTICAS: 1. NÃO ENCHA LINGUIÇA. Adicione valor real (ideia nova, dado, exemplo). 2. EVITE REPETIÇÃO ESTRUTURAL. Não comece com "Além de...". 3. SEJA DIRETO. O parágrafo deve ser denso, significativo e ter entre 70-100 palavras.`;
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
@@ -235,21 +243,15 @@
                 <div class="titulo-trabalho">${userInputs.titulo || ''}</div>
                 <div class="autor">${userInputs.autor || ''}<sup>1</sup></div>
             `;
-            
             sectionOrder.forEach(key => {
                 if (articleContent[key].length > 0) {
                     html += `<div class="section-title">${sectionDisplayNames[key]}</div>`;
-                    articleContent[key].forEach(pText => {
-                        html += `<p>${pText}</p>`;
-                    });
+                    articleContent[key].forEach(pText => html += `<p>${pText}</p>`);
                 }
             });
-
-            // GERAÇÃO DA NOTA DE RODAPÉ RESTAURADA
             if (userInputs.email) {
                 html += `<div class="email-autor"><sup>1</sup> ${userInputs.universidade || ''}, ${userInputs.email}</div>`;
             }
-
             elements.outputDiv.innerHTML = html;
         }
 
@@ -257,6 +259,13 @@
              alert('A caixa de diálogo de impressão será aberta.\n\nNo campo "Destino", escolha "Salvar como PDF".');
              window.print();
         });
+        
+        // --- Funções omitidas para brevidade (já presentes no seu código) ---
+        // (Copie o código inteiro para ter todas as funções auxiliares)
+        // Redefinindo funções omitidas para garantir que o código seja funcional
+        async function callPuterAI(prompt) { try { log('🤖 Gerando conteúdo com a IA...', 'info'); const response = await puter.ai.chat([{ role: 'user', content: prompt }]); if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.'); return response.message.content.trim(); } catch (error) { log(`❌ Erro na IA: ${error.message || 'Erro desconhecido.'}`, 'error'); throw error; } }
+        function log(message, type = 'info') { const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }; elements.statusDiv.className = type; elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div>`; }
+        function updateInteractiveUIState(state) { const { startSectionBtn, developSectionBtn, endSectionBtn } = elements; startSectionBtn.disabled = true; developSectionBtn.disabled = true; endSectionBtn.disabled = true; switch (state) { case 'ready_to_start_section': startSectionBtn.disabled = false; log(`Pronto para iniciar a seção: ${sectionDisplayNames[currentSection]}`, 'info'); break; case 'developing_section': developSectionBtn.disabled = false; endSectionBtn.disabled = false; log(`Desenvolvendo a seção. Adicione parágrafos ou conclua.`, 'info'); break; case 'article_finished': elements.interactiveControls.style.display = 'none'; elements.finishBtn.style.display = 'block'; log('🎓 Artigo concluído! Gere o resumo e salve em PDF.', 'success'); break; case 'loading': log('Processando...', 'info'); break; } }
 
     </script>
 </body>
