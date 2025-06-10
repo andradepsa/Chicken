@@ -181,13 +181,11 @@
             </div>
         </div>
 
-        <!-- NOVO MODAL PARA SUGESTÕES DE TEMA -->
         <div id="topic-suggestion-modal" class="modal">
             <div class="modal-content">
                 <h3>✨ Sugestões para o seu Tema</h3>
                 <p>Analisamos seu tema para aprimorá-lo. Escolha a melhor opção abaixo para continuar:</p>
                 <div id="topic-list" style="margin: 20px 0;">
-                    <!-- Conteúdo preenchido via JavaScript -->
                 </div>
                 <button id="confirm-topic-btn">✅ Confirmar Tema e Iniciar</button>
             </div>
@@ -213,7 +211,6 @@
             duplicateWarningDiv: document.getElementById('duplicate-warning'),
             savePdfBtn: document.getElementById('savePdfBtn'),
             footerDiv: document.getElementById('footer'),
-            // Elementos do novo modal de temas
             topicSuggestionModal: document.getElementById('topic-suggestion-modal'),
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
@@ -407,7 +404,7 @@
                 
                 const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final. Não termine a lista com um ponto. Exemplo: Palavra-chave 1. Palavra-chave 2`;
                 const rawPalavrasChave = await callPuterAI(palavrasPrompt);
-                userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, ''); // Garante que não há ponto no final
+                userInputs.palavrasChave = rawPalavrasChave.trim().replace(/\.$/, '');
 
                 const abstractPrompt = `Traduza para o inglês acadêmico o seguinte resumo: "${userInputs.resumo}"`;
                 userInputs.abstract = await callPuterAI(abstractPrompt);
@@ -415,17 +412,9 @@
                 const keywordsPrompt = `
 Traduza as seguintes palavras-chave do português para o inglês.
 Responda APENAS com as palavras-chave traduzidas, separadas por ponto final. Não inclua texto introdutório como "Keywords:" e não termine a lista com um ponto.
-
-Exemplos de tradução:
-- Input: "Matemática. Aplicações. História. Criatividade. Progresso"
-- Output: "Mathematics. Applications. History. Creativity. Progress"
-
-- Input: "Sustentabilidade. Inovação Tecnológica"
-- Output: "Sustainability. Technological Innovation"
-
-Agora traduza o seguinte:
-Input: "${userInputs.palavrasChave}"
-Output:`;
+Exemplos:
+- Input: "Sustentabilidade. Inovação Tecnológica" -> Output: "Sustainability. Technological Innovation"
+Agora traduza: "${userInputs.palavrasChave}"`;
                 const translatedKeywords = await callPuterAI(keywordsPrompt);
                 userInputs.keywords = translatedKeywords.replace(/Output:/i, '').replace(/"/g, '').trim().replace(/\.$/, '');
                 
@@ -495,10 +484,10 @@ Output:`;
             elements.startBtn.disabled = true;
             try {
                 const topicData = await refineAndSuggestTopics(userInputs.titulo);
-                if (topicData.suggestions.length > 0) {
+                if (topicData.suggestions && topicData.suggestions.length > 0) {
                     populateAndShowTopicModal(topicData, userInputs.titulo);
                 } else {
-                    await proceedWithArticleGeneration(); // Procede direto se não houver sugestões
+                    await proceedWithArticleGeneration();
                 }
             } catch (error) {
                 await proceedWithArticleGeneration();
@@ -514,21 +503,48 @@ Output:`;
             proceedWithArticleGeneration();
         });
 
+        // =========================================================================
+        // <<< FUNÇÃO MODIFICADA PARA EVITAR REPETIÇÃO >>>
+        // =========================================================================
         async function handleSectionGeneration(type) {
             const btn = type === 'continue' ? elements.continueBtn : elements.concludeBtn;
             btn.disabled = true;
+            
             const sectionName = { 'introducao': 'introdução', 'desenvolvimento': 'desenvolvimento', 'conclusao': 'conclusão' }[currentSection];
             const fullArticleText = Object.values(articleContent).flat().join(' ');
-            let actionText = type === 'continue' ? 'o PRÓXIMO parágrafo' : 'um parágrafo de FINALIZAÇÃO';
-            // <<< ALTERAÇÃO APLICADA AQUI
-            let instruction = type === 'continue' ? 'NÃO REPITA ideias já presentes. CRÍTICO: Comece este novo parágrafo de uma maneira completamente ÚNICA e DIFERENTE dos parágrafos anteriores. Varie a estrutura e as palavras iniciais para evitar qualquer repetição no começo das frases.' : 'Sintetize as ideias da seção e use conectivos de conclusão.';
-            const prompt = `Você é um assistente escrevendo um artigo sobre "${userInputs.titulo}". Conteúdo já escrito: "${fullArticleText}". Sua tarefa é escrever ${actionText} para a seção de "${sectionName}". O parágrafo deve ter entre 80-120 palavras e seguir a instrução: ${instruction}`;
+            
+            let prompt;
+
+            if (type === 'continue') {
+                const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
+                prompt = `
+                Você é um escritor acadêmico experiente. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionName}" de um artigo sobre "${userInputs.titulo}".
+
+                **Contexto (Últimos parágrafos escritos para sua análise):**
+                "${lastTwoParagraphs}"
+
+                **INSTRUÇÃO CRÍTICA E OBRIGATÓRIA:**
+                Analise a ESTRUTURA dos parágrafos anteriores. O erro mais comum é a repetição de conectivos e estruturas iniciais como "Além de...", "Adicionalmente...", "Outro aspecto...". É ESSENCIAL que você evite radicalmente esse padrão.
+
+                **Sua Missão:**
+                Crie um parágrafo que comece de uma forma **COMPLETAMENTE NOVA e ESTRUTURALMENTE DIFERENTE**.
+                - **NÃO use, sob nenhuma circunstância, frases que comecem com:** "Além de...", "Adicionalmente a...", "Outro ponto é que...", ou qualquer variação sinônima.
+                - **Varie a abordagem:** Comece com uma afirmação direta, uma consequência do parágrafo anterior, introduzindo um contraponto, ou focando em um novo sub-tópico de forma coesa mas original.
+
+                O novo parágrafo deve ter entre 80-120 palavras, ser único e desenvolver uma nova faceta do tema sem repetir ideias já abordadas.
+                `;
+            } else { // type === 'conclude'
+                prompt = `
+                Você é um escritor acadêmico. Baseado no artigo até agora: "${fullArticleText}", escreva um parágrafo de FINALIZAÇÃO para a seção de "${sectionName}". O parágrafo deve sintetizar as ideias principais da seção, usar conectivos de conclusão (como 'Portanto', 'Dessa forma', 'Em suma') e preparar a transição para a próxima parte do artigo. Tamanho: 80-120 palavras.
+                `;
+            }
+            
             try {
                 const content = await callPuterAI(prompt);
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
                 log(`✅ Parágrafo de ${type === 'continue' ? 'continuação' : 'conclusão'} adicionado!`, 'success');
-            } catch (error) { /* Erro já logado */ } 
+            } catch (error) { /* Erro já logado pela função callPuterAI */ } 
             finally { btn.disabled = false; }
         }
 
