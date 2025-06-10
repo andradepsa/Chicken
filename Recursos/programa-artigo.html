@@ -368,6 +368,108 @@
                 }
                 return response.message.content.trim();
             } catch (error) {
+                console.error('Erro na IA do Puter:', error);
+                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
+                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
+                } else {
+                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
+                }
+                throw error;
+            }
+        }
+
+        // --- SISTEMA ANTI-REPETIÇÃO ---
+        function extractKeyPhrases(text) {
+            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
+            const phrases = [];
+            for (let i = 0; i < words.length - 2; i++) {
+                phrases.push(words.slice(i, i + 3).join(' '));
+            }
+            return phrases;
+        }
+        function addPhrasesToMemory(text) {
+            const phrases = extractKeyPhrases(text);
+            phrases.forEach(phrase => usedPhrases.add(phrase));
+        }
+
+        // --- FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
+        async function extractThemeAndTopics(text, articleTitle) {
+            try {
+                const prompt = `
+                Analise a frase ou parágrafo: "${text}" no contexto do artigo intitulado "${articleTitle}".
+                1. Identifique o TEMA PRINCIPAL (uma frase curta que resume a ideia central).
+                2. Liste até 5 ASSUNTOS TRATADOS (subtemas ou conceitos relacionados, cada um com 2-5 palavras).
+                Retorne no formato JSON:
+                { "mainTheme": "...", "topics": ["...", "...", "...", "...", "..."] }`;
+                const response = await callPuterAI(prompt);
+                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
+                const result = JSON.parse(jsonString);
+                result.topics = result.topics.slice(0, 5);
+                while (result.topics.length < 5) result.topics.push("");
+                return result;
+            } catch (error) {
+                console.error('Erro ao extrair tema e assuntos:', error);
+                const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
+                const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
+                const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
+                return {
+                    mainTheme: articleTitle || "Tema não identificado",
+                    topics: words.slice(0, 5).map(word => word)
+                };
+            }
+        }
+
+        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
+        async function generateParagraphStartOptions(phase) {
+            const allContent = Object.values(articleContent).flat().join(' ');
+            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+            let sectionDescription = '';
+            switch (phase) {
+                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
+                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
+                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
+            }
+            const prompt = `
+            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
+            REGRAS:
+            1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
+            2. EVITE ideias já usadas, como: ${usedConcepts}.
+            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.`;
+            try {
+                const response = await callPuterAI(prompt);
+                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
+            } catch (error) {
+                console.error('Erro ao gerar opções:', error);
+                return ["Ocorreu um erro ao gerar opções, tente novamente."];
+            }
+        }
+        async function showParagraphStartModal(phase) {
+            currentGenerationPhase = phase;
+            const phaseTitles = {
+                inicio: '🌟 Como Começar a Introdução?',
+                meio: '📝 Como Continuar o Desenvolvimento?',
+                fim: '🎯 Como Finalizar a Seção?'
+            };
+            log(`Gerando opções para ${phase}...`, 'info');
+            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
+            elements.paragraphStartModal.style.display = 'flex';
+            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
+            try {
+                const startOptions = await generateParagraphStartOptions(phase);
+                let html = startOptions.map((option, index) => `
+                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
+                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
+                    </div>`).join('');
+                elements.paragraphStartsList.innerHTML = html;
+                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        elements.generateParagraphBtn.disabled = false;
+                        selectedParagraphStart = radio.value;
+                    });
+                });
+            } catch (error) {
                 console.error('Erro ao gerar opções:', error);
                 elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
             }
@@ -831,105 +933,3 @@
     </script>
 </body>
 </html>
-                console.error('Erro na IA do Puter:', error);
-                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
-                    log('⚠️ Autenticação cancelada. Não é possível gerar conteúdo.', 'warning');
-                } else {
-                    log(`❌ Erro ao gerar conteúdo: ${error.message || 'Erro desconhecido.'}`, 'error');
-                }
-                throw error;
-            }
-        }
-
-        // --- SISTEMA ANTI-REPETIÇÃO ---
-        function extractKeyPhrases(text) {
-            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
-            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
-            const phrases = [];
-            for (let i = 0; i < words.length - 2; i++) {
-                phrases.push(words.slice(i, i + 3).join(' '));
-            }
-            return phrases;
-        }
-        function addPhrasesToMemory(text) {
-            const phrases = extractKeyPhrases(text);
-            phrases.forEach(phrase => usedPhrases.add(phrase));
-        }
-
-        // --- FUNÇÃO: EXTRAIR TEMA PRINCIPAL E ASSUNTOS ---
-        async function extractThemeAndTopics(text, articleTitle) {
-            try {
-                const prompt = `
-                Analise a frase ou parágrafo: "${text}" no contexto do artigo intitulado "${articleTitle}".
-                1. Identifique o TEMA PRINCIPAL (uma frase curta que resume a ideia central).
-                2. Liste até 5 ASSUNTOS TRATADOS (subtemas ou conceitos relacionados, cada um com 2-5 palavras).
-                Retorne no formato JSON:
-                { "mainTheme": "...", "topics": ["...", "...", "...", "...", "..."] }`;
-                const response = await callPuterAI(prompt);
-                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
-                const result = JSON.parse(jsonString);
-                result.topics = result.topics.slice(0, 5);
-                while (result.topics.length < 5) result.topics.push("");
-                return result;
-            } catch (error) {
-                console.error('Erro ao extrair tema e assuntos:', error);
-                const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
-                const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
-                const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
-                return {
-                    mainTheme: articleTitle || "Tema não identificado",
-                    topics: words.slice(0, 5).map(word => word)
-                };
-            }
-        }
-
-        // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
-        async function generateParagraphStartOptions(phase) {
-            const allContent = Object.values(articleContent).flat().join(' ');
-            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
-            let sectionDescription = '';
-            switch (phase) {
-                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
-                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
-                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
-            }
-            const prompt = `
-            Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}.
-            REGRAS:
-            1. Cada início deve ter entre 10-20 palavras e ser academicamente relevante.
-            2. EVITE ideias já usadas, como: ${usedConcepts}.
-            3. FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.`;
-            try {
-                const response = await callPuterAI(prompt);
-                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
-            } catch (error) {
-                console.error('Erro ao gerar opções:', error);
-                return ["Ocorreu um erro ao gerar opções, tente novamente."];
-            }
-        }
-        async function showParagraphStartModal(phase) {
-            currentGenerationPhase = phase;
-            const phaseTitles = {
-                inicio: '🌟 Como Começar a Introdução?',
-                meio: '📝 Como Continuar o Desenvolvimento?',
-                fim: '🎯 Como Finalizar a Seção?'
-            };
-            log(`Gerando opções para ${phase}...`, 'info');
-            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
-            elements.paragraphStartModal.style.display = 'flex';
-            elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
-            try {
-                const startOptions = await generateParagraphStartOptions(phase);
-                let html = startOptions.map((option, index) => `
-                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
-                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
-                    </div>`).join('');
-                elements.paragraphStartsList.innerHTML = html;
-                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
-                    radio.addEventListener('change', () => {
-                        elements.generateParagraphBtn.disabled = false;
-                        selectedParagraphStart = radio.value;
-                    });
-                });
-            } catch (error) {
