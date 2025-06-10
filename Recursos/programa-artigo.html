@@ -2,9 +2,10 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Artigo Científico com IA</title>
+    <title>Gerador Universal de Artigos com IA</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
+        /* O CSS permanece o mesmo. Nenhuma alteração visual. */
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
         body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
         .main-container { display: flex; justify-content: center; align-items: flex-start; gap: 20px; }
@@ -59,22 +60,8 @@
 <body>
     <div class="main-container">
         <div class="control-panel">
-            <div id="initial-form">
-                <h2>🎓 Gerador de Artigo ABNT</h2>
-                <div class="form-group"><label for="universidade">Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div>
-                <div class="form-group"><label for="titulo">Título:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
-                <div class="form-group"><label for="autor">Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
-                <div class="form-group"><label for="qualificacao">Qualificação:</label><select id="qualificacao"><option value="graduando">Graduando(a)</option><option value="especializando">Especializando(a)</option><option value="mestrando">Mestrando(a)</option><option value="doutorando">Doutorando(a)</option><option value="professor">Professor(a)</option><option value="pesquisador">Pesquisador(a)</option></select></div>
-                <div class="form-group"><label for="email">Email:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
-                <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
-            </div>
-            <div id="interactive-controls" style="display: none;">
-                <h2>📝 Escrevendo: <strong id="current-section-name"></strong></h2>
-                <button id="startSectionBtn">▶️ Iniciar Seção</button>
-                <button id="developSectionBtn">➕ Desenvolver Ideia</button>
-                <button id="endSectionBtn">🏁 Concluir Seção</button>
-                <button id="finishBtn" style="display: none;">✅ Gerar Resumo e Finalizar</button>
-            </div>
+            <div id="initial-form"><h2>Gerador de Artigos</h2><div class="form-group"><label for="universidade">Universidade:</label><input id="universidade" type="text" value="Universidade Federal"></div><div class="form-group"><label for="titulo">Título:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div><div class="form-group"><label for="autor">Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div><div class="form-group"><label for="qualificacao">Qualificação:</label><select id="qualificacao"><option value="graduando">Graduando(a)</option><option value="especializando">Especializando(a)</option><option value="mestrando">Mestrando(a)</option><option value="doutorando">Doutorando(a)</option><option value="professor">Professor(a)</option><option value="pesquisador">Pesquisador(a)</option></select></div><div class="form-group"><label for="email">Email:</label><input id="email" type="email" value="seu.email@exemplo.com"></div><button id="startBtn">🚀 Iniciar e Otimizar Tema</button></div>
+            <div id="interactive-controls" style="display: none;"><h2>📝 Escrevendo: <strong id="current-section-name"></strong></h2><button id="startSectionBtn">▶️ Iniciar Seção</button><button id="developSectionBtn">➕ Desenvolver Ideia</button><button id="endSectionBtn">🏁 Concluir Seção</button><button id="finishBtn" style="display: none;">✅ Gerar Resumo e Finalizar</button></div>
             <div id="save-controls" style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 15px;"><button id="savePdfBtn">📄 Salvar como PDF</button></div>
             <div id="status" class="info">🎯 Preencha os dados e clique em "Iniciar"</div>
         </div>
@@ -101,27 +88,42 @@
         elements.startBtn.addEventListener('click', async () => { const uInput = document.getElementById('universidade'), aInput = document.getElementById('autor'), eInput = document.getElementById('email'); uInput.value = toProperCase(uInput.value); aInput.value = toProperCase(aInput.value); eInput.value = eInput.value.trim().toLowerCase(); userInputs = { universidade: uInput.value, titulo: document.getElementById('titulo').value.trim(), autor: aInput.value, qualificacao: document.getElementById('qualificacao').value, email: eInput.value }; if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } elements.startBtn.disabled = true; try { const topicData = await refineAndSuggestTopics(userInputs.titulo); populateAndShowTopicModal(topicData, userInputs.titulo); } catch (error) { proceedToWritingInterface(); } });
         elements.confirmTopicBtn.addEventListener('click', () => { const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value; userInputs.titulo = selectedTopic; document.getElementById('titulo').value = selectedTopic; elements.topicSuggestionModal.style.display = 'none'; proceedToWritingInterface(); });
         function proceedToWritingInterface() { elements.initialForm.style.display = 'none'; elements.interactiveControls.style.display = 'block'; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); log(`✅ Tema confirmado: "${userInputs.titulo}"`, 'success'); }
-        elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); try { const content = await callPuterAI(`Escreva um parágrafo INICIAL para a seção "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}".`); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
+        elements.startSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); try { const content = await callPuterAI(`Escreva um parágrafo INICIAL para a seção "${sectionDisplayNames[currentSection]}" sobre "${userInputs.titulo}". Ele deve ser claro, objetivo e apresentar os pontos principais da seção.`); articleContent[currentSection].push(content); displayABNTDocument(); updateInteractiveUIState('developing_section'); } catch (error) { updateInteractiveUIState('ready_to_start_section'); } });
         
-        // --- PROMPT DO BOTÃO "DESENVOLVER IDEIA" TOTALMENTE REFORMULADO ---
+        // =================================================================================
+        // === PROMPT ANTI-REPETIÇÃO COM ESTRATÉGIA DE DUAS ETAPAS (UNIVERSAL) ===
+        // =================================================================================
         elements.developSectionBtn.addEventListener('click', async () => {
             updateInteractiveUIState('loading');
             const lastTwoParagraphs = articleContent[currentSection].slice(-2).join(' ');
-            
-            const prompt = `
-            Você é um escritor acadêmico focado em substância, não em preenchimento. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre o tema "${userInputs.titulo}".
 
-            CONTEXTO (últimos parágrafos escritos):
-            "${lastTwoParagraphs}"
+            // --- ETAPA 1: IA "PLANEJADORA" ---
+            let subtopics = [];
+            try {
+                log('🧠 IA planejando próximos passos...', 'info');
+                const plannerPrompt = `Baseado no tema "${userInputs.titulo}" e no contexto "${lastTwoParagraphs}", gere uma lista JSON com 5 subtópicos específicos e concretos para o próximo parágrafo. Exemplo de output: ["Subtópico 1", "Subtópico 2", ...].`;
+                const plannerResponse = await callPuterAI(plannerPrompt);
+                const jsonString = plannerResponse.substring(plannerResponse.indexOf('['), plannerResponse.lastIndexOf(']') + 1);
+                subtopics = JSON.parse(jsonString);
+            } catch (e) {
+                log('⚠️ Não foi possível gerar subtópicos. Usando prompt padrão.', 'warning');
+                // Fallback para um prompt mais simples caso a IA planejadora falhe.
+            }
 
-            INSTRUÇÕES CRÍTICAS PARA EVITAR REPETIÇÃO:
-            1.  **NÃO REPITA:** Não reafirme a mesma ideia com outras palavras.
-            2.  **ADICIONE VALOR REAL:** Introduza uma ideia NOVA e específica. Por exemplo: um dado histórico, uma aplicação prática concreta (ex: em criptografia), o nome de um matemático relevante (ex: Pitágoras, Euler), um subcampo (ex: topologia, teoria dos números), ou um conceito específico (ex: a Sequência de Fibonacci).
-            3.  **EVITE CONECTIVOS FRACOS:** Não comece o parágrafo com "Além disso...", "Adicionalmente...", ou "Outro ponto importante é...". Faça uma transição mais fluida e direta.
-            4.  **SEJA DIRETO:** Foque em desenvolver UMA ideia principal por parágrafo de forma clara e concisa (70-100 palavras).`;
+            // --- ETAPA 2: IA "ESCRITORA" ---
+            const writerPrompt = `
+            Você é um escritor acadêmico. Sua tarefa é escrever o PRÓXIMO parágrafo para a seção de "${sectionDisplayNames[currentSection]}" sobre o tema "${userInputs.titulo}".
+            O texto já escrito é: "${lastTwoParagraphs}"
+            **REGRA MAIS IMPORTANTE: NÃO SE REPITA.** Para garantir isso, o novo parágrafo deve introduzir um conceito NOVO e ESPECÍFICO.
+            ${subtopics.length > 0 ? `
+            Para te ajudar, escolha UMA das seguintes linhas de argumentação (ou uma similar):
+            - ${subtopics.join('\n- ')}
+            ` : ''}
+            Seja direto e foque em desenvolver a nova ideia de forma clara. Não use conectivos fracos como "Além disso...".`;
             
             try {
-                const content = await callPuterAI(prompt);
+                log('✍️ IA escrevendo o novo parágrafo...', 'info');
+                const content = await callPuterAI(writerPrompt);
                 articleContent[currentSection].push(content);
                 displayABNTDocument();
                 updateInteractiveUIState('developing_section');
@@ -130,7 +132,7 @@
             }
         });
         
-        elements.endSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const fullText = articleContent[currentSection].join(' '); try { const content = await callPuterAI(`Escreva um parágrafo de CONCLUSÃO para a seção "${sectionDisplayNames[currentSection]}", baseado em: "${fullText}".`); articleContent[currentSection].push(content); displayABNTDocument(); const currentIndex = sectionOrder.indexOf(currentSection); if (currentIndex < sectionOrder.length - 1) { currentSection = sectionOrder[currentIndex + 1]; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); } else { updateInteractiveUIState('article_finished'); } } catch (error) { updateInteractiveUIState('developing_section'); } });
+        elements.endSectionBtn.addEventListener('click', async () => { updateInteractiveUIState('loading'); const fullText = articleContent[currentSection].join(' '); try { const content = await callPuterAI(`Escreva um parágrafo conciso de CONCLUSÃO para a seção "${sectionDisplayNames[currentSection]}", resumindo as ideias principais apresentadas em: "${fullText}".`); articleContent[currentSection].push(content); displayABNTDocument(); const currentIndex = sectionOrder.indexOf(currentSection); if (currentIndex < sectionOrder.length - 1) { currentSection = sectionOrder[currentIndex + 1]; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; updateInteractiveUIState('ready_to_start_section'); } else { updateInteractiveUIState('article_finished'); } } catch (error) { updateInteractiveUIState('developing_section'); } });
         elements.finishBtn.addEventListener('click', async () => { elements.finishBtn.disabled = true; await generateResumoAndAbstract(); displayABNTDocument(); log('🎓 Artigo finalizado!', 'success'); });
         elements.outputDiv.addEventListener('click', (e) => { const p = e.target.closest('p[data-id]'); if(p) openReferenceModal(p.dataset.id, p.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim(), userInputs.titulo); });
         elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
