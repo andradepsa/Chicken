@@ -75,17 +75,17 @@
         
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
         .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
-        .titulo-trabalho { font-size: 14pt; text-align: center; font-weight: bold; text-transform: none; margin-bottom: 2em; }
+        .titulo-trabalho { font-size: 12pt; text-align: center; text-transform: none; margin-bottom: 2em; }
         .autor { text-align: center; font-size: 12pt; margin-bottom: 1em; }
         .autor sup { font-size: 10pt; }
-        .email-autor { text-align: left; font-size: 10pt; margin-top: 2em; border-top: 1px solid #000; padding-top: 10px; }
+        .email-autor { text-align: left; font-size: 10pt; margin-top: 2em; padding-top: 10px; line-height: 1.0; }
         .resumo-titulo { font-weight: bold; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
-        .resumo-texto { text-align: justify; margin-bottom: 1em; }
-        .palavras-chave { text-align: left; margin-bottom: 2em; }
+        .resumo-texto { text-align: justify; margin-bottom: 1em; line-height: 1.0; }
+        .palavras-chave { text-align: left; margin-bottom: 2em; line-height: 1.0; }
         .palavras-chave strong { font-weight: bold; }
-        .abstract-titulo { font-weight: bold; font-style: italic; text-align: left; font-size: 12pt; margin-top: 1em; margin-bottom: 1em; }
-        .keywords { text-align: left; margin-bottom: 2em; }
-        .keywords strong { font-weight: bold; font-style: italic; }
+        .abstract-titulo { font-weight: bold; text-align: left; font-size: 12pt; margin-top: 1em; margin-bottom: 1em; }
+        .keywords { text-align: left; margin-bottom: 2em; line-height: 1.0; }
+        .keywords strong { font-weight: bold; }
         .section-title { font-weight: bold; text-transform: uppercase; text-align: left; font-size: 12pt; margin-top: 2em; margin-bottom: 1em; }
         .abnt-content p { margin-bottom: 1.5em; cursor: pointer; text-indent: 1.25cm; line-height: 1.5; text-align: justify; }
         .abnt-content p:hover { background-color: #f0f8ff; }
@@ -238,7 +238,7 @@
         <div id="paragraph-start-modal" class="modal">
             <div class="modal-content">
                 <h3 id="paragraph-modal-title">📝 Escolha como iniciar o próximo parágrafo</h3>
-                <p style="background-color:#e8f4f8; padding:10px; border-radius:4px; margin-bottom:15px;">
+                <p style="background-color:#e8f4f8; padding:10px; border-radius: 4px; margin-bottom:15px;">
                     <strong>💡 Dica:</strong> O sistema gerará um <strong>parágrafo sem citações</strong>. Depois clique no parágrafo para adicionar referências reais.
                 </p>
                 <div id="paragraph-starts-list" style="margin: 20px 0; max-height: 400px; overflow-y: auto;">
@@ -545,9 +545,7 @@
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
-        // ==================================================================
-        // SISTEMA DE REFERÊNCIAS REAIS - INTEGRADO COM ANÁLISE DE TEMA
-        // ==================================================================
+        // --- SISTEMA DE REFERÊNCIAS REAIS ---
         function extractRelevantTerms(text, title = '') {
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
             const combinedText = `${title} ${text}`.toLowerCase();
@@ -556,7 +554,6 @@
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
-        // Busca automática de referência para geração de parágrafos
         async function fetchSingleRealReference(startPhrase) {
             log('Buscando referência real...', 'info');
             try {
@@ -601,30 +598,23 @@
             }
         }
 
-        // Busca manual de referências com análise de tema e assuntos
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
-                // Extrai a primeira frase até o primeiro ponto final
                 const firstSentence = paragraphText.split('.')[0].trim();
-                
-                // Se a primeira frase for muito curta, usa as duas primeiras frases
                 let originalText = firstSentence;
                 if (firstSentence.length < 30) {
                     const sentences = paragraphText.split('.');
                     originalText = sentences.slice(0, 2).join('.').trim();
                 }
                 
-                // Remove citações existentes
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
-                // Extrai tema principal e assuntos
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
                 const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
                 
-                // Exibe tema e assuntos no modal
                 let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
                 elements.searchInfoDiv.innerHTML = `
                     <strong>🔍 Análise do Texto:</strong><br>
@@ -634,7 +624,6 @@
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 
-                // Gera estratégias de busca com base no tema e assuntos
                 const strategiesPrompt = `
                 Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
                 gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
@@ -670,12 +659,10 @@
                 term1
                 term2
                 ...
-                (continue para cada idioma)
                 `;
                 
                 const response = await callPuterAI(strategiesPrompt);
                 
-                // Processa a resposta para extrair termos por idioma
                 const searchTerms = [];
                 const lines = response.split('\n');
                 let currentSection = '';
@@ -692,7 +679,6 @@
                     }
                 }
                 
-                // Organiza termos por prioridade
                 const priorityOrder = {
                     'PORTUGUÊS': 1,
                     'ESPANHOL': 2, 
@@ -708,7 +694,6 @@
                 
                 searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
                 
-                // Fallback se não houver termos estruturados
                 if (searchTerms.length === 0) {
                     const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
                     const fallbackResponse = await callPuterAI(fallbackPrompt);
@@ -727,7 +712,6 @@
                 
                 elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
                 
-                // Testa cada estratégia de busca
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
                     
@@ -854,10 +838,10 @@
                         .join(' | ');
                     
                     elements.searchInfoDiv.innerHTML = `
-                        <strong>🚀 Busca Otimizada Concluída!</strong><br>
+                        <strong>🚖 Busca Otimizada Concluída!</strong><br>
                         ✅ ${allPapers.length} referências encontradas para "${mainTheme}"<br>
                         <small>${languageStats}</small><br>
-                        <em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>
+                        <em>${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>
                     `;
                 } else {
                     log('⚠️ Nenhuma referência encontrada para o tema.', 'warning');
@@ -868,7 +852,7 @@
                 
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
-                log('⚠️ Erro na busca de referências.', 'error');
+                log('Erro na busca de referências.', 'error');
                 return [];
             }
         }
@@ -914,15 +898,15 @@
                     let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
                     
                     return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                                <input type="checkbox" id="ref-${index}" value="${index}">
-                                <label for="ref-${index}">
-                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${languageFlag}
-                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                    <br><em>${displayTitle}</em> ${translationStatus}
-                                    ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
-                                    <br><small style="color:#666;">${displayAbstract ? displayAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                                </label>
-                            </li>`;
+                        <input type="checkbox" id="ref-${index}" value="${index}">
+                        <label for="ref-${index}">
+                            <strong>${ref.authors[0]}${ref.authors.length > 1 ? ' et al.' : ''} (${ref.year})</strong> ${languageFlag}
+                            ${isUsed ? '<span style="color:#6c757d;"> [JÁ USADA]</span>' : ''}
+                            <br><em>${displayTitle}</em> ${translationStatus}
+                            ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
+                            <br><small>${displayAbstract ? displayAbstract.substring(0, 120) + '...' : 'Sem resumo'}</small>
+                        </label>
+                    </li>`;
                 }).join('');
                 elements.addReferencesBtn.disabled = false;
             }
@@ -930,20 +914,33 @@
 
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
-            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            if (selectedIndexes.length === 0) {
+                log('Selecione ao menos uma referência.', 'error');
+                return;
+            }
+            
             const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
             const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join(', ')}, ${ref.year}`;
             });
-            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+            
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ú\s;,\d\-\.]+\)\.?$/g, '').trim();
             paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
+            
             const [sectionKey, indexStr] = currentParagraphId.split('-');
             articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
-            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
-            displayABNTDocument();
+            
+            selectedRefs.forEach(ref => {
+                if (!finalReferences.some(eRef => eRef.id === ref.id)) {
+                    finalReferences.push(ref);
+                }
+            });
+            
+            displayABNT();
             elements.referenceModal.style.display = 'none';
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
@@ -968,7 +965,7 @@
                     titleFormatted = `<strong>${ref.originalTitle}</strong>${ref.translatedTitle ? ` [${ref.translatedTitle}]` : ''}`;
                 }
                 
-                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
+                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para acessar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
         }
         
@@ -979,7 +976,7 @@
                 const allContent = Object.values(articleContent).flat().join(' ');
                 if (allContent.length < 100) return;
                 
-                const resumoPrompt = `Baseado no artigo "${userInputs.titulo}" com o conteúdo: "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português. APENAS o texto do resumo.`;
+                const resumoPrompt = `Baseado no artigo sobre "${userInputs.titulo}" com o conteúdo: "${allContent}", escreva um resumo acadêmico de 150-200 palavras em português. APENAS o texto do resumo.`;
                 userInputs.resumo = await callPuterAI(resumoPrompt);
                 
                 const palavrasPrompt = `Com base no resumo "${userInputs.resumo}", extraia 5 palavras-chave em português. Responda apenas com as palavras separadas por ponto final, sem ponto no fim.`;
@@ -1005,10 +1002,15 @@
                 content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
             
-            const sections = [{ name: 'INTRODUÇÃO', key: 'introducao' }, { name: 'DESENVOLVIMENTO', key: 'desenvolvimento' }, { name: 'CONCLUSÃO', key: 'conclusao' }];
+            const sections = [
+                { name: 'INTRODUÇÃO', key: 'introducao', number: '1' },
+                { name: 'DESENVOLVIMENTO', key: 'desenvolvimento', number: '2' },
+                { name: 'CONCLUSÃO', key: 'conclusao', number: '3' }
+            ];
+            
             sections.forEach(section => {
                 if (articleContent[section.key].length > 0) {
-                    content += `<div class="section-title">${section.name}</div>`;
+                    content += `<div class="section-title">${section.number} ${section.name}</div>`;
                     articleContent[section.key].forEach((text, index) => {
                         content += `<p data-id="${section.key}-${index}" title="💡 Clique para adicionar referências">${text}</p>`;
                     });
@@ -1016,7 +1018,7 @@
             });
 
             if (finalReferences.length > 0) {
-                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
+                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.0;">${formatarReferenciasABNT()}</div>`;
             }
             
             if (userInputs.email && userInputs.universidade && userInputs.curso) {
@@ -1024,6 +1026,7 @@
             } else if (userInputs.email && userInputs.universidade) {
                 content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             }
+            
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
             
@@ -1034,13 +1037,12 @@
         async function proceedWithArticleGeneration() {
             document.getElementById('initial-form').style.display = 'none';
             document.getElementById('interactive-controls').style.display = 'block';
-            elements.currentSectionNameSpan.textContent = 'Introdução';
+            elements.currentSectionName.textContent = 'Introdução';
             sessionActive = false;
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
         }
 
         elements.startBtn.addEventListener('click', async () => {
-            // Formata os campos antes de capturar os valores
             const formattedFields = formatABNTFields();
 
             userInputs = {
@@ -1136,7 +1138,8 @@
                     const currentIndex = sectionOrder.indexOf(currentSection);
                     if (currentIndex < sectionOrder.length - 1) {
                         currentSection = sectionOrder[currentIndex + 1];
-                        elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1).replace('conclusao', 'Conclusão');
+                        elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + 
+                            currentSection.slice(1).replace('conclusao', 'Conclusão');
                         log(`📝 Pronto para iniciar: ${elements.currentSectionNameSpan.textContent}`, 'info');
                     } else {
                         await generateResumoAndAbstract();
@@ -1151,7 +1154,7 @@
                 
             } catch (error) {
                 log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error');
-                if(sessionActive){
+                if (sessionActive) {
                     elements.inicioBtn.disabled = true;
                     elements.meioBtn.disabled = false;
                     elements.fimBtn.disabled = false;
