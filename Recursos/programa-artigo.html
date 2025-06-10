@@ -14,10 +14,7 @@
         .control-panel h2 { margin-top: 0; text-align: center; color: #333; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        /* --- CSS ALTERADO para incluir o <select> --- */
-        .form-group input, .form-group select, .form-group button { 
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; 
-        }
+        .form-group input, .form-group select, .form-group button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
         .control-panel button { background-color: #1a73e8; color: white; font-weight: bold; cursor: pointer; border: none; }
         .control-panel button:hover:not(:disabled) { filter: brightness(90%); }
         .control-panel button:disabled { background-color: #999; cursor: not-allowed; }
@@ -65,7 +62,6 @@
                 <div class="form-group"><label for="titulo">Título do Trabalho:</label><input id="titulo" type="text" placeholder="Escreva uma ideia ou tema"></div>
                 <div class="form-group"><label for="autor">Autor(es):</label><input id="autor" type="text" placeholder="Nome Sobrenome"></div>
                 
-                <!-- =============== CAMPO ADICIONADO =============== -->
                 <div class="form-group">
                     <label for="qualificacao">Qualificação:</label>
                     <select id="qualificacao">
@@ -77,7 +73,6 @@
                         <option value="pesquisador">Pesquisador(a)</option>
                     </select>
                 </div>
-                <!-- ============================================== -->
 
                 <div class="form-group"><label for="email">Email do Autor:</label><input id="email" type="email" value="seu.email@exemplo.com"></div>
                 <button id="startBtn">🚀 Iniciar e Otimizar Tema</button>
@@ -113,6 +108,15 @@
             startBtn: document.getElementById('startBtn'), startSectionBtn: document.getElementById('startSectionBtn'), developSectionBtn: document.getElementById('developSectionBtn'), endSectionBtn: document.getElementById('endSectionBtn'), finishBtn: document.getElementById('finishBtn'), savePdfBtn: document.getElementById('savePdfBtn'), outputDiv: document.getElementById('content-output'), statusDiv: document.getElementById('status'), currentSectionNameSpan: document.getElementById('current-section-name'), initialForm: document.getElementById('initial-form'), interactiveControls: document.getElementById('interactive-controls'), topicSuggestionModal: document.getElementById('topic-suggestion-modal'), topicListDiv: document.getElementById('topic-list'), confirmTopicBtn: document.getElementById('confirm-topic-btn'),
         };
         let userInputs = {}; let articleContent = { introducao: [], desenvolvimento: [], conclusao: [] }; let currentSection = 'introducao'; const sectionOrder = ['introducao', 'desenvolvimento', 'conclusao']; const sectionDisplayNames = { 'introducao': 'Introdução', 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' };
+        
+        // --- FUNÇÃO ADICIONADA: Para formatar textos como "Nome Próprio" ---
+        function toProperCase(str) {
+            if (!str) return '';
+            return str.trim().toLowerCase().split(' ').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
         async function callPuterAI(prompt) { try { log('🤖 Gerando conteúdo com a IA...', 'info'); const response = await puter.ai.chat([{ role: 'user', content: prompt }]); if (!response || !response.message || !response.message.content) throw new Error('Resposta inválida da IA.'); return response.message.content.trim(); } catch (error) { log(`❌ Erro na IA: ${error.message || 'Erro desconhecido.'}`, 'error'); throw error; } }
         function log(message, type = 'info') { const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }; elements.statusDiv.className = type; elements.statusDiv.innerHTML = `<div>${icons[type] || 'ℹ️'} ${message}</div>`; }
         function updateInteractiveUIState(state) { const { startSectionBtn, developSectionBtn, endSectionBtn } = elements; startSectionBtn.disabled = true; developSectionBtn.disabled = true; endSectionBtn.disabled = true; switch (state) { case 'ready_to_start_section': startSectionBtn.disabled = false; log(`Pronto para iniciar a seção: ${sectionDisplayNames[currentSection]}`, 'info'); break; case 'developing_section': developSectionBtn.disabled = false; endSectionBtn.disabled = false; log(`Desenvolvendo a seção. Adicione parágrafos ou conclua.`, 'info'); break; case 'article_finished': elements.interactiveControls.style.display = 'none'; elements.finishBtn.style.display = 'block'; log('🎓 Artigo concluído! Gere o resumo e salve em PDF.', 'success'); break; case 'loading': log('Processando...', 'info'); break; } }
@@ -120,15 +124,32 @@
         function populateAndShowTopicModal(topicData, originalTitle) { let html = `<p style="background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Sua Ideia Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div><label><input type="radio" name="topic-choice" value="${topicData.corrected_title}" checked> <strong>${topicData.corrected_title} (Tema Corrigido)</strong></label></div>`; topicData.suggestions.forEach((suggestion) => { html += `<div><label><input type="radio" name="topic-choice" value="${suggestion}"> ${suggestion}</label></div>`; }); html += `</div>`; elements.topicListDiv.innerHTML = html; elements.topicSuggestionModal.style.display = 'flex'; }
         function proceedToWritingInterface() { elements.initialForm.style.display = 'none'; elements.interactiveControls.style.display = 'block'; elements.currentSectionNameSpan.textContent = sectionDisplayNames[currentSection]; displayABNTDocument(); updateInteractiveUIState('ready_to_start_section'); }
         
+        // --- BLOCO ALTERADO: Captura e correção automática das entradas ---
         elements.startBtn.addEventListener('click', async () => { 
-            // *** ALTERAÇÃO 1: Capturar o novo campo de qualificação ***
+            // 1. Captura os valores brutos dos campos
+            const universidadeInput = document.getElementById('universidade');
+            const autorInput = document.getElementById('autor');
+            const emailInput = document.getElementById('email');
+
+            // 2. Aplica as correções e armazena nas variáveis
+            const correctedUniversidade = toProperCase(universidadeInput.value);
+            const correctedAutor = toProperCase(autorInput.value);
+            const correctedEmail = emailInput.value.trim().toLowerCase();
+
+            // 3. Atualiza os campos do formulário para o usuário ver a correção
+            universidadeInput.value = correctedUniversidade;
+            autorInput.value = correctedAutor;
+            emailInput.value = correctedEmail;
+
+            // 4. Salva os dados corrigidos no objeto principal
             userInputs = { 
-                universidade: document.getElementById('universidade').value, 
-                titulo: document.getElementById('titulo').value, 
-                autor: document.getElementById('autor').value, 
-                qualificacao: document.getElementById('qualificacao').value, // NOVO
-                email: document.getElementById('email').value, 
+                universidade: correctedUniversidade,
+                titulo: document.getElementById('titulo').value.trim(), 
+                autor: correctedAutor,
+                qualificacao: document.getElementById('qualificacao').value, 
+                email: correctedEmail, 
             }; 
+            
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; } 
             elements.startBtn.disabled = true; 
             try { const topicData = await refineAndSuggestTopics(userInputs.titulo); if (topicData && topicData.suggestions.length > 0) { populateAndShowTopicModal(topicData, userInputs.titulo); } else { proceedToWritingInterface(); } } catch (error) { proceedToWritingInterface(); } 
@@ -156,11 +177,9 @@
                 }
             });
 
-            // *** ALTERAÇÃO 2: Usar a qualificação selecionada na nota de rodapé ***
             if (userInputs.email && userInputs.qualificacao) {
                 const selectElement = document.getElementById('qualificacao');
-                const qualificacaoTexto = selectElement.options[selectElement.selectedIndex].text; // Pega o texto visível da opção (ex: "Mestrando(a)")
-                
+                const qualificacaoTexto = selectElement.options[selectElement.selectedIndex].text;
                 html += `<div class="email-autor"><sup>1</sup>${qualificacaoTexto}. Instituição: ${userInputs.universidade || ''}. E-mail: ${userInputs.email}</div>`;
             }
 
