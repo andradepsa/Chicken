@@ -74,7 +74,7 @@
         .page-container { width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); box-sizing: border-box; }
         
         .abnt-content { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; text-align: justify; }
-        .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; }
+        .nome-universidade { text-align: center; font-size: 12pt; font-weight: bold; margin-bottom: 2em; text-transform: uppercase; }
         .titulo-trabalho { font-size: 14pt; text-align: center; font-weight: bold; text-transform: none; margin-bottom: 2em; }
         .autor { text-align: center; font-size: 12pt; margin-bottom: 1em; }
         .autor sup { font-size: 10pt; }
@@ -115,7 +115,7 @@
                 
                 <div class="form-group">
                     <label>Universidade:</label>
-                    <input id="universidade" type="text" value="Universidade Federal">
+                    <input id="universidade" type="text" placeholder="Ex: Universidade Federal do Brasil">
                 </div>
                 <div class="form-group">
                     <label>Título do Trabalho:</label>
@@ -123,11 +123,11 @@
                 </div>
                 <div class="form-group">
                     <label>Autor(es):</label>
-                    <input id="autor" type="text" placeholder="Nome Sobrenome">
+                    <input id="autor" type="text" placeholder="Ex: João da Silva">
                 </div>
                 <div class="form-group">
                     <label>Email do Autor:</label>
-                    <input id="email" type="email" value="seu.email@exemplo.com">
+                    <input id="email" type="email" placeholder="seu.email@exemplo.com">
                 </div>
                 <div class="form-group">
                     <label>Nível de Formação:</label>
@@ -288,6 +288,45 @@
         let currentGenerationPhase = ''; 
         let currentParagraphId = null;
         let currentModalReferences = [];
+        
+        // --- INÍCIO: FUNÇÕES DE FORMATAÇÃO ABNT ADICIONADAS ---
+
+        /**
+         * Formata o nome da instituição para MAIÚSCULAS.
+         * @param {string} instituicao O nome da instituição.
+         * @returns {string} O nome formatado.
+         */
+        function formatarInstituicao(instituicao) {
+            return instituicao.trim().toUpperCase();
+        }
+
+        /**
+         * Formata o nome do autor para "Title Case", com conectivos em minúsculas.
+         * @param {string} nome O nome completo do autor.
+         * @returns {string} O nome formatado.
+         */
+        function formatarNomeAutor(nome) {
+            if (!nome) return '';
+            const conectivos = new Set(['de', 'da', 'do', 'dos', 'e']);
+            return nome.trim().toLowerCase().split(' ').map((palavra, index) => {
+                if (index === 0 || !conectivos.has(palavra)) {
+                    return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+                }
+                return palavra;
+            }).join(' ');
+        }
+
+        /**
+         * Formata o email para minúsculas.
+         * @param {string} email O endereço de email.
+         * @returns {string} O email formatado.
+         */
+        function formatarEmail(email) {
+            return email.trim().toLowerCase();
+        }
+        
+        // --- FIM: FUNÇÕES DE FORMATAÇÃO ABNT ADICIONADAS ---
+
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -501,7 +540,6 @@
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
-        // Busca automática de referência para geração de parágrafos
         async function fetchSingleRealReference(startPhrase) {
             log('Buscando referência real...', 'info');
             try {
@@ -546,30 +584,22 @@
             }
         }
 
-        // Busca manual de referências com análise de tema e assuntos
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
-                // Extrai a primeira frase até o primeiro ponto final
                 const firstSentence = paragraphText.split('.')[0].trim();
-                
-                // Se a primeira frase for muito curta, usa as duas primeiras frases
                 let originalText = firstSentence;
                 if (firstSentence.length < 30) {
                     const sentences = paragraphText.split('.');
                     originalText = sentences.slice(0, 2).join('.').trim();
                 }
-                
-                // Remove citações existentes
                 originalText = originalText.replace(/\([^)]*\)/g, '').trim();
                 
-                // Extrai tema principal e assuntos
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 
                 const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
                 
-                // Exibe tema e assuntos no modal
                 let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
                 elements.searchInfoDiv.innerHTML = `
                     <strong>🔍 Análise do Texto:</strong><br>
@@ -579,7 +609,6 @@
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 
-                // Gera estratégias de busca com base no tema e assuntos
                 const strategiesPrompt = `
                 Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
                 gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
@@ -620,7 +649,6 @@
                 
                 const response = await callPuterAI(strategiesPrompt);
                 
-                // Processa a resposta para extrair termos por idioma
                 const searchTerms = [];
                 const lines = response.split('\n');
                 let currentSection = '';
@@ -637,33 +665,20 @@
                     }
                 }
                 
-                // Organiza termos por prioridade
                 const priorityOrder = {
-                    'PORTUGUÊS': 1,
-                    'ESPANHOL': 2, 
-                    'INGLÊS': 3,
-                    'FRANCÊS': 4,
-                    'ITALIANO': 5,
-                    'ALEMÃO': 6,
-                    'RUSSO': 7,
-                    'CHINÊS SIMPLIFICADO': 8,
-                    'JAPONÊS': 9,
-                    'ÁRABE': 10
+                    'PORTUGUÊS': 1, 'ESPANHOL': 2, 'INGLÊS': 3, 'FRANCÊS': 4, 'ITALIANO': 5,
+                    'ALEMÃO': 6, 'RUSSO': 7, 'CHINÊS SIMPLIFICADO': 8, 'JAPONÊS': 9, 'ÁRABE': 10
                 };
                 
                 searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
                 
-                // Fallback se não houver termos estruturados
                 if (searchTerms.length === 0) {
                     const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
                     const fallbackResponse = await callPuterAI(fallbackPrompt);
                     const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
                     const languages = ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO', 'ALEMÃO'];
                     terms.forEach((term, index) => {
-                        searchTerms.push({
-                            term: term.trim(),
-                            language: languages[index % languages.length]
-                        });
+                        searchTerms.push({ term: term.trim(), language: languages[index % languages.length] });
                     });
                 }
                 
@@ -672,27 +687,16 @@
                 
                 elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
                 
-                // Testa cada estratégia de busca
                 for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
                     const { term, language } = searchTerms[i];
-                    
                     if (allPapers.length >= 10) break;
-                    
                     const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
                     const priorityText = isLatinLanguage ? '🏃‍♂️ RÁPIDA' : '🌍 GLOBAL';
                     
                     try {
                         const languageFlag = {
-                            'PORTUGUÊS': '🇧🇷',
-                            'ESPANHOL': '🇪🇸',
-                            'INGLÊS': '🇺🇸',
-                            'FRANCÊS': '🇫🇷',
-                            'ITALIANO': '🇮🇹',
-                            'ALEMÃO': '🇩🇪',
-                            'RUSSO': '🇷🇺',
-                            'CHINÊS SIMPLIFICADO': '🇨🇳',
-                            'JAPONÊS': '🇯🇵',
-                            'ÁRABE': '🇸🇦'
+                            'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹',
+                            'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'
                         }[language] || '🌍';
                         
                         elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} ${priorityText} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
@@ -702,77 +706,42 @@
                         
                         if (response.ok) {
                             const data = await response.json();
-                            const papers = (data.data || []).filter(p => 
-                                p.title && 
-                                p.authors && 
-                                p.authors.length > 0 && 
-                                p.year &&
-                                p.year >= 2000 &&
-                                !foundPapers.has(p.paperId)
-                            );
+                            const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year && p.year >= 2000 && !foundPapers.has(p.paperId));
                             
                             for (const paper of papers) {
                                 if (allPapers.length >= 10) break;
-                                
                                 foundPapers.add(paper.paperId);
-                                
                                 let processedPaper = {
-                                    id: paper.paperId,
-                                    title: paper.title,
-                                    authors: paper.authors.map(a => a.name),
-                                    year: paper.year,
-                                    abstract: paper.abstract || '',
-                                    url: paper.url,
-                                    searchTerm: term,
-                                    language: language,
-                                    originalTitle: paper.title
+                                    id: paper.paperId, title: paper.title, authors: paper.authors.map(a => a.name),
+                                    year: paper.year, abstract: paper.abstract || '', url: paper.url, searchTerm: term,
+                                    language: language, originalTitle: paper.title
                                 };
                                 
                                 if (language !== 'PORTUGUÊS') {
                                     try {
                                         const translationTimeout = isLatinLanguage ? 3000 : 4000;
-                                        
-                                        const titleTranslationPrompt = `Traduza APENAS o seguinte título acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações ou aspas:
-
-"${paper.title}"`;
-                                        
-                                        const translatedTitle = await Promise.race([
-                                            callPuterAI(titleTranslationPrompt),
-                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
-                                        ]);
-                                        
+                                        const titleTranslationPrompt = `Traduza APENAS o seguinte título acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações ou aspas: "${paper.title}"`;
+                                        const translatedTitle = await Promise.race([callPuterAI(titleTranslationPrompt), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
                                         processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
                                         
                                         if (allPapers.length < 5 && paper.abstract && paper.abstract.length > 20) {
-                                            const abstractTranslationPrompt = `Traduza APENAS o seguinte resumo acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações:
-
-"${paper.abstract}"`;
-                                            
-                                            const translatedAbstract = await Promise.race([
-                                                callPuterAI(abstractTranslationPrompt),
-                                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
-                                            ]);
-                                            
+                                            const abstractTranslationPrompt = `Traduza APENAS o seguinte resumo acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações: "${paper.abstract}"`;
+                                            const translatedAbstract = await Promise.race([callPuterAI(abstractTranslationPrompt), new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))]);
                                             processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
                                         }
-                                        
                                     } catch (translationError) {
                                         console.warn('Erro na tradução, mantendo original:', translationError);
                                     }
                                 }
-                                
                                 allPapers.push(processedPaper);
                             }
                         }
-                        
                         const pauseTime = isLatinLanguage ? 400 : 600;
                         await new Promise(resolve => setTimeout(resolve, pauseTime));
-                        
                     } catch (error) {
                         console.warn(`Erro na busca ${i+1} (${language}):`, error);
                         continue;
                     }
-                    
                     if (allPapers.length >= 10 && ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO'].includes(language)) {
                         elements.searchInfoDiv.innerHTML = `<strong>⚡ Busca Rápida Concluída!</strong><br>✅ ${allPapers.length} referências encontradas rapidamente`;
                         break;
@@ -781,23 +750,13 @@
                 
                 if (allPapers.length > 0) {
                     log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
-                    
                     const languageCounts = {};
                     const translationCounts = { portuguese: 0, translated: 0 };
-                    
                     allPapers.forEach(paper => {
                         languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
-                        if (paper.language === 'PORTUGUÊS') {
-                            translationCounts.portuguese++;
-                        } else {
-                            translationCounts.translated++;
-                        }
+                        if (paper.language === 'PORTUGUÊS') { translationCounts.portuguese++; } else { translationCounts.translated++; }
                     });
-                    
-                    const languageStats = Object.entries(languageCounts)
-                        .map(([lang, count]) => `${lang}: ${count}`)
-                        .join(' | ');
-                    
+                    const languageStats = Object.entries(languageCounts).map(([lang, count]) => `${lang}: ${count}`).join(' | ');
                     elements.searchInfoDiv.innerHTML = `
                         <strong>🚀 Busca Otimizada Concluída!</strong><br>
                         ✅ ${allPapers.length} referências encontradas para "${mainTheme}"<br>
@@ -808,9 +767,7 @@
                     log('⚠️ Nenhuma referência encontrada para o tema.', 'warning');
                     elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos baseados em "${mainTheme}".`;
                 }
-                
                 return allPapers;
-                
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
                 log('⚠️ Erro na busca de referências.', 'error');
@@ -833,31 +790,13 @@
                 elements.referenceList.innerHTML = references.map((ref, index) => {
                     const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
                     const languageFlag = {
-                        'CHINÊS SIMPLIFICADO': '🇨🇳',
-                        'INGLÊS': '🇺🇸',
-                        'PORTUGUÊS': '🇧🇷',
-                        'ESPANHOL': '🇪🇸',
-                        'HINDI': '🇮🇳',
-                        'ÁRABE': '🇸🇦',
-                        'BENGALI': '🇧🇩',
-                        'RUSSO': '🇷🇺',
-                        'JAPONÊS': '🇯🇵',
-                        'FRANCÊS': '🇫🇷',
-                        'ALEMÃO': '🇩🇪',
-                        'COREANO': '🇰🇷',
-                        'ITALIANO': '🇮🇹',
-                        'TURCO': '🇹🇷',
-                        'VIETNAMITA': '🇻🇳',
-                        'PERSA': '🇮🇷'
+                        'CHINÊS SIMPLIFICADO': '🇨🇳', 'INGLÊS': '🇺🇸', 'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'HINDI': '🇮🇳',
+                        'ÁRABE': '🇸🇦', 'BENGALI': '🇧🇩', 'RUSSO': '🇷🇺', 'JAPONÊS': '🇯🇵', 'FRANCÊS': '🇫🇷', 'ALEMÃO': '🇩🇪',
+                        'COREANO': '🇰🇷', 'ITALIANO': '🇮🇹', 'TURCO': '🇹🇷', 'VIETNAMITA': '🇻🇳', 'PERSA': '🇮🇷'
                     }[ref.language] || '🌍';
-                    
-                    const translationStatus = ref.language === 'PORTUGUÊS' ? 
-                        '<span style="color:#28a745;">🇧🇷 Original</span>' : 
-                        '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
-                    
+                    const translationStatus = ref.language === 'PORTUGUÊS' ? '<span style="color:#28a745;">🇧🇷 Original</span>' : '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
                     let displayTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
                     let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
-                    
                     return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
                                 <input type="checkbox" id="ref-${index}" value="${index}">
                                 <label for="ref-${index}">
@@ -983,14 +922,37 @@
         }
 
         elements.startBtn.addEventListener('click', async () => {
+            // --- INÍCIO: MODIFICAÇÃO PARA FORMATAR ENTRADAS ---
+            const universidadeInput = document.getElementById('universidade');
+            const autorInput = document.getElementById('autor');
+            const emailInput = document.getElementById('email');
+            const tituloInput = document.getElementById('titulo');
+
+            if (!tituloInput.value || !autorInput.value) { 
+                log('❌ Preencha pelo menos o Título e o Autor.', 'error'); 
+                return; 
+            }
+            
+            // Formata os valores
+            const universidadeFormatada = formatarInstituicao(universidadeInput.value);
+            const autorFormatado = formatarNomeAutor(autorInput.value);
+            const emailFormatado = formatarEmail(emailInput.value);
+
+            // Atualiza os campos do formulário com os valores formatados para feedback visual
+            universidadeInput.value = universidadeFormatada;
+            autorInput.value = autorFormatado;
+            emailInput.value = emailFormatado;
+
+            // Armazena os valores formatados no objeto de estado
             userInputs = {
-                universidade: document.getElementById('universidade').value,
-                titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value,
-                email: document.getElementById('email').value,
+                universidade: universidadeFormatada,
+                titulo: tituloInput.value, // Título não precisa de formatação de caixa
+                autor: autorFormatado,
+                email: emailFormatado,
                 nivelFormacao: document.getElementById('nivel-formacao').value
             };
-            if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
+            // --- FIM: MODIFICAÇÃO PARA FORMATAR ENTRADAS ---
+            
             elements.startBtn.disabled = true;
             
             try {
