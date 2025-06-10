@@ -228,7 +228,7 @@
 
         <div id="paragraph-start-modal" class="modal">
             <div class="modal-content">
-                <h3>📝 Escolha como iniciar o próximo parágrafo</h3>
+                <h3 id="paragraph-modal-title">📝 Escolha como iniciar o próximo parágrafo</h3>
                 <p style="background-color:#e8f4f8; padding:10px; border-radius:4px; margin-bottom:15px;">
                     <strong>💡 Dica:</strong> Selecione a introdução que melhor se encaixa no desenvolvimento da sua ideia.
                 </p>
@@ -264,6 +264,7 @@
             topicListDiv: document.getElementById('topic-list'),
             confirmTopicBtn: document.getElementById('confirm-topic-btn'),
             paragraphStartModal: document.getElementById('paragraph-start-modal'),
+            paragraphModalTitle: document.getElementById('paragraph-modal-title'),
             paragraphStartsList: document.getElementById('paragraph-starts-list'),
             generateParagraphBtn: document.getElementById('generate-paragraph-btn'),
             closeParagraphModalBtn: document.getElementById('close-paragraph-modal-btn'),
@@ -281,6 +282,7 @@
         let lastParagraphIndex = -1;
         let sessionActive = false;
         let selectedParagraphStart = '';
+        let currentGenerationPhase = ''; // ALTERAÇÃO: Controla a fase (inicio, meio, fim) para o modal
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -334,7 +336,6 @@
             return phrases;
         }
 
-        // CORREÇÃO: Função movida para o escopo global para ser acessível por outras funções.
         function extractUsedConcepts(text) {
             const genericConcepts = [
                 'linguagem universal', 'formação de habilidades', 'capacita indivíduos', 
@@ -422,34 +423,55 @@ ESCREVA um parágrafo ÚNICO e TOTALMENTE ORIGINAL sobre "${userInputs.titulo}":
         }
 
         // --- FUNÇÕES PARA GERAÇÃO DE OPÇÕES DE PARÁGRAFO ---
-        async function generateParagraphStartOptions() {
+        // ALTERAÇÃO: A função agora aceita um parâmetro 'phase' para gerar opções específicas.
+        async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedConcepts = extractUsedConcepts(allContent);
+
+            let sectionDescription = '';
+            let exampleVariety = '';
+            switch(phase) {
+                case 'inicio':
+                    sectionDescription = 'para a seção de INTRODUÇÃO. Devem ser aberturas que contextualizam o tema.';
+                    exampleVariety = `
+                    1. A discussão contemporânea sobre...
+                    2. Historicamente, o conceito de...
+                    3. No cenário atual, a relevância de...`;
+                    break;
+                case 'meio':
+                    sectionDescription = 'para a seção de DESENVOLVIMENTO. Cada início deve abordar um ângulo diferente.';
+                     exampleVariety = `
+                    1. Sob uma perspectiva econômica...
+                    2. As implicações tecnológicas revelam...
+                    3. Do ponto de vista cultural...`;
+                    break;
+                case 'fim':
+                    sectionDescription = 'para a seção de CONCLUSÃO. Devem usar conectivos de fechamento e sintetizar ideias.';
+                    exampleVariety = `
+                    1. Em suma, as evidências apontam...
+                    2. Conclui-se, portanto, que...
+                    3. Diante do exposto, torna-se evidente...`;
+                    break;
+            }
             
             const prompt = `
 Com base no artigo sobre "${userInputs.titulo}" e no conteúdo já escrito: "${allContent}"
 
 INSTRUÇÕES:
-1. Gere 10 inícios de parágrafo ÚNICOS E ORIGINAIS para a seção de desenvolvimento.
+1. Gere 10 inícios de parágrafo ÚNICOS E ORIGINAIS ${sectionDescription}.
 2. Cada início deve ter entre 10-20 palavras.
 3. EVITE repetir os conceitos já usados: ${usedConcepts.slice(0, 10).join(', ')}.
-4. Cada início deve abordar um ângulo DIFERENTE do tema.
-5. Use estruturas variadas (não comece todos iguais).
+4. Use estruturas variadas e apropriadas para a fase do texto (início, meio ou fim).
 
 FORMATO: Retorne apenas as 10 opções numeradas, uma por linha.
 1. [primeiro início]
-2. [segundo início]
 ...
 10. [décimo início]
 
 EXEMPLO DE VARIEDADE (adapte ao seu tema):
-1. Sob uma perspectiva histórica...
-2. As implicações econômicas revelam...
-3. Pesquisas recentes demonstram...
-4. Na esfera tecnológica, observa-se...
-5. Do ponto de vista cultural...
+${exampleVariety}
 
-AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
+AGORA GERE 10 INÍCIOS PARA A FASE DE '${phase.toUpperCase()}' do artigo "${userInputs.titulo}":`;
 
             try {
                 const response = await callPuterAI(prompt);
@@ -474,13 +496,22 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
             ];
         }
 
-        async function showParagraphStartModal() {
-            log('Gerando opções de início...', 'info');
+        // ALTERAÇÃO: A função agora aceita a fase e atualiza o título do modal.
+        async function showParagraphStartModal(phase) {
+            currentGenerationPhase = phase;
+            const phaseTitles = {
+                inicio: '🌟 Como Começar a Introdução?',
+                meio: '📝 Como Continuar o Desenvolvimento?',
+                fim: '🎯 Como Finalizar a Seção?'
+            };
+
+            log(`Gerando opções para ${phase}...`, 'info');
+            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
             elements.paragraphStartModal.style.display = 'flex';
             elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
             
             try {
-                const startOptions = await generateParagraphStartOptions();
+                const startOptions = await generateParagraphStartOptions(phase);
                 let html = '';
                 startOptions.forEach((option, index) => {
                     html += `
@@ -506,6 +537,20 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
                 elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
             }
         }
+        
+        // ALTERAÇÃO: Nova função para controlar o fluxo de chamada do modal
+        function triggerParagraphOptions(phase) {
+            if (phase === 'inicio' && sessionActive) {
+                alert('Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.');
+                return;
+            }
+            if ((phase === 'meio' || phase === 'fim') && !sessionActive) {
+                alert('Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.');
+                return;
+            }
+            showParagraphStartModal(phase);
+        }
+
 
         // --- CONTADOR DE PÁGINAS ---
         function updatePageCount() {
@@ -825,64 +870,11 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
             log(`✅ Tema selecionado: "${selectedTopic}"`, 'success');
             proceedWithArticleGeneration();
         });
-
-        async function handleParagraphGeneration(phase) {
-            const buttonMap = { inicio: elements.inicioBtn, meio: elements.meioBtn, fim: elements.fimBtn };
-            const btn = buttonMap[phase];
-            btn.disabled = true;
-            
-            try {
-                const prompt = createAntiRepetitionPrompt(phase);
-                const content = await callPuterAI(prompt);
-                
-                addPhrasesToMemory(content);
-                
-                if (phase === 'inicio') {
-                    sessionActive = true;
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                }
-                
-                articleContent[currentSection].push(content);
-                lastParagraphIndex = articleContent[currentSection].length - 1;
-                displayABNTDocument();
-                
-                elements.rewriteBtn.style.display = 'block';
-                
-                const phaseLabels = { inicio: 'abertura', meio: 'desenvolvimento', fim: 'finalização' };
-                log(`✅ Parágrafo de ${phaseLabels[phase]} adicionado!`, 'success');
-                
-                if (phase === 'fim') {
-                    sessionActive = false;
-                    elements.inicioBtn.disabled = false;
-                    elements.meioBtn.disabled = true;
-                    elements.fimBtn.disabled = true;
-                    
-                    const currentIndex = sectionOrder.indexOf(currentSection);
-                    if (currentIndex < sectionOrder.length - 1) {
-                        currentSection = sectionOrder[currentIndex + 1];
-                        const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
-                        elements.currentSectionNameSpan.textContent = sectionDisplayName;
-                        log(`📝 Pronto para iniciar: ${sectionDisplayName}`, 'info');
-                    } else {
-                        await generateResumoAndAbstract();
-                        userInputs.isFinalized = true;
-                        displayABNTDocument();
-                        alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
-                        log(`🎓 Artigo concluído!`, 'success');
-                    }
-                }
-                
-            } catch (error) {
-                log(`❌ Erro ao gerar parágrafo de ${phase}`, 'error');
-            } finally {
-                btn.disabled = false;
-            }
-        }
-
+        
         async function rewriteLastParagraph() {
-            if (lastParagraphIndex === -1 || !sessionActive) {
-                alert('Nenhum parágrafo para reescrever ou sessão inativa.');
+            // ALTERAÇÃO: Removido o cheque `!sessionActive`. Agora o botão funciona mesmo após clicar em FIM.
+            if (lastParagraphIndex === -1) {
+                alert('Nenhum parágrafo para reescrever.');
                 return;
             }
             
@@ -893,7 +885,10 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
                 const lastPhrases = extractKeyPhrases(lastContent);
                 lastPhrases.forEach(phrase => usedPhrases.delete(phrase));
                 
-                const currentPhase = 'meio'; 
+                // Determina a fase com base na seção atual, para o prompt de reescrita
+                const currentPhase = sectionOrder.indexOf(currentSection) === 0 ? 'inicio' :
+                                     sectionOrder.indexOf(currentSection) === 1 ? 'meio' : 'fim';
+
                 const prompt = createAntiRepetitionPrompt(currentPhase);
                 const newContent = await callPuterAI(prompt);
                 
@@ -909,9 +904,10 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
             }
         }
 
-        elements.inicioBtn.addEventListener('click', () => { if (!sessionActive) handleParagraphGeneration('inicio'); });
-        elements.meioBtn.addEventListener('click', () => { if (sessionActive) showParagraphStartModal(); else alert('Inicie uma sessão clicando em INÍCIO primeiro.'); });
-        elements.fimBtn.addEventListener('click', () => { if (sessionActive) handleParagraphGeneration('fim'); });
+        // ALTERAÇÃO: Event listeners agora chamam a função unificada `triggerParagraphOptions`
+        elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
+        elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
+        elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
 
         function createCustomStartPrompt(startPhrase) {
@@ -944,7 +940,8 @@ ESCREVA o parágrafo completo:`;
             if (!selectedParagraphStart) return;
             
             elements.paragraphStartModal.style.display = 'none';
-            elements.meioBtn.disabled = true;
+            const allButtons = [elements.inicioBtn, elements.meioBtn, elements.fimBtn];
+            allButtons.forEach(btn => btn.disabled = true);
             
             try {
                 const prompt = createCustomStartPrompt(selectedParagraphStart);
@@ -956,11 +953,52 @@ ESCREVA o parágrafo completo:`;
                 displayABNTDocument();
                 elements.rewriteBtn.style.display = 'block';
                 
-                log(`✅ Parágrafo criado com início personalizado!`, 'success');
+                log(`✅ Parágrafo para '${currentGenerationPhase}' criado!`, 'success');
+
+                // ALTERAÇÃO: Lógica de controle de sessão e botões movida para cá.
+                if (currentGenerationPhase === 'inicio') {
+                    sessionActive = true;
+                    elements.inicioBtn.disabled = true;
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                } else if (currentGenerationPhase === 'fim') {
+                    sessionActive = false;
+                    elements.inicioBtn.disabled = false;
+                    elements.meioBtn.disabled = true;
+                    elements.fimBtn.disabled = true;
+                    
+                    const currentIndex = sectionOrder.indexOf(currentSection);
+                    if (currentIndex < sectionOrder.length - 1) {
+                        currentSection = sectionOrder[currentIndex + 1];
+                        const sectionDisplayName = { 'desenvolvimento': 'Desenvolvimento', 'conclusao': 'Conclusão' }[currentSection];
+                        elements.currentSectionNameSpan.textContent = sectionDisplayName;
+                        log(`📝 Pronto para iniciar: ${sectionDisplayName}`, 'info');
+                    } else {
+                        await generateResumoAndAbstract();
+                        userInputs.isFinalized = true;
+                        displayABNTDocument();
+                        alert(`🎉 Artigo finalizado! Agora você pode salvá-lo como PDF.`);
+                        log(`🎓 Artigo concluído!`, 'success');
+                    }
+                } else { // 'meio'
+                    elements.inicioBtn.disabled = true;
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                }
+                
             } catch (error) {
                 log(`❌ Erro ao gerar parágrafo`, 'error');
+                // Re-habilita os botões com base no estado da sessão
+                if (sessionActive) {
+                    elements.inicioBtn.disabled = true;
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                } else {
+                    elements.inicioBtn.disabled = false;
+                    elements.meioBtn.disabled = true;
+                    elements.fimBtn.disabled = true;
+                }
             } finally {
-                elements.meioBtn.disabled = false;
                 selectedParagraphStart = '';
                 elements.generateParagraphBtn.disabled = true;
             }
