@@ -472,33 +472,47 @@ AGORA GERE 10 INÍCIOS PARA "${userInputs.titulo}":`;
 
         // --- FUNÇÃO PARA MOSTRAR MODAL DE SELEÇÃO ---
         async function showParagraphStartModal() {
+            console.log('🔄 Função showParagraphStartModal chamada');
             log('Gerando opções de início...', 'info');
+            
+            console.log('👁️ Tentando exibir modal...');
             elements.paragraphStartModal.style.display = 'flex';
+            console.log('📝 Modal exibido, gerando conteúdo...');
+            
             elements.paragraphStartsList.innerHTML = '<p>🔄 Gerando opções criativas...</p>';
             
-            const startOptions = await generateParagraphStartOptions();
-            
-            let html = '';
-            startOptions.forEach((option, index) => {
-                html += `
-                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
-                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
-                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">
-                            ${index + 1}. ${option}...
-                        </label>
-                    </div>
-                `;
-            });
-            
-            elements.paragraphStartsList.innerHTML = html;
-            
-            // Habilita botão quando uma opção é selecionada
-            document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    elements.generateParagraphBtn.disabled = false;
-                    selectedParagraphStart = radio.value;
+            try {
+                const startOptions = await generateParagraphStartOptions();
+                console.log('📋 Opções geradas:', startOptions);
+                
+                let html = '';
+                startOptions.forEach((option, index) => {
+                    html += `
+                        <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                            <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
+                            <label for="start-${index}" style="cursor:pointer; margin-left:8px;">
+                                ${index + 1}. ${option}...
+                            </label>
+                        </div>
+                    `;
                 });
-            });
+                
+                elements.paragraphStartsList.innerHTML = html;
+                console.log('✅ HTML do modal inserido');
+                
+                // Habilita botão quando uma opção é selecionada
+                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        console.log('🎯 Opção selecionada:', radio.value);
+                        elements.generateParagraphBtn.disabled = false;
+                        selectedParagraphStart = radio.value;
+                    });
+                });
+                
+            } catch (error) {
+                console.error('❌ Erro ao gerar opções:', error);
+                elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
+            }
         }
             // Extrai conceitos principais já utilizados de forma genérica
             const genericConcepts = [
@@ -994,8 +1008,14 @@ Output:`;
         });
         
         elements.meioBtn.addEventListener('click', () => {
+            console.log('🖱️ Botão MEIO clicado');
+            console.log('📊 sessionActive:', sessionActive);
             if (sessionActive) {
+                console.log('✅ Abrindo modal de seleção...');
                 showParagraphStartModal();
+            } else {
+                console.log('❌ Sessão não está ativa');
+                alert('Inicie uma sessão clicando em INÍCIO primeiro.');
             }
         });
         
