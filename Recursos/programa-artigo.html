@@ -130,6 +130,10 @@
                     <input id="email" type="email" value="seu.email@exemplo.com">
                 </div>
                 <div class="form-group">
+                    <label>Nome do Curso:</label>
+                    <input id="curso" type="text" placeholder="Ex.: Ciência da Computação">
+                </div>
+                <div class="form-group">
                     <label>Nível de Formação:</label>
                     <select id="nivel-formacao">
                         <option value="Graduando">Graduando (cursando graduação)</option>
@@ -288,6 +292,57 @@
         let currentGenerationPhase = ''; 
         let currentParagraphId = null;
         let currentModalReferences = [];
+
+        // --- FUNÇÃO DE FORMATAÇÃO ABNT ---
+        function formatABNTFields() {
+            const universidadeInput = document.getElementById('universidade');
+            const autorInput = document.getElementById('autor');
+            const emailInput = document.getElementById('email');
+            const cursoInput = document.getElementById('curso');
+
+            // Formata Universidade: Primeira letra de cada palavra em maiúscula, exceto preposições
+            let universidade = universidadeInput.value.trim();
+            universidade = universidade.replace(/\w\S*/g, word => 
+                ['de', 'da', 'do', 'dos', 'das', 'e', 'em', 'para', 'por'].includes(word.toLowerCase()) 
+                ? word.toLowerCase() 
+                : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+            );
+            universidadeInput.value = universidade;
+
+            // Formata Autor: Sobrenome em maiúsculas, prenome com inicial maiúscula
+            let autor = autorInput.value.trim();
+            if (autor) {
+                const names = autor.split(' ');
+                if (names.length > 1) {
+                    const lastName = names.pop().toUpperCase();
+                    const firstNames = names.map(name => 
+                        name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
+                    ).join(' ');
+                    autor = `${lastName}, ${firstNames}`;
+                } else {
+                    autor = autor.toUpperCase();
+                }
+                autorInput.value = autor;
+            }
+
+            // Formata Email: Tudo em minúsculas
+            let email = emailInput.value.trim();
+            if (email) {
+                email = email.toLowerCase();
+                emailInput.value = email;
+            }
+
+            // Formata Curso: Primeira letra de cada palavra em maiúscula
+            let curso = cursoInput.value.trim();
+            if (curso) {
+                curso = curso.replace(/\w\S*/g, word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                );
+                cursoInput.value = curso;
+            }
+
+            return { universidade, autor, email, curso };
+        }
 
         // --- FUNÇÃO DE GERAÇÃO COM PUTER AI ---
         async function callPuterAI(prompt) {
@@ -964,8 +1019,10 @@
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
             }
             
-            if (userInputs.email && userInputs.universidade) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}, ${userInputs.email}.</div>`;
+            if (userInputs.email && userInputs.universidade && userInputs.curso) {
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
+            } else if (userInputs.email && userInputs.universidade) {
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             }
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
@@ -983,11 +1040,15 @@
         }
 
         elements.startBtn.addEventListener('click', async () => {
+            // Formata os campos antes de capturar os valores
+            const formattedFields = formatABNTFields();
+
             userInputs = {
-                universidade: document.getElementById('universidade').value,
+                universidade: formattedFields.universidade,
                 titulo: document.getElementById('titulo').value,
-                autor: document.getElementById('autor').value,
-                email: document.getElementById('email').value,
+                autor: formattedFields.autor,
+                email: formattedFields.email,
+                curso: formattedFields.curso,
                 nivelFormacao: document.getElementById('nivel-formacao').value
             };
             if (!userInputs.titulo || !userInputs.autor) { log('❌ Preencha título e autor.', 'error'); return; }
