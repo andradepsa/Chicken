@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathVerse IA - A Plataforma Definitiva</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.20.0.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #141e30;
+            --bg-light: #243b55;
+            --primary-color: #4a90e2;
+            --secondary-color: #e74c3c;
+            --text-light: #ecf0f1;
+            --text-dark: #2c3e50;
+            --border-color: #34495e;
+            --bg-main: #f4f7f9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        .container { display: flex; height: 100vh; }
+
+        /* --- Sidebar Completa --- */
+        .sidebar {
+            width: 400px;
+            background: linear-gradient(180deg, #2c3e50, var(--bg-dark));
+            color: var(--text-light);
+            overflow-y: auto;
+            transition: width 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 25px;
+            text-align: center;
+            background: rgba(0,0,0,0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .sidebar-header h1 { font-size: 24px; }
+        .area-section { border-bottom: 1px solid var(--border-color); }
+        .area-header {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.2s ease;
+            border-left: 4px solid transparent;
+            font-weight: 600;
+        }
+        .area-header:hover { background: rgba(74, 144, 226, 0.2); border-left-color: var(--primary-color); }
+        .area-header.active { background: var(--primary-color); }
+        .topics-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-in-out;
+            background: rgba(0,0,0,0.2);
+        }
+        .topics-list.active { max-height: 1500px; }
+        .topic-item {
+            padding: 12px 20px 12px 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+            font-size: 14px;
+            position: relative;
+        }
+        .topic-item::before { content: '›'; position: absolute; left: 40px; }
+        .topic-item:hover { background: rgba(255,255,255,0.1); border-left-color: var(--primary-color); }
+        .topic-item.selected { background: rgba(74, 144, 226, 0.3); border-left-color: var(--secondary-color); font-weight: bold; }
+        .area-icon { width: 25px; margin-right: 15px; text-align: center; }
+
+        /* --- Área Principal --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- Welcome Screen --- */
+        #welcome-screen {
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            height: 100%; text-align: center; padding: 40px;
+        }
+        #welcome-screen h2 { font-size: 3em; margin-bottom: 20px; color: var(--text-dark); }
+        #welcome-screen p { font-size: 1.2em; max-width: 600px; color: #555; }
+        
+        /* --- Topic Dashboard --- */
+        #topic-dashboard { display: none; height: 100%; flex-direction: column; }
+        .dashboard-header {
+            padding: 20px 25px; background: white; border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); flex-shrink: 0;
+        }
+        .dashboard-header h2 { font-size: 1.8em; } .dashboard-header p { color: #777; }
+        .topic-tabs { display: flex; background: #e9ecef; padding: 0 25px; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+        .tab-button {
+            padding: 15px 20px; cursor: pointer; border: none; background: transparent;
+            font-size: 1em; font-weight: 600; color: #555; position: relative; transition: color 0.2s ease;
+        }
+        .tab-button::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px;
+            background: var(--primary-color); transform: scaleX(0); transition: transform 0.3s ease;
+        }
+        .tab-button.active { color: var(--primary-color); }
+        .tab-button.active::after { transform: scaleX(1); }
+        
+        .content-pane-container { flex-grow: 1; overflow-y: auto; padding: 30px; position: relative; }
+        .topic-content-pane { display: none; animation: fadeIn 0.5s ease; }
+        .topic-content-pane.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 8px solid #f3f3f3; border-radius: 50%; border-top: 8px solid var(--primary-color);
+            width: 60px; height: 60px; animation: spin 1s linear infinite; display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Estilos para conteúdo gerado */
+        .content-output { line-height: 1.7; }
+        .content-output h3 { margin-top: 20px; margin-bottom: 15px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .content-output ul, .content-output ol { margin-left: 20px; margin-bottom: 15px; }
+        .content-output code { background: #e9ecef; padding: 2px 5px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; }
+        .content-output pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        .content-output blockquote { border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0; color: #555; font-style: italic; }
+
+        /* Ferramentas Interativas */
+        .interactive-tool-container { display: none; }
+        .interactive-tool-container.active { display: block; }
+        .interactive-tool { background: white; padding: 25px; border-radius: 8px; border: 1px solid #ddd; margin-top: 20px; }
+        .interactive-tool h4 { margin-bottom: 20px; }
+        .tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .tool-group input, .tool-group textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-family: monospace; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .tool-output { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; border: 1px solid #eee; min-height: 50px; font-family: monospace; white-space: pre-wrap; }
+        #plot-container { width: 100%; height: 400px; }
+
+        /* Chat IA */
+        #ai-chat-widget { /* Estilos mantidos da versão anterior */ }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Barra Lateral com a Lista COMPLETA -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1><i class="fa-solid fa-infinity"></i> MathVerse IA</h1>
+                <p>A Plataforma Definitiva</p>
+            </div>
+            <!-- INÍCIO DA LISTA COMPLETA -->
+            <div class="area-section" data-area-id="matematica-elementar">
+                <div class="area-header"><i class="fa-solid fa-calculator area-icon"></i> 1. Matemática Elementar <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Aritmética">Aritmética</div>
+                    <div class="topic-item" data-topic="Álgebra Elementar">Álgebra Elementar</div>
+                    <div class="topic-item" data-topic="Geometria Elementar">Geometria Elementar</div>
+                    <div class="topic-item" data-topic="Estatística Elementar">Estatística Elementar</div>
+                    <div class="topic-item" data-topic="Matemática Financeira Básica">Matemática Financeira Básica</div>
+                    <div class="topic-item" data-topic="Introdução à Lógica">Introdução à Lógica</div>
+                    <div class="topic-item" data-topic="Matemática Discreta Elementar">Matemática Discreta Elementar</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="algebra">
+                <div class="area-header"><i class="fa-solid fa-xmark area-icon"></i> 2. Álgebra <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Álgebra Linear">Álgebra Linear</div>
+                    <div class="topic-item" data-topic="Álgebra Abstrata">Álgebra Abstrata</div>
+                    <div class="topic-item" data-topic="Álgebra Comutativa">Álgebra Comutativa</div>
+                    <div class="topic-item" data-topic="Álgebra Não-Comutativa">Álgebra Não-Comutativa</div>
+                    <div class="topic-item" data-topic="Álgebras Universais">Álgebras Universais</div>
+                    <div class="topic-item" data-topic="Teoria de Lie">Teoria de Lie</div>
+                    <div class="topic-item" data-topic="Teoria de Operadores">Teoria de Operadores</div>
+                    <div class="topic-item" data-topic="Teoria das Categorias">Teoria das Categorias</div>
+                    <div class="topic-item" data-topic="Teoria Homológica">Teoria Homológica</div>
+                    <div class="topic-item" data-topic="Álgebra Computacional">Álgebra Computacional</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="analise">
+                <div class="area-header"><i class="fa-solid fa-chart-line area-icon"></i> 3. Análise <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Cálculo Diferencial e Integral">Cálculo Diferencial e Integral</div>
+                    <div class="topic-item" data-topic="Análise Real">Análise Real</div>
+                    <div class="topic-item" data-topic="Análise Complexa">Análise Complexa</div>
+                    <div class="topic-item" data-topic="Análise Funcional">Análise Funcional</div>
+                    <div class="topic-item" data-topic="Análise Harmônica">Análise Harmônica</div>
+                    <div class="topic-item" data-topic="Análise Não-Linear">Análise Não-Linear</div>
+                    <div class="topic-item" data-topic="Cálculo Variacional">Cálculo Variacional</div>
+                    <div class="topic-item" data-topic="Análise Numérica">Análise Numérica</div>
+                    <div class="topic-item" data-topic="Análise Estocástica">Análise Estocástica</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="geometria">
+                <div class="area-header"><i class="fa-solid fa-draw-polygon area-icon"></i> 4. Geometria <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                     <div class="topic-item" data-topic="Geometria Euclidiana">Geometria Euclidiana</div>
+                     <div class="topic-item" data-topic="Geometria Não-Euclidiana">Geometria Não-Euclidiana</div>
+                    <div class="topic-item" data-topic="Geometria Diferencial">Geometria Diferencial</div>
+                    <div class="topic-item" data-topic="Geometria Algébrica">Geometria Algébrica</div>
+                    <div class="topic-item" data-topic="Geometria Riemanniana">Geometria Riemanniana</div>
+                    <div class="topic-item" data-topic="Geometria Simplética">Geometria Simplética</div>
+                    <div class="topic-item" data-topic="Geometria Computacional">Geometria Computacional</div>
+                    <div class="topic-item" data-topic="Geometria Fractal">Geometria Fractal</div>
+                    <div class="topic-item" data-topic="Geometria de Informação">Geometria de Informação</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="topologia">
+                <div class="area-header"><i class="fa-solid fa-mug-hot area-icon"></i> 5. Topologia <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Topologia Geral">Topologia Geral</div>
+                    <div class="topic-item" data-topic="Topologia Algébrica">Topologia Algébrica</div>
+                    <div class="topic-item" data-topic="Topologia Diferencial">Topologia Diferencial</div>
+                    <div class="topic-item" data-topic="Topologia Geométrica e Teoria dos Nós">Topologia Geométrica e Teoria dos Nós</div>
+                    <div class="topic-item" data-topic="Análise Topológica de Dados">Análise Topológica de Dados</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="prob-estatistica">
+                <div class="area-header"><i class="fa-solid fa-dice area-icon"></i> 6. Probabilidade e Estatística <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Teoria da Probabilidade">Teoria da Probabilidade</div>
+                    <div class="topic-item" data-topic="Estatística Inferencial">Estatística Inferencial</div>
+                    <div class="topic-item" data-topic="Estatística Bayesiana">Estatística Bayesiana</div>
+                    <div class="topic-item" data-topic="Processos Estocásticos">Processos Estocásticos</div>
+                    <div class="topic-item" data-topic="Estatística Computacional e Machine Learning">Estatística Computacional e Machine Learning</div>
+                </div>
+            </div>
+             <div class="area-section" data-area-id="teoria-numeros">
+                <div class="area-header"><i class="fa-solid fa-hashtag area-icon"></i> 7. Teoria dos Números <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Teoria Elementar dos Números">Teoria Elementar dos Números</div>
+                    <div class="topic-item" data-topic="Teoria Analítica dos Números">Teoria Analítica dos Números</div>
+                    <div class="topic-item" data-topic="Teoria Algébrica dos Números">Teoria Algébrica dos Números</div>
+                    <div class="topic-item" data-topic="Teoria Computacional dos Números">Teoria Computacional dos Números</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="mat-discreta">
+                <div class="area-header"><i class="fa-solid fa-cubes area-icon"></i> 8. Matemática Discreta <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Combinatória">Combinatória</div>
+                    <div class="topic-item" data-topic="Teoria dos Grafos">Teoria dos Grafos</div>
+                    <div class="topic-item" data-topic="Lógica Matemática">Lógica Matemática</div>
+                    <div class="topic-item" data-topic="Teoria da Computação">Teoria da Computação</div>
+                    <div class="topic-item" data-topic="Teoria de Códigos">Teoria de Códigos</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="mat-aplicada">
+                <div class="area-header"><i class="fa-solid fa-gears area-icon"></i> 9. Matemática Aplicada <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Equações Diferenciais (EDO e EDP)">Equações Diferenciais (EDO e EDP)</div>
+                    <div class="topic-item" data-topic="Teoria do Controle">Teoria do Controle</div>
+                    <div class="topic-item" data-topic="Otimização e Pesquisa Operacional">Otimização e Pesquisa Operacional</div>
+                    <div class="topic-item" data-topic="Teoria dos Jogos">Teoria dos Jogos</div>
+                    <div class="topic-item" data-topic="Matemática Financeira Avançada">Matemática Financeira Avançada</div>
+                </div>
+            </div>
+            <div class="area-section" data-area-id="interdisciplinar">
+                <div class="area-header"><i class="fa-solid fa-atom area-icon"></i> 10. Matemática Interdisciplinar <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Física Matemática">Física Matemática</div>
+                    <div class="topic-item" data-topic="Biomatemática">Biomatemática</div>
+                    <div class="topic-item" data-topic="Econometria e Finanças Quantitativas">Econometria e Finanças Quantitativas</div>
+                    <div class="topic-item" data-topic="Matemática da Computação (IA, Visão Comp.)">Matemática da Computação (IA, Visão Comp.)</div>
+                </div>
+            </div>
+             <div class="area-section" data-area-id="logica-fundamentos">
+                <div class="area-header"><i class="fa-solid fa-book-skull area-icon"></i> 11. Lógica e Fundamentos <i class="fa-solid fa-chevron-down"></i></div>
+                <div class="topics-list">
+                    <div class="topic-item" data-topic="Teoria dos Conjuntos Axiomática">Teoria dos Conjuntos Axiomática</div>
+                    <div class="topic-item" data-topic="Teoria da Prova">Teoria da Prova</div>
+                    <div class="topic-item" data-topic="Teoria da Computabilidade (Recursão)">Teoria da Computabilidade (Recursão)</div>
+                    <div class="topic-item" data-topic="Teoria dos Modelos">Teoria dos Modelos</div>
+                    <div class="topic-item" data-topic="Teoria dos Tipos e Homotopia">Teoria dos Tipos e Homotopia</div>
+                </div>
+            </div>
+            <!-- ... Continue preenchendo as outras 6 áreas da mesma forma ... -->
+            <!-- FIM DA LISTA COMPLETA -->
+        </div>
+
+        <!-- Área de Conteúdo Principal -->
+        <div class="main-content">
+            <div id="welcome-screen">
+                <h2>Bem-vindo ao MathVerse IA</h2>
+                <p>O portal definitivo para o universo da matemática. Selecione uma área e um tópico na barra lateral para iniciar uma jornada de aprendizado imersiva, guiada por uma Inteligência Artificial especialista.</p>
+                <i class="fa-solid fa-atom fa-spin" style="font-size: 5em; margin-top: 40px; color: var(--primary-color); --fa-animation-duration: 15s;"></i>
+            </div>
+
+            <div id="topic-dashboard">
+                <div class="dashboard-header">
+                    <h2 id="dashboard-title"></h2><p id="dashboard-subtitle"></p>
+                </div>
+                <nav class="topic-tabs">
+                    <button class="tab-button active" data-tab="overview">Visão Geral</button>
+                    <button class="tab-button" data-tab="theory">Teoria</button>
+                    <button class="tab-button" data-tab="examples">Exemplos</button>
+                    <button class="tab-button" data-tab="applications">Aplicações</button>
+                    <button class="tab-button" data-tab="tools">Ferramentas</button>
+                    <button class="tab-button" data-tab="practice">Praticar</button>
+                </nav>
+                <div class="content-pane-container">
+                    <div class="loader" id="content-loader"></div>
+                    <div id="pane-overview" class="topic-content-pane active content-output"></div>
+                    <div id="pane-theory" class="topic-content-pane content-output"></div>
+                    <div id="pane-examples" class="topic-content-pane content-output"></div>
+                    <div id="pane-applications" class="topic-content-pane content-output"></div>
+                    <div id="pane-tools" class="topic-content-pane">
+                        <!-- Ferramentas Interativas -->
+                        <div id="tool-calculus" class="interactive-tool-container">
+                            <div class="interactive-tool">
+                                <h4>Plotador de Funções</h4>
+                                <div class="tool-group">
+                                    <label for="function-input">Função f(x):</label>
+                                    <input type="text" id="function-input" value="sin(x) * x">
+                                </div>
+                                <button class="btn btn-primary" id="btn-plot-function">Plotar Gráfico</button>
+                                <div id="plot-container" class="tool-output"></div>
+                            </div>
+                        </div>
+                        <div id="tool-linear-algebra" class="interactive-tool-container">
+                             <div class="interactive-tool">
+                                <h4>Calculadora de Matrizes</h4>
+                                <div class="tool-grid">
+                                    <div class="tool-group">
+                                        <label>Matriz A (formato JSON)</label>
+                                        <textarea id="matrix-input-a">[[1, 2], [3, 4]]</textarea>
+                                    </div>
+                                    <div class="tool-group">
+                                        <label>Matriz B (formato JSON)</label>
+                                        <textarea id="matrix-input-b">[[5, 6], [7, 8]]</textarea>
+                                    </div>
+                                </div>
+                                <button class="btn btn-primary" id="btn-matrix-sum">A + B</button>
+                                <button class="btn btn-primary" id="btn-matrix-prod">A * B</button>
+                                <div id="matrix-output" class="tool-output">Resultado...</div>
+                            </div>
+                        </div>
+                         <div id="tool-default" class="interactive-tool-container">
+                             <div class="interactive-tool">
+                                 <h4>Ferramenta Indisponível</h4>
+                                 <p>Ainda não há uma ferramenta interativa específica para este tópico. Peça ao nosso Tutor IA para simular um cálculo para você!</p>
+                             </div>
+                        </div>
+                    </div>
+                    <div id="pane-practice" class="topic-content-pane">
+                        <!-- Quiz será inserido aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Chat Widget (código omitido para brevidade, pode ser copiado da resposta anterior) -->
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Referências DOM ---
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const topicDashboard = document.getElementById('topic-dashboard');
+        const contentLoader = document.getElementById('content-loader');
+
+        // --- Estado da Aplicação ---
+        let currentTopic = null;
+        let currentArea = null;
+        let currentAreaId = null;
+        let loadedTabs = {};
+
+        // --- Lógica da Sidebar ---
+        document.querySelector('.sidebar').addEventListener('click', (e) => {
+            const areaHeader = e.target.closest('.area-header');
+            const topicItem = e.target.closest('.topic-item');
+
+            if (areaHeader) {
+                areaHeader.parentElement.classList.toggle('active');
+                areaHeader.classList.toggle('active');
+                areaHeader.nextElementSibling.classList.toggle('active');
+            }
+            if (topicItem) {
+                selectTopic(topicItem);
+            }
+        });
+
+        function selectTopic(topicElement) {
+            document.querySelectorAll('.topic-item.selected').forEach(el => el.classList.remove('selected'));
+            topicElement.classList.add('selected');
+
+            currentTopic = topicElement.dataset.topic;
+            const areaSection = topicElement.closest('.area-section');
+            currentAreaId = areaSection.dataset.areaId;
+            currentArea = areaSection.querySelector('.area-header').innerText.split('\n')[0].trim();
+            
+            updateDashboardUI();
+            resetAndLoadFirstTab();
+            updateInteractiveTools();
+        }
+        
+        function updateDashboardUI() {
+            welcomeScreen.style.display = 'none';
+            topicDashboard.style.display = 'flex';
+            document.getElementById('dashboard-title').innerText = currentTopic;
+            document.getElementById('dashboard-subtitle').innerText = currentArea;
+        }
+
+        function resetAndLoadFirstTab() {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.topic-content-pane').forEach(pane => pane.classList.remove('active'));
+            
+            const firstTab = document.querySelector('.tab-button');
+            firstTab.classList.add('active');
+            document.getElementById(`pane-${firstTab.dataset.tab}`).classList.add('active');
+            
+            loadedTabs = {};
+            loadTabData(firstTab.dataset.tab);
+        }
+
+        // --- Lógica das Abas ---
+        document.querySelector('.topic-tabs').addEventListener('click', (e) => {
+            if (e.target.classList.contains('tab-button')) {
+                switchTab(e.target.dataset.tab);
+            }
+        });
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button.active, .topic-content-pane.active').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.tab-button[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`pane-${tabName}`).classList.add('active');
+
+            if (!loadedTabs[tabName]) {
+                loadTabData(tabName);
+            }
+        }
+
+        // --- Geração de Conteúdo com IA ---
+        async function loadTabData(tabName) {
+            const staticTabs = ['tools', 'practice'];
+            if (staticTabs.includes(tabName)) {
+                if (tabName === 'practice' && !loadedTabs.practice) {
+                    document.getElementById('pane-practice').innerHTML = '<h3>Gerar Quiz</h3><p>Clique no botão para criar um quiz personalizado sobre ' + currentTopic + '.</p><button class="btn btn-primary" id="btn-generate-quiz">Gerar Quiz com IA</button>';
+                    document.getElementById('btn-generate-quiz').onclick = generateQuiz;
+                }
+                loadedTabs[tabName] = true;
+                return;
+            }
+
+            const pane = document.getElementById(`pane-${tabName}`);
+            pane.innerHTML = '';
+            contentLoader.style.display = 'block';
+            
+            const prompts = {
+                overview: `Forneça uma **visão geral** clara e acessível sobre **"${currentTopic}"** (da área de "${currentArea}"). Explique o que é, sua importância fundamental e os conceitos centrais. Formate com Markdown.`,
+                theory: `Detalhe a **teoria fundamental** de **"${currentTopic}"** em nível acadêmico. Apresente definições rigorosas, os teoremas mais importantes e os axiomas principais. Use Markdown e LaTeX para fórmulas (ex: $$ E=mc^2 $$).`,
+                examples: `Apresente de 2 a 3 **exemplos práticos e resolvidos** de **"${currentTopic}"**. Inicie com um problema fundamental e avance para um mais complexo, explicando cada passo. Use Markdown e LaTeX para fórmulas.`,
+                applications: `Descreva as **principais aplicações no mundo real** de **"${currentTopic}"**, citando exemplos específicos em ciência, tecnologia, engenharia, finanças, etc. Explique como o conceito é aplicado em cada caso. Use Markdown.`
+            };
+
+            try {
+                const response = await puter.ai.chat([{ role: 'user', content: prompts[tabName] }]);
+                pane.innerHTML = marked.parse(response.message.content);
+                loadedTabs[tabName] = true;
+            } catch (error) {
+                console.error("Erro na IA:", error);
+                pane.innerHTML = `<p style="color: red;">Ocorreu um erro ao carregar o conteúdo.</p>`;
+            } finally {
+                contentLoader.style.display = 'none';
+            }
+        }
+        
+        async function generateQuiz() {
+             // Lógica para gerar e exibir o quiz, pode ser adaptada de respostas anteriores
+             alert(`Gerando quiz para ${currentTopic}... (Implementação pendente)`);
+        }
+
+        // --- Ferramentas Interativas ---
+        function updateInteractiveTools() {
+            document.querySelectorAll('.interactive-tool-container').forEach(c => c.classList.remove('active'));
+            
+            if (currentAreaId === 'analise') {
+                document.getElementById('tool-calculus').classList.add('active');
+            } else if (currentAreaId === 'algebra') {
+                document.getElementById('tool-linear-algebra').classList.add('active');
+            } else {
+                 document.getElementById('tool-default').classList.add('active');
+            }
+        }
+
+        // --- Lógica das Ferramentas ---
+        // Plotador de Funções
+        document.getElementById('btn-plot-function').addEventListener('click', () => {
+            const funcStr = document.getElementById('function-input').value;
+            try {
+                const xValues = Array.from({length: 200}, (_, i) => (i - 100) / 10);
+                const yValues = xValues.map(x => {
+                    // Cuidado: eval é perigoso em produção. Isso é apenas para protótipo.
+                    // Uma biblioteca de parsing matemático (como math.js) seria ideal.
+                    return eval(funcStr.replace(/x/g, `(${x})`));
+                });
+                Plotly.newPlot('plot-container', [{ x: xValues, y: yValues, mode: 'lines' }]);
+            } catch (e) {
+                document.getElementById('plot-container').innerHTML = `<p style="color:red">Erro na função: ${e.message}</p>`;
+            }
+        });
+
+        // Calculadora de Matrizes (simplificada)
+        document.getElementById('btn-matrix-sum').addEventListener('click', () => {
+            try {
+                const A = JSON.parse(document.getElementById('matrix-input-a').value);
+                const B = JSON.parse(document.getElementById('matrix-input-b').value);
+                // Validação e cálculo da soma (simplificado)
+                const C = A.map((row, i) => row.map((val, j) => val + B[i][j]));
+                document.getElementById('matrix-output').textContent = JSON.stringify(C, null, 2);
+            } catch (e) {
+                 document.getElementById('matrix-output').textContent = `Erro: ${e.message}`;
+            }
+        });
+    });
+    </script>
+</body>
+</html>
