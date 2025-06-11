@@ -2,1742 +2,305 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Banco de Questões Inteligente - Powered by Puter.ai</title>
+    <title>Gerador de Questões Simples</title>
+    <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        /* Estilos Mínimos para uma aparência limpa */
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
             padding: 20px;
         }
-        
-        .main-container {
-            display: flex;
-            gap: 20px;
-            max-width: 1400px;
+        .container {
+            max-width: 800px;
             margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
-        .sidebar {
-            width: 350px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .content-area {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            min-height: 600px;
-        }
-        
-        .header {
+        h1 {
             text-align: center;
-            margin-bottom: 24px;
+            color: #333;
         }
-        
-        .header h1 {
-            color: #2d3748;
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
+        p {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
         }
-        
-        .header .subtitle {
-            color: #6f42c1;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .form-section {
-            margin-bottom: 24px;
-            padding: 20px;
-            background: rgba(248, 250, 252, 0.8);
-            border-radius: 12px;
-            border: 1px solid rgba(226, 232, 240, 0.5);
-        }
-        
-        .form-section h3 {
-            color: #2d3748;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-group {
-            margin-bottom: 16px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
+        textarea {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            background: white;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .form-group textarea {
-            resize: vertical;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
             min-height: 80px;
+            box-sizing: border-box; /* Garante que o padding não aumente a largura */
         }
-        
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+        button {
+            display: block;
             width: 100%;
-            justify-content: center;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .btn-secondary {
-            background: #64748b;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-        }
-        
-        .btn-success {
-            background: #28a745;
-        }
-        
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-        
-        .status {
             padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-        }
-        
-        .status.info {
-            background: #e7f3ff;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-        
-        .status.success {
-            background: #dcfce7;
-            color: #16a34a;
-            border: 1px solid #bbf7d0;
-        }
-        
-        .status.error {
-            background: #fef2f2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        
-        .status.warning {
-            background: #fffbeb;
-            color: #d97706;
-            border: 1px solid #fed7aa;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.8);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid rgba(226, 232, 240, 0.5);
-        }
-        
-        .stat-card .number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 4px;
-        }
-        
-        .stat-card .label {
-            font-size: 12px;
-            color: #64748b;
-            font-weight: 500;
-        }
-        
-        .question-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-        }
-        
-        .question-card:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .question-header {
-            display: flex;
-            justify-content: between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .question-meta {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        
-        .meta-tag {
-            background: #f1f5f9;
-            color: #475569;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .meta-tag.difficulty-facil {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        
-        .meta-tag.difficulty-medio {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .meta-tag.difficulty-dificil {
-            background: #fecaca;
-            color: #dc2626;
-        }
-        
-        .question-text {
             font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 16px;
-            color: #1f2937;
-        }
-        
-        .question-options {
-            margin-bottom: 16px;
-        }
-        
-        .option {
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            font-size: 14px;
-            transition: all 0.2s ease;
-        }
-        
-        .option.correct {
-            background: #dcfce7;
-            border-color: #bbf7d0;
-            color: #16a34a;
-            font-weight: 500;
-        }
-        
-        .question-actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-            border-radius: 6px;
-            flex: 1;
-            min-width: 80px;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .modal-header h3 {
-            color: #1f2937;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .close-btn {
-            background: none;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
             border: none;
-            font-size: 24px;
-            color: #64748b;
+            border-radius: 6px;
             cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.2s ease;
+            margin-top: 10px;
         }
-        
-        .close-btn:hover {
-            background: #f1f5f9;
-            color: #374151;
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
         }
-        
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            color: #64748b;
-            font-style: italic;
-        }
-        
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid #e2e8f0;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .empty-state {
+        #status {
             text-align: center;
-            padding: 40px 20px;
-            color: #64748b;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 6px;
+            display: none; /* Só aparece quando tem mensagem */
         }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+        .status-info { background-color: #cce5ff; color: #004085; }
         
-        .empty-state .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
+        #questions-container {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
-        
-        .search-box {
-            margin-bottom: 20px;
+        .question-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        
-        .filter-section {
-            margin-bottom: 20px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 8px;
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
         }
-        
-        .filter-row {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
+        .question-options, .question-answer {
+            margin-left: 20px;
         }
-        
-        .filter-row select {
-            flex: 1;
+        .question-answer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
         }
-        
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                position: static;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            
-            .filter-row {
-                flex-direction: column;
-            }
+        .remove-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            float: right;
+            border: none;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Sidebar de Controle -->
-        <div class="sidebar">
-            <div class="header">
-                <h1>🎯 Banco de Questões</h1>
-                <div class="subtitle">Powered by Puter.ai</div>
-            </div>
-            
-            <!-- Estatísticas -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="number" id="total-questions">0</div>
-                    <div class="label">Total</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="generated-today">0</div>
-                    <div class="label">Hoje</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="easy-count">0</div>
-                    <div class="label">Fácil</div>
-                </div>
-                <div class="stat-card">
-                    <div class="number" id="hard-count">0</div>
-                    <div class="label">Difícil</div>
-                </div>
-            </div>
-            
-            <!-- Configurações de Geração -->
-            <div class="form-section">
-                <h3>⚙️ Configurar Geração</h3>
-                
-                <div class="form-group">
-                    <label>Disciplina/Matéria:</label>
-                    <select id="subject">
-                        <option value="">Selecione uma disciplina...</option>
-                        <option value="matematica">Matemática</option>
-                        <option value="portugues">Português</option>
-                        <option value="historia">História</option>
-                        <option value="geografia">Geografia</option>
-                        <option value="ciencias">Ciências</option>
-                        <option value="fisica">Física</option>
-                        <option value="quimica">Química</option>
-                        <option value="biologia">Biologia</option>
-                        <option value="ingles">Inglês</option>
-                        <option value="filosofia">Filosofia</option>
-                        <option value="sociologia">Sociologia</option>
-                        <option value="informatica">Informática</option>
-                        <option value="direito">Direito</option>
-                        <option value="economia">Economia</option>
-                        <option value="administracao">Administração</option>
-                        <option value="custom">Personalizada...</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" id="custom-subject-group" style="display: none;">
-                    <label>Disciplina Personalizada:</label>
-                    <input type="text" id="custom-subject" placeholder="Digite o nome da disciplina">
-                </div>
-                
-                <div class="form-group">
-                    <label>Tópico/Assunto:</label>
-                    <input type="text" id="topic" placeholder="Ex: Equações do 2º grau, Revolução Francesa...">
-                </div>
-                
-                <div class="form-group">
-                    <label>Nível de Ensino:</label>
-                    <select id="education-level">
-                        <option value="fundamental1">Fundamental I (1º ao 5º ano)</option>
-                        <option value="fundamental2">Fundamental II (6º ao 9º ano)</option>
-                        <option value="medio">Ensino Médio</option>
-                        <option value="tecnico">Técnico</option>
-                        <option value="superior">Superior</option>
-                        <option value="pos-graduacao">Pós-Graduação</option>
-                        <option value="concurso">Concurso Público</option>
-                        <option value="enem">ENEM</option>
-                        <option value="vestibular">Vestibular</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Dificuldade:</label>
-                    <select id="difficulty">
-                        <option value="facil">Fácil</option>
-                        <option value="medio">Médio</option>
-                        <option value="dificil">Difícil</option>
-                        <option value="misto">Misto (variado)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Tipo de Questão:</label>
-                    <select id="question-type">
-                        <option value="multipla-escolha">Múltipla Escolha</option>
-                        <option value="verdadeiro-falso">Verdadeiro/Falso</option>
-                        <option value="dissertativa">Dissertativa</option>
-                        <option value="lacunas">Preencher Lacunas</option>
-                        <option value="misto">Misto</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Quantidade de Questões:</label>
-                    <select id="question-count">
-                        <option value="1">1 questão</option>
-                        <option value="5">5 questões</option>
-                        <option value="10">10 questões</option>
-                        <option value="15">15 questões</option>
-                        <option value="20">20 questões</option>
-                        <option value="30">30 questões</option>
-                        <option value="50">50 questões</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>Contexto Adicional (opcional):</label>
-                    <textarea id="additional-context" placeholder="Informações extras, estilo de questão, foco específico..."></textarea>
-                </div>
-                
-                <button id="generate-btn" class="btn">
-                    🚀 Gerar Questões
-                </button>
-            </div>
-            
-            <!-- Ações Rápidas -->
-            <div class="form-section">
-                <h3>⚡ Ações Rápidas</h3>
-                
-                <button id="clear-all-btn" class="btn btn-danger btn-small" style="margin-bottom: 8px;">
-                    🗑️ Limpar Tudo
-                </button>
-                
-                <button id="export-btn" class="btn btn-success btn-small" style="margin-bottom: 8px;">
-                    📄 Exportar PDF
-                </button>
-                
-                <button id="import-btn" class="btn btn-secondary btn-small">
-                    📁 Importar Questões
-                </button>
-                <input type="file" id="import-file" accept=".json" style="display: none;">
-            </div>
-            
-            <!-- Status -->
-            <div id="status" class="status info">
-                💡 Configure os parâmetros e clique em "Gerar Questões"
-            </div>
+    <div class="container">
+        <h1>Gerador de Questões Inteligente</h1>
+        <p>Descreva o que você precisa. Seja específico para melhores resultados.</p>
+
+        <!-- Formulário Simplificado -->
+        <div>
+            <textarea id="prompt" placeholder="Exemplo: Crie 3 questões de múltipla escolha sobre a Revolução Francesa para o Ensino Médio."></textarea>
+            <button id="generate-btn">🚀 Gerar Questões</button>
         </div>
-        
-        <!-- Área de Conteúdo -->
-        <div class="content-area">
-            <!-- Filtros e Busca -->
-            <div class="filter-section">
-                <div class="form-group">
-                    <input type="text" id="search-box" placeholder="🔍 Buscar questões por texto, disciplina ou tópico...">
-                </div>
-                
-                <div class="filter-row">
-                    <select id="filter-subject">
-                        <option value="">Todas as disciplinas</option>
-                    </select>
-                    <select id="filter-difficulty">
-                        <option value="">Todas as dificuldades</option>
-                        <option value="facil">Fácil</option>
-                        <option value="medio">Médio</option>
-                        <option value="dificil">Difícil</option>
-                    </select>
-                    <select id="filter-type">
-                        <option value="">Todos os tipos</option>
-                        <option value="multipla-escolha">Múltipla Escolha</option>
-                        <option value="verdadeiro-falso">Verdadeiro/Falso</option>
-                        <option value="dissertativa">Dissertativa</option>
-                        <option value="lacunas">Preencher Lacunas</option>
-                    </select>
-                </div>
-                
-                <div class="filter-row">
-                    <select id="sort-by">
-                        <option value="newest">Mais Recentes</option>
-                        <option value="oldest">Mais Antigas</option>
-                        <option value="difficulty">Por Dificuldade</option>
-                        <option value="subject">Por Disciplina</option>
-                    </select>
-                    <button id="shuffle-btn" class="btn btn-secondary btn-small">
-                        🔀 Embaralhar
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Lista de Questões -->
-            <div id="questions-container">
-                <div class="empty-state">
-                    <div class="icon">📚</div>
-                    <h3>Nenhuma questão gerada ainda</h3>
-                    <p>Configure os parâmetros no painel lateral e clique em "Gerar Questões" para começar!</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de Edição -->
-    <div id="edit-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>✏️ Editar Questão</h3>
-                <button class="close-btn" onclick="closeEditModal()">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label>Texto da Questão:</label>
-                <textarea id="edit-question-text" rows="4"></textarea>
-            </div>
-            
-            <div id="edit-options-container">
-                <!-- Opções serão inseridas dinamicamente -->
-            </div>
-            
-            <div class="form-group">
-                <label>Explicação/Comentário:</label>
-                <textarea id="edit-explanation" rows="3"></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 12px; margin-top: 20px;">
-                <button onclick="saveEditedQuestion()" class="btn btn-success" style="flex: 1;">
-                    💾 Salvar Alterações
-                </button>
-                <button onclick="closeEditModal()" class="btn btn-secondary" style="flex: 1;">
-                    ❌ Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal de Visualização Detalhada -->
-    <div id="view-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>👁️ Visualizar Questão</h3>
-                <button class="close-btn" onclick="closeViewModal()">&times;</button>
-            </div>
-            
-            <div id="view-question-content">
-                <!-- Conteúdo será inserido dinamicamente -->
-            </div>
-            
-            <div style="margin-top: 20px;">
-                <button onclick="closeViewModal()" class="btn btn-secondary">
-                    ✅ Fechar
-                </button>
-            </div>
+
+        <!-- Mensagens de Status -->
+        <div id="status"></div>
+
+        <!-- Container para as Questões Geradas -->
+        <div id="questions-container">
+            <p>Suas questões aparecerão aqui.</p>
         </div>
     </div>
 
     <script>
         // === VARIÁVEIS GLOBAIS ===
         let questionsDatabase = [];
-        let filteredQuestions = [];
-        let currentEditingIndex = -1;
-        let generatedToday = 0;
-        
-        // === ELEMENTOS DOM ===
-        const elements = {
-            // Formulário de configuração
-            subject: document.getElementById('subject'),
-            customSubject: document.getElementById('custom-subject'),
-            customSubjectGroup: document.getElementById('custom-subject-group'),
-            topic: document.getElementById('topic'),
-            educationLevel: document.getElementById('education-level'),
-            difficulty: document.getElementById('difficulty'),
-            questionType: document.getElementById('question-type'),
-            questionCount: document.getElementById('question-count'),
-            additionalContext: document.getElementById('additional-context'),
-            generateBtn: document.getElementById('generate-btn'),
-            
-            // Estatísticas
-            totalQuestions: document.getElementById('total-questions'),
-            generatedToday: document.getElementById('generated-today'),
-            easyCount: document.getElementById('easy-count'),
-            hardCount: document.getElementById('hard-count'),
-            
-            // Filtros e busca
-            searchBox: document.getElementById('search-box'),
-            filterSubject: document.getElementById('filter-subject'),
-            filterDifficulty: document.getElementById('filter-difficulty'),
-            filterType: document.getElementById('filter-type'),
-            sortBy: document.getElementById('sort-by'),
-            shuffleBtn: document.getElementById('shuffle-btn'),
-            
-            // Ações
-            clearAllBtn: document.getElementById('clear-all-btn'),
-            exportBtn: document.getElementById('export-btn'),
-            importBtn: document.getElementById('import-btn'),
-            importFile: document.getElementById('import-file'),
-            
-            // Containers
-            questionsContainer: document.getElementById('questions-container'),
-            status: document.getElementById('status'),
-            
-            // Modais
-            editModal: document.getElementById('edit-modal'),
-            viewModal: document.getElementById('view-modal'),
-            editQuestionText: document.getElementById('edit-question-text'),
-            editOptionsContainer: document.getElementById('edit-options-container'),
-            editExplanation: document.getElementById('edit-explanation'),
-            viewQuestionContent: document.getElementById('view-question-content')
-        };
+        const generateBtn = document.getElementById('generate-btn');
+        const promptInput = document.getElementById('prompt');
+        const statusDiv = document.getElementById('status');
+        const questionsContainer = document.getElementById('questions-container');
 
-        // === FUNÇÕES DE UTILIDADE ===
+        // === FUNÇÕES PRINCIPAIS ===
+
+        // Mostra uma mensagem para o usuário
         function showStatus(message, type = 'info') {
-            elements.status.className = `status ${type}`;
-            elements.status.innerHTML = `${getStatusIcon(type)} ${message}`;
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+            statusDiv.style.display = 'block';
         }
-        
-        function getStatusIcon(type) {
-            const icons = {
-                success: '✅',
-                error: '❌', 
-                warning: '⚠️',
-                info: '💡'
-            };
-            return icons[type] || '💡';
-        }
-        
+
+        // Gera um ID único para cada questão
         function generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            return Date.now().toString(36);
         }
-        
-        function formatDate(date) {
-            return new Date(date).toLocaleString('pt-BR');
-        }
-        
-        // === FUNÇÕES DE GERAÇÃO COM PUTER AI ===
-        async function callPuterAI(prompt) {
+
+        // Função principal que gera as questões
+        async function generateQuestions() {
+            const userPrompt = promptInput.value;
+            if (!userPrompt.trim()) {
+                showStatus('Por favor, descreva o que você precisa.', 'error');
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Gerando...';
+            showStatus('Conversando com a IA. Isso pode levar um momento...', 'info');
+
             try {
-                showStatus('🤖 Processando com IA do Puter...', 'info');
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
+                // Monta o pedido para a IA
+                const finalPrompt = createGenerationPrompt(userPrompt);
+                
+                // Chama a IA do Puter
+                const response = await puter.ai.chat([{ role: 'user', content: finalPrompt }]);
                 
                 if (!response || !response.message || !response.message.content) {
-                    throw new Error('Resposta inválida da IA do Puter.');
+                    throw new Error('A IA não retornou uma resposta válida.');
                 }
-                
-                return response.message.content.trim();
-            } catch (error) {
-                console.error('Erro na IA do Puter:', error);
-                if (error.message && error.message.toLowerCase().includes('user cancelled')) {
-                    showStatus('⚠️ Autenticação cancelada pelo usuário.', 'warning');
+
+                // Tenta extrair e processar a resposta da IA
+                const newQuestions = parseAIResponse(response.message.content);
+
+                if (newQuestions.length > 0) {
+                    // Adiciona as novas questões no início da lista
+                    questionsDatabase.unshift(...newQuestions);
+                    saveToLocalStorage();
+                    renderQuestions();
+                    showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
-                    showStatus(`❌ Erro na IA: ${error.message || 'Erro desconhecido'}`, 'error');
+                    throw new Error('Não foi possível extrair questões da resposta da IA. Tente ser mais específico.');
                 }
-                throw error;
-            }
-        }
-        
-        async function generateQuestions() {
-            const config = getFormConfig();
-            
-            if (!config.subject || !config.topic) {
-                showStatus('❌ Preencha disciplina e tópico.', 'error');
-                return;
-            }
-            
-            elements.generateBtn.disabled = true;
-            elements.generateBtn.innerHTML = '<div class="spinner"></div> Gerando...';
-            
-            try {
-                const prompt = createGenerationPrompt(config);
-                const response = await callPuterAI(prompt);
-                const questions = parseAIResponse(response, config);
-                
-                if (questions && questions.length > 0) {
-                    addQuestionsToDatabase(questions);
-                    updateDisplay();
-                    showStatus(`✅ ${questions.length} questão(ões) gerada(s) com sucesso!`, 'success');
-                    generatedToday += questions.length;
-                    updateStats();
-                } else {
-                    showStatus('⚠️ Nenhuma questão foi gerada. Tente novamente.', 'warning');
-                }
-                
+
             } catch (error) {
                 console.error('Erro na geração:', error);
-                showStatus('❌ Erro ao gerar questões. Verifique sua conexão.', 'error');
+                showStatus(`Ocorreu um erro: ${error.message}`, 'error');
             } finally {
-                elements.generateBtn.disabled = false;
-                elements.generateBtn.innerHTML = '🚀 Gerar Questões';
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Gerar Questões';
             }
         }
-        
-        function getFormConfig() {
-            const subject = elements.subject.value === 'custom' ? 
-                elements.customSubject.value : elements.subject.value;
-                
-            return {
-                subject,
-                topic: elements.topic.value,
-                educationLevel: elements.educationLevel.value,
-                difficulty: elements.difficulty.value,
-                questionType: elements.questionType.value,
-                questionCount: parseInt(elements.questionCount.value),
-                additionalContext: elements.additionalContext.value
-            };
-        }
-        
-        function createGenerationPrompt(config) {
-            let difficultyText = '';
-            switch(config.difficulty) {
-                case 'facil': difficultyText = 'FÁCIL - adequada para iniciantes'; break;
-                case 'medio': difficultyText = 'MÉDIO - nível intermediário'; break;
-                case 'dificil': difficultyText = 'DIFÍCIL - nível avançado'; break;
-                case 'misto': difficultyText = 'VARIADA - misture níveis fácil, médio e difícil'; break;
-            }
-            
-            let typeText = '';
-            switch(config.questionType) {
-                case 'multipla-escolha': typeText = 'múltipla escolha com 4 alternativas (A, B, C, D)'; break;
-                case 'verdadeiro-falso': typeText = 'verdadeiro ou falso'; break;
-                case 'dissertativa': typeText = 'dissertativa (resposta aberta)'; break;
-                case 'lacunas': typeText = 'preenchimento de lacunas'; break;
-                case 'misto': typeText = 'tipos variados (múltipla escolha, V/F, dissertativa)'; break;
-            }
-            
+
+        // Cria o prompt detalhado que a IA entende
+        function createGenerationPrompt(userRequest) {
             return `
-Você é um especialista em educação. Gere ${config.questionCount} questão(ões) sobre o tópico "${config.topic}" na disciplina de ${config.subject}.
+                Você é um especialista em criar material educacional. Baseado no pedido do usuário, gere questões.
+                
+                PEDIDO DO USUÁRIO: "${userRequest}"
 
-ESPECIFICAÇÕES:
-- Nível de ensino: ${config.educationLevel}
-- Dificuldade: ${difficultyText}
-- Tipo: ${typeText}
-- Contexto adicional: ${config.additionalContext || 'Nenhum'}
-
-REGRAS IMPORTANTES:
-1. Questões devem ser pedagogicamente corretas e bem estruturadas
-2. Para múltipla escolha: sempre 4 alternativas com apenas 1 correta
-3. Para V/F: inclua justificativa
-4. Para dissertativas: forneça critérios de avaliação
-5. Sempre inclua explicação detalhada da resposta
-
-FORMATO DE RESPOSTA (JSON):
-{
-  "questions": [
-    {
-      "id": "unico_id",
-      "text": "Texto da questão",
-      "type": "multipla-escolha|verdadeiro-falso|dissertativa|lacunas",
-      "difficulty": "facil|medio|dificil",
-      "options": ["A) opção", "B) opção", "C) opção", "D) opção"], // só para múltipla escolha
-      "correct_answer": "A" ou "verdadeiro" ou "resposta completa",
-      "explanation": "Explicação detalhada da resposta",
-      "subject": "${config.subject}",
-      "topic": "${config.topic}",
-      "education_level": "${config.educationLevel}"
-    }
-  ]
-}
-
-Gere as questões agora:`;
+                REGRAS DE FORMATAÇÃO (MUITO IMPORTANTE):
+                Responda APENAS com um objeto JSON. Não inclua nenhuma outra palavra ou explicação fora do JSON.
+                O formato deve ser:
+                {
+                  "questions": [
+                    {
+                      "text": "O texto completo da questão aqui.",
+                      "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
+                      "correct_answer": "A letra ou o texto da resposta correta.",
+                      "explanation": "Uma breve explicação do porquê a resposta está correta."
+                    }
+                  ]
+                }
+                - Se a questão for dissertativa, o campo "options" pode ser um array vazio [].
+            `;
         }
         
-        function parseAIResponse(response, config) {
+        // Extrai as questões do texto retornado pela IA
+        function parseAIResponse(response) {
             try {
-                // Tenta extrair JSON da resposta
                 const jsonStart = response.indexOf('{');
                 const jsonEnd = response.lastIndexOf('}') + 1;
-                
-                if (jsonStart === -1 || jsonEnd === -1) {
-                    throw new Error('JSON não encontrado na resposta');
-                }
-                
                 const jsonString = response.substring(jsonStart, jsonEnd);
                 const parsed = JSON.parse(jsonString);
-                
-                if (!parsed.questions || !Array.isArray(parsed.questions)) {
-                    throw new Error('Formato de questões inválido');
+
+                if (parsed.questions && Array.isArray(parsed.questions)) {
+                    // Adiciona um ID único para cada questão
+                    return parsed.questions.map(q => ({ ...q, id: generateId() }));
                 }
-                
-                // Processa e valida cada questão
-                const validQuestions = [];
-                
-                parsed.questions.forEach((q, index) => {
-                    const question = {
-                        id: generateId(),
-                        text: q.text || `Questão ${index + 1}`,
-                        type: q.type || config.questionType,
-                        difficulty: q.difficulty || config.difficulty,
-                        subject: q.subject || config.subject,
-                        topic: q.topic || config.topic,
-                        educationLevel: q.education_level || config.educationLevel,
-                        correctAnswer: q.correct_answer || '',
-                        explanation: q.explanation || '',
-                        createdAt: new Date().toISOString(),
-                        options: q.options || []
-                    };
-                    
-                    // Validação básica
-                    if (question.text.length > 10) {
-                        validQuestions.push(question);
-                    }
-                });
-                
-                return validQuestions;
-                
+                return [];
             } catch (error) {
-                console.error('Erro ao processar resposta:', error);
-                
-                // Fallback: tenta criar uma questão básica
-                return [{
-                    id: generateId(),
-                    text: `Questão sobre ${config.topic} - ${config.subject}`,
-                    type: config.questionType,
-                    difficulty: config.difficulty,
-                    subject: config.subject,
-                    topic: config.topic,
-                    educationLevel: config.educationLevel,
-                    correctAnswer: 'Resposta não processada',
-                    explanation: 'Explicação não disponível',
-                    createdAt: new Date().toISOString(),
-                    options: config.questionType === 'multipla-escolha' ? ['A) Opção 1', 'B) Opção 2', 'C) Opção 3', 'D) Opção 4'] : []
-                }];
+                console.error("Erro ao processar JSON da IA:", error);
+                return []; // Retorna vazio se não conseguir processar
             }
         }
-        
-        // === GERENCIAMENTO DO BANCO DE DADOS ===
-        function addQuestionsToDatabase(questions) {
-            questions.forEach(question => {
-                questionsDatabase.unshift(question); // Adiciona no início
+
+        // Exibe as questões na tela
+        function renderQuestions() {
+            if (questionsDatabase.length === 0) {
+                questionsContainer.innerHTML = '<p>Nenhuma questão gerada ainda. Use o campo acima para começar.</p>';
+                return;
+            }
+
+            questionsContainer.innerHTML = ''; // Limpa a lista antiga
+            questionsDatabase.forEach(q => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+
+                let optionsHTML = '';
+                if (q.options && q.options.length > 0) {
+                    optionsHTML = `<div class="question-options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
+                }
+
+                card.innerHTML = `
+                    <button class="remove-btn" onclick="removeQuestion('${q.id}')">Remover</button>
+                    <div class="question-text">${q.text}</div>
+                    ${optionsHTML}
+                    <div class="question-answer">
+                        <strong>Resposta:</strong> ${q.correct_answer}<br>
+                        <strong>Explicação:</strong> ${q.explanation || 'Não fornecida.'}
+                    </div>
+                `;
+                questionsContainer.appendChild(card);
             });
-            saveToLocalStorage();
-            updateFilterOptions();
         }
         
+        // Remove uma questão da lista
         function removeQuestion(questionId) {
-            if (confirm('Tem certeza que deseja excluir esta questão?')) {
+            if (confirm('Tem certeza que deseja remover esta questão?')) {
                 questionsDatabase = questionsDatabase.filter(q => q.id !== questionId);
                 saveToLocalStorage();
-                updateDisplay();
-                updateStats();
-                showStatus('✅ Questão excluída com sucesso!', 'success');
+                renderQuestions();
+                showStatus('Questão removida.', 'info');
             }
         }
-        
-        function duplicateQuestion(questionId) {
-            const question = questionsDatabase.find(q => q.id === questionId);
-            if (question) {
-                const duplicate = {
-                    ...question,
-                    id: generateId(),
-                    text: question.text + ' (Cópia)',
-                    createdAt: new Date().toISOString()
-                };
-                questionsDatabase.unshift(duplicate);
-                saveToLocalStorage();
-                updateDisplay();
-                updateStats();
-                showStatus('✅ Questão duplicada com sucesso!', 'success');
-            }
-        }
-        
+
+        // Salva as questões no armazenamento do navegador
         function saveToLocalStorage() {
-            try {
-                localStorage.setItem('questionsDatabase', JSON.stringify(questionsDatabase));
-                localStorage.setItem('generatedToday', generatedToday.toString());
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                showStatus('⚠️ Erro ao salvar no navegador.', 'warning');
-            }
+            localStorage.setItem('simpleQuestionsDB', JSON.stringify(questionsDatabase));
         }
-        
+
+        // Carrega as questões salvas quando a página abre
         function loadFromLocalStorage() {
-            try {
-                const saved = localStorage.getItem('questionsDatabase');
-                if (saved) {
-                    questionsDatabase = JSON.parse(saved);
-                }
-                
-                const savedToday = localStorage.getItem('generatedToday');
-                if (savedToday) {
-                    generatedToday = parseInt(savedToday);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar:', error);
-                questionsDatabase = [];
-                generatedToday = 0;
+            const saved = localStorage.getItem('simpleQuestionsDB');
+            if (saved) {
+                questionsDatabase = JSON.parse(saved);
             }
         }
-        
-        // === INTERFACE E EXIBIÇÃO ===
-        function updateDisplay() {
-            applyFilters();
-            renderQuestions();
-        }
-        
-        function applyFilters() {
-            const searchTerm = elements.searchBox.value.toLowerCase();
-            const subjectFilter = elements.filterSubject.value;
-            const difficultyFilter = elements.filterDifficulty.value;
-            const typeFilter = elements.filterType.value;
-            
-            filteredQuestions = questionsDatabase.filter(q => {
-                const matchesSearch = !searchTerm || 
-                    q.text.toLowerCase().includes(searchTerm) ||
-                    q.subject.toLowerCase().includes(searchTerm) ||
-                    q.topic.toLowerCase().includes(searchTerm);
-                    
-                const matchesSubject = !subjectFilter || q.subject === subjectFilter;
-                const matchesDifficulty = !difficultyFilter || q.difficulty === difficultyFilter;
-                const matchesType = !typeFilter || q.type === typeFilter;
-                
-                return matchesSearch && matchesSubject && matchesDifficulty && matchesType;
-            });
-            
-            // Aplicar ordenação
-            const sortBy = elements.sortBy.value;
-            switch(sortBy) {
-                case 'newest':
-                    filteredQuestions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                    break;
-                case 'oldest':
-                    filteredQuestions.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-                    break;
-                case 'difficulty':
-                    const diffOrder = { 'facil': 1, 'medio': 2, 'dificil': 3 };
-                    filteredQuestions.sort((a, b) => diffOrder[a.difficulty] - diffOrder[b.difficulty]);
-                    break;
-                case 'subject':
-                    filteredQuestions.sort((a, b) => a.subject.localeCompare(b.subject));
-                    break;
-            }
-        }
-        
-        function renderQuestions() {
-            if (filteredQuestions.length === 0) {
-                elements.questionsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <div class="icon">🔍</div>
-                        <h3>Nenhuma questão encontrada</h3>
-                        <p>Tente ajustar os filtros ou gerar novas questões.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            const html = filteredQuestions.map(question => createQuestionHTML(question)).join('');
-            elements.questionsContainer.innerHTML = html;
-        }
-        
-        function createQuestionHTML(question) {
-            const difficultyClass = `difficulty-${question.difficulty}`;
-            const typeIcon = getTypeIcon(question.type);
-            const difficultyIcon = getDifficultyIcon(question.difficulty);
-            
-            let optionsHTML = '';
-            if (question.options && question.options.length > 0) {
-                optionsHTML = `
-                    <div class="question-options">
-                        ${question.options.map((option, index) => {
-                            const isCorrect = option.charAt(0) === question.correctAnswer || 
-                                            (question.correctAnswer && option.includes(question.correctAnswer));
-                            return `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
-                        }).join('')}
-                    </div>
-                `;
-            } else if (question.type === 'verdadeiro-falso') {
-                optionsHTML = `
-                    <div class="question-options">
-                        <div class="option ${question.correctAnswer.toLowerCase() === 'verdadeiro' ? 'correct' : ''}">( ) Verdadeiro</div>
-                        <div class="option ${question.correctAnswer.toLowerCase() === 'falso' ? 'correct' : ''}">( ) Falso</div>
-                    </div>
-                `;
-            }
-            
-            return `
-                <div class="question-card">
-                    <div class="question-header">
-                        <div class="question-meta">
-                            <span class="meta-tag">${typeIcon} ${formatType(question.type)}</span>
-                            <span class="meta-tag ${difficultyClass}">${difficultyIcon} ${formatDifficulty(question.difficulty)}</span>
-                            <span class="meta-tag">${question.subject}</span>
-                            <span class="meta-tag">${question.topic}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="question-text">${question.text}</div>
-                    
-                    ${optionsHTML}
-                    
-                    <div style="margin-bottom: 12px; font-size: 12px; color: #64748b;">
-                        <strong>Resposta:</strong> ${question.correctAnswer}<br>
-                        <strong>Criada em:</strong> ${formatDate(question.createdAt)}
-                    </div>
-                    
-                    <div class="question-actions">
-                        <button onclick="viewQuestion('${question.id}')" class="btn btn-small">
-                            👁️ Ver
-                        </button>
-                        <button onclick="editQuestion('${question.id}')" class="btn btn-small btn-warning">
-                            ✏️ Editar
-                        </button>
-                        <button onclick="duplicateQuestion('${question.id}')" class="btn btn-small btn-secondary">
-                            📋 Duplicar
-                        </button>
-                        <button onclick="removeQuestion('${question.id}')" class="btn btn-small btn-danger">
-                            🗑️ Excluir
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function getTypeIcon(type) {
-            const icons = {
-                'multipla-escolha': '☑️',
-                'verdadeiro-falso': '✓',
-                'dissertativa': '📝',
-                'lacunas': '📄'
-            };
-            return icons[type] || '❓';
-        }
-        
-        function getDifficultyIcon(difficulty) {
-            const icons = {
-                'facil': '🟢',
-                'medio': '🟡', 
-                'dificil': '🔴'
-            };
-            return icons[difficulty] || '⚪';
-        }
-        
-        function formatType(type) {
-            const formats = {
-                'multipla-escolha': 'Múltipla Escolha',
-                'verdadeiro-falso': 'V/F',
-                'dissertativa': 'Dissertativa',
-                'lacunas': 'Lacunas'
-            };
-            return formats[type] || type;
-        }
-        
-        function formatDifficulty(difficulty) {
-            const formats = {
-                'facil': 'Fácil',
-                'medio': 'Médio',
-                'dificil': 'Difícil'
-            };
-            return formats[difficulty] || difficulty;
-        }
-        
-        function updateStats() {
-            elements.totalQuestions.textContent = questionsDatabase.length;
-            elements.generatedToday.textContent = generatedToday;
-            
-            const easyCount = questionsDatabase.filter(q => q.difficulty === 'facil').length;
-            const hardCount = questionsDatabase.filter(q => q.difficulty === 'dificil').length;
-            
-            elements.easyCount.textContent = easyCount;
-            elements.hardCount.textContent = hardCount;
-        }
-        
-        function updateFilterOptions() {
-            // Atualizar opções de disciplinas no filtro
-            const subjects = [...new Set(questionsDatabase.map(q => q.subject))];
-            const currentSubject = elements.filterSubject.value;
-            
-            elements.filterSubject.innerHTML = '<option value="">Todas as disciplinas</option>';
-            subjects.forEach(subject => {
-                const option = document.createElement('option');
-                option.value = subject;
-                option.textContent = subject;
-                if (subject === currentSubject) option.selected = true;
-                elements.filterSubject.appendChild(option);
-            });
-        }
-        
-        // === FUNÇÕES DE EDIÇÃO ===
-        function editQuestion(questionId) {
-            const question = questionsDatabase.find(q => q.id === questionId);
-            if (!question) return;
-            
-            currentEditingIndex = questionsDatabase.findIndex(q => q.id === questionId);
-            
-            elements.editQuestionText.value = question.text;
-            elements.editExplanation.value = question.explanation;
-            
-            // Configurar opções baseado no tipo
-            let optionsHTML = '';
-            if (question.type === 'multipla-escolha' && question.options) {
-                optionsHTML = `
-                    <div class="form-group">
-                        <label>Opções:</label>
-                        ${question.options.map((option, index) => `
-                            <input type="text" id="edit-option-${index}" value="${option}" style="margin-bottom: 8px;">
-                        `).join('')}
-                    </div>
-                    <div class="form-group">
-                        <label>Resposta Correta:</label>
-                        <select id="edit-correct-answer">
-                            <option value="A" ${question.correctAnswer === 'A' ? 'selected' : ''}>A</option>
-                            <option value="B" ${question.correctAnswer === 'B' ? 'selected' : ''}>B</option>
-                            <option value="C" ${question.correctAnswer === 'C' ? 'selected' : ''}>C</option>
-                            <option value="D" ${question.correctAnswer === 'D' ? 'selected' : ''}>D</option>
-                        </select>
-                    </div>
-                `;
-            } else if (question.type === 'verdadeiro-falso') {
-                optionsHTML = `
-                    <div class="form-group">
-                        <label>Resposta Correta:</label>
-                        <select id="edit-correct-answer">
-                            <option value="verdadeiro" ${question.correctAnswer.toLowerCase() === 'verdadeiro' ? 'selected' : ''}>Verdadeiro</option>
-                            <option value="falso" ${question.correctAnswer.toLowerCase() === 'falso' ? 'selected' : ''}>Falso</option>
-                        </select>
-                    </div>
-                `;
-            } else {
-                optionsHTML = `
-                    <div class="form-group">
-                        <label>Resposta/Critérios:</label>
-                        <textarea id="edit-correct-answer" rows="3">${question.correctAnswer}</textarea>
-                    </div>
-                `;
-            }
-            
-            elements.editOptionsContainer.innerHTML = optionsHTML;
-            elements.editModal.style.display = 'flex';
-        }
-        
-        function saveEditedQuestion() {
-            if (currentEditingIndex === -1) return;
-            
-            const question = questionsDatabase[currentEditingIndex];
-            question.text = elements.editQuestionText.value;
-            question.explanation = elements.editExplanation.value;
-            
-            // Salvar baseado no tipo
-            if (question.type === 'multipla-escolha') {
-                const options = [];
-                for (let i = 0; i < 4; i++) {
-                    const optionElement = document.getElementById(`edit-option-${i}`);
-                    if (optionElement) {
-                        options.push(optionElement.value);
-                    }
-                }
-                question.options = options;
-                
-                const correctElement = document.getElementById('edit-correct-answer');
-                if (correctElement) {
-                    question.correctAnswer = correctElement.value;
-                }
-            } else {
-                const correctElement = document.getElementById('edit-correct-answer');
-                if (correctElement) {
-                    question.correctAnswer = correctElement.value;
-                }
-            }
-            
-            saveToLocalStorage();
-            updateDisplay();
-            closeEditModal();
-            showStatus('✅ Questão atualizada com sucesso!', 'success');
-        }
-        
-        function closeEditModal() {
-            elements.editModal.style.display = 'none';
-            currentEditingIndex = -1;
-        }
-        
-        function viewQuestion(questionId) {
-            const question = questionsDatabase.find(q => q.id === questionId);
-            if (!question) return;
-            
-            let contentHTML = `
-                <div style="margin-bottom: 20px;">
-                    <div class="question-meta" style="margin-bottom: 12px;">
-                        <span class="meta-tag">${getTypeIcon(question.type)} ${formatType(question.type)}</span>
-                        <span class="meta-tag difficulty-${question.difficulty}">${getDifficultyIcon(question.difficulty)} ${formatDifficulty(question.difficulty)}</span>
-                        <span class="meta-tag">${question.subject}</span>
-                        <span class="meta-tag">${question.topic}</span>
-                    </div>
-                    
-                    <div class="question-text" style="font-size: 16px; margin-bottom: 16px;">${question.text}</div>
-            `;
-            
-            if (question.options && question.options.length > 0) {
-                contentHTML += '<div class="question-options">';
-                question.options.forEach((option, index) => {
-                    const isCorrect = option.charAt(0) === question.correctAnswer;
-                    contentHTML += `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
-                });
-                contentHTML += '</div>';
-            }
-            
-            contentHTML += `
-                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 16px;">
-                        <strong>💡 Resposta Correta:</strong> ${question.correctAnswer}<br><br>
-                        <strong>📝 Explicação:</strong><br>${question.explanation || 'Nenhuma explicação disponível.'}
-                    </div>
-                    
-                    <div style="font-size: 12px; color: #64748b; margin-top: 12px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
-                        <strong>Detalhes:</strong><br>
-                        Nível: ${question.educationLevel}<br>
-                        Criada em: ${formatDate(question.createdAt)}<br>
-                        ID: ${question.id}
-                    </div>
-                </div>
-            `;
-            
-            elements.viewQuestionContent.innerHTML = contentHTML;
-            elements.viewModal.style.display = 'flex';
-        }
-        
-        function closeViewModal() {
-            elements.viewModal.style.display = 'none';
-        }
-        
-        // === FUNÇÕES DE EXPORTAÇÃO E IMPORTAÇÃO ===
-        function exportToPDF() {
-            if (questionsDatabase.length === 0) {
-                showStatus('❌ Nenhuma questão para exportar.', 'error');
-                return;
-            }
-            
-            const printWindow = window.open('', '_blank');
-            const printContent = generatePrintHTML();
-            
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            printWindow.focus();
-            printWindow.print();
-            
-            showStatus('📄 Abrindo janela de impressão...', 'success');
-        }
-        
-        function generatePrintHTML() {
-            const currentDate = new Date().toLocaleDateString('pt-BR');
-            const stats = {
-                total: questionsDatabase.length,
-                facil: questionsDatabase.filter(q => q.difficulty === 'facil').length,
-                medio: questionsDatabase.filter(q => q.difficulty === 'medio').length,
-                dificil: questionsDatabase.filter(q => q.difficulty === 'dificil').length
-            };
-            
-            let html = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Banco de Questões - ${currentDate}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-                        .stats { background: #f5f5f5; padding: 15px; margin-bottom: 30px; border-radius: 5px; }
-                        .question { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; page-break-inside: avoid; }
-                        .question-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 12px; color: #666; }
-                        .question-text { font-size: 14px; margin-bottom: 15px; font-weight: bold; }
-                        .options { margin-bottom: 15px; }
-                        .option { margin-bottom: 5px; padding: 5px; }
-                        .correct { background: #e8f5e8; font-weight: bold; }
-                        .answer-section { background: #f9f9f9; padding: 10px; border-radius: 3px; font-size: 12px; }
-                        @media print { body { margin: 20px; } }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>🎯 Banco de Questões</h1>
-                        <p>Gerado em: ${currentDate} | Powered by Puter.ai</p>
-                    </div>
-                    
-                    <div class="stats">
-                        <h3>📊 Estatísticas</h3>
-                        <p><strong>Total de questões:</strong> ${stats.total}</p>
-                        <p><strong>Fácil:</strong> ${stats.facil} | <strong>Médio:</strong> ${stats.medio} | <strong>Difícil:</strong> ${stats.dificil}</p>
-                    </div>
-            `;
-            
-            questionsDatabase.forEach((question, index) => {
-                html += `
-                    <div class="question">
-                        <div class="question-header">
-                            <span><strong>Questão ${index + 1}</strong> - ${question.subject} | ${question.topic}</span>
-                            <span>${formatType(question.type)} | ${formatDifficulty(question.difficulty)}</span>
-                        </div>
-                        
-                        <div class="question-text">${question.text}</div>
-                `;
-                
-                if (question.options && question.options.length > 0) {
-                    html += '<div class="options">';
-                    question.options.forEach(option => {
-                        const isCorrect = option.charAt(0) === question.correctAnswer;
-                        html += `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
-                    });
-                    html += '</div>';
-                } else if (question.type === 'verdadeiro-falso') {
-                    html += `
-                        <div class="options">
-                            <div class="option ${question.correctAnswer.toLowerCase() === 'verdadeiro' ? 'correct' : ''}">( ) Verdadeiro</div>
-                            <div class="option ${question.correctAnswer.toLowerCase() === 'falso' ? 'correct' : ''}">( ) Falso</div>
-                        </div>
-                    `;
-                }
-                
-                html += `
-                        <div class="answer-section">
-                            <strong>Resposta:</strong> ${question.correctAnswer}<br>
-                            <strong>Explicação:</strong> ${question.explanation || 'Não disponível'}
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</body></html>';
-            return html;
-        }
-        
-        function importQuestions() {
-            elements.importFile.click();
-        }
-        
-        function handleFileImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    
-                    if (Array.isArray(imported)) {
-                        // Validar e adicionar questões
-                        const validQuestions = imported.filter(q => 
-                            q.text && q.subject && q.topic && q.difficulty
-                        ).map(q => ({
-                            ...q,
-                            id: generateId(),
-                            createdAt: new Date().toISOString()
-                        }));
-                        
-                        if (validQuestions.length > 0) {
-                            questionsDatabase.unshift(...validQuestions);
-                            saveToLocalStorage();
-                            updateDisplay();
-                            updateStats();
-                            updateFilterOptions();
-                            showStatus(`✅ ${validQuestions.length} questão(ões) importada(s)!`, 'success');
-                        } else {
-                            showStatus('❌ Nenhuma questão válida encontrada no arquivo.', 'error');
-                        }
-                    } else {
-                        showStatus('❌ Formato de arquivo inválido.', 'error');
-                    }
-                } catch (error) {
-                    showStatus('❌ Erro ao ler arquivo. Verifique o formato.', 'error');
-                }
-            };
-            reader.readAsText(file);
-            
-            // Limpar input
-            event.target.value = '';
-        }
-        
-        function clearAllQuestions() {
-            if (confirm('⚠️ Tem certeza que deseja excluir TODAS as questões? Esta ação não pode ser desfeita.')) {
-                questionsDatabase = [];
-                generatedToday = 0;
-                saveToLocalStorage();
-                updateDisplay();
-                updateStats();
-                updateFilterOptions();
-                showStatus('✅ Todas as questões foram excluídas.', 'success');
-            }
-        }
-        
-        function shuffleQuestions() {
-            for (let i = filteredQuestions.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [filteredQuestions[i], filteredQuestions[j]] = [filteredQuestions[j], filteredQuestions[i]];
-            }
-            renderQuestions();
-            showStatus('🔀 Questões embaralhadas!', 'success');
-        }
-        
-        // === EVENT LISTENERS ===
-        function initializeEventListeners() {
-            // Formulário
-            elements.subject.addEventListener('change', function() {
-                elements.customSubjectGroup.style.display = 
-                    this.value === 'custom' ? 'block' : 'none';
-            });
-            
-            elements.generateBtn.addEventListener('click', generateQuestions);
-            
-            // Filtros e busca
-            elements.searchBox.addEventListener('input', updateDisplay);
-            elements.filterSubject.addEventListener('change', updateDisplay);
-            elements.filterDifficulty.addEventListener('change', updateDisplay);
-            elements.filterType.addEventListener('change', updateDisplay);
-            elements.sortBy.addEventListener('change', updateDisplay);
-            elements.shuffleBtn.addEventListener('click', shuffleQuestions);
-            
-            // Ações
-            elements.clearAllBtn.addEventListener('click', clearAllQuestions);
-            elements.exportBtn.addEventListener('click', exportToPDF);
-            elements.importBtn.addEventListener('click', importQuestions);
-            elements.importFile.addEventListener('change', handleFileImport);
-            
-            // Modais
-            elements.editModal.addEventListener('click', function(e) {
-                if (e.target === this) closeEditModal();
-            });
-            
-            elements.viewModal.addEventListener('click', function(e) {
-                if (e.target === this) closeViewModal();
-            });
-            
-            // Teclas de atalho
-            document.addEventListener('keydown', function(e) {
-                if (e.ctrlKey || e.metaKey) {
-                    switch(e.key) {
-                        case 'g':
-                            e.preventDefault();
-                            if (!elements.generateBtn.disabled) {
-                                generateQuestions();
-                            }
-                            break;
-                        case 'f':
-                            e.preventDefault();
-                            elements.searchBox.focus();
-                            break;
-                        case 'p':
-                            e.preventDefault();
-                            exportToPDF();
-                            break;
-                        case 'Escape':
-                            closeEditModal();
-                            closeViewModal();
-                            break;
-                    }
-                }
-            });
-        }
-        
-        // === FUNÇÕES DE INICIALIZAÇÃO ===
+
+        // Função para iniciar tudo
         function initializeApp() {
+            generateBtn.addEventListener('click', generateQuestions);
             loadFromLocalStorage();
-            updateStats();
-            updateFilterOptions();
-            updateDisplay();
-            initializeEventListeners();
-            
-            // Verificar se é um novo dia para resetar contador
-            const lastDate = localStorage.getItem('lastGenerationDate');
-            const today = new Date().toDateString();
-            
-            if (lastDate !== today) {
-                generatedToday = 0;
-                localStorage.setItem('lastGenerationDate', today);
-                localStorage.setItem('generatedToday', '0');
-                updateStats();
-            }
-            
-            showStatus('🎯 Sistema pronto! Configure os parâmetros e gere suas questões.', 'success');
+            renderQuestions();
         }
-        
-        // === FUNÇÕES AVANÇADAS ===
-        function generateQuizMode() {
-            // Função para criar um modo quiz interativo
-            if (questionsDatabase.length === 0) {
-                showStatus('❌ Nenhuma questão disponível para o modo quiz.', 'error');
-                return;
-            }
-            
-            const quizQuestions = [...questionsDatabase].sort(() => Math.random() - 0.5).slice(0, 10);
-            // Implementar interface de quiz...
-            showStatus('🎮 Modo quiz em desenvolvimento...', 'info');
-        }
-        
-        function analyzeQuestions() {
-            // Análise estatística das questões
-            if (questionsDatabase.length === 0) {
-                showStatus('❌ Nenhuma questão para analisar.', 'error');
-                return;
-            }
-            
-            const analysis = {
-                subjects: {},
-                difficulties: { facil: 0, medio: 0, dificil: 0 },
-                types: {},
-                topics: {}
-            };
-            
-            questionsDatabase.forEach(q => {
-                analysis.subjects[q.subject] = (analysis.subjects[q.subject] || 0) + 1;
-                analysis.difficulties[q.difficulty]++;
-                analysis.types[q.type] = (analysis.types[q.type] || 0) + 1;
-                analysis.topics[q.topic] = (analysis.topics[q.topic] || 0) + 1;
-            });
-            
-            console.log('📊 Análise do Banco de Questões:', analysis);
-            showStatus('📊 Análise gerada! Confira o console do navegador.', 'success');
-        }
-        
-        // Tornar funções globais para uso nos botões HTML
-        window.viewQuestion = viewQuestion;
-        window.editQuestion = editQuestion;
-        window.duplicateQuestion = duplicateQuestion;
+
+        // Torna a função de remover acessível pelo HTML
         window.removeQuestion = removeQuestion;
-        window.closeEditModal = closeEditModal;
-        window.closeViewModal = closeViewModal;
-        window.saveEditedQuestion = saveEditedQuestion;
         
-        // === INICIALIZAÇÃO ===
-        document.addEventListener('DOMContentLoaded', function() {
-            // Pequeno delay para garantir que todos os elementos estejam carregados
-            setTimeout(initializeApp, 100);
-        });
-        
-        // === FUNCIONALIDADES EXTRAS ===
-        
-        // Auto-save durante edição
-        let autoSaveInterval;
-        
-        function startAutoSave() {
-            autoSaveInterval = setInterval(() => {
-                if (questionsDatabase.length > 0) {
-                    saveToLocalStorage();
-                }
-            }, 30000); // Salva a cada 30 segundos
-        }
-        
-        function stopAutoSave() {
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-            }
-        }
-        
-        // Backup automático
-        function createBackup() {
-            const backup = {
-                questions: questionsDatabase,
-                stats: {
-                    generatedToday,
-                    totalQuestions: questionsDatabase.length
-                },
-                timestamp: new Date().toISOString(),
-                version: '1.0'
-            };
-            
-            const dataStr = JSON.stringify(backup, null, 2);
-            const dataBlob = new Blob([dataStr], {type: 'application/json'});
-            
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(dataBlob);
-            link.download = `backup-questoes-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            showStatus('💾 Backup criado e baixado!', 'success');
-        }
-        
-        // Adicionar botão de backup na interface
-        const backupBtn = document.createElement('button');
-        backupBtn.innerHTML = '💾 Backup';
-        backupBtn.className = 'btn btn-secondary btn-small';
-        backupBtn.style.marginBottom = '8px';
-        backupBtn.onclick = createBackup;
-        
-        // Inserir botão de backup após o botão de importar
-        elements.importBtn.parentNode.insertBefore(backupBtn, elements.importBtn.nextSibling);
-        
-        // Iniciar auto-save quando o app carrega
-        window.addEventListener('load', startAutoSave);
-        window.addEventListener('beforeunload', stopAutoSave);
-        
-        // === FINALIZAÇÃO ===
-        console.log('🎯 Sistema de Banco de Questões Inteligente carregado!');
-        console.log('💡 Atalhos disponíveis:');
-        console.log('   Ctrl+G: Gerar questões');
-        console.log('   Ctrl+F: Focar na busca');
-        console.log('   Ctrl+P: Exportar PDF');
-        console.log('   ESC: Fechar modais');
+        // Inicia o aplicativo
+        initializeApp();
     </script>
 </body>
 </html>
