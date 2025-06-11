@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões Simples</title>
+    <title>Gerador de Questões com PDF</title>
     <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
     
@@ -17,17 +17,17 @@
         }
         .container {
             max-width: 800px;
-            margin: 0 auto;
+            margin: 20px auto;
             background-color: #ffffff;
             padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px_10px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
             color: #333;
         }
-        p {
+        .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 25px;
@@ -39,12 +39,12 @@
             border-radius: 6px;
             border: 1px solid #ccc;
             min-height: 80px;
-            box-sizing: border-box; /* Garante que o padding não aumente a largura */
+            box-sizing: border-box;
         }
-        button {
+        .main-button {
             display: block;
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             font-size: 16px;
             font-weight: bold;
             color: #fff;
@@ -54,7 +54,7 @@
             cursor: pointer;
             margin-top: 10px;
         }
-        button:disabled {
+        .main-button:disabled {
             background-color: #999;
             cursor: not-allowed;
         }
@@ -63,7 +63,7 @@
             padding: 10px;
             margin-top: 20px;
             border-radius: 6px;
-            display: none; /* Só aparece quando tem mensagem */
+            display: none;
         }
         .status-success { background-color: #d4edda; color: #155724; }
         .status-error { background-color: #f8d7da; color: #721c24; }
@@ -104,25 +104,57 @@
             float: right;
             border: none;
         }
+        
+        /* Botões de Ação (PDF e Limpar) */
+        #actions-container {
+            display: none; /* Só aparece quando há questões */
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #007bff;
+            display: flex;
+            gap: 15px;
+        }
+        .action-button {
+            flex: 1; /* Ocupa espaço igual */
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .pdf-button { background-color: #28a745; } /* Verde */
+        .clear-button { background-color: #6c757d; } /* Cinza */
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Gerador de Questões Inteligente</h1>
-        <p>Descreva o que você precisa. Seja específico para melhores resultados.</p>
+        <p class="subtitle">
+            Descreva o que você precisa. Funciona para <strong>qualquer disciplina</strong>,
+            como Matemática, História, Direito, etc.
+        </p>
 
         <!-- Formulário Simplificado -->
         <div>
-            <textarea id="prompt" placeholder="Exemplo: Crie 3 questões de múltipla escolha sobre a Revolução Francesa para o Ensino Médio."></textarea>
-            <button id="generate-btn">🚀 Gerar Questões</button>
+            <textarea id="prompt" placeholder="Exemplo: Crie 5 questões fáceis de múltipla escolha sobre o ciclo da água para o 4º ano."></textarea>
+            <button id="generate-btn" class="main-button">🚀 Gerar Questões</button>
         </div>
 
         <!-- Mensagens de Status -->
         <div id="status"></div>
+        
+        <!-- Botões de Ação para a Lista -->
+        <div id="actions-container">
+            <button id="pdf-btn" class="action-button pdf-button">📄 Salvar Lista em PDF</button>
+            <button id="clear-btn" class="action-button clear-button">🗑️ Limpar Tudo</button>
+        </div>
 
         <!-- Container para as Questões Geradas -->
         <div id="questions-container">
-            <p>Suas questões aparecerão aqui.</p>
+            <p style="text-align:center; color:#888;">Suas questões aparecerão aqui.</p>
         </div>
     </div>
 
@@ -133,8 +165,11 @@
         const promptInput = document.getElementById('prompt');
         const statusDiv = document.getElementById('status');
         const questionsContainer = document.getElementById('questions-container');
+        const actionsContainer = document.getElementById('actions-container');
+        const pdfBtn = document.getElementById('pdf-btn');
+        const clearBtn = document.getElementById('clear-btn');
 
-        // === FUNÇÕES PRINCIPAIS ===
+        // === FUNÇÕES DE LÓGICA ===
 
         // Mostra uma mensagem para o usuário
         function showStatus(message, type = 'info') {
@@ -145,7 +180,7 @@
 
         // Gera um ID único para cada questão
         function generateId() {
-            return Date.now().toString(36);
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
         // Função principal que gera as questões
@@ -161,27 +196,45 @@
             showStatus('Conversando com a IA. Isso pode levar um momento...', 'info');
 
             try {
-                // Monta o pedido para a IA
-                const finalPrompt = createGenerationPrompt(userPrompt);
+                const finalPrompt = `
+                    Você é um especialista em criar material educacional. Baseado no pedido do usuário, gere questões.
+                    PEDIDO DO USUÁRIO: "${userPrompt}"
+                    REGRAS DE FORMATAÇÃO (MUITO IMPORTANTE):
+                    Responda APENAS com um objeto JSON. Não inclua nenhuma outra palavra fora do JSON.
+                    O formato deve ser:
+                    {
+                      "questions": [
+                        {
+                          "text": "O texto completo da questão aqui.",
+                          "options": ["A) Opção 1", "B) Opção 2"],
+                          "correct_answer": "A letra ou o texto da resposta correta.",
+                          "explanation": "Uma breve explicação do porquê a resposta está correta."
+                        }
+                      ]
+                    }
+                    - Se a questão for dissertativa ou de verdadeiro/falso, o campo "options" pode ser um array vazio [].
+                `;
                 
-                // Chama a IA do Puter
                 const response = await puter.ai.chat([{ role: 'user', content: finalPrompt }]);
                 
                 if (!response || !response.message || !response.message.content) {
                     throw new Error('A IA não retornou uma resposta válida.');
                 }
 
-                // Tenta extrair e processar a resposta da IA
-                const newQuestions = parseAIResponse(response.message.content);
+                const jsonStart = response.message.content.indexOf('{');
+                const jsonEnd = response.message.content.lastIndexOf('}') + 1;
+                const jsonString = response.message.content.substring(jsonStart, jsonEnd);
+                const parsed = JSON.parse(jsonString);
+
+                const newQuestions = parsed.questions ? parsed.questions.map(q => ({ ...q, id: generateId() })) : [];
 
                 if (newQuestions.length > 0) {
-                    // Adiciona as novas questões no início da lista
                     questionsDatabase.unshift(...newQuestions);
                     saveToLocalStorage();
                     renderQuestions();
                     showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
-                    throw new Error('Não foi possível extrair questões da resposta da IA. Tente ser mais específico.');
+                    throw new Error('Não foi possível extrair questões da resposta da IA.');
                 }
 
             } catch (error) {
@@ -193,61 +246,19 @@
             }
         }
 
-        // Cria o prompt detalhado que a IA entende
-        function createGenerationPrompt(userRequest) {
-            return `
-                Você é um especialista em criar material educacional. Baseado no pedido do usuário, gere questões.
-                
-                PEDIDO DO USUÁRIO: "${userRequest}"
-
-                REGRAS DE FORMATAÇÃO (MUITO IMPORTANTE):
-                Responda APENAS com um objeto JSON. Não inclua nenhuma outra palavra ou explicação fora do JSON.
-                O formato deve ser:
-                {
-                  "questions": [
-                    {
-                      "text": "O texto completo da questão aqui.",
-                      "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
-                      "correct_answer": "A letra ou o texto da resposta correta.",
-                      "explanation": "Uma breve explicação do porquê a resposta está correta."
-                    }
-                  ]
-                }
-                - Se a questão for dissertativa, o campo "options" pode ser um array vazio [].
-            `;
-        }
-        
-        // Extrai as questões do texto retornado pela IA
-        function parseAIResponse(response) {
-            try {
-                const jsonStart = response.indexOf('{');
-                const jsonEnd = response.lastIndexOf('}') + 1;
-                const jsonString = response.substring(jsonStart, jsonEnd);
-                const parsed = JSON.parse(jsonString);
-
-                if (parsed.questions && Array.isArray(parsed.questions)) {
-                    // Adiciona um ID único para cada questão
-                    return parsed.questions.map(q => ({ ...q, id: generateId() }));
-                }
-                return [];
-            } catch (error) {
-                console.error("Erro ao processar JSON da IA:", error);
-                return []; // Retorna vazio se não conseguir processar
-            }
-        }
-
         // Exibe as questões na tela
         function renderQuestions() {
             if (questionsDatabase.length === 0) {
-                questionsContainer.innerHTML = '<p>Nenhuma questão gerada ainda. Use o campo acima para começar.</p>';
+                questionsContainer.innerHTML = '<p style="text-align:center; color:#888;">Nenhuma questão na lista.</p>';
+                actionsContainer.style.display = 'none'; // Esconde botões de ação
                 return;
             }
 
-            questionsContainer.innerHTML = ''; // Limpa a lista antiga
+            actionsContainer.style.display = 'flex'; // Mostra botões de ação
+            questionsContainer.innerHTML = ''; 
             questionsDatabase.forEach(q => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
-
                 let optionsHTML = '';
                 if (q.options && q.options.length > 0) {
                     optionsHTML = `<div class="question-options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
@@ -268,20 +279,28 @@
         
         // Remove uma questão da lista
         function removeQuestion(questionId) {
-            if (confirm('Tem certeza que deseja remover esta questão?')) {
-                questionsDatabase = questionsDatabase.filter(q => q.id !== questionId);
-                saveToLocalStorage();
-                renderQuestions();
-                showStatus('Questão removida.', 'info');
-            }
+            questionsDatabase = questionsDatabase.filter(q => q.id !== questionId);
+            saveToLocalStorage();
+            renderQuestions();
+            showStatus('Questão removida.', 'info');
         }
 
-        // Salva as questões no armazenamento do navegador
+        // Limpa todas as questões da lista
+        function clearAllQuestions() {
+            if (confirm('Tem certeza que deseja apagar TODAS as questões da lista?')) {
+                questionsDatabase = [];
+                saveToLocalStorage();
+                renderQuestions();
+                showStatus('Lista de questões foi limpa.', 'info');
+            }
+        }
+        
+        // === FUNÇÕES DE ARMAZENAMENTO E PDF ===
+
         function saveToLocalStorage() {
             localStorage.setItem('simpleQuestionsDB', JSON.stringify(questionsDatabase));
         }
 
-        // Carrega as questões salvas quando a página abre
         function loadFromLocalStorage() {
             const saved = localStorage.getItem('simpleQuestionsDB');
             if (saved) {
@@ -289,17 +308,91 @@
             }
         }
 
-        // Função para iniciar tudo
+        // Gera o HTML para o arquivo PDF
+        function generatePrintHTML() {
+            // Parte 1: Questões para responder
+            const questionsSection = questionsDatabase.map((q, index) => {
+                let optionsHTML = '';
+                if (q.options && q.options.length > 0) {
+                    optionsHTML = `<ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul>`;
+                } else {
+                    optionsHTML = '<p>R: ________________________________________________</p>';
+                }
+                return `
+                    <div class="item">
+                        <p><strong>${index + 1}.</strong> ${q.text}</p>
+                        ${optionsHTML}
+                    </div>
+                `;
+            }).join('');
+            
+            // Parte 2: Gabarito e Resoluções
+            const answersSection = questionsDatabase.map((q, index) => `
+                <div class="item">
+                    <p><strong>Questão ${index + 1}:</strong></p>
+                    <p><strong>Resposta:</strong> ${q.correct_answer}</p>
+                    <p><strong>Explicação:</strong> ${q.explanation || 'Não fornecida.'}</p>
+                </div>
+            `).join('');
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lista de Questões</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .page-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+                        .section-title { font-size: 1.5em; margin-top: 40px; }
+                        .item { margin-bottom: 25px; }
+                        .answers-section { page-break-before: always; } /* ESSENCIAL PARA CRIAR UMA NOVA PÁGINA */
+                        ul { list-style-type: none; padding-left: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="page-title">Avaliação / Lista de Exercícios</h1>
+                    <h2 class="section-title">📝 Questões</h2>
+                    ${questionsSection}
+                    
+                    <div class="answers-section">
+                        <h2 class="section-title">✅ Gabarito e Resoluções</h2>
+                        ${answersSection}
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        // Abre a janela de impressão para salvar como PDF
+        function exportToPDF() {
+            if (questionsDatabase.length === 0) {
+                showStatus('Não há questões para salvar em PDF.', 'error');
+                return;
+            }
+            const printContent = generatePrintHTML();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            // Atraso para garantir que o conteúdo carregue antes de imprimir
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+
+        // === INICIALIZAÇÃO ===
         function initializeApp() {
             generateBtn.addEventListener('click', generateQuestions);
+            pdfBtn.addEventListener('click', exportToPDF);
+            clearBtn.addEventListener('click', clearAllQuestions);
+            
+            // Torna a função de remover acessível pelo HTML (onclick)
+            window.removeQuestion = removeQuestion;
+            
             loadFromLocalStorage();
             renderQuestions();
         }
-
-        // Torna a função de remover acessível pelo HTML
-        window.removeQuestion = removeQuestion;
         
-        // Inicia o aplicativo
         initializeApp();
     </script>
 </body>
