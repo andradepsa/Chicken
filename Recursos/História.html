@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa em História da Matemática</title>
+    <!-- Estilo inspirado no seu gerador de questões -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .main-button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .main-button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        #status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+        .status-info { background-color: #cce5ff; color: #004085; }
+        #results-container {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .result-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .result-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        .result-text {
+            margin-bottom: 10px;
+        }
+        .result-source {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .result-source:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pesquisa em História da Matemática</h1>
+        <p class="subtitle">Digite sua pergunta ou termo para pesquisar no MathsHistory.</p>
+
+        <div>
+            <input type="text" id="search-query" placeholder="Ex: Quem foi Euler?">
+            <button id="search-btn" class="main-button">🔍 Pesquisar</button>
+        </div>
+
+        <div id="status"></div>
+        
+        <div id="results-container">
+            <p style="text-align:center; color:#888;">Os resultados da sua pesquisa aparecerão aqui.</p>
+        </div>
+    </div>
+
+    <script>
+        // === VARIÁVEIS GLOBAIS ===
+        const searchBtn = document.getElementById('search-btn');
+        const searchQuery = document.getElementById('search-query');
+        const statusDiv = document.getElementById('status');
+        const resultsContainer = document.getElementById('results-container');
+
+        // === FUNÇÕES DE LÓGICA ===
+
+        // Mostra uma mensagem para o usuário
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        // Função principal que realiza a pesquisa
+        async function searchMathHistory() {
+            const query = searchQuery.value.trim();
+
+            if (!query) {
+                showStatus('Por favor, digite uma pergunta ou termo de pesquisa.', 'error');
+                return;
+            }
+
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Pesquisando...';
+            showStatus('Buscando informações. Aguarde...', 'info');
+
+            try {
+                // Simula uma chamada à API do backend
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro na comunicação com o servidor.');
+                }
+
+                const results = await response.json();
+
+                if (results.length > 0) {
+                    renderResults(results);
+                    showStatus('Pesquisa concluída com sucesso!', 'success');
+                } else {
+                    resultsContainer.innerHTML = '<p style="text-align:center; color:#888;">Nenhum resultado encontrado.</p>';
+                    showStatus('Nenhum resultado encontrado para sua pesquisa.', 'info');
+                }
+
+            } catch (error) {
+                console.error('Erro na pesquisa:', error);
+                showStatus(`Ocorreu um erro: ${error.message}`, 'error');
+                resultsContainer.innerHTML = '<p style="text-align:center; color:#888;">Erro ao realizar a pesquisa.</p>';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Pesquisar';
+            }
+        }
+
+        // Exibe os resultados na tela
+        function renderResults(results) {
+            resultsContainer.innerHTML = '';
+            results.forEach(result => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <div class="result-title">${result.title || 'Resultado'}</div>
+                    <div class="result-text">${result.text}</div>
+                    ${result.source ? `<a href="${result.source}" class="result-source" target="_blank">Fonte: ${result.source}</a>` : ''}
+                `;
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // === INICIALIZAÇÃO ===
+        function initializeApp() {
+            searchBtn.addEventListener('click', searchMathHistory);
+            // Permite pesquisa ao pressionar Enter
+            searchQuery.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') searchMathHistory();
+            });
+        }
+
+        initializeApp();
+    </script>
+</body>
+</html>
