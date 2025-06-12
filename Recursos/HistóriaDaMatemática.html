@@ -14,7 +14,7 @@
             min-height: 100vh;
         }
         .container { 
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
             background: rgba(255,255,255,0.95);
             padding: 30px;
@@ -49,21 +49,6 @@
         }
         button:hover { transform: translateY(-2px); }
         button:disabled { background: #999; transform: none; cursor: not-allowed; }
-        .examples { 
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .example { 
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .example:hover { background: #e9ecef; transform: translateY(-2px); }
         .status { 
             padding: 15px;
             margin: 20px 0;
@@ -76,94 +61,17 @@
         .status.info { background: #cce5ff; color: #004085; }
         .biography { 
             margin-top: 30px;
-            display: none;
-        }
-        .bio-card { 
+            padding: 30px;
             background: white;
             border-radius: 15px;
-            padding: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border-left: 5px solid #667eea;
+            display: none;
+            line-height: 1.6;
         }
-        .bio-header { 
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            align-items: flex-start;
-        }
-        .photo { 
-            width: 150px;
-            height: 190px;
-            border-radius: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            font-weight: bold;
-            flex-shrink: 0;
-        }
-        .bio-info h2 { font-size: 2rem; margin-bottom: 15px; }
-        .info-grid { 
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .info-item { 
-            display: flex;
-            margin-bottom: 10px;
-        }
-        .info-label { 
-            font-weight: bold;
-            color: #667eea;
-            min-width: 120px;
-        }
-        .section { margin-bottom: 25px; }
-        .section-title { 
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 5px;
-        }
-        .list { list-style: none; }
-        .list li { 
-            background: rgba(102,126,234,0.1);
-            padding: 10px 15px;
-            margin-bottom: 8px;
-            border-radius: 5px;
-            border-left: 3px solid #667eea;
-        }
-        .timeline-item { 
-            padding: 15px;
-            border-left: 3px solid #667eea;
-            margin-bottom: 15px;
-            background: rgba(102,126,234,0.05);
-            border-radius: 0 8px 8px 0;
-        }
-        .year { font-weight: bold; color: #667eea; }
-        .suggestions { 
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .suggestion { 
-            padding: 10px 15px;
-            background: #fff3cd;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s;
-        }
-        .suggestion:hover { background: #ffeaa7; transform: translateY(-2px); }
+        .biography h2 { color: #667eea; margin-bottom: 20px; }
+        .biography p { margin-bottom: 15px; text-align: justify; }
         @media (max-width: 768px) {
-            .bio-header { flex-direction: column; align-items: center; }
-            .photo { width: 120px; height: 150px; }
             .search-box { flex-direction: column; }
         }
     </style>
@@ -172,22 +80,12 @@
     <div class="container">
         <h1>📚 Gerador de Biografias</h1>
         
-        <div class="examples">
-            <div class="example" onclick="search('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
-            <div class="example" onclick="search('Marie Curie')">🔬 Marie Curie</div>
-            <div class="example" onclick="search('Pelé')">⚽ Pelé</div>
-            <div class="example" onclick="search('Einstein')">🧠 Einstein</div>
-            <div class="example" onclick="search('Santos Dumont')">✈️ Santos Dumont</div>
-            <div class="example" onclick="search('Frida Kahlo')">🎭 Frida Kahlo</div>
-        </div>
-
         <div class="search-box">
-            <input type="text" id="input" placeholder="Digite o nome de qualquer pessoa famosa...">
-            <button onclick="generateBio()">🔍 Gerar</button>
+            <input type="text" id="input" placeholder="Digite o nome de qualquer pessoa...">
+            <button onclick="generateBio()">🔍 Gerar Biografia</button>
         </div>
         
         <div id="status" class="status"></div>
-        <div id="suggestions"></div>
         <div id="biography" class="biography"></div>
     </div>
 
@@ -195,62 +93,6 @@
         const input = document.getElementById('input');
         const status = document.getElementById('status');
         const biography = document.getElementById('biography');
-        const suggestions = document.getElementById('suggestions');
-
-        const famous = ['Albert Einstein', 'Marie Curie', 'Leonardo da Vinci', 'Pelé', 'Santos Dumont', 'Frida Kahlo', 'Nelson Mandela', 'Shakespeare', 'Mozart', 'Tesla'];
-
-        const fallbacks = {
-            'Albert Einstein': {
-                name: 'Albert Einstein',
-                birth: '14/03/1879, Alemanha',
-                death: '18/04/1955, EUA',
-                nationality: 'Alemã/Americana',
-                areas: 'Física Teórica',
-                bio: 'Físico alemão que desenvolveu a teoria da relatividade, revolucionando a física moderna. Conhecido pela equação E=mc² e ganhador do Nobel de Física em 1921.',
-                contributions: ['Teoria da Relatividade', 'Efeito Fotoelétrico', 'Equação E=mc²'],
-                timeline: [
-                    {year: '1879', event: 'Nascimento na Alemanha'},
-                    {year: '1905', event: 'Teoria da Relatividade Especial'},
-                    {year: '1921', event: 'Prêmio Nobel de Física'},
-                    {year: '1955', event: 'Falecimento em Princeton'}
-                ]
-            },
-            'Leonardo da Vinci': {
-                name: 'Leonardo da Vinci',
-                birth: '15/04/1452, Itália',
-                death: '02/05/1519, França',
-                nationality: 'Italiana',
-                areas: 'Arte, Ciência, Engenharia',
-                bio: 'Polímata italiano do Renascimento, considerado um dos maiores gênios da humanidade. Criador da Mona Lisa e inventor de máquinas revolucionárias.',
-                contributions: ['Mona Lisa', 'A Última Ceia', 'Estudos de Anatomia', 'Projetos de Máquinas'],
-                timeline: [
-                    {year: '1452', event: 'Nascimento em Vinci'},
-                    {year: '1495', event: 'Inicia A Última Ceia'},
-                    {year: '1503', event: 'Começa a Mona Lisa'},
-                    {year: '1519', event: 'Falecimento na França'}
-                ]
-            },
-            'Pelé': {
-                name: 'Edson Arantes do Nascimento (Pelé)',
-                birth: '23/10/1940, Brasil',
-                death: '29/12/2022, Brasil',
-                nationality: 'Brasileira',
-                areas: 'Futebol',
-                bio: 'Maior jogador de futebol de todos os tempos. Único a conquistar três Copas do Mundo e marcou mais de 1000 gols na carreira.',
-                contributions: ['3 Copas do Mundo', 'Mais de 1000 gols', 'Popularização do futebol mundial'],
-                timeline: [
-                    {year: '1940', event: 'Nascimento em Três Corações'},
-                    {year: '1958', event: 'Primeira Copa do Mundo'},
-                    {year: '1970', event: 'Terceira Copa do Mundo'},
-                    {year: '2022', event: 'Falecimento em São Paulo'}
-                ]
-            }
-        };
-
-        function search(name) {
-            input.value = name;
-            generateBio();
-        }
 
         function showStatus(msg, type) {
             status.textContent = msg;
@@ -258,159 +100,55 @@
             status.style.display = 'block';
         }
 
-        function getInitials(name) {
-            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        }
-
-        function findSimilar(query) {
-            return famous.filter(name => 
-                name.toLowerCase().includes(query.toLowerCase()) ||
-                query.toLowerCase().includes(name.toLowerCase())
-            ).slice(0, 6);
-        }
-
-        function showSuggestions(names) {
-            if (names.length === 0) {
-                suggestions.innerHTML = '';
-                return;
-            }
-            suggestions.innerHTML = `
-                <div style="margin-top: 20px;">
-                    <h3>Sugestões:</h3>
-                    <div class="suggestions">
-                        ${names.map(name => `<div class="suggestion" onclick="search('${name}')">${name}</div>`).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function displayBio(data) {
-            const initials = getInitials(data.name);
-            biography.innerHTML = `
-                <div class="bio-card">
-                    <div class="bio-header">
-                        <div class="photo">${initials}</div>
-                        <div class="bio-info">
-                            <h2>${data.name}</h2>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">📅 Nascimento:</span>
-                                    <span>${data.birth}</span>
-                                </div>
-                                ${data.death ? `
-                                <div class="info-item">
-                                    <span class="info-label">⚰️ Falecimento:</span>
-                                    <span>${data.death}</span>
-                                </div>` : ''}
-                                <div class="info-item">
-                                    <span class="info-label">🌍 Nacionalidade:</span>
-                                    <span>${data.nationality}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">🏆 Área:</span>
-                                    <span>${data.areas}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-title">📖 Biografia</div>
-                        <p>${data.bio}</p>
-                    </div>
-
-                    ${data.contributions ? `
-                    <div class="section">
-                        <div class="section-title">🏆 Principais Feitos</div>
-                        <ul class="list">
-                            ${data.contributions.map(c => `<li>${c}</li>`).join('')}
-                        </ul>
-                    </div>` : ''}
-
-                    ${data.timeline ? `
-                    <div class="section">
-                        <div class="section-title">📅 Linha do Tempo</div>
-                        ${data.timeline.map(t => `
-                            <div class="timeline-item">
-                                <div class="year">${t.year}</div>
-                                <div>${t.event}</div>
-                            </div>
-                        `).join('')}
-                    </div>` : ''}
-                </div>
-            `;
-            biography.style.display = 'block';
-            biography.scrollIntoView({ behavior: 'smooth' });
-        }
-
         async function generateBio() {
             const name = input.value.trim();
             if (!name) {
-                showStatus('Digite um nome', 'error');
+                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
                 return;
             }
 
-            showStatus('Gerando biografia...', 'info');
+            showStatus('Gerando biografia completa...', 'info');
             biography.style.display = 'none';
-            suggestions.innerHTML = '';
 
-            // Tenta fallback primeiro
-            const fallback = Object.entries(fallbacks).find(([key]) => 
-                key.toLowerCase().includes(name.toLowerCase()) || 
-                name.toLowerCase().includes(key.toLowerCase())
-            )?.[1];
-
-            if (fallback) {
-                displayBio(fallback);
-                showStatus('Biografia carregada!', 'success');
-                return;
-            }
-
-            // Tenta IA
             try {
                 if (typeof puter === 'undefined' || !puter.ai) {
-                    throw new Error('IA não disponível');
+                    throw new Error('Serviço de IA não disponível');
                 }
 
                 const response = await puter.ai.chat([{
                     role: 'user',
-                    content: `Crie uma biografia para: ${name}
+                    content: `Escreva uma biografia completa e detalhada sobre: ${name}
 
-Responda APENAS com JSON válido:
-{
-  "name": "Nome completo",
-  "birth": "DD/MM/AAAA, Local",
-  "death": "DD/MM/AAAA, Local ou null se vivo",
-  "nationality": "Nacionalidade",
-  "areas": "Área principal",
-  "bio": "Biografia em 2-3 frases",
-  "contributions": ["Feito 1", "Feito 2"],
-  "timeline": [{"year": "1900", "event": "Evento"}]
-}
+A biografia deve incluir:
+- Informações pessoais (nascimento, morte se aplicável, nacionalidade)
+- História de vida detalhada
+- Principais realizações e contribuições
+- Contexto histórico e social
+- Legado e impacto
+- Curiosidades interessantes
 
-Se não existir: {"error": "NOT_FOUND"}`
+Escreva de forma narrativa, como um texto corrido, com pelo menos 5 parágrafos bem desenvolvidos. 
+Use linguagem fluida e envolvente, como se fosse para uma enciclopédia ou livro de história.
+Seja factual e preciso nas informações.
+
+Se a pessoa não existir ou for muito obscura, responda apenas: "PESSOA_NAO_ENCONTRADA"`
                 }]);
 
                 const content = response.message.content.trim();
-                const jsonStart = content.indexOf('{');
-                const jsonEnd = content.lastIndexOf('}') + 1;
-                const data = JSON.parse(content.substring(jsonStart, jsonEnd));
-
-                if (data.error) {
-                    throw new Error('Pessoa não encontrada');
+                
+                if (content === 'PESSOA_NAO_ENCONTRADA') {
+                    showStatus('Pessoa não encontrada. Tente um nome mais conhecido.', 'error');
+                    return;
                 }
 
-                displayBio(data);
-                showStatus('Biografia gerada!', 'success');
+                biography.innerHTML = `<h2>${name}</h2>${content.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}`;
+                biography.style.display = 'block';
+                biography.scrollIntoView({ behavior: 'smooth' });
+                showStatus('Biografia gerada com sucesso!', 'success');
+
             } catch (error) {
-                console.error(error);
-                showStatus('Pessoa não encontrada', 'error');
-                const similar = findSimilar(name);
-                if (similar.length > 0) {
-                    showSuggestions(similar);
-                } else {
-                    showSuggestions(famous.slice(0, 6));
-                }
+                console.error('Erro:', error);
+                showStatus('Erro ao gerar biografia. Tente novamente.', 'error');
             }
         }
 
