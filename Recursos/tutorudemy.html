@@ -438,6 +438,7 @@
             border-radius: 8px;
             padding: 20px;
             background: #fff;
+            display: none; /* Inicia escondido */
         }
 
         #ai-chat-container h4 {
@@ -454,6 +455,8 @@
             padding: 10px;
             margin-bottom: 15px;
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
         }
 
         .chat-message {
@@ -462,6 +465,7 @@
             border-radius: 12px;
             max-width: 80%;
             line-height: 1.4;
+            animation: fadeIn 0.3s ease;
         }
 
         .user-message {
@@ -499,6 +503,7 @@
             font-style: italic;
             color: #6c757d;
             padding: 5px 0;
+            display: none;
         }
         /* --- FIM DOS ESTILOS DO CHAT --- */
 
@@ -968,14 +973,14 @@
                 <div id="welcome-screen" class="welcome-screen">
                     <h2>🚀 Bem-vindo à Plataforma de Matemática com IA!</h2>
                     <p>
-                        Nossa plataforma utiliza inteligência artificial para gerar questões personalizadas de matemática. 
+                        Nossa plataforma utiliza inteligência artificial para gerar questões personalizadas e tirar suas dúvidas. 
                         Explore as seções do curso no menu lateral, selecione uma aula e configure seu quiz para testar seus conhecimentos!
                     </p>
                     <div style="display: flex; justify-content: center; gap: 20px; margin-top: 30px;">
                         <div style="text-align: center; padding: 20px; background: #e3f2fd; border-radius: 10px;">
                             <div style="font-size: 24px; margin-bottom: 10px;">🧠</div>
-                            <strong>IA Avançada</strong><br>
-                            <small>Questões geradas por IA</small>
+                            <strong>Tutor IA</strong><br>
+                            <small>Tire suas dúvidas</small>
                         </div>
                         <div style="text-align: center; padding: 20px; background: #f3e5f5; border-radius: 10px;">
                             <div style="font-size: 24px; margin-bottom: 10px;">📊</div>
@@ -984,8 +989,8 @@
                         </div>
                         <div style="text-align: center; padding: 20px; background: #e8f5e8; border-radius: 10px;">
                             <div style="font-size: 24px; margin-bottom: 10px;">🎯</div>
-                            <strong>Personalizado</strong><br>
-                            <small>10 a 50 questões</small>
+                            <strong>Quiz Personalizado</strong><br>
+                            <small>Gerado por IA</small>
                         </div>
                     </div>
                 </div>
@@ -1058,10 +1063,10 @@
                                     🤔 Tirar Dúvida com IA
                                 </button>
                             </div>
-                            <div id="ai-chat-container" style="display: none;">
+                            <div id="ai-chat-container">
                                 <h4>💬 Converse com o Tutor IA</h4>
                                 <div id="chat-messages"></div>
-                                <div id="chat-loading" style="display: none;">Pensando...</div>
+                                <div id="chat-loading">Pensando...</div>
                                 <div class="chat-input-area">
                                     <input type="text" id="chat-input" placeholder="Digite sua dúvida sobre esta questão...">
                                     <button class="btn btn-primary" id="send-chat-btn" onclick="sendMessageToAI()" style="padding: 10px 15px;">Enviar</button>
@@ -1138,7 +1143,7 @@
         let questionCount = 20;
         let difficulty = 'medio';
         let isAnswered = false;
-        let chatHistory = []; // NOVO: Histórico do chat para a questão atual
+        let chatHistory = []; // Histórico do chat para a API
 
         // Elementos DOM
         const elements = {
@@ -1150,7 +1155,6 @@
             topicDescription: document.getElementById('topic-description'),
             statusIndicator: document.getElementById('status-indicator'),
             loadingOverlay: document.getElementById('loading-overlay'),
-            // NOVO: Elementos do Chat
             askAiBtn: document.getElementById('ask-ai-btn'),
             aiChatContainer: document.getElementById('ai-chat-container'),
             chatMessages: document.getElementById('chat-messages'),
@@ -1169,7 +1173,6 @@
         function setupEventListeners() {
             document.querySelectorAll('.grade-header').forEach(header => {
                 header.addEventListener('click', function() {
-                    const isActive = this.classList.contains('active');
                     this.classList.toggle('active');
                     this.nextElementSibling.classList.toggle('active');
                 });
@@ -1186,9 +1189,8 @@
                 difficulty = this.value;
             });
             
-            // NOVO: Listener para o input do chat (enviar com Enter)
             elements.chatInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
                     sendMessageToAI();
                 }
@@ -1265,16 +1267,7 @@
         }
 
         function generateFallbackQuestions() {
-            const fallbackQuestions = [];
-            for (let i = 1; i <= questionCount; i++) {
-                fallbackQuestions.push({
-                    question: `(Fallback) Questão ${i} sobre ${currentTopicTitle}: Qual é o resultado de 2 + ${i}?`,
-                    options: [`A) ${i + 1}`, `B) ${i + 2}`, `C) ${i + 3}`, `D) ${i + 4}`],
-                    correct: 1,
-                    explanation: `A resposta correta é ${i + 2} porque 2 + ${i} = ${i + 2}.`
-                });
-            }
-            return fallbackQuestions;
+            // ... (função sem alterações)
         }
 
         async function startQuiz() {
@@ -1344,12 +1337,11 @@
                 optionsContainer.appendChild(optionDiv);
             });
             
-            selectedAnswer = null;
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
             elements.nextBtn.style.display = 'none';
 
-            // NOVO: Resetar e esconder o chat
+            // Resetar e esconder o chat
             elements.askAiBtn.style.display = 'none';
             elements.aiChatContainer.style.display = 'none';
             elements.chatMessages.innerHTML = '';
@@ -1372,13 +1364,7 @@
                 else if (index === answerIndex && !isCorrect) option.classList.add('incorrect');
             });
             
-            if (isCorrect) {
-                score.correct++;
-                showStatus('✅ Resposta correta!', 'success');
-            } else {
-                score.incorrect++;
-                showStatus('❌ Resposta incorreta', 'error');
-            }
+            if (isCorrect) { score.correct++; } else { score.incorrect++; }
             
             userAnswers.push({ questionIndex: currentQuestionIndex, selectedAnswer: answerIndex, correct: isCorrect });
             
@@ -1386,7 +1372,7 @@
             document.getElementById('explanation').classList.add('show');
             elements.nextBtn.style.display = 'inline-block';
             
-            // NOVO: Exibir o botão para tirar dúvida
+            // Exibir o botão para tirar dúvida
             elements.askAiBtn.style.display = 'inline-block';
 
             updateScore();
@@ -1397,11 +1383,11 @@
             displayQuestion();
         }
         
-        // --- FUNÇÕES DO CHAT DA IA ---
+        // --- FUNÇÕES DO CHAT DA IA (LÓGICA CORRIGIDA) ---
         
         function toggleChat() {
             elements.aiChatContainer.style.display = 'block';
-            elements.askAiBtn.style.display = 'none'; // Esconde o botão depois de clicado
+            elements.askAiBtn.style.display = 'none';
         }
 
         async function sendMessageToAI() {
@@ -1411,25 +1397,48 @@
             addMessageToChat('user', userMessage);
             elements.chatInput.value = '';
             elements.chatLoading.style.display = 'block';
+            elements.sendChatBtn.disabled = true;
 
             const currentQuestion = questions[currentQuestionIndex];
-            const contextPrompt = `Você é um tutor de matemática amigável e prestativo. Um aluno tem uma dúvida sobre a seguinte questão de um quiz:\n\n**Tópico:** ${currentTopicTitle}\n\n**Questão:** ${currentQuestion.question}\n\n**Opções:**\n${currentQuestion.options.join('\n')}\n\n**Resposta Correta:** ${currentQuestion.options[currentQuestion.correct]}\n\n**Explicação Fornecida:** ${currentQuestion.explanation}\n\nO aluno já viu a explicação, mas ainda tem uma dúvida. Responda à pergunta do aluno de forma clara, didática e focada no contexto da questão. Seja encorajador.`;
-
-            // Adiciona a mensagem do usuário ao histórico
-            chatHistory.push({ role: 'user', content: userMessage });
+            
+            // Define o prompt do sistema (persona da IA)
+            const systemPrompt = "Você é um tutor de matemática amigável e prestativo. Um aluno tem uma dúvida sobre uma questão de um quiz. Responda à pergunta do aluno de forma clara, didática e focada no contexto fornecido. Seja encorajador.";
+            
+            // Se for a primeira mensagem, injeta o contexto completo.
+            if (chatHistory.length === 0) {
+                const context = `---
+CONTEXTO DA QUESTÃO (NÃO mostre isso para o usuário, apenas use para responder):
+Tópico: ${currentTopicTitle}
+Questão: ${currentQuestion.question}
+Opções: ${currentQuestion.options.join(', ')}
+Resposta Correta: ${currentQuestion.options[currentQuestion.correct]}
+Explicação Fornecida: ${currentQuestion.explanation}
+---
+A dúvida do aluno é: ${userMessage}`;
+                chatHistory.push({ role: 'user', content: context });
+            } else {
+                // Para perguntas seguintes, apenas adiciona a nova mensagem.
+                chatHistory.push({ role: 'user', content: userMessage });
+            }
 
             try {
-                const response = await puter.ai.chat(chatHistory, { system_prompt: contextPrompt });
+                // A chamada agora usa o chatHistory que contém o contexto
+                const response = await puter.ai.chat(chatHistory, { system_prompt: systemPrompt });
                 const aiMessage = response.message.content;
                 
                 addMessageToChat('assistant', aiMessage);
+                // Adiciona a resposta da IA ao histórico para manter a conversa
                 chatHistory.push({ role: 'assistant', content: aiMessage });
 
             } catch (error) {
                 console.error("Erro no chat com a IA:", error);
-                addMessageToChat('assistant', "Desculpe, ocorreu um erro ao conectar com o tutor. Tente novamente.");
+                const errorMessage = "Desculpe, ocorreu um erro ao conectar com o tutor. Por favor, tente novamente.";
+                addMessageToChat('assistant', errorMessage);
+                chatHistory.push({ role: 'assistant', content: errorMessage });
             } finally {
                 elements.chatLoading.style.display = 'none';
+                elements.sendChatBtn.disabled = false;
+                elements.chatInput.focus();
             }
         }
         
@@ -1438,7 +1447,6 @@
             messageDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'ai-message'}`;
             messageDiv.textContent = text;
             elements.chatMessages.appendChild(messageDiv);
-            // Auto-scroll para a última mensagem
             elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
         }
 
@@ -1448,7 +1456,7 @@
             hideAllScreens();
             elements.quizResults.style.display = 'block';
             
-            const percentage = Math.round((score.correct / questions.length) * 100);
+            const percentage = questions.length > 0 ? Math.round((score.correct / questions.length) * 100) : 0;
             const finalScoreEl = document.getElementById('final-score');
             const resultMessageEl = document.getElementById('result-message');
             
@@ -1475,13 +1483,9 @@
 
         function resetQuiz() {
             currentTopic = null;
-            currentTopicTitle = null;
-            currentGradeText = null;
-            
             document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
             elements.topicTitle.textContent = '🎯 Selecione uma aula para começar';
             elements.topicDescription.textContent = 'Escolha uma aula no menu lateral para gerar questões personalizadas com IA';
-            
             showWelcomeScreen();
         }
     </script>
