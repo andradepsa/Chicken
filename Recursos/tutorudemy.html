@@ -1480,7 +1480,7 @@
             
             // Atualiza interface
             elements.topicTitle.textContent = `📚 ${element.textContent.trim()}`;
-            elements.topicDescription.textContent = `Módulo: ${currentGradeText} • Pronto para gerar questões e conversar com o tutor IA`;
+            elements.topicDescription.textContent = `Módulo: ${currentGradeText} • Gere um quiz e tire suas dúvidas com o tutor IA.`;
             
             // Reinicia chat
             resetChat();
@@ -1515,45 +1515,47 @@
         }
 
         async function generateQuestionsWithAI() {
-            const prompt = `Você é um especialista em matemática e um excelente educador. Crie EXATAMENTE ${questionCount} questões de múltipla escolha sobre o tópico "${currentTopicTitle}", que faz parte do módulo "${currentGradeText}".
+            // *** PROMPT CORRIGIDO E MAIS ROBUSTO ***
+            const prompt = `Sua tarefa é criar um quiz de matemática. Você é um especialista no assunto.
+Crie EXATAMENTE ${questionCount} questões de múltipla escolha sobre o tópico: "${currentTopicTitle}".
+O nível de dificuldade deve ser ${difficulty}.
 
-REGRAS ESSENCIAIS:
-1.  **Foco Total no Tópico:** As questões devem ser estritamente sobre "${currentTopicTitle}". Evite perguntas genéricas de matemática.
-2.  **Nível de Dificuldade:** ${difficulty}.
-3.  **Formato:** 4 alternativas (A, B, C, D) com apenas 1 resposta correta.
-4.  **Explicação Pedagógica:** Forneça uma explicação clara, concisa e didática para a resposta correta. A explicação é crucial.
-5.  **Notação LaTeX:** Use LaTeX para todas as fórmulas matemáticas. Use \\(...\) para fórmulas inline (no meio do texto) e \\[...\\] para fórmulas em bloco (em sua própria linha).
+REGRAS RÍGIDAS:
+1.  **FOCO ABSOLUTO NO TÓPICO:** Todas as questões DEVEM ser sobre "${currentTopicTitle}". Não crie questões genéricas.
+2.  **FORMATO OBRIGATÓRIO:** 4 opções de resposta (A, B, C, D), com apenas UMA correta.
+3.  **EXPLICAÇÃO DETALHADA:** Para cada questão, forneça uma explicação pedagógica clara, justificando a resposta correta.
+4.  **USO DE LATEX:** Use notação LaTeX para todas as expressões matemáticas. Formato inline: \\( ... \\). Formato de bloco: \\[ ... \\].
+5.  **SAÍDA EXCLUSIVAMENTE EM JSON:** Sua resposta DEVE ser APENAS o objeto JSON. Não inclua texto, saudações, ou qualquer caractere fora do objeto JSON.
 
-EXEMPLO DE ESTRUTURA DE RESPOSTA (JSON PURO):
+Estrutura do JSON:
 {
     "questions": [
         {
-            "question": "Questão específica e bem formulada sobre '${currentTopicTitle}'...",
+            "question": "Texto da questão...",
             "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
-            "correct": 0, // Índice da resposta correta (0 para A, 1 para B, etc.)
-            "explanation": "Explicação detalhada da resposta, justificando por que é a correta e, se possível, por que as outras estão erradas. Use LaTeX \\(a^2 + b^2 = c^2\\) aqui se necessário."
+            "correct": 0,
+            "explanation": "Explicação detalhada..."
         }
-        // ... mais ${questionCount - 1} questões
     ]
-}
-
-Por favor, gere as ${questionCount} questões sobre "${currentTopicTitle}" agora, seguindo todas as regras e respondendo APENAS com o objeto JSON.`;
+}`;
 
             try {
                 showStatus('🤖 Gerando questões com IA...', 'info');
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 let content = response.message.content.trim();
                 
+                // Limpeza agressiva para garantir que apenas o JSON seja processado
                 const jsonStart = content.indexOf('{');
                 const jsonEnd = content.lastIndexOf('}');
-                if (jsonStart !== -1 && jsonEnd !== -1) {
-                    content = content.substring(jsonStart, jsonEnd + 1);
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error("A resposta da IA não continha um objeto JSON válido.");
                 }
+                content = content.substring(jsonStart, jsonEnd + 1);
 
                 const jsonData = JSON.parse(content);
                 
                 if (!jsonData || !jsonData.questions || !Array.isArray(jsonData.questions) || jsonData.questions.length === 0) {
-                    throw new Error('Resposta da IA não contém um array de questões válido.');
+                    throw new Error('O JSON da IA não contém um array de questões válido.');
                 }
                 
                 const validQuestions = jsonData.questions.filter(q => 
@@ -1562,22 +1564,21 @@ Por favor, gere as ${questionCount} questões sobre "${currentTopicTitle}" agora
                     q.correct >= 0 && q.correct < 4 && q.explanation
                 ).slice(0, questionCount);
                 
-                if (validQuestions.length < 1) {
-                    throw new Error('Nenhuma questão válida foi encontrada na resposta da IA.');
+                if (validQuestions.length === 0) {
+                     throw new Error('Nenhuma questão válida foi encontrada na resposta da IA.');
                 }
                 
                 showStatus(`✅ ${validQuestions.length} questões geradas!`, 'success');
                 return validQuestions;
                 
             } catch (error) {
-                console.error('Erro ao gerar questões com IA:', error);
-                showStatus('⚠️ Erro na IA. Usando questões de fallback.', 'error');
-                return Array.from({ length: questionCount }, (_, i) => ({
-                    question: `Esta é uma questão de fallback ${i + 1} sobre "${currentTopicTitle}". Qual é o conceito principal?`,
-                    options: ["Conceito A", "Conceito B", "Conceito C", "Conceito D"],
-                    correct: 0,
-                    explanation: `A IA não conseguiu gerar uma questão específica. A resposta correta é conceitual. Estude o material de "${currentTopicTitle}" e tente novamente.`
-                }));
+                // *** TRATAMENTO DE ERRO MELHORADO ***
+                console.error('Falha crítica ao gerar questões com IA:', error);
+                // Log da resposta bruta da IA para depuração
+                console.error('Resposta bruta da IA (se disponível):', error.responseContent || 'Não disponível');
+                showStatus('⚠️ Erro na IA. Tente outro tópico ou novamente.', 'error');
+                // Retorna um array vazio para parar o processo em vez de mostrar fallback.
+                return []; 
             }
         }
         
@@ -1591,9 +1592,10 @@ Por favor, gere as ${questionCount} questões sobre "${currentTopicTitle}" agora
             try {
                 questions = await generateQuestionsWithAI();
                 
+                // *** VERIFICAÇÃO MELHORADA ***
                 if (!questions || questions.length === 0) {
                     hideLoading();
-                    alert('Não foi possível gerar as questões. Por favor, tente novamente ou escolha outro tópico.');
+                    alert('Desculpe, a IA não conseguiu gerar as questões para este tópico no momento. Por favor, tente novamente ou escolha outra aula.');
                     return;
                 }
                 
