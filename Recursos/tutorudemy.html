@@ -435,6 +435,7 @@
             margin-right: 20px;
             font-weight: 700;
             font-size: 16px;
+            flex-shrink: 0;
         }
 
         .option.correct .option-letter {
@@ -1420,6 +1421,14 @@
             // Menu lateral
             document.querySelectorAll('.grade-header').forEach(header => {
                 header.addEventListener('click', function() {
+                    // Fecha outros menus abertos para uma UI mais limpa
+                    document.querySelectorAll('.grade-header.active').forEach(openHeader => {
+                        if (openHeader !== this) {
+                            openHeader.classList.remove('active');
+                            openHeader.nextElementSibling.classList.remove('active');
+                        }
+                    });
+                    // Abre/Fecha o menu clicado
                     this.classList.toggle('active');
                     this.nextElementSibling.classList.toggle('active');
                 });
@@ -1461,23 +1470,18 @@
         }
 
         function selectTopic(element) {
-            // Remove seleção anterior
             document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
             element.classList.add('selected');
             
-            // Atualiza variáveis globais
             currentTopic = element.dataset.topic;
             currentTopicTitle = element.textContent.trim();
             const gradeHeader = element.closest('.grade-section').querySelector('.grade-header');
             currentGradeText = gradeHeader.querySelector('div > span:last-of-type').textContent.trim();
             
-            // Atualiza interface
             elements.topicTitle.textContent = `📚 ${currentTopicTitle}`;
             elements.topicDescription.textContent = `Seção: ${currentGradeText} • Pronto para gerar questões e conversar com o tutor IA`;
             
-            // Reinicia chat
             resetChat();
-            
             showQuizSetup();
         }
 
@@ -1500,50 +1504,52 @@
             elements.quizResults.style.display = 'none';
         }
 
-        function showStatus(message, type = 'info') {
+        function showStatus(message, type = 'info', duration = 4000) {
             const indicator = elements.statusIndicator;
             indicator.textContent = message;
             indicator.className = `status-indicator show ${type}`;
-            setTimeout(() => indicator.classList.remove('show'), 4000);
+            setTimeout(() => indicator.classList.remove('show'), duration);
         }
 
         async function generateQuestionsWithAI() {
             const prompt = `Você é um especialista em matemática e um professor didático. Crie EXATAMENTE ${questionCount} questões de múltipla escolha sobre o tópico de aula: "${currentTopicTitle}".
 
-REGRAS IMPORTANTES:
-- As questões devem ser ESPECÍFICAS para o tópico "${currentTopicTitle}". Evite perguntas genéricas de matemática.
-- Nível de dificuldade: ${difficulty}.
-- Todas as questões devem ter 4 alternativas (A, B, C, D), com apenas UMA resposta correta.
-- Forneça uma explicação CLARA, PEDAGÓGICA e DETALHADA para a resposta correta. A explicação é crucial.
-- Use notação LaTeX para fórmulas matemáticas: \\( \\) para fórmulas inline e \\[ \\] para fórmulas em bloco.
+REGRAS CRÍTICAS:
+1.  **FOCO TOTAL NO TÓPICO**: As questões devem ser 100% sobre "${currentTopicTitle}". Não desvie para matemática geral.
+2.  **NÍVEL DE DIFICULDADE**: ${difficulty}.
+3.  **ESTRUTURA**: 4 alternativas (A, B, C, D), com apenas UMA correta.
+4.  **EXPLICAÇÃO**: Forneça uma explicação CLARA, PEDAGÓGICA e DETALHADA para a resposta correta.
+5.  **LATEX**: Use notação LaTeX: \\( ... \\) para fórmulas inline e \\[ ... \\] para fórmulas em bloco.
+6.  **FORMATO DA SAÍDA**: A sua resposta DEVE SER APENAS um objeto JSON. NÃO inclua nenhum texto, comentário, ou introdução como "Aqui está o JSON:". A resposta deve começar com '{' e terminar com '}'.
 
-EXEMPLO DE FORMATO DE RESPOSTA (JSON ESTRITO):
+EXEMPLO DO FORMATO JSON ESTRITO:
 {
     "questions": [
         {
-            "question": "Questão específica e bem formulada sobre '${currentTopicTitle}'...",
+            "question": "Questão específica sobre '${currentTopicTitle}'...",
             "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
-            "correct": 0, // Índice da opção correta (0 para A, 1 para B, etc.)
-            "explanation": "Explicação detalhada e pedagógica da resposta correta, utilizando LaTeX se necessário..."
+            "correct": 0,
+            "explanation": "Explicação detalhada..."
         }
     ]
 }
 
-Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APENAS com o objeto JSON.`;
+Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Lembre-se, APENAS O JSON.`;
 
+            let rawContent = '';
             try {
                 showStatus('🤖 A IA está gerando suas questões...', 'info');
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                let content = response.message.content.trim();
+                rawContent = response.message.content.trim();
                 
-                // Limpeza básica para extrair o JSON
-                const jsonStart = content.indexOf('{');
-                const jsonEnd = content.lastIndexOf('}');
-                if (jsonStart !== -1 && jsonEnd !== -1) {
-                    content = content.substring(jsonStart, jsonEnd + 1);
+                const jsonStart = rawContent.indexOf('{');
+                const jsonEnd = rawContent.lastIndexOf('}');
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error("Resposta da IA não contém um objeto JSON válido.");
                 }
+                const jsonString = rawContent.substring(jsonStart, jsonEnd + 1);
 
-                let jsonData = JSON.parse(content);
+                const jsonData = JSON.parse(jsonString);
                 
                 if (!jsonData || !jsonData.questions || !Array.isArray(jsonData.questions) || jsonData.questions.length === 0) {
                     throw new Error('Formato de resposta da IA inválido ou sem questões.');
@@ -1553,7 +1559,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
                     q.question && q.options && Array.isArray(q.options) && 
                     q.options.length === 4 && typeof q.correct === 'number' && 
                     q.correct >= 0 && q.correct < 4 && q.explanation
-                ).slice(0, questionCount); // Garante que não teremos mais questões que o solicitado
+                ).slice(0, questionCount);
                 
                 if (validQuestions.length < 1) {
                     throw new Error('Nenhuma questão válida foi gerada pela IA.');
@@ -1564,28 +1570,10 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
                 
             } catch (error) {
                 console.error('Erro ao gerar questões com IA:', error);
-                showStatus('⚠️ Erro na IA. Usando questões de fallback.', 'error');
-                // Como fallback, podemos gerar algumas questões genéricas para não quebrar a experiência
-                return generateFallbackQuestions();
+                console.error('Conteúdo recebido da IA que causou o erro:', rawContent);
+                showStatus('⚠️ Erro na IA. Tente novamente ou escolha outro tópico.', 'error', 6000);
+                return null; // Sinaliza falha para a função que chamou
             }
-        }
-        
-        function generateFallbackQuestions() {
-             let fallbackQuestions = [];
-             for (let i = 0; i < questionCount; i++) {
-                 fallbackQuestions.push({
-                     question: `Esta é uma questão de exemplo sobre "${currentTopicTitle}". Qual é o conceito principal?`,
-                     options: [
-                         "Conceito A",
-                         "Conceito B",
-                         "Conceito C",
-                         "Conceito D"
-                     ],
-                     correct: 0,
-                     explanation: `Esta é uma explicação de exemplo. O conceito principal de "${currentTopicTitle}" envolve... [Explicação genérica]. Estude o material para aprender mais.`
-                 });
-             }
-             return fallbackQuestions;
         }
 
         async function startQuiz() {
@@ -1595,35 +1583,26 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
             }
             
             showLoading();
-            try {
-                questions = await generateQuestionsWithAI();
-                
-                if (!questions || questions.length === 0) {
-                    hideLoading();
-                    alert('Não foi possível gerar as questões. Por favor, tente novamente ou escolha outro tópico.');
-                    return;
-                }
-                
-                currentQuestionIndex = 0;
-                userAnswers = [];
-                score = { correct: 0, incorrect: 0 };
-                
-                hideAllScreens();
-                elements.quizArea.style.display = 'block';
-                elements.chatSection.style.display = 'flex';
-                
-                updateQuizHeader();
-                displayQuestion();
-                
-                addChatMessage('system', `💡 Quiz iniciado sobre "${currentTopicTitle}". Pode me perguntar sobre qualquer conceito ou questão!`);
-
-            } catch(e) {
-                 console.error("Erro ao iniciar o quiz:", e);
-                 alert("Ocorreu um erro inesperado ao iniciar o quiz. Tente novamente.");
+            questions = await generateQuestionsWithAI();
+            hideLoading();
+            
+            if (!questions || questions.length === 0) {
+                alert('Não foi possível gerar as questões para este tópico. Por favor, tente novamente ou escolha outra aula.');
+                return;
             }
-            finally {
-                hideLoading();
-            }
+            
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            score = { correct: 0, incorrect: 0 };
+            
+            hideAllScreens();
+            elements.quizArea.style.display = 'block';
+            elements.chatSection.style.display = 'flex';
+            
+            updateQuizHeader();
+            displayQuestion();
+            
+            addChatMessage('system', `💡 Quiz iniciado sobre "${currentTopicTitle}". Pode me perguntar sobre qualquer conceito ou questão!`);
         }
 
         function updateQuizHeader() {
@@ -1633,7 +1612,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
         }
 
         function updateProgress() {
-            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            const progress = (currentQuestionIndex / questions.length) * 100;
             document.getElementById('progress-bar').style.width = `${progress}%`;
             document.getElementById('progress-text').textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
         }
@@ -1660,20 +1639,22 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
                 optionDiv.className = 'option';
                 optionDiv.innerHTML = `
                     <div class="option-letter">${String.fromCharCode(65 + index)}</div>
-                    <div>${option}</div>
+                    <div></div>
                 `;
+                // Insere a opção como texto para evitar problemas de HTML malformado
+                optionDiv.querySelector('div:last-child').innerText = option;
+
                 optionDiv.addEventListener('click', () => selectAnswer(index, optionDiv));
                 optionsContainer.appendChild(optionDiv);
             });
             
-            selectedAnswer = null;
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
             document.getElementById('next-btn').style.display = 'none';
             updateProgress();
             
             if (window.MathJax) {
-                MathJax.typesetPromise([document.getElementById('question-text'), optionsContainer]).catch(err => console.log(err));
+                MathJax.typesetPromise([document.getElementById('question-text'), optionsContainer]).catch(err => console.log('MathJax error:', err));
             }
         }
 
@@ -1684,8 +1665,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
             const question = questions[currentQuestionIndex];
             const isCorrect = answerIndex === question.correct;
             
-            const options = document.querySelectorAll('.option');
-            options.forEach((option, index) => {
+            document.querySelectorAll('.option').forEach((option, index) => {
                 option.style.pointerEvents = 'none';
                 if (index === question.correct) {
                     option.classList.add('correct');
@@ -1702,11 +1682,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
                 showStatus('❌ Resposta incorreta!', 'error');
             }
             
-            userAnswers.push({ 
-                questionIndex: currentQuestionIndex, 
-                selectedAnswer: answerIndex, 
-                correct: isCorrect 
-            });
+            userAnswers.push({ questionIndex: currentQuestionIndex, selectedAnswer: answerIndex, correct: isCorrect });
             
             document.getElementById('explanation-text').innerHTML = question.explanation;
             document.getElementById('explanation').classList.add('show');
@@ -1714,7 +1690,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
             updateScore();
             
             if (window.MathJax) {
-                MathJax.typesetPromise([document.getElementById('explanation')]).catch(err => console.log(err));
+                MathJax.typesetPromise([document.getElementById('explanation')]).catch(err => console.log('MathJax error:', err));
             }
         }
 
@@ -1760,17 +1736,13 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
 
         function resetQuiz() {
             currentTopic = null;
-            currentTopicTitle = null;
-            currentGradeText = null;
-            
             document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
             elements.topicTitle.textContent = '🎯 Selecione uma aula para começar';
             elements.topicDescription.textContent = 'Escolha uma aula no menu lateral para gerar questões personalizadas com IA e conversar com o tutor inteligente';
-            
             resetChat();
             showWelcomeScreen();
         }
-
+        
         // === SISTEMA DE CHAT ===
         
         function resetChat() {
@@ -1785,10 +1757,7 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
         function addChatMessage(type, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
-            // Sanitize content before inserting
-            const tempDiv = document.createElement('div');
-            tempDiv.textContent = content;
-            messageDiv.innerHTML = tempDiv.innerHTML.replace(/\n/g, '<br>'); // Keep basic formatting
+            messageDiv.innerHTML = content.replace(/\n/g, '<br>'); // Keep basic formatting
             
             elements.chatMessages.appendChild(messageDiv);
             elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
@@ -1811,16 +1780,13 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
             
             try {
                 let context = `Você é um tutor de matemática amigável e especialista. `;
-                
-                if (currentTopic && currentTopicTitle) {
+                if (currentTopicTitle) {
                     context += `O estudante está na aula "${currentTopicTitle}". `;
                 }
-                
                 if (questions.length > 0 && currentQuestionIndex < questions.length) {
-                    const currentQuestion = questions[currentQuestionIndex];
-                    context += `A questão atual é: "${currentQuestion.question}" com opções: ${currentQuestion.options.join(', ')}. A resposta correta é a opção ${String.fromCharCode(65 + currentQuestion.correct)} e a explicação é: "${currentQuestion.explanation}". `;
+                    const q = questions[currentQuestionIndex];
+                    context += `A questão atual é: "${q.question}" com opções: ${q.options.join(', ')}. A resposta correta é a opção ${String.fromCharCode(65 + q.correct)} e a explicação é: "${q.explanation}". `;
                 }
-                
                 context += `Responda de forma clara, pedagógica e encorajadora. Use exemplos e analogias. Use notação LaTeX para fórmulas: \\( ... \\) para inline e \\[ ... \\] para bloco.`;
                 
                 const chatMessages = [
@@ -1834,12 +1800,8 @@ Gere ${questionCount} questões sobre "${currentTopicTitle}" AGORA. Responda APE
                 
                 addChatMessage('assistant', aiResponse);
                 
-                chatHistory.push({ role: 'user', content: message });
-                chatHistory.push({ role: 'assistant', content: aiResponse });
-                
-                if (chatHistory.length > 20) {
-                    chatHistory = chatHistory.slice(-20);
-                }
+                chatHistory.push({ role: 'user', content: message }, { role: 'assistant', content: aiResponse });
+                if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
                 
             } catch (error) {
                 console.error('Erro no chat:', error);
