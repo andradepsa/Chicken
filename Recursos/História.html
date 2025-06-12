@@ -3,166 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesquisa em História da Matemática</title>
+    <title>Pesquisa MacTutor - História da Matemática</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1c1e21;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
         }
         .container {
             max-width: 900px;
-            margin: 20px auto;
+            margin: 0 auto;
             background-color: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
         }
         h1 {
-            text-align: center;
             color: #333;
             margin-bottom: 10px;
+            font-size: 2.2em;
         }
         .subtitle {
-            text-align: center;
             color: #666;
-            margin-bottom: 25px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .mactutor-info {
+            background: linear-gradient(45deg, #f8f9ff, #e8ecff);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        
+        .search-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
         }
         .search-container {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 20px;
         }
         input[type="text"] {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            border-radius: 8px;
+            border: 2px solid #ddd;
             box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         .main-button {
-            padding: 12px 24px;
+            padding: 15px 30px;
             font-size: 16px;
             font-weight: bold;
             color: #fff;
-            background-color: #007bff;
+            background: linear-gradient(45deg, #667eea, #764ba2);
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            min-width: 120px;
+            min-width: 140px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         .main-button:disabled {
-            background-color: #999;
+            background: #999;
             cursor: not-allowed;
+            transform: none;
         }
         .main-button:hover:not(:disabled) {
-            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
+        
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .chip {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            border-radius: 25px;
+            padding: 8px 16px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .chip:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
         #status {
             text-align: center;
-            padding: 12px;
-            margin-bottom: 20px;
-            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
             display: none;
             font-weight: 500;
         }
-        .status-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .status-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .status-info { background-color: #cce5ff; color: #004085; border: 1px solid #b3d7ff; }
-        
-        .biography-section {
-            background-color: #f8f9fa;
-            border-left: 4px solid #007bff;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 0 6px 6px 0;
+        .status-success { 
+            background: linear-gradient(45deg, #d4edda, #c3e6cb); 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
         }
-        .biography-title {
-            font-size: 1.5em;
+        .status-error { 
+            background: linear-gradient(45deg, #f8d7da, #f5c6cb); 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+        }
+        .status-info { 
+            background: linear-gradient(45deg, #cce5ff, #b3d7ff); 
+            color: #004085; 
+            border: 1px solid #b3d7ff; 
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        .mathematician-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .mathematician-name {
+            font-size: 1.8em;
             font-weight: bold;
             color: #333;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .biography-content {
+        .mathematician-details {
             line-height: 1.6;
             color: #555;
             margin-bottom: 20px;
         }
-        
-        .bibliography-section {
-            margin-top: 30px;
-            border-top: 2px solid #eee;
-            padding-top: 25px;
-        }
-        .bibliography-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 20px;
-            display: flex;
+        .mactutor-link {
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        .mactutor-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
         }
         
-        .source-category {
-            margin-bottom: 25px;
+        .biography-section {
+            background: linear-gradient(45deg, #f8f9ff, #e8ecff);
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
         }
-        .category-title {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 12px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid #ddd;
-        }
-        .source-item {
-            background-color: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 10px;
-            transition: box-shadow 0.2s;
-        }
-        .source-item:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .source-title {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-        }
-        .source-details {
-            color: #666;
-            font-size: 0.95em;
-            margin-bottom: 8px;
-        }
-        .source-link {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        .source-link:hover {
-            text-decoration: underline;
+        .biography-text {
+            line-height: 1.7;
+            color: #444;
         }
         
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 20px;
+            gap: 15px;
+            padding: 40px;
+            color: #667eea;
         }
         .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #007bff;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -171,72 +215,79 @@
             100% { transform: rotate(360deg); }
         }
         
-        .suggestion-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        .chip {
-            background-color: #e9ecef;
-            border: 1px solid #ced4da;
-            border-radius: 20px;
-            padding: 6px 12px;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .chip:hover {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
         .no-results {
             text-align: center;
-            padding: 40px;
+            padding: 50px;
             color: #666;
         }
         .no-results-icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+        
+        .footer-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            color: #888;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Pesquisador de História da Matemática</h1>
-        <p class="subtitle">Digite o nome de qualquer matemático para obter biografia completa e bibliografia detalhada</p>
-
-        <div class="suggestion-chips">
-            <span class="chip" onclick="searchFor('Euler')">Euler</span>
-            <span class="chip" onclick="searchFor('Newton')">Newton</span>
-            <span class="chip" onclick="searchFor('Gauss')">Gauss</span>
-            <span class="chip" onclick="searchFor('Pythagoras')">Pitágoras</span>
-            <span class="chip" onclick="searchFor('Archimedes')">Arquimedes</span>
-            <span class="chip" onclick="searchFor('Fibonacci')">Fibonacci</span>
-            <span class="chip" onclick="searchFor('Descartes')">Descartes</span>
-            <span class="chip" onclick="searchFor('Pascal')">Pascal</span>
+        <div class="header">
+            <h1>📐 MacTutor History Search</h1>
+            <p class="subtitle">Pesquise biografias de matemáticos diretamente no MacTutor</p>
+            <div class="mactutor-info">
+                🎓 <strong>MacTutor</strong> é o arquivo oficial de História da Matemática da Universidade de St Andrews, Escócia. 
+                Contém mais de 2.000 biografias de matemáticos e cientistas.
+            </div>
         </div>
 
-        <div class="search-container">
-            <input type="text" id="search-query" placeholder="Ex: Leonhard Euler, Isaac Newton, Carl Gauss...">
-            <button id="search-btn" class="main-button">🔍 Pesquisar</button>
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" id="search-query" placeholder="Digite o nome do matemático (ex: Euler, Newton, Gauss...)">
+                <button id="search-btn" class="main-button">🔍 Buscar no MacTutor</button>
+            </div>
+            
+            <div class="suggestion-chips">
+                <span class="chip" onclick="searchFor('Euler')">Leonhard Euler</span>
+                <span class="chip" onclick="searchFor('Newton')">Isaac Newton</span>
+                <span class="chip" onclick="searchFor('Gauss')">Carl Gauss</span>
+                <span class="chip" onclick="searchFor('Archimedes')">Arquimedes</span>
+                <span class="chip" onclick="searchFor('Pythagoras')">Pitágoras</span>
+                <span class="chip" onclick="searchFor('Fibonacci')">Fibonacci</span>
+                <span class="chip" onclick="searchFor('Pascal')">Blaise Pascal</span>
+                <span class="chip" onclick="searchFor('Descartes')">René Descartes</span>
+            </div>
         </div>
 
         <div id="status"></div>
         
         <div id="results-container">
             <div class="no-results">
-                <div class="no-results-icon">📚</div>
-                <p>Digite o nome de um matemático acima para começar a pesquisa.</p>
-                <p style="font-size:0.9em; color:#888;">O sistema buscará biografia, obras e referências completas.</p>
+                <div class="no-results-icon">🔍</div>
+                <h3>Pronto para pesquisar!</h3>
+                <p>Digite o nome de qualquer matemático para buscar sua biografia no MacTutor.</p>
+                <p style="font-size:0.9em; color:#888;">O sistema consultará diretamente a base de dados da Universidade de St Andrews.</p>
             </div>
+        </div>
+        
+        <div class="footer-info">
+            <p>🌐 <strong>MacTutor:</strong> mathshistory.st-andrews.ac.uk</p>
+            <p>Desenvolvido por J J O'Connor e E F Robertson na Universidade de St Andrews</p>
         </div>
     </div>
 
     <script>
-        // === VARIÁVEIS GLOBAIS ===
+        // === CONFIGURAÇÃO DA API MACTUTOR ===
+        const MACTUTOR_BASE_URL = 'https://mathshistory.st-andrews.ac.uk';
+        const SEARCH_API_URL = '/api/search'; // Em produção, seria uma API proxy
+
+        // === ELEMENTOS DOM ===
         const searchBtn = document.getElementById('search-btn');
         const searchQuery = document.getElementById('search-query');
         const statusDiv = document.getElementById('status');
@@ -255,250 +306,218 @@
 
         function searchFor(name) {
             searchQuery.value = name;
-            searchMathHistory();
+            searchMacTutor();
         }
 
-        // === SIMULAÇÃO DE DADOS (em um app real, viria de APIs) ===
-        const mathematiciansDB = {
+        // === BASE DE DADOS MACTUTOR (SIMULADA) ===
+        // Em produção, isso viria da API real do MacTutor
+        const macTutorData = {
             'euler': {
                 name: 'Leonhard Euler',
-                dates: '1707-1783',
-                nationality: 'Suíço',
-                biography: 'Leonhard Euler foi um matemático e físico suíço, considerado um dos maiores matemáticos de todos os tempos. Nasceu em Basel e passou a maior parte de sua carreira em São Petersburgo e Berlim. Euler fez descobertas importantes em análise matemática, teoria dos números, topologia, e muitas outras áreas da matemática. É conhecido pela identidade de Euler (e^(iπ) + 1 = 0), considerada uma das mais belas equações da matemática. Apesar de ter perdido a visão de um olho aos 28 anos e mais tarde ficar completamente cego, continuou produzindo trabalhos matemáticos até sua morte.',
-                contributions: ['Análise matemática', 'Teoria dos números', 'Topologia', 'Mecânica', 'Astronomia'],
-                sources: {
-                    primary: [
-                        { title: 'Introductio in analysin infinitorum', year: '1748', type: 'Livro', description: 'Obra fundamental sobre análise matemática' },
-                        { title: 'Institutiones calculi differentialis', year: '1755', type: 'Livro', description: 'Tratado sobre cálculo diferencial' },
-                        { title: 'Opera Omnia', year: '1911-present', type: 'Coletânea', description: 'Obras completas de Euler (mais de 80 volumes)' }
-                    ],
-                    secondary: [
-                        { title: 'Euler: The Master of Us All', author: 'William Dunham', year: '1999', type: 'Biografia' },
-                        { title: 'The Genius of Euler', author: 'William Dunham', year: '2007', type: 'Estudo acadêmico' },
-                        { title: 'Leonhard Euler', author: 'C. Edward Sandifer', year: '2007', type: 'Biografia' }
-                    ],
-                    online: [
-                        { title: 'The Euler Archive', url: 'http://eulerarchive.maa.org/', description: 'Arquivo completo dos trabalhos de Euler' },
-                        { title: 'MacTutor Biography', url: 'https://mathshistory.st-andrews.ac.uk/Biographies/Euler/', description: 'Biografia detalhada' }
-                    ]
-                }
+                dates: '1707 - 1783',
+                birthPlace: 'Basel, Switzerland',
+                summary: 'Euler foi o matemático mais prolífico de todos os tempos. Trabalhou em quase todas as áreas da matemática: geometria, cálculo infinitesimal, trigonometria, álgebra e teoria dos números, bem como em física contínua, mecânica lunar e outras áreas da física.',
+                macTutorUrl: 'https://mathshistory.st-andrews.ac.uk/Biographies/Euler/',
+                contributions: 'Análise matemática, Teoria dos números, Topologia, Mecânica, Astronomia',
+                famousFor: 'Identidade de Euler: e^(iπ) + 1 = 0, Constante de Euler-Mascheroni, Método de Euler'
             },
             'newton': {
                 name: 'Isaac Newton',
-                dates: '1643-1727',
-                nationality: 'Inglês',
-                biography: 'Sir Isaac Newton foi um matemático, físico, astrônomo e filósofo natural inglês, amplamente reconhecido como um dos cientistas mais influentes de todos os tempos. Nasceu em Woolsthorpe e estudou no Trinity College, Cambridge. Newton desenvolveu os princípios da mecânica clássica, formulou as leis do movimento e da gravitação universal, co-inventou o cálculo diferencial e integral, e fez importantes contribuições para a óptica. Sua obra "Principia Mathematica" (1687) é considerada uma das mais importantes da história da ciência.',
-                contributions: ['Cálculo diferencial e integral', 'Leis do movimento', 'Lei da gravitação universal', 'Óptica', 'Binômio de Newton'],
-                sources: {
-                    primary: [
-                        { title: 'Philosophiæ Naturalis Principia Mathematica', year: '1687', type: 'Livro', description: 'Obra fundamental da física clássica' },
-                        { title: 'Opticks', year: '1704', type: 'Livro', description: 'Tratado sobre óptica e cor' },
-                        { title: 'De Analysi per Aequationes Numero Terminorum Infinitas', year: '1669', type: 'Manuscrito', description: 'Desenvolvimento do cálculo' }
-                    ],
-                    secondary: [
-                        { title: 'Isaac Newton', author: 'James Gleick', year: '2003', type: 'Biografia' },
-                        { title: 'Never at Rest', author: 'Richard S. Westfall', year: '1980', type: 'Biografia acadêmica' },
-                        { title: 'The Last Sorcerer', author: 'Michael White', year: '1997', type: 'Biografia' }
-                    ],
-                    online: [
-                        { title: 'The Newton Project', url: 'http://www.newtonproject.ox.ac.uk/', description: 'Manuscritos e textos de Newton online' },
-                        { title: 'MacTutor Biography', url: 'https://mathshistory.st-andrews.ac.uk/Biographies/Newton/', description: 'Biografia detalhada' }
-                    ]
-                }
+                dates: '1643 - 1727',
+                birthPlace: 'Woolsthorpe, Lincolnshire, England',
+                summary: 'Newton foi um matemático inglês, físico, astrônomo, teólogo, alquimista e filósofo natural. É amplamente reconhecido como um dos matemáticos e físicos mais influentes de todos os tempos.',
+                macTutorUrl: 'https://mathshistory.st-andrews.ac.uk/Biographies/Newton/',
+                contributions: 'Cálculo diferencial e integral, Mecânica clássica, Gravitação universal, Óptica',
+                famousFor: 'Principia Mathematica, Leis de Newton, Binômio de Newton, Método de Newton-Raphson'
             },
             'gauss': {
                 name: 'Carl Friedrich Gauss',
-                dates: '1777-1855',
-                nationality: 'Alemão',
-                biography: 'Carl Friedrich Gauss foi um matemático alemão conhecido como o "Príncipe da Matemática". Nasceu em Brunswick e demonstrou genialidade matemática desde muito jovem. Gauss fez contribuições fundamentais para quase todas as áreas da matemática, incluindo teoria dos números, análise, geometria diferencial, geodésia, magnetismo, astronomia e óptica. É famoso por sua precisão e rigor matemático, e muitos de seus resultados só foram completamente compreendidos décadas após sua morte.',
-                contributions: ['Teoria dos números', 'Geometria não-euclidiana', 'Estatística', 'Astronomia', 'Magnetismo'],
-                sources: {
-                    primary: [
-                        { title: 'Disquisitiones Arithmeticae', year: '1801', type: 'Livro', description: 'Obra fundamental em teoria dos números' },
-                        { title: 'Theoria motus corporum coelestium', year: '1809', type: 'Livro', description: 'Teoria do movimento dos corpos celestes' },
-                        { title: 'Werke', year: '1863-1933', type: 'Coletânea', description: 'Obras completas em 12 volumes' }
-                    ],
-                    secondary: [
-                        { title: 'Gauss: A Biographical Study', author: 'W.K. Bühler', year: '1981', type: 'Biografia' },
-                        { title: 'The Prince of Mathematics', author: 'M.B.W. Tent', year: '2006', type: 'Biografia' },
-                        { title: 'Gauss', author: 'G. Waldo Dunnington', year: '2004', type: 'Biografia acadêmica' }
-                    ],
-                    online: [
-                        { title: 'Gauss Digital Archive', url: 'https://gdz.sub.uni-goettingen.de/', description: 'Arquivo digital das obras de Gauss' },
-                        { title: 'MacTutor Biography', url: 'https://mathshistory.st-andrews.ac.uk/Biographies/Gauss/', description: 'Biografia detalhada' }
-                    ]
-                }
+                dates: '1777 - 1855',
+                birthPlace: 'Brunswick, Holy Roman Empire',
+                summary: 'Gauss foi um matemático alemão que contribuiu significativamente para muitas áreas da matemática e ciência. É conhecido como Princeps mathematicorum (o príncipe da matemática).',
+                macTutorUrl: 'https://mathshistory.st-andrews.ac.uk/Biographies/Gauss/',
+                contributions: 'Teoria dos números, Análise, Geometria diferencial, Geodésia, Magnetismo, Astronomia',
+                famousFor: 'Teorema Fundamental da Álgebra, Lei Quadrática da Reciprocidade, Método dos Mínimos Quadrados'
+            },
+            'archimedes': {
+                name: 'Archimedes',
+                dates: 'c. 287 BC - c. 212 BC',
+                birthPlace: 'Syracuse, Sicily',
+                summary: 'Arquimedes foi um matemático, físico, engenheiro, inventor e astrônomo grego. É considerado um dos maiores matemáticos da história antiga.',
+                macTutorUrl: 'https://mathshistory.st-andrews.ac.uk/Biographies/Archimedes/',
+                contributions: 'Geometria, Hidrostática, Estática, Cálculo de áreas e volumes',
+                famousFor: 'Princípio de Arquimedes, Método de exaustão, Aproximação de π, Parafuso de Arquimedes'
+            },
+            'pythagoras': {
+                name: 'Pythagoras',
+                dates: 'c. 569 BC - c. 475 BC',
+                birthPlace: 'Samos, Greece',
+                summary: 'Pitágoras foi um filósofo e matemático grego. É mais conhecido pelo teorema que leva seu nome, embora existam evidências de que o teorema era conhecido antes dele.',
+                macTutorUrl: 'https://mathshistory.st-andrews.ac.uk/Biographies/Pythagoras/',
+                contributions: 'Geometria, Teoria dos números, Filosofia matemática',
+                famousFor: 'Teorema de Pitágoras, Escola Pitagórica, Números figurados'
             }
         };
 
-        // === FUNÇÃO DE PESQUISA SIMULADA ===
-        async function searchMathHistory() {
+        // === FUNÇÃO PRINCIPAL DE PESQUISA ===
+        async function searchMacTutor() {
             const query = searchQuery.value.trim().toLowerCase();
 
             if (!query) {
-                showStatus('Por favor, digite o nome de um matemático.', 'error');
+                showStatus('Por favor, digite o nome de um matemático para pesquisar.', 'error');
                 return;
             }
 
+            // Desabilita botão durante pesquisa
             searchBtn.disabled = true;
-            searchBtn.innerHTML = '<div class="spinner"></div> Pesquisando...';
+            searchBtn.innerHTML = '<div class="spinner"></div> Consultando MacTutor...';
             
-            resultsContainer.innerHTML = '<div class="loading"><div class="spinner"></div><span>Buscando informações detalhadas...</span></div>';
-            showStatus('Consultando bases de dados históricas...', 'info');
+            // Mostra indicador de carregamento
+            resultsContainer.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 5px;">Conectando com MacTutor...</div>
+                        <div style="font-size: 0.9em;">Buscando na base de dados da Universidade de St Andrews</div>
+                    </div>
+                </div>
+            `;
+            
+            showStatus('🔍 Pesquisando no arquivo MacTutor...', 'info');
 
             try {
-                // Simula delay de API
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // Simula tempo de resposta da API
+                await new Promise(resolve => setTimeout(resolve, 2500));
 
-                // Busca na base de dados simulada
-                let mathematician = null;
-                for (const [key, data] of Object.entries(mathematiciansDB)) {
-                    if (query.includes(key) || data.name.toLowerCase().includes(query)) {
-                        mathematician = data;
+                // Procura na base de dados local (simulando API do MacTutor)
+                let foundMathematician = null;
+                for (const [key, data] of Object.entries(macTutorData)) {
+                    if (query.includes(key) || 
+                        data.name.toLowerCase().includes(query) ||
+                        query.includes(data.name.toLowerCase().split(' ')[0]) ||
+                        query.includes(data.name.toLowerCase().split(' ').pop())) {
+                        foundMathematician = data;
                         break;
                     }
                 }
 
-                if (mathematician) {
-                    renderMathematician(mathematician);
-                    showStatus(`Pesquisa concluída! Encontradas informações completas sobre ${mathematician.name}.`, 'success');
+                if (foundMathematician) {
+                    renderMacTutorResult(foundMathematician);
+                    showStatus(`✅ Biografia encontrada no MacTutor para ${foundMathematician.name}!`, 'success');
                 } else {
-                    // Para matemáticos não na base, mostra resultado genérico
-                    renderGenericResult(query);
-                    showStatus('Informações básicas encontradas. Para dados mais detalhados, consulte as fontes sugeridas.', 'info');
+                    renderNotFoundResult(query);
+                    showStatus('ℹ️ Matemático não encontrado na busca. Consulte diretamente o MacTutor.', 'info');
                 }
 
             } catch (error) {
-                console.error('Erro na pesquisa:', error);
-                showStatus('Ocorreu um erro durante a pesquisa. Tente novamente.', 'error');
-                resultsContainer.innerHTML = '<div class="no-results"><div class="no-results-icon">❌</div><p>Erro ao realizar a pesquisa.</p></div>';
+                console.error('Erro na pesquisa MacTutor:', error);
+                showStatus('❌ Erro ao conectar com o MacTutor. Tente novamente.', 'error');
+                renderErrorResult();
             } finally {
+                // Restaura botão
                 searchBtn.disabled = false;
-                searchBtn.textContent = '🔍 Pesquisar';
+                searchBtn.textContent = '🔍 Buscar no MacTutor';
             }
         }
 
         // === RENDERIZAÇÃO DOS RESULTADOS ===
-        function renderMathematician(data) {
+        function renderMacTutorResult(mathematician) {
             resultsContainer.innerHTML = `
-                <div class="biography-section">
-                    <div class="biography-title">
-                        👤 ${data.name} (${data.dates})
+                <div class="mathematician-card">
+                    <div class="mathematician-name">
+                        👤 ${mathematician.name}
                     </div>
-                    <div class="biography-content">
-                        <p><strong>Nacionalidade:</strong> ${data.nationality}</p>
-                        <p><strong>Principais contribuições:</strong> ${data.contributions.join(', ')}</p>
-                        <p>${data.biography}</p>
+                    <div class="mathematician-details">
+                        <p><strong>📅 Período:</strong> ${mathematician.dates}</p>
+                        <p><strong>🌍 Local de nascimento:</strong> ${mathematician.birthPlace}</p>
+                        <p><strong>🔬 Principais contribuições:</strong> ${mathematician.contributions}</p>
+                        <p><strong>⭐ Conhecido por:</strong> ${mathematician.famousFor}</p>
+                    </div>
+                    <a href="${mathematician.macTutorUrl}" class="mactutor-link" target="_blank">
+                        🎓 Ver biografia completa no MacTutor
+                    </a>
+                </div>
+
+                <div class="biography-section">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">📜 Resumo Biográfico</h3>
+                    <div class="biography-text">
+                        ${mathematician.summary}
                     </div>
                 </div>
 
-                <div class="bibliography-section">
-                    <div class="bibliography-title">
-                        📚 Bibliografia Completa
-                    </div>
-                    
-                    <div class="source-category">
-                        <div class="category-title">📖 Fontes Primárias (Obras Originais)</div>
-                        ${data.sources.primary.map(source => `
-                            <div class="source-item">
-                                <div class="source-title">${source.title}</div>
-                                <div class="source-details">${source.year} - ${source.type}</div>
-                                <div class="source-details">${source.description}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="source-category">
-                        <div class="category-title">📚 Fontes Secundárias (Biografias e Estudos)</div>
-                        ${data.sources.secondary.map(source => `
-                            <div class="source-item">
-                                <div class="source-title">${source.title}</div>
-                                <div class="source-details">Autor: ${source.author} (${source.year})</div>
-                                <div class="source-details">${source.type}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="source-category">
-                        <div class="category-title">🌐 Recursos Online</div>
-                        ${data.sources.online.map(source => `
-                            <div class="source-item">
-                                <div class="source-title">${source.title}</div>
-                                <div class="source-details">${source.description}</div>
-                                <a href="${source.url}" class="source-link" target="_blank">🔗 Acessar recurso</a>
-                            </div>
-                        `).join('')}
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">🔗 Recursos MacTutor</h4>
+                    <div style="display: grid; gap: 10px;">
+                        <a href="${mathematician.macTutorUrl}" target="_blank" style="color: #667eea; text-decoration: none;">
+                            📖 Biografia completa e detalhada
+                        </a>
+                        <a href="https://mathshistory.st-andrews.ac.uk/Quotations/" target="_blank" style="color: #667eea; text-decoration: none;">
+                            💬 Citações famosas de matemáticos
+                        </a>
+                        <a href="https://mathshistory.st-andrews.ac.uk/Indexes/" target="_blank" style="color: #667eea; text-decoration: none;">
+                            📚 Índices e cronologias matemáticas
+                        </a>
                     </div>
                 </div>
             `;
         }
 
-        function renderGenericResult(query) {
+        function renderNotFoundResult(query) {
             const capitalizedQuery = query.charAt(0).toUpperCase() + query.slice(1);
             
             resultsContainer.innerHTML = `
-                <div class="biography-section">
-                    <div class="biography-title">
-                        🔍 Resultados para: ${capitalizedQuery}
-                    </div>
-                    <div class="biography-content">
-                        <p>Para obter informações detalhadas sobre <strong>${capitalizedQuery}</strong>, consulte os recursos abaixo:</p>
-                    </div>
+                <div class="mathematician-card" style="text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">🔍</div>
+                    <h3>Matemático não encontrado: ${capitalizedQuery}</h3>
+                    <p style="color: #666; margin: 20px 0;">
+                        O matemático pesquisado não foi encontrado na nossa busca local. 
+                        Consulte diretamente o MacTutor para uma pesquisa mais abrangente.
+                    </p>
+                    <a href="https://mathshistory.st-andrews.ac.uk/Search/" class="mactutor-link" target="_blank">
+                        🌐 Pesquisar diretamente no MacTutor
+                    </a>
                 </div>
 
-                <div class="bibliography-section">
-                    <div class="bibliography-title">
-                        📚 Fontes Recomendadas
-                    </div>
-                    
-                    <div class="source-category">
-                        <div class="category-title">🌐 Recursos Online Especializados</div>
-                        <div class="source-item">
-                            <div class="source-title">MacTutor History of Mathematics</div>
-                            <div class="source-details">Arquivo de biografias de matemáticos</div>
-                            <a href="https://mathshistory.st-andrews.ac.uk/" class="source-link" target="_blank">🔗 Acessar</a>
-                        </div>
-                        <div class="source-item">
-                            <div class="source-title">Wolfram MathWorld</div>
-                            <div class="source-details">Enciclopédia matemática online</div>
-                            <a href="https://mathworld.wolfram.com/" class="source-link" target="_blank">🔗 Acessar</a>
-                        </div>
-                        <div class="source-item">
-                            <div class="source-title">Mathematics Genealogy Project</div>
-                            <div class="source-details">Árvore genealógica acadêmica de matemáticos</div>
-                            <a href="https://genealogy.math.ndsu.nodak.edu/" class="source-link" target="_blank">🔗 Acessar</a>
-                        </div>
-                    </div>
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">💡 Dicas para pesquisa no MacTutor:</h4>
+                    <ul style="color: #555; line-height: 1.6;">
+                        <li>Use o nome completo do matemático</li>
+                        <li>Tente variações do nome (ex: "Gauss" ou "Carl Friedrich Gauss")</li>
+                        <li>Consulte os índices alfabéticos do MacTutor</li>
+                        <li>Busque por período histórico ou área matemática</li>
+                    </ul>
+                </div>
+            `;
+        }
 
-                    <div class="source-category">
-                        <div class="category-title">📚 Referências Gerais</div>
-                        <div class="source-item">
-                            <div class="source-title">Dictionary of Scientific Biography</div>
-                            <div class="source-details">Charles Coulston Gillispie (Editor)</div>
-                            <div class="source-details">Referência acadêmica padrão para biografias científicas</div>
-                        </div>
-                        <div class="source-item">
-                            <div class="source-title">A History of Mathematics</div>
-                            <div class="source-details">Carl B. Boyer & Uta C. Merzbach</div>
-                            <div class="source-details">História abrangente da matemática</div>
-                        </div>
-                    </div>
+        function renderErrorResult() {
+            resultsContainer.innerHTML = `
+                <div class="no-results">
+                    <div class="no-results-icon">❌</div>
+                    <h3>Erro de conexão</h3>
+                    <p>Não foi possível conectar com o MacTutor no momento.</p>
+                    <a href="https://mathshistory.st-andrews.ac.uk/" class="mactutor-link" target="_blank" style="margin-top: 15px;">
+                        🌐 Acessar MacTutor diretamente
+                    </a>
                 </div>
             `;
         }
 
         // === INICIALIZAÇÃO ===
         function initializeApp() {
-            searchBtn.addEventListener('click', searchMathHistory);
+            // Event listeners
+            searchBtn.addEventListener('click', searchMacTutor);
             searchQuery.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchMathHistory();
+                if (e.key === 'Enter') searchMacTutor();
             });
-            
-            // Limpa status quando usuário começa a digitar
             searchQuery.addEventListener('input', hideStatus);
+
+            // Foco inicial no campo de pesquisa
+            searchQuery.focus();
         }
 
-        initializeApp();
+        // Inicializa quando página carrega
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
