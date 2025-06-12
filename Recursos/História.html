@@ -44,6 +44,25 @@
         #results {
             margin-top: 20px;
         }
+        .result-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+        }
+        .result-item h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .result-item a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+        .result-item p {
+            margin: 5px 0;
+            color: #555;
+        }
     </style>
 </head>
 <body>
@@ -55,24 +74,46 @@
     <div id="results"></div>
 
     <script>
-        function performSearch() {
+        async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+
             if (!query) {
-                alert('Por favor, insira um termo de busca.');
+                resultsDiv.innerHTML = '<p>Por favor, insira um termo de busca.</p>';
                 return;
             }
 
-            // Codificar o termo de busca para a URL
-            const encodedQuery = encodeURIComponent(query);
-            const searchUrl = `https://mathshistory.st-andrews.ac.uk/Search/?term=${encodedQuery}`;
+            resultsDiv.innerHTML = '<p>Carregando...</p>';
 
-            // Redirecionar para a página de resultados do site
-            window.location.href = searchUrl;
+            try {
+                // Enviar a busca para o servidor proxy
+                const response = await fetch('http://localhost:5000/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: query })
+                });
 
-            // Alternativamente, exibir uma mensagem informando que a busca está sendo redirecionada
-            document.getElementById('results').innerHTML = `
-                <p>Redirecionando para os resultados da busca por "${query}"...</p>
-            `;
+                if (!response.ok) {
+                    throw new Error('Erro na requisição ao servidor.');
+                }
+
+                const data = await response.json();
+
+                if (data.results.length === 0) {
+                    resultsDiv.innerHTML = '<p>Nenhum resultado encontrado.</p>';
+                    return;
+                }
+
+                // Exibir os resultados
+                resultsDiv.innerHTML = data.results.map(result => `
+                    <div class="result-item">
+                        <h3><a href="${result.link}" target="_blank">${result.title}</a></h3>
+                        <p>${result.description}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                resultsDiv.innerHTML = `<p>Erro ao realizar a busca: ${error.message}</p>`;
+            }
         }
 
         // Permitir busca ao pressionar Enter
