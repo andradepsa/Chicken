@@ -2,838 +2,788 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 O Mundo da Matemática - Plataforma Interativa com IA</title>
+    <title>Gerador de Questões e Quiz Matemático</title>
+    <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['\\(', '\\)']],
-                displayMath: [['\\[', '\\]']],
-                processEscapes: true,
-                processEnvironments: true
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-            }
-        };
-    </script>
-    <!-- CSS permanece inalterado -->
+    
     <style>
-        /* Seu CSS original aqui (omitido para brevidade, mas deve ser mantido como está no seu código) */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .main-button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .main-button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
+        }
+        #status {
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 6px;
+            display: none;
+        }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+        .status-info { background-color: #cce5ff; color: #004085; }
+        #questions-container {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .question-card {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        .question-options label {
+            display: block;
+            margin: 10px 0;
+        }
+        .question-answer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            display: none; /* Escondido até verificar no quiz */
+        }
+        .remove-btn, .check-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            margin-left: 10px;
+        }
+        .check-btn {
+            background-color: #28a745;
+        }
+        #actions-container {
+            display: none;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #007bff;
+            display: flex;
+            gap: 15px;
+        }
+        .action-button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .pdf-button { background-color: #28a745; }
+        .clear-button { background-color: #6c757d; }
     </style>
 </head>
 <body>
-    <!-- HTML permanece inalterado, exceto pela adição do botão "Tentar Novamente" -->
     <div class="container">
-        <!-- Menu Lateral -->
-        <div class="sidebar">
-            <!-- Seu HTML do menu lateral aqui (mantido como está no código original) -->
+        <h1>Gerador de Questões e Quiz Matemático</h1>
+        <p class="subtitle">Escolha um tópico, tipo (perguntas ou quiz) e a quantidade de questões.</p>
+
+        <div>
+            <select id="topic" onchange="updateSubtopics()">
+                <option value="">Selecione um tópico</option>
+                <!-- Tópicos serão preenchidos via JavaScript -->
+            </select>
+            <select id="subtopic">
+                <option value="">Selecione um subtema</option>
+            </select>
+            <select id="type">
+                <option value="questions">Perguntas (Estudo)</option>
+                <option value="quiz">Quiz Interativo</option>
+            </select>
+            <input type="number" id="quantity" min="1" max="10" placeholder="Quantidade de questões (1-10)">
+            <button id="generate-btn" class="main-button">🚀 Gerar</button>
         </div>
 
-        <!-- Área Principal -->
-        <div class="main-content">
-            <div class="header">
-                <h2 id="topic-title">🎯 Selecione uma aula para começar</h2>
-                <p id="topic-description">Escolha uma aula no menu lateral para gerar questões personalizadas com IA e conversar com o tutor inteligente</p>
-            </div>
-
-            <div class="content-area">
-                <!-- Seção do Quiz -->
-                <div class="quiz-section">
-                    <!-- Tela de Boas-vindas -->
-                    <div id="welcome-screen" class="welcome-screen">
-                        <h2>🚀 Bem-vindo ao Mundo da Matemática!</h2>
-                        <p>
-                            Nossa plataforma revolucionária combina inteligência artificial avançada com educação matemática personalizada. 
-                            Explore 21 seções com 218 aulas cuidadosamente estruturadas, gere questões inteligentes e converse com nosso tutor IA em tempo real!
-                        </p>
-                        <div style="display: flex; justify-content: center; gap: 25px; margin-top: 40px;">
-                            <div style="text-align: center; padding: 25px; background: #e3f2fd; border-radius: 15px; flex: 1;">
-                                <div style="font-size: 28px; margin-bottom: 15px;">🧠</div>
-                                <strong>IA Avançada</strong><br>
-                                <small>Questões geradas por IA</small>
-                            </div>
-                            <div style="text-align: center; padding: 25px; background: #f3e5f5; border-radius: 15px; flex: 1;">
-                                <div style="font-size: 28px; margin-bottom: 15px;">💬</div>
-                                <strong>Tutor Inteligente</strong><br>
-                                <small>Chat contextual</small>
-                            </div>
-                            <div style="text-align: center; padding: 25px; background: #e8f5e8; border-radius: 15px; flex: 1;">
-                                <div style="font-size: 28px; margin-bottom: 15px;">🎯</div>
-                                <strong>Personalizado</strong><br>
-                                <small>5 a 50 questões</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Configuração do Quiz -->
-                    <div id="quiz-setup" class="quiz-setup" style="display: none;">
-                        <h3>🎯 Configurar Quiz Inteligente</h3>
-                        <div class="form-group">
-                            <label for="question-count">Quantidade de Questões:</label>
-                            <select id="question-count">
-                                <option value="5">5 questões</option>
-                                <option value="10">10 questões</option>
-                                <option value="15">15 questões</option>
-                                <option value="20" selected>20 questões</option>
-                                <option value="25">25 questões</option>
-                                <option value="30">30 questões</option>
-                                <option value="40">40 questões</option>
-                                <option value="50">50 questões</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="difficulty-level">Nível de Dificuldade:</label>
-                            <select id="difficulty-level">
-                                <option value="facil">Fácil</option>
-                                <option value="medio" selected>Médio</option>
-                                <option value="dificil">Difícil</option>
-                            </select>
-                        </div>
-                        <div style="text-align: center; margin-top: 30px;">
-                            <button class="btn btn-primary" onclick="startQuiz()">
-                                🚀 Gerar Questões com IA
-                            </button>
-                            <button class="btn btn-warning" onclick="startQuiz()" style="display: none;" id="retry-btn">
-                                🔄 Tentar Novamente
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Área do Quiz -->
-                    <div id="quiz-area" style="display: none;">
-                        <div class="quiz-container">
-                            <div class="quiz-header">
-                                <div>
-                                    <h3 id="quiz-topic-title">Quiz de Matemática</h3>
-                                    <div class="quiz-progress">
-                                        <div class="quiz-progress-bar" id="progress-bar"></div>
-                                    </div>
-                                    <small id="progress-text">Questão 1 de 20</small>
-                                </div>
-                                <div style="text-align: right;">
-                                    <div id="score-display" style="font-size: 18px; font-weight: bold;">
-                                        ✅ 0 | ❌ 0
-                                    </div>
-                                    <button class="btn btn-warning" onclick="resetQuiz()" style="margin-top: 10px; padding: 10px 20px; font-size: 14px;">
-                                        🔄 Novo Quiz
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="question-container">
-                                <div class="question-number" id="question-number">Questão 1</div>
-                                <div class="question-text" id="question-text">Carregando questão...</div>
-                                <div class="options-container" id="options-container">
-                                    <!-- Opções serão inseridas aqui -->
-                                </div>
-                                <div class="explanation" id="explanation">
-                                    <h4>💡 Explicação:</h4>
-                                    <p id="explanation-text"></p>
-                                </div>
-                                <div style="text-align: center; margin-top: 30px;">
-                                    <button class="btn btn-success" id="next-btn" onclick="nextQuestion()" style="display: none;">
-                                        Próxima Questão →
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Resultados Finais -->
-                    <div id="quiz-results" class="quiz-results" style="display: none;">
-                        <h2>🎉 Quiz Concluído!</h2>
-                        <div class="result-score" id="final (continua como no original)
-                    </div>
-                </div>
-
-                <!-- Seção do Chat -->
-                <div class="chat-section" id="chat-section">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <span>💬</span>
-                            <span>Tutor IA - Matemática</span>
-                        </div>
-                        
-                        <div class="chat-messages" id="chat-messages">
-                            <div class="message system">
-                                👋 Olá! Sou seu tutor de matemática. Tire suas dúvidas sobre a questão atual ou qualquer conceito matemático!
-                            </div>
-                        </div>
-                        
-                        <div class="typing-indicator" id="typing-indicator">
-                            <span>Tutor IA está digitando</span>
-                            <div class="typing-dots">
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                                <div class="typing-dot"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="chat-input-area">
-                            <div class="chat-input-container">
-                                <textarea 
-                                    id="chat-input" 
-                                    class="chat-input" 
-                                    placeholder="Digite sua pergunta sobre matemática..."
-                                    rows="1"></textarea>
-                                <button id="chat-send-btn" class="chat-send-btn" onclick="sendChatMessage()">
-                                    ➤
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div id="status"></div>
+        
+        <div id="actions-container">
+            <button id="pdf-btn" class="action-button pdf-button">📄 Salvar em PDF</button>
+            <button id="clear-btn" class="action-button clear-button">🗑️ Limpar Tudo</button>
         </div>
-    </div>
 
-    <!-- Indicador de Status -->
-    <div class="status-indicator" id="status-indicator">
-        Gerando questões...
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" style="display: none;">
-        <div class="loading-box">
-            <div class="spinner"></div>
-            <h2>Aguarde um momento...</h2>
-            <p>A Inteligência Artificial está gerando suas questões personalizadas. Isso pode levar alguns segundos.</p>
+        <div id="questions-container">
+            <p style="text-align:center; color:#888;">Suas questões ou quiz aparecerão aqui.</p>
         </div>
     </div>
 
     <script>
-        // Estado da aplicação
-        let currentTopic = null;
-        let currentTopicTitle = null;
-        let currentGradeText = null;
-        let questions = [];
-        let currentQuestionIndex = 0;
-        let userAnswers = [];
-        let score = { correct: 0, incorrect: 0 };
-        let selectedAnswer = null;
-        let questionCount = 20;
-        let difficulty = 'medio';
-        let isAnswered = false;
-        let chatHistory = [];
-        const questionCache = new Map(); // Cache para questões
+        // === DADOS DA GRADE DE CONTEÚDOS ===
+        const curriculum = [
+            {
+                section: "Seção 1: O Mundo da Matemática - Parte 1",
+                topics: [
+                    "Bem-vindo ao curso O Mundo da Matemática!",
+                    "O Teorema de Pitágoras",
+                    "O Teorema do Resto Chinês",
+                    "O Teorema Fundamental da Álgebra",
+                    "Desvendando a Estatística Descritiva",
+                    "A Vida e Conquistas de Nikolai Lobachevsky",
+                    "Os Segredos dos Números Primos de Mersenne",
+                    "Probabilidade e Dados: Uma Jornada Matemática",
+                    "O Enigma de Goldbach: Mistério Matemático Antigo",
+                    "Séries Numéricas Infinitas: Uma Jornada ao Infinito Matemático",
+                    "O Enigma de P versus NP: Explorando os Limites da Computação"
+                ]
+            },
+            {
+                section: "Seção 2: O Mundo da Matemática - Parte 2",
+                topics: [
+                    "O Problema do Caixeiro Viajante",
+                    "Os Problemas de Otimização Simples",
+                    "Equações: Desafios e Soluções Matemáticas!",
+                    "Os Segredos da Trigonometria: Uma Jornada Matemática",
+                    "O Teorema do Valor Intermediário: Uma Jornada Matemática",
+                    "Fibonacci e a Magia na Natureza: Uma Jornada Matemática",
+                    "O Encanto dos Números Primos: Mistério, Beleza e Utilidade",
+                    "Matemática Financeira para Todos: Simplificando o Complexo",
+                    "Matemática das Redes Sociais: Modelagem, Análise e Impacto",
+                    "Explorando a Conjectura de Collatz: Uma Viagem pela Matemática"
+                ]
+            },
+            {
+                section: "Seção 3: O Mundo da Matemática - Parte 3",
+                topics: [
+                    "Pitágoras de Samos",
+                    "História da Matemática: A Evolução do Conceito de Ponto",
+                    "Aritmética Elementar: Descobrindo Seu Poder e Aplicações!",
+                    "O Algoritmo RSA Fundamentos e Importância na Criptografia",
+                    "Ontologia e Existência: A Natureza dos Pontos Matemáticos",
+                    "Explorando a Topologia: A Matemática das Formas e Espaços",
+                    "Os Enigmas Matemáticos: Uma Jornada de Lógica e Criatividade",
+                    "A Beleza Oculta da Matemática: Explorando o Universo com Números",
+                    "John Nash e o Equilíbrio de Nash: Revolucionando a Teoria dos Jogos",
+                    "Os Números Primos e a Criptografia: Protegendo Dados na Era Digital"
+                ]
+            },
+            {
+                section: "Seção 4: O Mundo da Matemática - Parte 4",
+                topics: [
+                    "Álgebra: Da Teoria à Prática",
+                    "A Geometria Fractal na Natureza",
+                    "A Geometria Fractal e Sua Beleza",
+                    "A Magia dos Fractais Geométricos",
+                    "A Geometria Euclidiana: Fundamentos e Aplicações",
+                    "A Harmonia Oculta: Descobrindo a Matemática na Música",
+                    "A Fascinante Jornada dos Números Complexos na Matemática",
+                    "A Geometria do Universo: Explorando as Estruturas Cosmológicas",
+                    "Tendências em Educação STEM: Realidade Aumentada, Robótica e Mais!",
+                    "A Fascinante História da Matemática: De Civilizações Antigas à Era Moderna"
+                ]
+            },
+            {
+                section: "Seção 5: O Mundo da Matemática - Parte 5",
+                topics: [
+                    "O Paradoxo do Barbeiro",
+                    "História da Matemática Indiana",
+                    "O Enigma dos Números Primos",
+                    "O Mundo dos Números Perfeitos",
+                    "A Beleza das Equações Diferenciais",
+                    "A Matemática por Trás das Artes Visuais",
+                    "Revolução na Educação IA e Matemática",
+                    "A Vida e o Legado de Srinivasa Ramanujan",
+                    "A Fascinante História da Conjectura de Collatz",
+                    "Como a Inteligência Artificial Está Revolucionando a Matemática"
+                ]
+            },
+            {
+                section: "Seção 6: O Mundo da Matemática - Parte 6",
+                topics: [
+                    "Descobrindo Padrões na Matemática",
+                    "Desvendando o Problema do Caixeiro Viajante",
+                    "A Revolução da Matemática Digital: Impactos e Inovações",
+                    "A Magia dos Números Irracionais: Uma Jornada Matemática",
+                    "Ubiratan D'Ambrosio: O Matemático que Humanizou a Educação",
+                    "A Matemática é Para os Fortes: Desvendando Mitos e Realidades",
+                    "A Olimpíada Internacional de Matemática: Uma Jornada de Gênios",
+                    "Segredos da Criptografia Moderna: A Arte de Proteger Informações",
+                    "A Teoria dos Conjuntos: Uma Jornada Matemática com Georg Cantor",
+                    "A Magia dos Fractais Geométricos: Explorando Infinitas Complexidades"
+                ]
+            },
+            {
+                section: "Seção 7: O Mundo da Matemática - Parte 7",
+                topics: [
+                    "Paradoxos Matemáticos: De Zeno a Russell",
+                    "A Quarta Dimensão: Explorando Hipercubos",
+                    "A História do Zero: Uma Revolução Matemática",
+                    "Como Vencer no Jogo da Velha com Matemática",
+                    "A Matemática Por Trás do Aprendizado de Máquina",
+                    "Números Complexos: Aplicações Imaginárias e Reais",
+                    "Explorando a Teoria dos Grafos: Conceitos e Aplicações",
+                    "A Hipótese de Riemann: O Maior Mistério da Matemática",
+                    "Explorando a Geometria Não Euclidiana: Uma Nova Perspectiva",
+                    "A Matemática do Crescimento Populacional: Entenda os Modelos Exponencial e Logístico"
+                ]
+            },
+            {
+                section: "Seção 8: O Mundo da Matemática - Parte 8",
+                topics: [
+                    "John Playfair",
+                    "Ada Lovelace",
+                    "Isaac Newton",
+                    "Thomas Bayes",
+                    "Leonhard Euler",
+                    "Girolamo Cardano",
+                    "Hipátia de Alexandria",
+                    "Pierre-Simon Laplace",
+                    "Euclides de Alexandria",
+                    "Joseph-Louis Lagrange"
+                ]
+            },
+            {
+                section: "Seção 9: O Mundo da Matemática - Parte 9",
+                topics: [
+                    "A Proporção Áurea: Estética na Matemática",
+                    "A Identidade de Euler: A Equação Mais Bonita",
+                    "Explorando os Números Primos e Suas Propriedades",
+                    "A Beleza da Sequência de Fibonacci e a Proporção Áurea",
+                    "Matemática na Vida Real: Aplicações Práticas no Dia a Dia",
+                    "Introdução à Teoria dos Jogos e o Pensamento Estratégico",
+                    "Teoria do Caos e o Efeito Borboleta: Entenda a Complexidade",
+                    "Criptografia: Como a Matemática Mantém Seus Dados Seguros",
+                    "A Matemática dos Fractais e a Auto-Similaridade: Explorando Padrões Infinitos",
+                    "A Beleza Matemática da Natureza: Explorando a Geometria das Formas Naturais"
+                ]
+            },
+            {
+                section: "Seção 10: O Mundo da Matemática - Parte 10",
+                topics: [
+                    "Medalha Fields",
+                    "O Enigma de Russell",
+                    "Hipótese de Riemann",
+                    "Os Cortes de Dedekind",
+                    "Paradoxo de Monty Hall",
+                    "Paradoxo do Hotel de Hilbert",
+                    "As Sete Pontes de Königsberg",
+                    "História da Teoria dos Números",
+                    "A Vida e o Legado de Alan Turing",
+                    "Provas Matemáticas: Lógica e Raciocínio Desvendados"
+                ]
+            },
+            {
+                section: "Seção 11: O Mundo da Matemática - Parte 11",
+                topics: [
+                    "Os Números: A Linguagem Universal que Conecta o Mundo",
+                    "Cálculo Fracionário: Novas Fronteiras na Física e Engenharia",
+                    "Matemática do Caos: Pequenos Desvios, Grandes Mudanças",
+                    "Matemática Quântica: Explorando Computação e Física Quântica",
+                    "Matemática das Redes Neurais: Como Equações Modelam e Treinam",
+                    "Matemática Financeira e Criptomoedas: Modelos para Prever Flutuações",
+                    "Topologia e Ciências dos Dados: Analisando Grandes Conjuntos de Dados",
+                    "Geometria Algébrica: Um campo em crescimento com aplicações fascinantes",
+                    "Inteligência Artificial e Machine Learning: Aplicações de Matemática Avançada",
+                    "Teoria da Complexidade Computacional: Entendendo a Eficiência dos Algoritmos"
+                ]
+            },
+            {
+                section: "Seção 12: O Mundo da Matemática - Parte 12",
+                topics: [
+                    "A Conjectura de Poincaré",
+                    "O Papel da Simetria na Matemática",
+                    "Explorando a Topologia: A Forma do Espaço",
+                    "Como Funciona o GPS: Matemática na Navegação",
+                    "Otimização Matemática: A Arte de Resolver Problemas",
+                    "A Matemática da Música e do Som: Descubra a Conexão!",
+                    "O Legado de Fibonacci: A Dança dos Números e da Natureza",
+                    "Como Economistas Usam a Matemática para Prever Mercados",
+                    "Entendendo a Probabilidade: Dados, Cartas e Eventos Aleatórios",
+                    "A Matemática Por Trás da Física Quântica: Desvendando os Mistérios do Universo"
+                ]
+            },
+            {
+                section: "Seção 13: O Mundo da Matemática - Parte 13",
+                topics: [
+                    "A Jornada de Leibniz",
+                    "O Paradoxo de Zeno",
+                    "A Matemática Está em Tudo!",
+                    "Tendências em Educação STEM",
+                    "Desenvolvendo a Intuição Matemática: Guia Completo",
+                    "Os Sete Desafios Matemáticos de Um Milhão de Dólares",
+                    "Matemáticos Americanos Notáveis e Suas Contribuições",
+                    "Matemática Aplicada à Genômica: Decifrando Dados Genéticos",
+                    "Grigori Perelman: O Gênio que Resolveu a Conjectura de Poincaré",
+                    "Teoria dos Números em Criptografia: Como a Matemática Protege Seus Dados"
+                ]
+            },
+            {
+                section: "Seção 14: O Mundo da Matemática - Parte 14",
+                topics: [
+                    "Sequência de Estudos",
+                    "Algoritmos",
+                    "Teoria de Grupos",
+                    "Teoria dos Números",
+                    "Conjunto de Mandelbrot",
+                    "Estatística na Medicina e Pesquisa",
+                    "Inteligência Artificial e Matemática",
+                    "A matemática foi inventada ou criada?",
+                    "Explorando a Topologia: A Forma do Espaço",
+                    "Por Que a Matemática Prediz Tão Bem o Futuro",
+                    "Como Matrizes São Usadas em Gráficos Computacionais"
+                ]
+            },
+            {
+                section: "Seção 15: O Mundo da Matemática - Parte 15",
+                topics: [
+                    "Teorema Binomial",
+                    "Código Matemático",
+                    "Recursão e Matemática",
+                    "A sequência de Fibonacci",
+                    "Caleidoscópio da Matemática",
+                    "Como Usar Geometria no Dia a Dia",
+                    "A importância dos pequenos passos",
+                    "A Matemática da Exploração Espacial",
+                    "A Matemática da Criptografia Computacional",
+                    "Entendendo Estruturas Algébricas: Grupos, Anéis e Corpos"
+                ]
+            },
+            {
+                section: "Seção 16: O Mundo da Matemática - Parte 16",
+                topics: [
+                    "Sistemas Dinâmicos e Caos",
+                    "Grigori Yakovlevich Perelman",
+                    "Geometria Analítica e Vetores",
+                    "Teoria da Medida e Integração",
+                    "Análise Funcional e Operadores",
+                    "Física Matemática e Modelagem",
+                    "Teoria da Informação e Codificação",
+                    "Lógica Fuzzy e Sistemas Nebulosos",
+                    "Matemática Computacional e Simulação",
+                    "Modelos Estocásticos e Processos Aleatórios"
+                ]
+            },
+            {
+                section: "Seção 17: O Mundo da Matemática - Parte 17",
+                topics: [
+                    "Análise Real e Complexa",
+                    "Teoria de Galois e Equações",
+                    "Análise de Séries Temporais",
+                    "Cálculo Variacional e Otimização",
+                    "Transformadas de Fourier e Laplace",
+                    "Processamento de Imagens e Sinais",
+                    "Modelagem Matemática em Biologia",
+                    "Matemática em Inteligência Artificial",
+                    "Equações Diferenciais com Retardamento",
+                    "Modelagem Matemática em Epidemiologia"
+                ]
+            },
+            {
+                section: "Seção 18: O Mundo da Matemática - Parte 18",
+                topics: [
+                    "Análise de Dados",
+                    "Infração Temporal",
+                    "A filosofia do Ponto",
+                    "História da Geometria",
+                    "Modelagem Matemática",
+                    "Álgebra Linear e Matricial",
+                    "Dinâmica dos Fluidos e Equações",
+                    "Teoria de Aproximação e Interpolação",
+                    "Matemática de Redes Neurais: O Cérebro das Máquinas",
+                    "Combinatória e Análise Enumerativa: Explorando o Fascínio da Contagem"
+                ]
+            },
+            {
+                section: "Seção 19: O Mundo da Matemática - Parte 19",
+                topics: [
+                    "Teoria dos Números Primos",
+                    "Lógica Matemática e Provas",
+                    "Lev Semenovich Pontryagin",
+                    "Cálculo Diferencial e Integral",
+                    "Teoria dos Conjuntos e Funções",
+                    "Matemática Recreativa e Paradoxos",
+                    "Matemática Discreta e Combinatória",
+                    "Geometria Euclidiana e Não-Euclidiana",
+                    "Equações Diferenciais Parciais e Ordinárias",
+                    "A Matemática da Internet: Algoritmos e Dados"
+                ]
+            },
+            {
+                section: "Seção 20: O Mundo da Matemática - Parte 20",
+                topics: [
+                    "Infração Temporal",
+                    "A história do Zero",
+                    "Caleidoscópio da Matemática",
+                    "Explorando a Quinta Dimensão",
+                    "O feedback eficaz na Avaliação Matemática",
+                    "Estatística Bayesiana e Inferência",
+                    "Teoria de Sistemas e Controle",
+                    "Leviatã da Matemática",
+                    "Os Matemáticos",
+                    "PSA"
+                ]
+            },
+            {
+                section: "Seção 21: O Mundo da Matemática - Parte 21",
+                topics: [
+                    "Educação Matemática",
+                    "Conceitos básicos de educação matemática",
+                    "Papel do educador na promoção da aprendizagem matemática",
+                    "História da educação matemática",
+                    "Principais teorias da aprendizagem aplicadas à matemática",
+                    "Construtivismo, socioculturalismo, e outras abordagens relevantes",
+                    "Implicações das teorias da aprendizagem na prática pedagógica",
+                    "Abordagens práticas para promover a participação ativa dos alunos",
+                    "Aprendizagem baseada em problemas",
+                    "Aprendizagem colaborativa e cooperativa",
+                    "Uso de tecnologias digitais e ferramentas online para o ensino",
+                    "Softwares educacionais e aplicativos móveis",
+                    "Ensino híbrido e aprendizagem online em matemática",
+                    "Tipos de avaliação em matemática: formativa, somativa, diagnóstica",
+                    "Desafios e estratégias para avaliar habilidades matemáticas",
+                    "Feedback eficaz na avaliação matemática"
+                ]
+            }
+        ];
 
-        // Elementos DOM
-        const elements = {
-            welcomeScreen: document.getElementById('welcome-screen'),
-            quizSetup: document.getElementById('quiz-setup'),
-            quizArea: document.getElementById('quiz-area'),
-            quizResults: document.getElementById('quiz-results'),
-            chatSection: document.getElementById('chat-section'),
-            topicTitle: document.getElementById('topic-title'),
-            topicDescription: document.getElementById('topic-description'),
-            statusIndicator: document.getElementById('status-indicator'),
-            loadingOverlay: document.getElementById('loading-overlay'),
-            chatMessages: document.getElementById('chat-messages'),
-            chatInput: document.getElementById('chat-input'),
-            chatSendBtn: document.getElementById('chat-send-btn'),
-            typingIndicator: document.getElementById('typing-indicator'),
-            retryBtn: document.getElementById('retry-btn')
-        };
+        // === VARIÁVEIS GLOBAIS ===
+        let questionsDatabase = [];
+        const topicSelect = document.getElementById('topic');
+        const subtopicSelect = document.getElementById('subtopic');
+        const typeSelect = document.getElementById('type');
+        const quantityInput = document.getElementById('quantity');
+        const generateBtn = document.getElementById('generate-btn');
+        const statusDiv = document.getElementById('status');
+        const questionsContainer = document.getElementById('questions-container');
+        const actionsContainer = document.getElementById('actions-container');
+        const pdfBtn = document.getElementById('pdf-btn');
+        const clearBtn = document.getElementById('clear-btn');
 
-        // Inicialização
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            showWelcomeScreen();
-        });
+        // === FUNÇÕES DE LÓGICA ===
 
-        function setupEventListeners() {
-            // Menu lateral
-            document.querySelectorAll('.grade-header').forEach(header => {
-                header.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    this.nextElementSibling.classList.toggle('active');
+        // Preenche o dropdown de tópicos
+        function populateTopics() {
+            curriculum.forEach((section, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = section.section;
+                topicSelect.appendChild(option);
+            });
+        }
+
+        // Atualiza o dropdown de subtemas com base no tópico selecionado
+        function updateSubtopics() {
+            const sectionIndex = topicSelect.value;
+            subtopicSelect.innerHTML = '<option value="">Selecione um subtema</option>';
+            if (sectionIndex !== "") {
+                curriculum[sectionIndex].topics.forEach(topic => {
+                    const option = document.createElement('option');
+                    option.value = topic;
+                    option.textContent = topic;
+                    subtopicSelect.appendChild(option);
                 });
-            });
-
-            document.querySelectorAll('.topic-item').forEach(item => {
-                item.addEventListener('click', () => selectTopic(item));
-            });
-
-            // Configurações do quiz
-            document.getElementById('question-count').addEventListener('change', function() {
-                questionCount = parseInt(this.value);
-            });
-            
-            document.getElementById('difficulty-level').addEventListener('change', function() {
-                difficulty = this.value;
-            });
-
-            // Chat
-            elements.chatInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendChatMessage();
-                }
-            });
-
-            elements.chatInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-            });
+            }
         }
 
-        function showLoading() {
-            elements.loadingOverlay.style.display = 'flex';
-        }
-
-        function hideLoading() {
-            elements.loadingOverlay.style.display = 'none';
-        }
-
-        function selectTopic(element) {
-            // Remove seleção anterior
-            document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
-            element.classList.add('selected');
-            
-            // Atualiza variáveis globais
-            currentTopic = element.dataset.topic;
-            currentTopicTitle = element.textContent.trim();
-            const gradeHeader = element.closest('.grade-section').querySelector('.grade-header');
-            currentGradeText = gradeHeader.querySelector('div > span:last-of-type').textContent.trim();
-            
-            // Atualiza interface
-            elements.topicTitle.textContent = `📚 ${currentTopicTitle}`;
-            elements.topicDescription.textContent = `Seção: ${currentGradeText} • Pronto para gerar questões e conversar com o tutor IA`;
-            
-            // Reinicia chat
-            resetChat();
-            
-            showQuizSetup();
-            elements.retryBtn.style.display = 'none'; // Esconde o botão "Tentar Novamente" ao selecionar novo tópico
-        }
-
-        function showWelcomeScreen() {
-            hideAllScreens();
-            elements.welcomeScreen.style.display = 'block';
-            elements.chatSection.style.display = 'none';
-        }
-
-        function showQuizSetup() {
-            hideAllScreens();
-            elements.quizSetup.style.display = 'block';
-            elements.chatSection.style.display = 'none';
-        }
-
-        function hideAllScreens() {
-            elements.welcomeScreen.style.display = 'none';
-            elements.quizSetup.style.display = 'none';
-            elements.quizArea.style.display = 'none';
-            elements.quizResults.style.display = 'none';
-        }
-
+        // Mostra uma mensagem para o usuário
         function showStatus(message, type = 'info') {
-            const indicator = elements.statusIndicator;
-            indicator.textContent = message;
-            indicator.className = `status-indicator show ${type}`;
-            setTimeout(() => indicator.classList.remove('show'), 4000);
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+            statusDiv.style.display = 'block';
         }
 
-        async function generateQuestionsWithAI() {
-            const cacheKey = `${currentTopic}-${difficulty}-${questionCount}`;
-            
-            // Verifica cache primeiro
-            if (questionCache.has(cacheKey)) {
-                showStatus(`✅ Usando ${questionCount} questões do cache para "${currentTopicTitle}"!`, 'success');
-                return questionCache.get(cacheKey);
+        // Gera um ID único para cada questão
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Função principal que gera as questões ou quiz
+        async function generateQuestions() {
+            const subtopic = subtopicSelect.value;
+            const type = typeSelect.value;
+            const quantity = parseInt(quantityInput.value);
+
+            if (!subtopic) {
+                showStatus('Por favor, selecione um subtema.', 'error');
+                return;
+            }
+            if (!quantity || quantity < 1 || quantity > 10) {
+                showStatus('Por favor, insira uma quantidade válida (1-10).', 'error');
+                return;
             }
 
-            const prompt = `Você é um especialista em matemática. Crie EXATAMENTE ${questionCount} questões de múltipla escolha sobre "${currentTopicTitle}" da seção "${currentGradeText}".
-
-IMPORTANTE: As questões devem ser especificamente sobre o tópico "${currentTopicTitle}", não questões genéricas de matemática.
-
-CARACTERÍSTICAS DAS QUESTÕES:
-- Nível: ${difficulty}
-- Todas devem abordar conceitos específicos de "${currentTopicTitle}"
-- 4 alternativas cada (A, B, C, D)
-- Apenas 1 resposta correta
-- Explicação pedagógica detalhada (mínimo 50 caracteres)
-- Use LaTeX: \\( \\) para fórmulas inline, \\[ \\] para fórmulas em bloco
-- Cada questão deve conter pelo menos uma palavra-chave relacionada a "${currentTopicTitle}"
-
-EXEMPLOS DE QUESTÕES PARA "${currentTopicTitle}":
-${getTopicSpecificExamples(currentTopic, difficulty)}
-
-RESPONDA APENAS COM O JSON (sem texto adicional):
-{
-    "questions": [
-        {
-            "question": "Questão específica sobre ${currentTopicTitle}...",
-            "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
-            "correct": 0,
-            "explanation": "Explicação detalhada..."
-        }
-    ]
-}
-
-Gere ${questionCount} questões agora:`;
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Gerando...';
+            showStatus('Gerando conteúdo. Aguarde...', 'info');
 
             try {
-                showStatus(`🤖 Gerando ${questionCount} questões específicas sobre "${currentTopicTitle}"...`, 'info');
-                showLoading();
-
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                let content = response.message.content.trim();
-
-                // Remove possíveis marcações de código (```json ... ```)
-                content = content.replace(/^```json\n|\n```$/g, '');
-
-                // Tenta parsear o JSON
-                let jsonData = JSON.parse(content);
-
-                // Verifica se o JSON contém a chave 'questions'
-                if (!jsonData.questions || !Array.isArray(jsonData.questions)) {
-                    throw new Error('Resposta da IA não contém um array de questões válido');
-                }
-
-                // Valida cada questão
-                const validQuestions = jsonData.questions.filter(q => {
-                    // Verifica estrutura básica
-                    if (!q.question || !q.options || !Array.isArray(q.options) || q.options.length !== 4 ||
-                        typeof q.correct !== 'number' || q.correct < 0 || q.correct >= 4 || !q.explanation) {
-                        return false;
+                const finalPrompt = `
+                    Você é um especialista em criar material educacional de matemática. Gere ${quantity} questões baseadas no tópico "${subtopic}".
+                    TIPO: ${type === 'questions' ? 'Perguntas para estudo (múltipla escolha ou verdadeiro/falso, com respostas e explicações)' : 'Quiz interativo (múltipla escolha ou verdadeiro/falso, com respostas e explicações)'}.
+                    REGRAS DE FORMATAÇÃO:
+                    Responda APENAS com um objeto JSON:
+                    {
+                      "questions": [
+                        {
+                          "text": "Texto da questão.",
+                          "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
+                          "correct_answer": "A letra ou texto da resposta correta.",
+                          "explanation": "Explicação da resposta correta."
+                        }
+                      ]
                     }
-
-                    // Verifica relevância (contém palavra-chave do tópico)
-                    const topicKeywords = currentTopicTitle.toLowerCase().split(' ');
-                    const questionText = q.question.toLowerCase();
-                    const hasKeyword = topicKeywords.some(keyword => questionText.includes(keyword));
-
-                    // Verifica se as opções são distintas
-                    const uniqueOptions = new Set(q.options);
-                    const hasUniqueOptions = uniqueOptions.size === 4;
-
-                    // Verifica tamanho mínimo da explicação
-                    const hasDetailedExplanation = q.explanation.length >= 50;
-
-                    return hasKeyword && hasUniqueOptions && hasDetailedExplanation;
-                });
-
-                if (validQuestions.length < questionCount) {
-                    console.warn(`A IA gerou apenas ${validQuestions.length} questões válidas. Complementando com fallback.`);
-                    showStatus(`⚠️ Apenas ${validQuestions.length} questões válidas geradas. Usando questões padrão...`, 'error');
-                    elements.retryBtn.style.display = 'inline-block'; // Mostra botão "Tentar Novamente"
-                    const fallbackQuestions = generateTopicSpecificQuestions();
-                    validQuestions.push(...fallbackQuestions.slice(0, questionCount - validQuestions.length));
-                }
-
-                if (validQuestions.length === 0) {
-                    throw new Error('Nenhuma questão válida gerada pela IA ou pelo fallback');
-                }
-
-                // Armazena no cache
-                questionCache.set(cacheKey, validQuestions.slice(0, questionCount));
+                    - Para verdadeiro/falso, use ["Verdadeiro", "Falso"].
+                    - As questões devem ser claras e educacionais.
+                `;
                 
-                showStatus(`✅ ${validQuestions.length} questões geradas para "${currentTopicTitle}"!`, 'success');
-                return validQuestions.slice(0, questionCount);
+                const response = await puter.ai.chat([{ role: 'user', content: finalPrompt }]);
+                
+                if (!response || !response.message || !response.message.content) {
+                    throw new Error('A IA não retornou uma resposta válida.');
+                }
+
+                const jsonStart = response.message.content.indexOf('{');
+                const jsonEnd = response.message.content.lastIndexOf('}') + 1;
+                const jsonString = response.message.content.substring(jsonStart, jsonEnd);
+                const parsed = JSON.parse(jsonString);
+
+                const newQuestions = parsed.questions ? parsed.questions.map(q => ({ ...q, id: generateId(), type })) : [];
+
+                if (newQuestions.length > 0) {
+                    questionsDatabase.unshift(...newQuestions);
+                    saveToLocalStorage();
+                    renderQuestions();
+                    showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
+                } else {
+                    throw new Error('Não foi possível extrair questões da resposta da IA.');
+                }
 
             } catch (error) {
-                console.error('Erro ao gerar questões:', error);
-                showStatus('⚠️ Erro ao gerar questões. Usando questões padrão...', 'error');
-                elements.retryBtn.style.display = 'inline-block'; // Mostra botão "Tentar Novamente"
-                const fallbackQuestions = generateTopicSpecificQuestions();
-                questionCache.set(cacheKey, fallbackQuestions);
-                return fallbackQuestions;
+                console.error('Erro na geração:', error);
+                showStatus(`Ocorreu um erro: ${error.message}`, 'error');
             } finally {
-                hideLoading();
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Gerar';
             }
         }
 
-        function getTopicSpecificExamples(topic, difficulty) {
-            const examples = {
-                'series-numericas-infinitas': `Questões sobre convergência, divergência, séries geométricas, séries harmônicas, testes de convergência. Exemplo: "Qual é a soma da série \\( \\sum_{n=0}^{\\infty} \\frac{1}{3^n} \\)?"`,
-                'teorema-resto-chines': `Questões sobre sistemas de congruências, números coprimos, aplicações do teorema. Exemplo: "Resolva \\( x \\equiv 1 \\pmod{3}, x \\equiv 2 \\pmod{5} \\)."`,
-                'numeros-primos-mersenne': `Questões sobre números de Mersenne, primalidade, fórmula 2^p - 1. Exemplo: "Qual número de Mersenne é dado por \\( 2^5 - 1 \\)?"`,
-                'fibonacci-natureza': `Questões sobre sequência de Fibonacci, proporção áurea, padrões na natureza. Exemplo: "Qual é o 10º termo da sequência de Fibonacci?"`,
-                'geometria-fractal-natureza': `Questões sobre fractais, dimensão fractal, auto-similaridade. Exemplo: "Qual é a dimensão fractal de um floco de neve de Koch?"`,
-                'estatistica-descritiva': `Questões sobre média, mediana, moda, desvio padrão, quartis. Exemplo: "Calcule a mediana dos dados: 3, 7, 1, 9, 5."`,
-                'probabilidade-dados': `Questões sobre eventos, probabilidade condicional, regra do produto. Exemplo: "Qual a probabilidade de tirar um 6 em um dado justo?"`,
-                'teorema-pitagoras': `Questões sobre o teorema de Pitágoras e trigonometria básica. Exemplo: "Em um triângulo retângulo com catetos 3 e 4, qual é a hipotenusa?"`,
-                'teorema-binomial': `Questões sobre expansão binomial e coeficientes. Exemplo: "Qual é o coeficiente de \\( x^2 \\) em \\( (x + 1)^4 \\)?"`,
-                'numeros-complexos': `Questões sobre números complexos, forma polar, operações. Exemplo: "Qual é o módulo de \\( 3 + 4i \\)?"`,
-                // Adicione mais tópicos conforme necessário
-                'default': `Questões conceituais e práticas específicas do tópico "${currentTopicTitle}". Exemplo: "Explique um conceito fundamental de ${currentTopicTitle}."`
-            };
-            
-            return examples[topic] || examples['default'];
-        }
-
-        function generateTopicSpecificQuestions() {
-            const topicQuestions = {
-                'series-numericas-infinitas': [
-                    {
-                        question: "Qual é a soma da série geométrica infinita \\( \\sum_{n=0}^{\\infty} \\frac{1}{2^n} \\)?",
-                        options: ["1", "2", "1/2", "Infinito"],
-                        correct: 1,
-                        explanation: "Para uma série geométrica \\( \\sum_{n=0}^{\\infty} ar^n \\) com \\( |r| < 1 \\), a soma é \\( \\frac{a}{1-r} \\). Aqui, \\( a = 1 \\) e \\( r = \\frac{1}{2} \\), então a soma é \\( \\frac{1}{1-\\frac{1}{2}} = 2 \\)."
-                    },
-                    {
-                        question: "A série harmônica \\( \\sum_{n=1}^{\\infty} \\frac{1}{n} \\) é:",
-                        options: ["Convergente para 1", "Convergente para e", "Divergente", "Convergente para π"],
-                        correct: 2,
-                        explanation: "A série harmônica \\( \\sum_{n=1}^{\\infty} \\frac{1}{n} = 1 + \\frac{1}{2} + \\frac{1}{3} + \\frac{1}{4} + ... \\) é divergente, pois sua soma tende ao infinito."
-                    },
-                    {
-                        question: "Qual teste pode ser usado para determinar a convergência da série \\( \\sum_{n=1}^{\\infty} \\frac{1}{n^2} \\)?",
-                        options: ["Teste da divergência", "Teste da integral", "Teste da razão", "Teste da raiz"],
-                        correct: 1,
-                        explanation: "O teste da integral pode ser usado, pois \\( \\int_1^\\infty \\frac{1}{x^2} dx \\) converge para 1, indicando que a série \\( \\sum_{n=1}^{\\infty} \\frac{1}{n^2} \\) também converge."
-                    }
-                ],
-                'teorema-resto-chines': [
-                    {
-                        question: "Se \\( x \\equiv 2 \\pmod{3} \\) e \\( x \\equiv 3 \\pmod{5} \\), qual é o menor valor positivo de x?",
-                        options: ["8", "11", "14", "17"],
-                        correct: 0,
-                        explanation: "Usando o Teorema do Resto Chinês: x = 3k + 2 para algum k. Substituindo na segunda congruência: \\( 3k + 2 \\equiv 3 \\pmod{5} \\), então \\( 3k \\equiv 1 \\pmod{5} \\). O inverso modular de 3 módulo 5 é 2, pois \\( 3 \\cdot 2 = 6 \\equiv 1 \\pmod{5} \\). Assim, \\( k \\equiv 2 \\pmod{5} \\), e \\( x = 3 \\cdot 2 + 2 = 8 \\)."
-                    },
-                    {
-                        question: "Qual é a solução de \\( x \\equiv 1 \\pmod{4} \\) e \\( x \\equiv 2 \\pmod{7} \\)?",
-                        options: ["9", "15", "29", "37"],
-                        correct: 2,
-                        explanation: "Escrevemos \\( x = 4k + 1 \\). Substituímos na segunda congruência: \\( 4k + 1 \\equiv 2 \\pmod{7} \\), ou \\( 4k \\equiv 1 \\pmod{7} \\). O inverso de 4 módulo 7 é 2, pois \\( 4 \\cdot 2 = 8 \\equiv 1 \\pmod{7} \\). Assim, \\( k \\equiv 2 \\pmod{7} \\), então \\( x = 4 \\cdot 2 + 1 = 9 \\). Como o módulo LCM(4,7) = 28, a solução geral é \\( x \\equiv 9 \\pmod{28} \\), e a próxima solução positiva é \\( 9 + 28 = 29 \\)."
-                    }
-                ],
-                'fibonacci-natureza': [
-                    {
-                        question: "Qual é o oitavo termo da sequência de Fibonacci, começando com \\( F_1 = 1, F_2 = 1 \\)?",
-                        options: ["13", "21", "34", "55"],
-                        correct: 1,
-                        explanation: "A sequência de Fibonacci é: \\( 1, 1, 2, 3, 5, 8, 13, 21, ... \\). O oitavo termo é \\( F_8 = 21 \\)."
-                    },
-                    {
-                        question: "Qual é a razão entre dois termos consecutivos da sequência de Fibonacci à medida que \\( n \\) cresce?",
-                        options: ["\\( \\sqrt{2} \\)", "\\( \\frac{1 + \\sqrt{5}}{2} \\)", "\\( e \\)", "\\( \\pi \\)"],
-                        correct: 1,
-                        explanation: "A razão entre termos consecutivos da sequência de Fibonacci, \\( F_{n+1}/F_n \\), converge para a proporção áurea \\( \\phi = \\frac{1 + \\sqrt{5}}{2} \\approx 1,618 \\) à medida que \\( n \\) tende ao infinito."
-                    }
-                ],
-                'teorema-pitagoras': [
-                    {
-                        question: "Em um triângulo retângulo com catetos de comprimento 3 e 4, qual é o comprimento da hipotenusa?",
-                        options: ["5", "6", "7", "8"],
-                        correct: 0,
-                        explanation: "Pelo Teorema de Pitágoras, \\( a^2 + b^2 = c^2 \\), onde \\( a \\) e \\( b \\) são os catetos e \\( c \\) é a hipotenusa. Assim, \\( 3^2 + 4^2 = 9 + 16 = 25 \\), e \\( c = \\sqrt{25} = 5 \\)."
-                    }
-                ],
-                'numeros-complexos': [
-                    {
-                        question: "Qual é o módulo do número complexo \\( 3 + 4i \\)?",
-                        options: ["5", "7", "25", "16"],
-                        correct: 0,
-                        explanation: "O módulo de um número complexo \\( a + bi \\) é dado por \\( \\sqrt{a^2 + b^2} \\). Para \\( 3 + 4i \\), temos \\( \\sqrt{3^2 + 4^2} = \\sqrt{9 + 16} = \\sqrt{25} = 5 \\)."
-                    }
-                ]
-                // Adicione mais tópicos conforme necessário
-            };
-            
-            let selectedQuestions = topicQuestions[currentTopic] || [];
-            
-            // Se não há questões específicas, gera questões padrão baseadas no tópico
-            if (selectedQuestions.length === 0) {
-                selectedQuestions = [];
-                for (let i = 1; i <= questionCount; i++) {
-                    selectedQuestions.push({
-                        question: `Questão ${i} sobre ${currentTopicTitle}: Qual é um conceito fundamental de ${currentTopicTitle}?`,
-                        options: [
-                            `Conceito A relacionado a ${currentTopicTitle}`,
-                            `Conceito B relacionado a ${currentTopicTitle}`,
-                            `Conceito C relacionado a ${currentTopicTitle}`,
-                            `Conceito D relacionado a ${currentTopicTitle}`
-                        ],
-                        correct: 0,
-                        explanation: `Esta questão aborda um conceito fundamental de ${currentTopicTitle}. Para dominar este tópico, estude os conceitos básicos e suas aplicações práticas.`
-                    });
-                }
-            }
-            
-            // Ajusta o número de questões
-            while (selectedQuestions.length < questionCount) {
-                selectedQuestions = [...selectedQuestions, ...selectedQuestions];
-            }
-            
-            return selectedQuestions.slice(0, questionCount);
-        }
-
-        async function startQuiz() {
-            if (!currentTopic) {
-                alert('Por favor, selecione uma aula primeiro!');
+        // Exibe as questões na tela
+        function renderQuestions() {
+            if (questionsDatabase.length === 0) {
+                questionsContainer.innerHTML = '<p style="text-align:center; color:#888;">Nenhuma questão ou quiz gerado.</p>';
+                actionsContainer.style.display = 'none';
                 return;
             }
-            
-            showLoading();
-            try {
-                questions = await generateQuestionsWithAI();
-                
-                if (!questions || questions.length === 0) {
-                    alert('Não foi possível gerar as questões. Tente novamente.');
-                    elements.retryBtn.style.display = 'inline-block';
-                    return;
+
+            actionsContainer.style.display = 'flex';
+            questionsContainer.innerHTML = '';
+            questionsDatabase.forEach(q => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                let optionsHTML = '';
+                if (q.options && q.options.length > 0) {
+                    if (q.type === 'quiz') {
+                        optionsHTML = `<div class="question-options">`;
+                        q.options.forEach((opt, index) => {
+                            optionsHTML += `
+                                <label>
+                                    <input type="radio" name="answer-${q.id}" value="${opt}"> ${opt}
+                                </label>`;
+                        });
+                        optionsHTML += `</div>`;
+                    } else {
+                        optionsHTML = `<div class="question-options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>`;
+                    }
                 }
-                
-                // Reinicia estado do quiz
-                currentQuestionIndex = 0;
-                userAnswers = [];
-                score = { correct: 0, incorrect: 0 };
-                
-                // Mostra quiz e chat
-                hideAllScreens();
-                elements.quizArea.style.display = 'block';
-                elements.chatSection.style.display = 'flex';
-                
-                updateQuizHeader();
-                displayQuestion();
-                
-                // Atualiza chat com contexto
-                addChatMessage('system', `💡 Quiz iniciado sobre "${currentTopicTitle}". Pode me perguntar sobre qualquer conceito ou questão!`);
 
-            } finally {
-                hideLoading();
-            }
-        }
-
-        function updateQuizHeader() {
-            document.getElementById('quiz-topic-title').textContent = `📚 ${currentTopicTitle}`;
-            updateProgress();
-            updateScore();
-        }
-
-        function updateProgress() {
-            const progress = ((currentQuestionIndex) / questions.length) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = `Questão ${currentQuestionIndex + 1} de ${questions.length}`;
-        }
-
-        function updateScore() {
-            document.getElementById('score-display').innerHTML = `✅ ${score.correct} | ❌ ${score.incorrect}`;
-        }
-
-        function displayQuestion() {
-            if (currentQuestionIndex >= questions.length) {
-                showResults();
-                return;
-            }
-            
-            const question = questions[currentQuestionIndex];
-            document.getElementById('question-number').textContent = `Questão ${currentQuestionIndex + 1}`;
-            document.getElementById('question-text').innerHTML = question.question;
-            
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = '';
-            
-            question.options.forEach((option, index) => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'option';
-                optionDiv.innerHTML = `
-                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
-                    <div>${option}</div>
+                card.innerHTML = `
+                    <button class="remove-btn" onclick="removeQuestion('${q.id}')">Remover</button>
+                    ${q.type === 'quiz' ? `<button class="check-btn" onclick="checkAnswer('${q.id}')">Verificar Resposta</button>` : ''}
+                    <div class="question-text">${q.text}</div>
+                    ${optionsHTML}
+                    <div class="question-answer" id="answer-${q.id}">
+                        <strong>Resposta:</strong> ${q.correct_answer}<br>
+                        <strong>Explicação:</strong> ${q.explanation || 'Não fornecida.'}
+                    </div>
                 `;
-                optionDiv.addEventListener('click', () => selectAnswer(index, optionDiv));
-                optionsContainer.appendChild(optionDiv);
+                questionsContainer.appendChild(card);
             });
+        }
+
+        // Verifica a resposta no modo quiz
+        function checkAnswer(questionId) {
+            const question = questionsDatabase.find(q => q.id === questionId);
+            const selectedOption = document.querySelector(`input[name="answer-${questionId}"]:checked`);
+            const answerDiv = document.getElementById(`answer-${questionId}`);
             
-            selectedAnswer = null;
-            isAnswered = false;
-            document.getElementById('explanation').classList.remove('show');
-            document.getElementById('next-btn').style.display = 'none';
-            updateProgress();
-            
-            // Renderiza fórmulas matemáticas
-            if (window.MathJax) {
-                MathJax.typesetPromise([document.getElementById('question-text'), optionsContainer]).catch(err => console.log(err));
+            if (!selectedOption) {
+                showStatus('Por favor, selecione uma opção.', 'error');
+                return;
+            }
+
+            answerDiv.style.display = 'block';
+            if (selectedOption.value === question.correct_answer) {
+                showStatus('Correto! Veja a explicação abaixo.', 'success');
+            } else {
+                showStatus('Incorreto. Veja a resposta correta e a explicação abaixo.', 'error');
             }
         }
 
-        function selectAnswer(answerIndex, optionElement) {
-            if (isAnswered) return;
-            isAnswered = true;
-            
-            const question = questions[currentQuestionIndex];
-            const isCorrect = answerIndex === question.correct;
-            
-            // Marca todas as opções
-            const options = document.querySelectorAll('.option');
-            options.forEach((option, index) => {
-                option.style.pointerEvents = 'none';
-                if (index === question.correct) {
-                    option.classList.add('correct');
-                } else if (index === answerIndex && !isCorrect) {
-                    option.classList.add('incorrect');
+        // Remove uma questão da lista
+        function removeQuestion(questionId) {
+            questionsDatabase = questionsDatabase.filter(q => q.id !== questionId);
+            saveToLocalStorage();
+            renderQuestions();
+            showStatus('Questão removida.', 'info');
+        }
+
+        // Limpa todas as questões da lista
+        function clearAllQuestions() {
+            if (confirm('Tem certeza que deseja apagar TODAS as questões?')) {
+                questionsDatabase = [];
+                saveToLocalStorage();
+                renderQuestions();
+                showStatus('Lista limpa.', 'info');
+            }
+        }
+
+        // === FUNÇÕES DE ARMAZENAMENTO E PDF ===
+        function saveToLocalStorage() {
+            localStorage.setItem('simpleQuestionsDB', JSON.stringify(questionsDatabase));
+        }
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('simpleQuestionsDB');
+            if (saved) {
+                questionsDatabase = JSON.parse(saved);
+            }
+        }
+
+        // Gera o HTML para o arquivo PDF
+        function generatePrintHTML() {
+            const questionsSection = questionsDatabase.map((q, index) => {
+                let optionsHTML = '';
+                if (q.options && q.options.length > 0) {
+                    optionsHTML = `<ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul>`;
+                } else {
+                    optionsHTML = '<p>R: ________________________________________________</p>';
                 }
-            });
+                return `
+                    <div class="item">
+                        <p><strong>${index + 1}.</strong> ${q.text}</p>
+                        ${optionsHTML}
+                    </div>
+                `;
+            }).join('');
             
-            // Atualiza pontuação
-            if (isCorrect) {
-                score.correct++;
-                showStatus('✅ Resposta correta!', 'success');
-            } else {
-                score.incorrect++;
-                showStatus('❌ Resposta incorreta', 'error');
-            }
-            
-            userAnswers.push({ 
-                questionIndex: currentQuestionIndex, 
-                selectedAnswer: answerIndex, 
-                correct: isCorrect 
-            });
-            
-            // Mostra explicação
-            document.getElementById('explanation-text').innerHTML = question.explanation;
-            document.getElementById('explanation').classList.add('show');
-            document.getElementById('next-btn').style.display = 'inline-block';
-            updateScore();
-            
-            // Renderiza fórmulas matemáticas na explicação
-            if (window.MathJax) {
-                MathJax.typesetPromise([document.getElementById('explanation')]).catch(err => console.log(err));
-            }
-        }
-
-        function nextQuestion() {
-            currentQuestionIndex++;
-            displayQuestion();
-        }
-
-        function showResults() {
-            hideAllScreens();
-            elements.quizResults.style.display = 'block';
-            elements.chatSection.style.display = 'flex';
-            
-            const percentage = Math.round((score.correct / questions.length) * 100);
-            const finalScoreEl = document.getElementById('final-score');
-            const resultMessageEl = document.getElementById('result-message');
-            
-            finalScoreEl.textContent = `${percentage}%`;
-            
-            if (percentage >= 80) {
-                finalScoreEl.className = 'result-score excellent';
-                resultMessageEl.textContent = '🎉 Excelente! Você domina este tópico!';
-            } else if (percentage >= 60) {
-                finalScoreEl.className = 'result-score good';
-                resultMessageEl.textContent = '👍 Bom trabalho! Continue praticando!';
-            } else {
-                finalScoreEl.className = 'result-score needs-improvement';
-                resultMessageEl.textContent = '📚 Continue estudando. A prática leva à perfeição!';
-            }
-            
-            document.getElementById('correct-count').textContent = score.correct;
-            document.getElementById('incorrect-count').textContent = score.incorrect;
-            document.getElementById('total-count').textContent = questions.length;
-            
-            // Atualiza chat
-            addChatMessage('system', `🎯 Quiz finalizado! Você acertou ${score.correct} de ${questions.length} questões (${percentage}%). Parabéns!`);
-        }
-
-        function restartSameTopic() {
-            if (currentTopic) {
-                startQuiz();
-            }
-        }
-
-        function resetQuiz() {
-            currentTopic = null;
-            currentTopicTitle = null;
-            currentGradeText = null;
-            
-            document.querySelectorAll('.topic-item.selected').forEach(item => item.classList.remove('selected'));
-            elements.topicTitle.textContent = '🎯 Selecione uma aula para começar';
-            elements.topicDescription.textContent = 'Escolha uma aula no menu lateral para gerar questões personalizadas com IA e conversar com o tutor inteligente';
-            
-            resetChat();
-            showWelcomeScreen();
-        }
-
-        // === SISTEMA DE CHAT ===
-        
-        function resetChat() {
-            chatHistory = [];
-            elements.chatMessages.innerHTML = `
-                <div class="message system">
-                    👋 Olá! Sou seu tutor de matemática. Tire suas dúvidas sobre a questão atual ou qualquer conceito matemático!
+            const answersSection = questionsDatabase.map((q, index) => `
+                <div class="item">
+                    <p><strong>Questão ${index + 1}:</strong></p>
+                    <p><strong>Resposta:</strong> ${q.correct_answer}</p>
+                    <p><strong>Explicação:</strong> ${q.explanation || 'Não fornecida.'}</p>
                 </div>
+            `).join('');
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lista de Questões</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .page-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+                        .section-title { font-size: 1.5em; margin-top: 40px; }
+                        .item { margin-bottom: 25px; }
+                        .answers-section { page-break-before: always; }
+                        ul { list-style-type: none; padding-left: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1 class="page-title">Avaliação / Lista de Exercícios</h1>
+                    <h2 class="section-title">📝 Questões</h2>
+                    ${questionsSection}
+                    <div class="answers-section">
+                        <h2 class="section-title">✅ Gabarito e Resoluções</h2>
+                        ${answersSection}
+                    </div>
+                </body>
+                </html>
             `;
         }
 
-        function addChatMessage(type, content) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.innerHTML = content;
-            elements.chatMessages.appendChild(messageDiv);
-            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-            
-            // Renderiza fórmulas matemáticas no chat
-            if (window.MathJax && type === 'assistant') {
-                MathJax.typesetPromise([messageDiv]).catch(err => console.log(err));
+        // Abre a janela de impressão para salvar como PDF
+        function exportToPDF() {
+            if (questionsDatabase.length === 0) {
+                showStatus('Não há questões para salvar em PDF.', 'error');
+                return;
             }
+            const printContent = generatePrintHTML();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
         }
 
-        async function sendChatMessage() {
-            const message = elements.chatInput.value.trim();
-            if (!message) return;
-            
-            // Adiciona mensagem do usuário
-            addChatMessage('user', message);
-            elements.chatInput.value = '';
-            elements.chatInput.style.height = 'auto';
-            
-            // Desabilita botão e mostra indicador
-            elements.chatSendBtn.disabled = true;
-            elements.typingIndicator.style.display = 'flex';
-            
-            try {
-                // Constrói contexto
-                let context = `Você é um tutor de matemática especializado. `;
-                
-                if (currentTopic && currentTopicTitle) {
-                    context += `O estudante está estudando "${currentTopicTitle}" na seção "${currentGradeText}". `;
-                }
-                
-                if (questions.length > 0 && currentQuestionIndex < questions.length) {
-                    const currentQuestion = questions[currentQuestionIndex];
-                    context += `A questão atual é: "${currentQuestion.question}" com opções: ${currentQuestion.options.join(', ')}. `;
-                }
-                
-                context += `Responda de forma clara, pedagógica e encorajadora. Use exemplos quando apropriado. Use notação LaTeX para fórmulas matemáticas entre \\( \\) para inline e \\[ \\] para bloco.`;
-                
-                // Monta histórico da conversa
-                const chatMessages = [
-                    { role: 'system', content: context },
-                    ...chatHistory,
-                    { role: 'user', content: message }
-                ];
-                
-                // Chama IA
-                const response = await puter.ai.chat(chatMessages);
-                const aiResponse = response.message.content;
-                
-                // Adiciona resposta da IA
-                addChatMessage('assistant', aiResponse);
-                
-                // Atualiza histórico
-                chatHistory.push({ role: 'user', content: message });
-                chatHistory.push({ role: 'assistant', content: aiResponse });
-                
-                // Mantém apenas últimas 10 trocas
-                if (chatHistory.length > 20) {
-                    chatHistory = chatHistory.slice(-20);
-                }
-                
-            } catch (error) {
-                console.error('Erro no chat:', error);
-                addChatMessage('assistant', 'Desculpe, ocorreu um erro. Tente novamente!');
-            } finally {
-                elements.chatSendBtn.disabled = false;
-                elements.typingIndicator.style.display = 'none';
-            }
+        // === INICIALIZAÇÃO ===
+        function initializeApp() {
+            populateTopics();
+            generateBtn.addEventListener('click', generateQuestions);
+            pdfBtn.addEventListener('click', exportToPDF);
+            clearBtn.addEventListener('click', clearAllQuestions);
+            window.removeQuestion = removeQuestion;
+            window.checkAnswer = checkAnswer;
+            loadFromLocalStorage();
+            renderQuestions();
         }
+        
+        initializeApp();
     </script>
 </body>
 </html>
