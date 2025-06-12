@@ -3,1418 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <title>Gerador de Biografias</title>
-    <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
-    
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1c1e21;
-            margin: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #333;
             padding: 20px;
             min-height: 100vh;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            background-color: rgba(255, 255, 255, 0.95);
+        .container { 
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
-        
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        h1 { text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
+        .search-box { 
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
-        
-        .search-section {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-        }
-        
-        .search-input {
-            width: 100%;
+        input { 
+            flex: 1;
             padding: 15px;
-            font-size: 16px;
-            border-radius: 8px;
             border: 2px solid #e1e5e9;
-            box-sizing: border-box;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .search-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        .main-button {
-            display: block;
-            width: 100%;
-            padding: 15px;
+            border-radius: 8px;
             font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus { border-color: #667eea; }
+        button { 
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 15px;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            transition: transform 0.3s;
         }
-        
-        .main-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        button:hover { transform: translateY(-2px); }
+        button:disabled { background: #999; transform: none; cursor: not-allowed; }
+        .examples { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        
-        .main-button:disabled {
-            background: #999;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        #status {
+        .example { 
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
             text-align: center;
+            transition: all 0.3s;
+        }
+        .example:hover { background: #e9ecef; transform: translateY(-2px); }
+        .status { 
             padding: 15px;
-            margin-top: 20px;
+            margin: 20px 0;
             border-radius: 8px;
+            text-align: center;
             display: none;
         }
-        
-        .status-success { background-color: #d4edda; color: #155724; }
-        .status-error { background-color: #f8d7da; color: #721c24; }
-        .status-info { background-color: #cce5ff; color: #004085; }
-        
-        .biography-container {
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #cce5ff; color: #004085; }
+        .biography { 
             margin-top: 30px;
             display: none;
         }
-        
-        .biography-card {
+        .bio-card { 
             background: white;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             border-left: 5px solid #667eea;
         }
-        
-        .mathematician-header {
+        .bio-header { 
             display: flex;
-            gap: 30px;
+            gap: 20px;
             margin-bottom: 30px;
             align-items: flex-start;
         }
-        
-        .mathematician-photo {
-            flex-shrink: 0;
-            width: 200px;
-            height: 250px;
+        .photo { 
+            width: 150px;
+            height: 190px;
             border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            object-fit: cover;
-            border: 3px solid #fff;
-            background: #f0f2f5;
-            overflow: hidden;
-        }
-        
-        .photo-placeholder {
-            width: 100%;
-            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            font-size: 18px;
-            text-align: center;
-            border-radius: 7px;
-        }
-        
-        .loading-photo {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 10px auto;
-        }
-        
-        .mathematician-info {
-            flex: 1;
-        }
-        
-        .mathematician-name {
-            font-size: 2.2rem;
+            font-size: 48px;
             font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
+            flex-shrink: 0;
         }
-        
-        .basic-info {
+        .bio-info h2 { font-size: 2rem; margin-bottom: 15px; }
+        .info-grid { 
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
         }
-        
-        .info-item {
+        .info-item { 
             display: flex;
             margin-bottom: 10px;
         }
-        
-        .info-label {
+        .info-label { 
             font-weight: bold;
             color: #667eea;
-            min-width: 140px;
+            min-width: 120px;
         }
-        
-        .info-value {
-            color: #333;
-        }
-        
-        .biography-content {
-            line-height: 1.8;
-            color: #444;
-        }
-        
-        .biography-section {
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 1.4rem;
+        .section { margin-bottom: 25px; }
+        .section-title { 
+            font-size: 1.3rem;
             font-weight: bold;
             color: #667eea;
             margin-bottom: 15px;
             border-bottom: 2px solid #667eea;
             padding-bottom: 5px;
         }
-        
-        .contributions-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .contributions-list li {
-            background: rgba(102, 126, 234, 0.1);
+        .list { list-style: none; }
+        .list li { 
+            background: rgba(102,126,234,0.1);
             padding: 10px 15px;
             margin-bottom: 8px;
             border-radius: 5px;
             border-left: 3px solid #667eea;
         }
-        
-        .timeline-item {
+        .timeline-item { 
             padding: 15px;
             border-left: 3px solid #667eea;
             margin-bottom: 15px;
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(102,126,234,0.05);
             border-radius: 0 8px 8px 0;
         }
-        
-        .timeline-year {
-            font-weight: bold;
-            color: #667eea;
-            font-size: 1.1rem;
-        }
-        
-        .timeline-event {
-            margin-top: 5px;
-            color: #444;
-        }
-        
-        .clear-button {
-            background: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            float: right;
-            margin-top: 10px;
-        }
-        
-        .clear-button:hover {
-            background: #5a6268;
-        }
-        
-        .examples-section {
-            background: rgba(40, 167, 69, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(40, 167, 69, 0.2);
-        }
-        
-        .example-queries {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        
-        .example-query {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid #ddd;
-        }
-        
-        .example-query:hover {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .photo-error {
-            font-size: 12px;
-            color: #dc3545;
-            margin-top: 5px;
-        }
-
-        .photo-retry-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 11px;
-            margin-top: 5px;
-        }
-
-        .photo-retry-btn:hover {
-            background: #218838;
-        }
-
-        .suggestions-container {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-        }
-
-        .suggestions-title {
-            color: #856404;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
-
-        .suggestions-grid {
+        .year { font-weight: bold; color: #667eea; }
+        .suggestions { 
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 20px;
         }
-
-        .suggestion-item {
-            background: white;
+        .suggestion { 
             padding: 10px 15px;
-            border-radius: 6px;
+            background: #fff3cd;
+            border-radius: 5px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid #ddd;
             text-align: center;
-            font-weight: 500;
+            transition: all 0.3s;
         }
-
-        .suggestion-item:hover {
-            background: #f8f9fa;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
-        }
-
-        .auto-complete-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .auto-complete-suggestions {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            display: none;
-        }
-
-        .auto-complete-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-            transition: background-color 0.3s ease;
-        }
-
-        .auto-complete-item:hover,
-        .auto-complete-item.selected {
-            background-color: #f8f9fa;
-        }
-
-        .auto-complete-item:last-child {
-            border-bottom: none;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        .suggestion:hover { background: #ffeaa7; transform: translateY(-2px); }
         @media (max-width: 768px) {
-            .mathematician-header {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .mathematician-photo {
-                width: 150px;
-                height: 190px;
-            }
-            .example-queries {
-                grid-template-columns: 1fr;
-            }
+            .bio-header { flex-direction: column; align-items: center; }
+            .photo { width: 120px; height: 150px; }
+            .search-box { flex-direction: column; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Gerador de Biografias</h1>
-        <p class="subtitle">
-            Descubra a vida e a obra de personalidades notáveis da história. 
-            Digite o nome de qualquer pessoa e obtenha uma biografia completa e detalhada.
-        </p>
-
-        <div class="examples-section">
-            <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
-            <p>Clique em um exemplo ou digite o nome de qualquer pessoa que desejar:</p>
-            <div class="example-queries">
-                <div class="example-query" onclick="fillExample('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
-                <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
-                <div class="example-query" onclick="fillExample('Santos Dumont')">✈️ Santos Dumont</div>
-                <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
-                <div class="example-query" onclick="fillExample('Clarice Lispector')">✍️ Clarice Lispector</div>
-                <div class="example-query" onclick="fillExample('Nelson Mandela')">🕊️ Nelson Mandela</div>
-            </div>
+        
+        <div class="examples">
+            <div class="example" onclick="search('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
+            <div class="example" onclick="search('Marie Curie')">🔬 Marie Curie</div>
+            <div class="example" onclick="search('Pelé')">⚽ Pelé</div>
+            <div class="example" onclick="search('Einstein')">🧠 Einstein</div>
+            <div class="example" onclick="search('Santos Dumont')">✈️ Santos Dumont</div>
+            <div class="example" onclick="search('Frida Kahlo')">🎭 Frida Kahlo</div>
         </div>
 
-        <div class="search-section">
-            <div class="auto-complete-container">
-                <input type="text" id="person-input" class="search-input" 
-                       placeholder="Digite o nome de qualquer pessoa (ex: Albert Einstein, Cleópatra...)" autocomplete="off">
-                <div id="auto-complete-suggestions" class="auto-complete-suggestions"></div>
-            </div>
-            <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
+        <div class="search-box">
+            <input type="text" id="input" placeholder="Digite o nome de qualquer pessoa famosa...">
+            <button onclick="generateBio()">🔍 Gerar</button>
         </div>
         
-        <div id="status"></div>
-        
-        <div id="suggestions-container" class="suggestions-container">
-            <div class="suggestions-title">🤔 Talvez você quis dizer:</div>
-            <div id="suggestions-grid" class="suggestions-grid"></div>
-        </div>
-        
-        <div class="biography-container" id="biography-container">
-            <!-- A biografia gerada aparecerá aqui -->
-        </div>
+        <div id="status" class="status"></div>
+        <div id="suggestions"></div>
+        <div id="biography" class="biography"></div>
     </div>
 
     <script>
-        // === VARIÁVEIS GLOBAIS ===
-        const generateBtn = document.getElementById('generate-btn');
-        const personInput = document.getElementById('person-input');
-        const statusDiv = document.getElementById('status');
-        const biographyContainer = document.getElementById('biography-container');
-        const suggestionsContainer = document.getElementById('suggestions-container');
-        const suggestionsGrid = document.getElementById('suggestions-grid');
-        const autoCompleteSuggestions = document.getElementById('auto-complete-suggestions');
+        const input = document.getElementById('input');
+        const status = document.getElementById('status');
+        const biography = document.getElementById('biography');
+        const suggestions = document.getElementById('suggestions');
 
-        let currentSuggestionIndex = -1;
-        let autoCompleteTimeout = null;
+        const famous = ['Albert Einstein', 'Marie Curie', 'Leonardo da Vinci', 'Pelé', 'Santos Dumont', 'Frida Kahlo', 'Nelson Mandela', 'Shakespeare', 'Mozart', 'Tesla'];
 
-        // === BASE DE DADOS DE PESSOAS FAMOSAS ===
-        const famousPeople = [
-            // Cientistas
-            'Albert Einstein', 'Marie Curie', 'Isaac Newton', 'Charles Darwin', 'Galileu Galilei', 
-            'Nikola Tesla', 'Stephen Hawking', 'Leonardo da Vinci', 'Aristoteles', 'Platão',
-            
-            // Políticos e Líderes
-            'Nelson Mandela', 'Mahatma Gandhi', 'Winston Churchill', 'Abraham Lincoln', 'John F. Kennedy',
-            'Cleopatra', 'Julio César', 'Napoleon Bonaparte', 'George Washington', 'Martin Luther King Jr.',
-            
-            // Artistas e Escritores
-            'William Shakespeare', 'Pablo Picasso', 'Vincent van Gogh', 'Frida Kahlo', 'Mozart',
-            'Beethoven', 'Michelangelo', 'Clarice Lispector', 'Machado de Assis', 'Oscar Wilde',
-            
-            // Brasileiros
-            'Santos Dumont', 'Pelé', 'Ayrton Senna', 'Carmen Miranda', 'Caetano Veloso',
-            'Gilberto Gil', 'Chico Buarque', 'Tarsila do Amaral', 'Oscar Niemeyer', 'Ronaldinho',
-            
-            // Inventores e Empresários
-            'Thomas Edison', 'Steve Jobs', 'Bill Gates', 'Henry Ford', 'Alexander Graham Bell',
-            
-            // Filósofos
-            'Socrates', 'Confucio', 'Friedrich Nietzsche', 'Immanuel Kant', 'Jean-Paul Sartre',
-            
-            // Exploradores
-            'Cristovão Colombo', 'Vasco da Gama', 'Marco Polo', 'Fernão de Magalhães',
-            
-            // Outros
-            'Anne Frank', 'Mother Teresa', 'Walt Disney', 'Coco Chanel', 'Marilyn Monroe'
-        ];
-
-        // === BIOGRAFIAS DE FALLBACK ===
-        const fallbackBiographies = {
+        const fallbacks = {
             'Albert Einstein': {
                 name: 'Albert Einstein',
-                birth_date: '14/03/1879',
-                birth_place: 'Ulm, Alemanha',
-                death_date: '18/04/1955',
-                death_place: 'Princeton, Estados Unidos',
-                nationality: 'Alemã, depois Suíça e Americana',
-                main_areas: ['Física Teórica', 'Matemática'],
-                biography: 'Albert Einstein foi um físico teórico alemão que desenvolveu a teoria da relatividade, uma das principais teorias da física moderna. Nascido em uma família judaica de classe média, Einstein mostrou interesse precoce pela matemática e física. Einstein é mais conhecido por sua fórmula de equivalência massa-energia E=mc², que tem sido chamada de "a equação mais famosa do mundo". Ele recebeu o Prêmio Nobel de Física de 1921 por seus serviços à física teórica, especialmente por sua descoberta da lei do efeito fotoelétrico. Einstein emigrou para os Estados Unidos em 1933 devido à ascensão dos nazistas na Alemanha e passou seus últimos anos tentando desenvolver uma teoria unificada dos campos. Sua influência se estende muito além da física, tendo se tornado um símbolo universal da genialidade científica.',
-                major_contributions: [
-                    'Teoria da Relatividade Especial e Geral, revolucionando nossa compreensão do espaço e tempo',
-                    'Explicação do efeito fotoelétrico, contribuindo para o desenvolvimento da mecânica quântica',
-                    'Fórmula E=mc², demonstrando a equivalência entre massa e energia'
-                ],
+                birth: '14/03/1879, Alemanha',
+                death: '18/04/1955, EUA',
+                nationality: 'Alemã/Americana',
+                areas: 'Física Teórica',
+                bio: 'Físico alemão que desenvolveu a teoria da relatividade, revolucionando a física moderna. Conhecido pela equação E=mc² e ganhador do Nobel de Física em 1921.',
+                contributions: ['Teoria da Relatividade', 'Efeito Fotoelétrico', 'Equação E=mc²'],
                 timeline: [
-                    {year: '1879', event: 'Nascimento em Ulm, Alemanha'},
-                    {year: '1905', event: 'Publica cinco artigos revolucionários, incluindo a teoria da relatividade especial'},
-                    {year: '1921', event: 'Recebe o Prêmio Nobel de Física'},
-                    {year: '1933', event: 'Emigra para os Estados Unidos fugindo do regime nazista'},
-                    {year: '1955', event: 'Falece em Princeton aos 76 anos'}
-                ],
-                curiosities: [
-                    'Einstein não usava meias, pois achava que elas sempre furavam e criavam buracos',
-                    'Sua famosa equação E=mc² não apareceu em seu artigo original sobre relatividade especial',
-                    'Recusou o convite para ser o segundo presidente de Israel em 1952'
+                    {year: '1879', event: 'Nascimento na Alemanha'},
+                    {year: '1905', event: 'Teoria da Relatividade Especial'},
+                    {year: '1921', event: 'Prêmio Nobel de Física'},
+                    {year: '1955', event: 'Falecimento em Princeton'}
                 ]
             },
             'Leonardo da Vinci': {
                 name: 'Leonardo da Vinci',
-                birth_date: '15/04/1452',
-                birth_place: 'Vinci, Itália',
-                death_date: '02/05/1519',
-                death_place: 'França',
+                birth: '15/04/1452, Itália',
+                death: '02/05/1519, França',
                 nationality: 'Italiana',
-                main_areas: ['Arte', 'Ciência', 'Engenharia', 'Invenção'],
-                biography: 'Leonardo da Vinci foi um polímata italiano do Renascimento, considerado um dos maiores gênios da humanidade. Nascido como filho ilegítimo de um notário, Leonardo desenvolveu habilidades extraordinárias em múltiplas áreas do conhecimento. Suas obras de arte, incluindo a Mona Lisa e A Última Ceia, estão entre as mais famosas e valorizadas do mundo. Como cientista e inventor, Leonardo estava séculos à frente de seu tempo, criando projetos para máquinas voadoras, tanques, submarinos e muitas outras invenções. Seus cadernos contêm milhares de páginas de observações e desenhos sobre anatomia, engenharia, arquitetura e ciências naturais. Leonardo representa o ideal do "homem renascentista" - alguém com conhecimento e habilidades em múltiplas disciplinas.',
-                major_contributions: [
-                    'Obras-primas da arte como Mona Lisa e A Última Ceia, que definiram padrões artísticos',
-                    'Estudos pioneiros de anatomia humana através de dissecações detalhadas',
-                    'Projetos inovadores de máquinas e inventos que anteciparam tecnologias futuras'
-                ],
+                areas: 'Arte, Ciência, Engenharia',
+                bio: 'Polímata italiano do Renascimento, considerado um dos maiores gênios da humanidade. Criador da Mona Lisa e inventor de máquinas revolucionárias.',
+                contributions: ['Mona Lisa', 'A Última Ceia', 'Estudos de Anatomia', 'Projetos de Máquinas'],
                 timeline: [
-                    {year: '1452', event: 'Nascimento em Vinci, próximo a Florença'},
-                    {year: '1472', event: 'Torna-se membro da Guilda de São Lucas como artista'},
-                    {year: '1495', event: 'Inicia a pintura de A Última Ceia'},
-                    {year: '1503', event: 'Começa a trabalhar na Mona Lisa'},
-                    {year: '1519', event: 'Morre na França, aos 67 anos'}
-                ],
-                curiosities: [
-                    'Escrevia de trás para frente, da direita para a esquerda, como se fosse um espelho',
-                    'Era vegetariano e tinha grande amor pelos animais, frequentemente comprando pássaros engaiolados para libertá-los',
-                    'Nunca terminou muitas de suas obras, incluindo várias pinturas famosas'
-                ]
-            },
-            'Marie Curie': {
-                name: 'Marie Curie',
-                birth_date: '07/11/1867',
-                birth_place: 'Varsóvia, Polônia',
-                death_date: '04/07/1934',
-                death_place: 'França',
-                nationality: 'Polonesa-Francesa',
-                main_areas: ['Física', 'Química', 'Radioatividade'],
-                biography: 'Marie Curie foi uma física e química polonesa que conduziu pesquisas pioneiras sobre radioatividade. Foi a primeira mulher a ganhar um Prêmio Nobel e a única pessoa a ganhar Prêmios Nobel em duas ciências diferentes (Física e Química). Nascida Maria Skłodowska em Varsóvia, mudou-se para Paris para estudar na Sorbonne, onde conheceu Pierre Curie, com quem se casou em 1895. Juntos, descobriram os elementos rádio e polônio, e Marie continuou suas pesquisas mesmo após a morte prematura de Pierre em 1906. Ela se tornou a primeira professora mulher da Universidade de Paris e fundou o Instituto do Rádio, que se tornou um centro de pesquisa nuclear de renome mundial.',
-                major_contributions: [
-                    'Descoberta dos elementos químicos rádio e polônio',
-                    'Desenvolvimento de técnicas para isolar isótopos radioativos',
-                    'Pioneeirismo no uso de radiação para tratamentos médicos'
-                ],
-                timeline: [
-                    {year: '1867', event: 'Nascimento em Varsóvia, Polônia'},
-                    {year: '1891', event: 'Muda-se para Paris para estudar na Sorbonne'},
-                    {year: '1898', event: 'Descobre os elementos rádio e polônio'},
-                    {year: '1903', event: 'Ganha o Prêmio Nobel de Física'},
-                    {year: '1911', event: 'Ganha o Prêmio Nobel de Química'}
-                ],
-                curiosities: [
-                    'Seus cadernos de laboratório de mais de 100 anos ainda são radioativos',
-                    'Durante a Primeira Guerra Mundial, desenvolveu unidades móveis de raios-X',
-                    'O elemento químico Cúrio foi nomeado em sua homenagem'
+                    {year: '1452', event: 'Nascimento em Vinci'},
+                    {year: '1495', event: 'Inicia A Última Ceia'},
+                    {year: '1503', event: 'Começa a Mona Lisa'},
+                    {year: '1519', event: 'Falecimento na França'}
                 ]
             },
             'Pelé': {
                 name: 'Edson Arantes do Nascimento (Pelé)',
-                birth_date: '23/10/1940',
-                birth_place: 'Três Corações, Brasil',
-                death_date: '29/12/2022',
-                death_place: 'São Paulo, Brasil',
+                birth: '23/10/1940, Brasil',
+                death: '29/12/2022, Brasil',
                 nationality: 'Brasileira',
-                main_areas: ['Futebol', 'Esporte'],
-                biography: 'Pelé é amplamente considerado o maior jogador de futebol de todos os tempos. Nascido Edson Arantes do Nascimento em uma família humilde, começou a jogar futebol nas ruas de Bauru. Sua carreira profissional começou aos 15 anos no Santos, onde se tornou uma lenda. Pelé é o único jogador a conquistar três Copas do Mundo (1958, 1962, 1970) e marcou mais de 1.000 gols em sua carreira. Além de suas habilidades técnicas excepcionais, Pelé popularizou o futebol globalmente e se tornou um embaixador do esporte. Após se aposentar, continuou envolvido no futebol e em atividades beneficentes, mantendo-se como uma figura icônica do esporte mundial.',
-                major_contributions: [
-                    'Três vitórias em Copas do Mundo (1958, 1962, 1970), único jogador com esse feito',
-                    'Mais de 1.000 gols marcados em carreira oficial',
-                    'Popularização do futebol brasileiro e mundial através de seu talento único'
-                ],
+                areas: 'Futebol',
+                bio: 'Maior jogador de futebol de todos os tempos. Único a conquistar três Copas do Mundo e marcou mais de 1000 gols na carreira.',
+                contributions: ['3 Copas do Mundo', 'Mais de 1000 gols', 'Popularização do futebol mundial'],
                 timeline: [
-                    {year: '1940', event: 'Nascimento em Três Corações, Minas Gerais'},
-                    {year: '1956', event: 'Estreia profissional pelo Santos aos 15 anos'},
-                    {year: '1958', event: 'Primeira Copa do Mundo conquistada, aos 17 anos'},
-                    {year: '1970', event: 'Terceira Copa do World conquistada no México'},
-                    {year: '1977', event: 'Aposentadoria oficial do futebol'}
-                ],
-                curiosities: [
-                    'O apelido "Pelé" não tem origem confirmada, ele mesmo não sabia exatamente de onde veio',
-                    'Foi declarado Patrimônio Nacional do Brasil em 1961',
-                    'Atuou como Ministro dos Esportes do Brasil de 1995 a 1998'
-                ]
-            },
-            'Santos Dumont': {
-                name: 'Alberto Santos Dumont',
-                birth_date: '20/07/1873',
-                birth_place: 'Palmira, Brasil',
-                death_date: '23/07/1932',
-                death_place: 'Guarujá, Brasil',
-                nationality: 'Brasileira',
-                main_areas: ['Aviação', 'Invenção', 'Engenharia'],
-                biography: 'Alberto Santos Dumont foi um aeronauta, esportista e inventor brasileiro, considerado o pai da aviação por muitos. Filho de um rico fazendeiro de café, mudou-se para Paris jovem, onde se dedicou ao estudo da mecânica e dos motores. Santos Dumont conquistou fama mundial com seus dirigíveis, especialmente quando contornou a Torre Eiffel com o dirigível nº 6 em 1901. Em 1906, realizou o primeiro voo público de um avião na Europa com o 14-Bis, sendo oficialmente reconhecido como o primeiro voo da história pela Federação Aeronáutica Internacional. Diferentemente dos irmãos Wright, Santos Dumont tornou suas invenções públicas, não patenteando seus projetos para que a aviação se desenvolvesse livremente.',
-                major_contributions: [
-                    'Primeiro voo público oficialmente reconhecido com o avião 14-Bis',
-                    'Desenvolvimento de dirigíveis que popularizaram o voo',
-                    'Criação do Demoiselle, um dos primeiros aviões leves e acessíveis'
-                ],
-                timeline: [
-                    {year: '1873', event: 'Nascimento em Palmira (atual Santos Dumont), Minas Gerais'},
-                    {year: '1897', event: 'Muda-se para Paris e inicia experimentos com balões'},
-                    {year: '1901', event: 'Contorna a Torre Eiffel com o dirigível nº 6'},
-                    {year: '1906', event: 'Primeiro voo do 14-Bis em Paris'},
-                    {year: '1932', event: 'Falece no Guarujá aos 59 anos'}
-                ],
-                curiosities: [
-                    'Usava sempre terno e gravata, mesmo durante os voos',
-                    'Inventou o relógio de pulso masculino para consultar as horas durante o voo',
-                    'Nunca patenteou suas invenções, acreditando que a aviação deveria ser livre para todos'
+                    {year: '1940', event: 'Nascimento em Três Corações'},
+                    {year: '1958', event: 'Primeira Copa do Mundo'},
+                    {year: '1970', event: 'Terceira Copa do Mundo'},
+                    {year: '2022', event: 'Falecimento em São Paulo'}
                 ]
             }
         };
 
-        // === FUNÇÕES AUXILIARES ===
-        function showStatus(message, type = 'info') {
-            statusDiv.textContent = message;
-            statusDiv.className = `status-${type}`;
-            statusDiv.style.display = 'block';
-            suggestionsContainer.style.display = 'none';
-        }
-        
-        function fillExample(name) {
-            personInput.value = name;
-            personInput.focus();
-            hideAutoComplete();
-            hideSuggestions();
+        function search(name) {
+            input.value = name;
+            generateBio();
         }
 
-        function hideSuggestions() {
-            suggestionsContainer.style.display = 'none';
-        }
-
-        function hideAutoComplete() {
-            autoCompleteSuggestions.style.display = 'none';
-            currentSuggestionIndex = -1;
-        }
-
-        // === FUNÇÕES DE SUGESTÃO ===
-        function calculateDistance(str1, str2) {
-            const matrix = [];
-            const len1 = str1.length;
-            const len2 = str2.length;
-
-            for (let i = 0; i <= len2; i++) {
-                matrix[i] = [i];
-            }
-
-            for (let j = 0; j <= len1; j++) {
-                matrix[0][j] = j;
-            }
-
-            for (let i = 1; i <= len2; i++) {
-                for (let j = 1; j <= len1; j++) {
-                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-                        matrix[i][j] = matrix[i - 1][j - 1];
-                    } else {
-                        matrix[i][j] = Math.min(
-                            matrix[i - 1][j - 1] + 1,
-                            matrix[i][j - 1] + 1,
-                            matrix[i - 1][j] + 1
-                        );
-                    }
-                }
-            }
-
-            return matrix[len2][len1];
-        }
-
-        function findSimilarNames(input, maxSuggestions = 6) {
-            const inputLower = input.toLowerCase().trim();
-            if (inputLower.length < 2) return [];
-
-            const suggestions = [];
-            
-            for (const person of famousPeople) {
-                const personLower = person.toLowerCase();
-                const distance = calculateDistance(inputLower, personLower);
-                const maxLen = Math.max(inputLower.length, personLower.length);
-                const similarity = 1 - (distance / maxLen);
-                
-                // Inclui se tem similaridade > 0.4 ou se contém as palavras
-                if (similarity > 0.4 || 
-                    personLower.includes(inputLower) || 
-                    inputLower.split(' ').every(word => personLower.includes(word))) {
-                    suggestions.push({
-                        name: person,
-                        similarity: similarity,
-                        distance: distance
-                    });
-                }
-            }
-
-            return suggestions
-                .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, maxSuggestions)
-                .map(s => s.name);
-        }
-
-        function showSuggestions(suggestions) {
-            if (suggestions.length === 0) {
-                suggestionsContainer.style.display = 'none';
-                return;
-            }
-
-            suggestionsGrid.innerHTML = suggestions
-                .map(name => `
-                    <div class="suggestion-item" onclick="selectSuggestion('${name}')">
-                        ${name}
-                    </div>
-                `).join('');
-
-            suggestionsContainer.style.display = 'block';
-        }
-
-        function selectSuggestion(name) {
-            personInput.value = name;
-            hideSuggestions();
-            hideAutoComplete();
-            generateBiography();
-        }
-
-        function showAutoComplete(suggestions) {
-            if (suggestions.length === 0) {
-                hideAutoComplete();
-                return;
-            }
-
-            autoCompleteSuggestions.innerHTML = suggestions
-                .map((name, index) => `
-                    <div class="auto-complete-item" onclick="selectSuggestion('${name}')" data-index="${index}">
-                        ${name}
-                    </div>
-                `).join('');
-
-            autoCompleteSuggestions.style.display = 'block';
-        }
-
-        // === FUNÇÃO PRINCIPAL ===
-        async function generateBiography() {
-            const personName = personInput.value.trim();
-            if (!personName) {
-                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
-                return;
-            }
-
-            generateBtn.disabled = true;
-            generateBtn.textContent = 'Pesquisando...';
-            showStatus('Coletando informações... Isso pode levar um momento.', 'info');
-            biographyContainer.style.display = 'none';
-            hideSuggestions();
-            hideAutoComplete();
-
-            try {
-                // Verifica se o Puter está disponível
-                if (typeof puter === 'undefined' || !puter.ai) {
-                    console.log('Puter não disponível, tentando biografia de fallback...');
-                    const fallbackResult = tryFallbackBiography(personName);
-                    if (fallbackResult) {
-                        displayBiography(fallbackResult);
-                        showStatus('Biografia carregada com sucesso!', 'success');
-                        return;
-                    }
-                    throw new Error('Serviço de IA não está disponível e não há biografia de fallback.');
-                }
-
-                console.log('Iniciando geração de biografia para:', personName);
-
-                const prompt = `Crie uma biografia detalhada para: ${personName}
-
-Responda APENAS com um JSON válido neste formato exato:
-{
-  "name": "Nome completo da pessoa",
-  "birth_date": "DD/MM/AAAA ou Informação não disponível",
-  "birth_place": "Cidade, País ou Informação não disponível",
-  "death_date": "DD/MM/AAAA ou Ainda vivo(a) ou Informação não disponível",
-  "death_place": "Local ou N/A ou Informação não disponível",
-  "nationality": "Nacionalidade",
-  "main_areas": ["Área principal", "Área secundária"],
-  "biography": "Biografia detalhada em 3 parágrafos sobre vida, carreira e legado.",
-  "major_contributions": ["Contribuição 1", "Contribuição 2", "Contribuição 3"],
-  "timeline": [
-    {"year": "1900", "event": "Evento importante"},
-    {"year": "1920", "event": "Outro evento"},
-    {"year": "1940", "event": "Mais um evento"}
-  ],
-  "curiosities": ["Curiosidade 1", "Curiosidade 2"]
-}
-
-Se a pessoa não existir ou for desconhecida, responda:
-{"error": "PERSON_NOT_FOUND", "message": "Pessoa não encontrada"}
-
-Pessoa: ${personName}`;
-
-                console.log('Enviando prompt para IA...');
-                
-                const response = await puter.ai.chat([{ 
-                    role: 'user', 
-                    content: prompt 
-                }]);
-                
-                console.log('Resposta da IA recebida:', response);
-
-                if (!response || !response.message || !response.message.content) {
-                    throw new Error('Resposta da IA está vazia ou inválida.');
-                }
-
-                let content = response.message.content.trim();
-                console.log('Conteúdo da resposta:', content);
-
-                // Limpa o conteúdo para encontrar apenas o JSON
-                const jsonStart = content.indexOf('{');
-                const jsonEnd = content.lastIndexOf('}') + 1;
-                
-                if (jsonStart === -1 || jsonEnd === 0) {
-                    throw new Error('Nenhum JSON válido encontrado na resposta.');
-                }
-
-                const jsonString = content.substring(jsonStart, jsonEnd);
-                console.log('JSON extraído:', jsonString);
-
-                let biographyData;
-                try {
-                    biographyData = JSON.parse(jsonString);
-                } catch (parseError) {
-                    console.error('Erro ao fazer parse do JSON:', parseError);
-                    // Tenta biografia de fallback em caso de erro de parse
-                    const fallbackResult = tryFallbackBiography(personName);
-                    if (fallbackResult) {
-                        displayBiography(fallbackResult);
-                        showStatus('Biografia carregada (dados locais)!', 'success');
-                        return;
-                    }
-                    throw new Error('Formato JSON inválido na resposta da IA.');
-                }
-
-                console.log('Dados da biografia parseados:', biographyData);
-
-                // Verifica se é um erro (pessoa não encontrada)
-                if (biographyData.error === 'PERSON_NOT_FOUND') {
-                    console.log('Pessoa não encontrada pela IA, tentando fallback...');
-                    const fallbackResult = tryFallbackBiography(personName);
-                    if (fallbackResult) {
-                        displayBiography(fallbackResult);
-                        showStatus('Biografia encontrada (dados locais)!', 'success');
-                        return;
-                    }
-                    
-                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
-                    const suggestions = findSimilarNames(personName, 8);
-                    showSuggestions(suggestions);
-                    return;
-                }
-
-                // Valida se tem os campos básicos
-                if (!biographyData.name) {
-                    // Tenta fallback se dados incompletos
-                    const fallbackResult = tryFallbackBiography(personName);
-                    if (fallbackResult) {
-                        displayBiography(fallbackResult);
-                        showStatus('Biografia carregada (dados locais)!', 'success');
-                        return;
-                    }
-                    throw new Error('Dados da biografia incompletos.');
-                }
-
-                displayBiography(biographyData);
-                showStatus('Biografia gerada com sucesso!', 'success');jsonString);
-                } catch (parseError) {
-                    console.error('Erro ao fazer parse do JSON:', parseError);
-                    throw new Error('Formato JSON inválido na resposta da IA.');
-                }
-
-                console.log('Dados da biografia parseados:', biographyData);
-
-                // Verifica se é um erro (pessoa não encontrada)
-                if (biographyData.error === 'PERSON_NOT_FOUND') {
-                    console.log('Pessoa não encontrada, mostrando sugestões...');
-                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
-                    const suggestions = findSimilarNames(personName, 8);
-                    showSuggestions(suggestions);
-                    return;
-                }
-
-                // Valida se tem os campos básicos
-                if (!biographyData.name) {
-                    throw new Error('Dados da biografia incompletos.');
-                }
-
-                displayBiography(biographyData);
-                showStatus('Biografia gerada com sucesso!', 'success');
-
-            } catch (error) {
-                console.error('Erro detalhado na geração:', error);
-                
-                // Tenta biografia de fallback antes de mostrar erro
-                const fallbackResult = tryFallbackBiography(personName);
-                if (fallbackResult) {
-                    displayBiography(fallbackResult);
-                    showStatus('Biografia carregada (modo offline)!', 'success');
-                    return;
-                }
-                
-                let errorMessage = 'Erro ao gerar biografia';
-                
-                if (error.message.includes('Puter')) {
-                    errorMessage = 'Serviço de IA não disponível';
-                } else if (error.message.includes('JSON')) {
-                    errorMessage = 'Erro no formato da resposta';
-                } else if (error.message.includes('rede') || error.message.includes('network')) {
-                    errorMessage = 'Erro de conexão';
-                }
-                
-                showStatus(`${errorMessage}. Veja as sugestões abaixo:`, 'error');
-                
-                // Mostra sugestões em caso de erro
-                const suggestions = findSimilarNames(personName, 8);
-                if (suggestions.length > 0) {
-                    showSuggestions(suggestions);
-                } else {
-                    // Se não há sugestões, mostra algumas pessoas famosas aleatórias
-                    const randomSuggestions = famousPeople
-                        .sort(() => 0.5 - Math.random())
-                        .slice(0, 6);
-                    showSuggestions(randomSuggestions);
-                }
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.textContent = '🔍 Gerar Biografia Completa';
-            }
-        }
-
-        // === FUNÇÃO DE FALLBACK ===
-        function tryFallbackBiography(personName) {
-            const normalizedInput = personName.toLowerCase().trim();
-            
-            // Procura correspondência exata
-            for (const [key, biography] of Object.entries(fallbackBiographies)) {
-                if (key.toLowerCase() === normalizedInput) {
-                    console.log('Biografia de fallback encontrada:', key);
-                    return biography;
-                }
-            }
-            
-            // Procura correspondência parcial
-            for (const [key, biography] of Object.entries(fallbackBiographies)) {
-                const keyLower = key.toLowerCase();
-                if (keyLower.includes(normalizedInput) || normalizedInput.includes(keyLower)) {
-                    console.log('Biografia de fallback encontrada (correspondência parcial):', key);
-                    return biography;
-                }
-            }
-            
-            return null;
-        }jsonString);
-                } catch (parseError) {
-                    console.error('Erro ao fazer parse do JSON:', parseError);
-                    throw new Error('Formato JSON inválido na resposta da IA.');
-                }
-
-                console.log('Dados da biografia parseados:', biographyData);
-
-                // Verifica se é um erro (pessoa não encontrada)
-                if (biographyData.error === 'PERSON_NOT_FOUND') {
-                    console.log('Pessoa não encontrada, mostrando sugestões...');
-                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
-                    const suggestions = findSimilarNames(personName, 8);
-                    showSuggestions(suggestions);
-                    return;
-                }
-
-                // Valida se tem os campos básicos
-                if (!biographyData.name) {
-                    throw new Error('Dados da biografia incompletos.');
-                }
-
-                displayBiography(biographyData);
-                showStatus('Biografia gerada com sucesso!', 'success');
-
-            } catch (error) {
-                console.error('Erro detalhado na geração:', error);
-                
-                let errorMessage = 'Erro ao gerar biografia';
-                
-                if (error.message.includes('Puter')) {
-                    errorMessage = 'Serviço de IA não disponível';
-                } else if (error.message.includes('JSON')) {
-                    errorMessage = 'Erro no formato da resposta';
-                } else if (error.message.includes('rede') || error.message.includes('network')) {
-                    errorMessage = 'Erro de conexão';
-                }
-                
-                showStatus(`${errorMessage}. Veja as sugestões abaixo:`, 'error');
-                
-                // Mostra sugestões em caso de erro
-                const suggestions = findSimilarNames(personName, 8);
-                if (suggestions.length > 0) {
-                    showSuggestions(suggestions);
-                } else {
-                    // Se não há sugestões, mostra algumas pessoas famosas aleatórias
-                    const randomSuggestions = famousPeople
-                        .sort(() => 0.5 - Math.random())
-                        .slice(0, 6);
-                    showSuggestions(randomSuggestions);
-                }
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.textContent = '🔍 Gerar Biografia Completa';
-            }
-        }
-
-        // === FUNÇÃO DE EXIBIÇÃO ===
-        function displayBiography(data) {
-            const photoId = `photo-${Date.now()}`;
-            const biographyHTML = `
-                <div class="biography-card">
-                    <button class="clear-button" onclick="clearBiography()">Limpar Biografia</button>
-                    
-                    <div class="mathematician-header">
-                        <div class="mathematician-photo" id="${photoId}">
-                            <div class="photo-placeholder">
-                                <div class="loading-photo"></div>
-                                <div>Procurando foto...</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mathematician-info">
-                            <h2 class="mathematician-name">${data.name || 'Nome não encontrado'}</h2>
-                            
-                            <div class="basic-info">
-                                <div class="info-item">
-                                    <span class="info-label">📅 Nascimento:</span>
-                                    <span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span>
-                                </div>
-                                ${data.death_date && !data.death_date.toLowerCase().includes('vivo') ? `
-                                <div class="info-item">
-                                    <span class="info-label">⚰️ Falecimento:</span>
-                                    <span class="info-value">${data.death_date || 'N/A'} em ${data.death_place || 'N/A'}</span>
-                                </div>
-                                ` : ''}
-                                <div class="info-item">
-                                    <span class="info-label">🌍 Nacionalidade:</span>
-                                    <span class="info-value">${data.nationality || 'N/A'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">🏆 Atuação:</span>
-                                    <span class="info-value">${(data.main_areas || []).join(', ')}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="biography-content">
-                        ${data.biography ? `
-                        <div class="biography-section">
-                            <div class="section-title">📖 Biografia</div>
-                            <p>${data.biography.replace(/\n/g, '<br>')}</p>
-                        </div>` : ''}
-
-                        ${data.major_contributions && data.major_contributions.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">🏆 Principais Feitos</div>
-                            <ul class="contributions-list">
-                                ${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
-
-                        ${data.timeline && data.timeline.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">📅 Linha do Tempo</div>
-                            ${data.timeline.map(item => `
-                                <div class="timeline-item">
-                                    <div class="timeline-year">${item.year}</div>
-                                    <div class="timeline-event">${item.event}</div>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
-
-                        ${data.curiosities && data.curiosities.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">🔍 Curiosidades</div>
-                            <ul class="contributions-list">
-                                ${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
-                    </div>
-                </div>
-            `;
-
-            biographyContainer.innerHTML = biographyHTML;
-            biographyContainer.style.display = 'block';
-            window.scrollTo({ top: biographyContainer.offsetTop - 20, behavior: 'smooth' });
-            
-            loadPersonPhoto(data.name, photoId);
-        }
-
-        // === FUNÇÃO MELHORADA PARA CARREGAR FOTOS ===
-        async function loadPersonPhoto(personName, photoElementId) {
-            const photoElement = document.getElementById(photoElementId);
-            if (!photoElement) {
-                console.error('Elemento da foto não encontrado:', photoElementId);
-                return;
-            }
-
-            console.log(`Tentando carregar foto para: ${personName}`);
-            
-            // Array de diferentes fontes de imagem para tentar
-            const imageSources = [
-                () => tryWikipediaAPI(personName),
-                () => tryWikipediaDirectSearch(personName),
-                () => tryWikimediaCommons(personName)
-            ];
-
-            let photoLoaded = false;
-            let attemptCount = 0;
-
-            for (const sourceFunction of imageSources) {
-                if (photoLoaded) break;
-                
-                attemptCount++;
-                updatePhotoStatus(photoElement, `Tentativa ${attemptCount}/3...`);
-                
-                try {
-                    const imageUrl = await sourceFunction();
-                    if (imageUrl) {
-                        const success = await loadImageWithFallback(imageUrl, personName, photoElement);
-                        if (success) {
-                            photoLoaded = true;
-                            console.log(`Foto carregada com sucesso na tentativa ${attemptCount}:`, imageUrl);
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message);
-                }
-                
-                // Pequena pausa entre tentativas
-                if (!photoLoaded && attemptCount < imageSources.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-            }
-
-            if (!photoLoaded) {
-                console.log(`Nenhuma foto encontrada para ${personName}, usando placeholder`);
-                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
-            }
-        }
-
-        // === MÉTODOS DE BUSCA DE IMAGENS ===
-        async function tryWikipediaAPI(personName) {
-            console.log('Tentando Wikipedia API...');
-            
-            // Tenta múltiplas variações do nome
-            const nameVariations = [
-                personName,
-                personName.replace(/\s+/g, '_'),
-                personName.split(' ').join('_')
-            ];
-
-            for (const name of nameVariations) {
-                try {
-                    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
-                    console.log('URL da Wikipedia:', url);
-                    
-                    const response = await fetch(url, {
-                        headers: {
-                            'User-Agent': 'BiographyGenerator/1.0 (https://biography-generator.com)'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Status ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('Resposta da Wikipedia:', data);
-                    
-                    if (data.thumbnail && data.thumbnail.source) {
-                        return data.thumbnail.source.replace(/\/\d+px-/, '/300px-'); // Aumenta resolução
-                    }
-                } catch (error) {
-                    console.warn(`Erro com variação "${name}":`, error.message);
-                }
-            }
-            
-            return null;
-        }
-
-        async function tryWikipediaDirectSearch(personName) {
-            console.log('Tentando busca direta Wikipedia...');
-            
-            try {
-                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&format=json&origin=*`;
-                
-                const searchResponse = await fetch(searchUrl);
-                if (!searchResponse.ok) throw new Error('Falha na busca');
-                
-                const searchData = await searchResponse.json();
-                
-                if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
-                    const firstResult = searchData.query.search[0];
-                    return await tryWikipediaAPI(firstResult.title);
-                }
-            } catch (error) {
-                console.warn('Erro na busca direta:', error.message);
-            }
-            
-            return null;
-        }
-
-        async function tryWikimediaCommons(personName) {
-            console.log('Tentando Wikimedia Commons...');
-            
-            try {
-                const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
-                
-                const response = await fetch(searchUrl);
-                if (!response.ok) throw new Error('Falha no Wikimedia Commons');
-                
-                const data = await response.json();
-                
-                if (data.query && data.query.search && data.query.search.length > 0) {
-                    const fileName = data.query.search[0].title;
-                    const imageUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
-                    return imageUrl;
-                }
-            } catch (error) {
-                console.warn('Erro no Wikimedia Commons:', error.message);
-            }
-            
-            return null;
-        }
-
-        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK ===
-        async function loadImageWithFallback(imageUrl, personName, photoElement) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                
-                img.onload = () => {
-                    console.log('Imagem carregada com sucesso:', imageUrl);
-                    photoElement.innerHTML = `
-                        <img src="${imageUrl}" 
-                             alt="Foto de ${personName}" 
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="photo-placeholder" style="display: none;">
-                            <div style="font-size: 48px; font-weight: bold;">${getInitials(personName)}</div>
-                            <div style="font-size: 12px; opacity: 0.8;">Erro ao carregar</div>
-                        </div>
-                    `;
-                    resolve(true);
-                };
-                
-                img.onerror = (error) => {
-                    console.warn('Erro ao carregar imagem:', imageUrl, error);
-                    resolve(false);
-                };
-                
-                // Timeout de 10 segundos
-                setTimeout(() => {
-                    console.warn('Timeout ao carregar imagem:', imageUrl);
-                    resolve(false);
-                }, 10000);
-                
-                img.src = imageUrl;
-            });
-        }
-
-        // === FUNÇÕES AUXILIARES ===
-        function updatePhotoStatus(photoElement, message) {
-            photoElement.innerHTML = `
-                <div class="photo-placeholder">
-                    <div class="loading-photo"></div>
-                    <div>${message}</div>
-                </div>
-            `;
+        function showStatus(msg, type) {
+            status.textContent = msg;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
         }
 
         function getInitials(name) {
-            return name.split(' ')
-                      .map(n => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase();
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         }
 
-        function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
-            const photoElement = document.getElementById(elementId);
-            if (!photoElement) return;
+        function findSimilar(query) {
+            return famous.filter(name => 
+                name.toLowerCase().includes(query.toLowerCase()) ||
+                query.toLowerCase().includes(name.toLowerCase())
+            ).slice(0, 6);
+        }
 
-            const initials = getInitials(name);
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
-            const color = colors[name.length % colors.length];
-
-            photoElement.innerHTML = `
-                <div class="photo-placeholder" style="background: ${color};">
-                    <div style="font-size: 48px; font-weight: bold;">${initials}</div>
-                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div>
-                    <button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">
-                        Tentar novamente
-                    </button>
+        function showSuggestions(names) {
+            if (names.length === 0) {
+                suggestions.innerHTML = '';
+                return;
+            }
+            suggestions.innerHTML = `
+                <div style="margin-top: 20px;">
+                    <h3>Sugestões:</h3>
+                    <div class="suggestions">
+                        ${names.map(name => `<div class="suggestion" onclick="search('${name}')">${name}</div>`).join('')}
+                    </div>
                 </div>
             `;
         }
 
-        function retryPhotoLoad(personName, photoElementId) {
-            console.log('Tentando recarregar foto para:', personName);
-            loadPersonPhoto(personName, photoElementId);
+        function displayBio(data) {
+            const initials = getInitials(data.name);
+            biography.innerHTML = `
+                <div class="bio-card">
+                    <div class="bio-header">
+                        <div class="photo">${initials}</div>
+                        <div class="bio-info">
+                            <h2>${data.name}</h2>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">📅 Nascimento:</span>
+                                    <span>${data.birth}</span>
+                                </div>
+                                ${data.death ? `
+                                <div class="info-item">
+                                    <span class="info-label">⚰️ Falecimento:</span>
+                                    <span>${data.death}</span>
+                                </div>` : ''}
+                                <div class="info-item">
+                                    <span class="info-label">🌍 Nacionalidade:</span>
+                                    <span>${data.nationality}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">🏆 Área:</span>
+                                    <span>${data.areas}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-title">📖 Biografia</div>
+                        <p>${data.bio}</p>
+                    </div>
+
+                    ${data.contributions ? `
+                    <div class="section">
+                        <div class="section-title">🏆 Principais Feitos</div>
+                        <ul class="list">
+                            ${data.contributions.map(c => `<li>${c}</li>`).join('')}
+                        </ul>
+                    </div>` : ''}
+
+                    ${data.timeline ? `
+                    <div class="section">
+                        <div class="section-title">📅 Linha do Tempo</div>
+                        ${data.timeline.map(t => `
+                            <div class="timeline-item">
+                                <div class="year">${t.year}</div>
+                                <div>${t.event}</div>
+                            </div>
+                        `).join('')}
+                    </div>` : ''}
+                </div>
+            `;
+            biography.style.display = 'block';
+            biography.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function clearBiography() {
-            biographyContainer.style.display = 'none';
-            biographyContainer.innerHTML = '';
-            personInput.value = '';
-            statusDiv.style.display = 'none';
-            hideSuggestions();
-            hideAutoComplete();
-            personInput.focus();
-        }
-        
-        // === INICIALIZAÇÃO E EVENTOS ===
-        generateBtn.addEventListener('click', generateBiography);
-        
-        personInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                if (currentSuggestionIndex >= 0) {
-                    const suggestions = Array.from(autoCompleteSuggestions.children);
-                    if (suggestions[currentSuggestionIndex]) {
-                        const name = suggestions[currentSuggestionIndex].textContent;
-                        selectSuggestion(name);
-                        return;
-                    }
-                }
-                generateBiography();
-            }
-        });
-
-        // Auto-complete enquanto digita
-        personInput.addEventListener('input', function(e) {
-            const input = e.target.value.trim();
-            
-            if (autoCompleteTimeout) {
-                clearTimeout(autoCompleteTimeout);
-            }
-            
-            if (input.length < 2) {
-                hideAutoComplete();
+        async function generateBio() {
+            const name = input.value.trim();
+            if (!name) {
+                showStatus('Digite um nome', 'error');
                 return;
             }
-            
-            autoCompleteTimeout = setTimeout(() => {
-                const suggestions = findSimilarNames(input, 5);
-                showAutoComplete(suggestions);
-            }, 300);
-        });
 
-        // Navegação com teclado no auto-complete
-        personInput.addEventListener('keydown', function(e) {
-            const suggestions = Array.from(autoCompleteSuggestions.children);
-            
-            if (suggestions.length === 0) return;
-            
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
-                updateSuggestionSelection(suggestions);
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
-                updateSuggestionSelection(suggestions);
-            } else if (e.key === 'Escape') {
-                hideAutoComplete();
+            showStatus('Gerando biografia...', 'info');
+            biography.style.display = 'none';
+            suggestions.innerHTML = '';
+
+            // Tenta fallback primeiro
+            const fallback = Object.entries(fallbacks).find(([key]) => 
+                key.toLowerCase().includes(name.toLowerCase()) || 
+                name.toLowerCase().includes(key.toLowerCase())
+            )?.[1];
+
+            if (fallback) {
+                displayBio(fallback);
+                showStatus('Biografia carregada!', 'success');
+                return;
             }
-        });
 
-        function updateSuggestionSelection(suggestions) {
-            suggestions.forEach((item, index) => {
-                item.classList.toggle('selected', index === currentSuggestionIndex);
-            });
+            // Tenta IA
+            try {
+                if (typeof puter === 'undefined' || !puter.ai) {
+                    throw new Error('IA não disponível');
+                }
+
+                const response = await puter.ai.chat([{
+                    role: 'user',
+                    content: `Crie uma biografia para: ${name}
+
+Responda APENAS com JSON válido:
+{
+  "name": "Nome completo",
+  "birth": "DD/MM/AAAA, Local",
+  "death": "DD/MM/AAAA, Local ou null se vivo",
+  "nationality": "Nacionalidade",
+  "areas": "Área principal",
+  "bio": "Biografia em 2-3 frases",
+  "contributions": ["Feito 1", "Feito 2"],
+  "timeline": [{"year": "1900", "event": "Evento"}]
+}
+
+Se não existir: {"error": "NOT_FOUND"}`
+                }]);
+
+                const content = response.message.content.trim();
+                const jsonStart = content.indexOf('{');
+                const jsonEnd = content.lastIndexOf('}') + 1;
+                const data = JSON.parse(content.substring(jsonStart, jsonEnd));
+
+                if (data.error) {
+                    throw new Error('Pessoa não encontrada');
+                }
+
+                displayBio(data);
+                showStatus('Biografia gerada!', 'success');
+            } catch (error) {
+                console.error(error);
+                showStatus('Pessoa não encontrada', 'error');
+                const similar = findSimilar(name);
+                if (similar.length > 0) {
+                    showSuggestions(similar);
+                } else {
+                    showSuggestions(famous.slice(0, 6));
+                }
+            }
         }
 
-        // Clica fora para fechar
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.auto-complete-container')) {
-                hideAutoComplete();
-            }
-            if (!e.target.closest('.suggestions-container') && !e.target.closest('.search-section')) {
-                hideSuggestions();
-            }
+        input.addEventListener('keypress', e => {
+            if (e.key === 'Enter') generateBio();
         });
 
-        // Torna as funções disponíveis globalmente
-        window.fillExample = fillExample;
-        window.clearBiography = clearBiography;
-        window.retryPhotoLoad = retryPhotoLoad;
-        window.selectSuggestion = selectSuggestion;
-
-        personInput.focus();
+        input.focus();
     </script>
 </body>
 </html>
