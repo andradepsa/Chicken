@@ -493,6 +493,145 @@
             'Anne Frank', 'Mother Teresa', 'Walt Disney', 'Coco Chanel', 'Marilyn Monroe'
         ];
 
+        // === BIOGRAFIAS DE FALLBACK ===
+        const fallbackBiographies = {
+            'Albert Einstein': {
+                name: 'Albert Einstein',
+                birth_date: '14/03/1879',
+                birth_place: 'Ulm, Alemanha',
+                death_date: '18/04/1955',
+                death_place: 'Princeton, Estados Unidos',
+                nationality: 'Alemã, depois Suíça e Americana',
+                main_areas: ['Física Teórica', 'Matemática'],
+                biography: 'Albert Einstein foi um físico teórico alemão que desenvolveu a teoria da relatividade, uma das principais teorias da física moderna. Nascido em uma família judaica de classe média, Einstein mostrou interesse precoce pela matemática e física. Einstein é mais conhecido por sua fórmula de equivalência massa-energia E=mc², que tem sido chamada de "a equação mais famosa do mundo". Ele recebeu o Prêmio Nobel de Física de 1921 por seus serviços à física teórica, especialmente por sua descoberta da lei do efeito fotoelétrico. Einstein emigrou para os Estados Unidos em 1933 devido à ascensão dos nazistas na Alemanha e passou seus últimos anos tentando desenvolver uma teoria unificada dos campos. Sua influência se estende muito além da física, tendo se tornado um símbolo universal da genialidade científica.',
+                major_contributions: [
+                    'Teoria da Relatividade Especial e Geral, revolucionando nossa compreensão do espaço e tempo',
+                    'Explicação do efeito fotoelétrico, contribuindo para o desenvolvimento da mecânica quântica',
+                    'Fórmula E=mc², demonstrando a equivalência entre massa e energia'
+                ],
+                timeline: [
+                    {year: '1879', event: 'Nascimento em Ulm, Alemanha'},
+                    {year: '1905', event: 'Publica cinco artigos revolucionários, incluindo a teoria da relatividade especial'},
+                    {year: '1921', event: 'Recebe o Prêmio Nobel de Física'},
+                    {year: '1933', event: 'Emigra para os Estados Unidos fugindo do regime nazista'},
+                    {year: '1955', event: 'Falece em Princeton aos 76 anos'}
+                ],
+                curiosities: [
+                    'Einstein não usava meias, pois achava que elas sempre furavam e criavam buracos',
+                    'Sua famosa equação E=mc² não apareceu em seu artigo original sobre relatividade especial',
+                    'Recusou o convite para ser o segundo presidente de Israel em 1952'
+                ]
+            },
+            'Leonardo da Vinci': {
+                name: 'Leonardo da Vinci',
+                birth_date: '15/04/1452',
+                birth_place: 'Vinci, Itália',
+                death_date: '02/05/1519',
+                death_place: 'França',
+                nationality: 'Italiana',
+                main_areas: ['Arte', 'Ciência', 'Engenharia', 'Invenção'],
+                biography: 'Leonardo da Vinci foi um polímata italiano do Renascimento, considerado um dos maiores gênios da humanidade. Nascido como filho ilegítimo de um notário, Leonardo desenvolveu habilidades extraordinárias em múltiplas áreas do conhecimento. Suas obras de arte, incluindo a Mona Lisa e A Última Ceia, estão entre as mais famosas e valorizadas do mundo. Como cientista e inventor, Leonardo estava séculos à frente de seu tempo, criando projetos para máquinas voadoras, tanques, submarinos e muitas outras invenções. Seus cadernos contêm milhares de páginas de observações e desenhos sobre anatomia, engenharia, arquitetura e ciências naturais. Leonardo representa o ideal do "homem renascentista" - alguém com conhecimento e habilidades em múltiplas disciplinas.',
+                major_contributions: [
+                    'Obras-primas da arte como Mona Lisa e A Última Ceia, que definiram padrões artísticos',
+                    'Estudos pioneiros de anatomia humana através de dissecações detalhadas',
+                    'Projetos inovadores de máquinas e inventos que anteciparam tecnologias futuras'
+                ],
+                timeline: [
+                    {year: '1452', event: 'Nascimento em Vinci, próximo a Florença'},
+                    {year: '1472', event: 'Torna-se membro da Guilda de São Lucas como artista'},
+                    {year: '1495', event: 'Inicia a pintura de A Última Ceia'},
+                    {year: '1503', event: 'Começa a trabalhar na Mona Lisa'},
+                    {year: '1519', event: 'Morre na França, aos 67 anos'}
+                ],
+                curiosities: [
+                    'Escrevia de trás para frente, da direita para a esquerda, como se fosse um espelho',
+                    'Era vegetariano e tinha grande amor pelos animais, frequentemente comprando pássaros engaiolados para libertá-los',
+                    'Nunca terminou muitas de suas obras, incluindo várias pinturas famosas'
+                ]
+            },
+            'Marie Curie': {
+                name: 'Marie Curie',
+                birth_date: '07/11/1867',
+                birth_place: 'Varsóvia, Polônia',
+                death_date: '04/07/1934',
+                death_place: 'França',
+                nationality: 'Polonesa-Francesa',
+                main_areas: ['Física', 'Química', 'Radioatividade'],
+                biography: 'Marie Curie foi uma física e química polonesa que conduziu pesquisas pioneiras sobre radioatividade. Foi a primeira mulher a ganhar um Prêmio Nobel e a única pessoa a ganhar Prêmios Nobel em duas ciências diferentes (Física e Química). Nascida Maria Skłodowska em Varsóvia, mudou-se para Paris para estudar na Sorbonne, onde conheceu Pierre Curie, com quem se casou em 1895. Juntos, descobriram os elementos rádio e polônio, e Marie continuou suas pesquisas mesmo após a morte prematura de Pierre em 1906. Ela se tornou a primeira professora mulher da Universidade de Paris e fundou o Instituto do Rádio, que se tornou um centro de pesquisa nuclear de renome mundial.',
+                major_contributions: [
+                    'Descoberta dos elementos químicos rádio e polônio',
+                    'Desenvolvimento de técnicas para isolar isótopos radioativos',
+                    'Pioneeirismo no uso de radiação para tratamentos médicos'
+                ],
+                timeline: [
+                    {year: '1867', event: 'Nascimento em Varsóvia, Polônia'},
+                    {year: '1891', event: 'Muda-se para Paris para estudar na Sorbonne'},
+                    {year: '1898', event: 'Descobre os elementos rádio e polônio'},
+                    {year: '1903', event: 'Ganha o Prêmio Nobel de Física'},
+                    {year: '1911', event: 'Ganha o Prêmio Nobel de Química'}
+                ],
+                curiosities: [
+                    'Seus cadernos de laboratório de mais de 100 anos ainda são radioativos',
+                    'Durante a Primeira Guerra Mundial, desenvolveu unidades móveis de raios-X',
+                    'O elemento químico Cúrio foi nomeado em sua homenagem'
+                ]
+            },
+            'Pelé': {
+                name: 'Edson Arantes do Nascimento (Pelé)',
+                birth_date: '23/10/1940',
+                birth_place: 'Três Corações, Brasil',
+                death_date: '29/12/2022',
+                death_place: 'São Paulo, Brasil',
+                nationality: 'Brasileira',
+                main_areas: ['Futebol', 'Esporte'],
+                biography: 'Pelé é amplamente considerado o maior jogador de futebol de todos os tempos. Nascido Edson Arantes do Nascimento em uma família humilde, começou a jogar futebol nas ruas de Bauru. Sua carreira profissional começou aos 15 anos no Santos, onde se tornou uma lenda. Pelé é o único jogador a conquistar três Copas do Mundo (1958, 1962, 1970) e marcou mais de 1.000 gols em sua carreira. Além de suas habilidades técnicas excepcionais, Pelé popularizou o futebol globalmente e se tornou um embaixador do esporte. Após se aposentar, continuou envolvido no futebol e em atividades beneficentes, mantendo-se como uma figura icônica do esporte mundial.',
+                major_contributions: [
+                    'Três vitórias em Copas do Mundo (1958, 1962, 1970), único jogador com esse feito',
+                    'Mais de 1.000 gols marcados em carreira oficial',
+                    'Popularização do futebol brasileiro e mundial através de seu talento único'
+                ],
+                timeline: [
+                    {year: '1940', event: 'Nascimento em Três Corações, Minas Gerais'},
+                    {year: '1956', event: 'Estreia profissional pelo Santos aos 15 anos'},
+                    {year: '1958', event: 'Primeira Copa do Mundo conquistada, aos 17 anos'},
+                    {year: '1970', event: 'Terceira Copa do World conquistada no México'},
+                    {year: '1977', event: 'Aposentadoria oficial do futebol'}
+                ],
+                curiosities: [
+                    'O apelido "Pelé" não tem origem confirmada, ele mesmo não sabia exatamente de onde veio',
+                    'Foi declarado Patrimônio Nacional do Brasil em 1961',
+                    'Atuou como Ministro dos Esportes do Brasil de 1995 a 1998'
+                ]
+            },
+            'Santos Dumont': {
+                name: 'Alberto Santos Dumont',
+                birth_date: '20/07/1873',
+                birth_place: 'Palmira, Brasil',
+                death_date: '23/07/1932',
+                death_place: 'Guarujá, Brasil',
+                nationality: 'Brasileira',
+                main_areas: ['Aviação', 'Invenção', 'Engenharia'],
+                biography: 'Alberto Santos Dumont foi um aeronauta, esportista e inventor brasileiro, considerado o pai da aviação por muitos. Filho de um rico fazendeiro de café, mudou-se para Paris jovem, onde se dedicou ao estudo da mecânica e dos motores. Santos Dumont conquistou fama mundial com seus dirigíveis, especialmente quando contornou a Torre Eiffel com o dirigível nº 6 em 1901. Em 1906, realizou o primeiro voo público de um avião na Europa com o 14-Bis, sendo oficialmente reconhecido como o primeiro voo da história pela Federação Aeronáutica Internacional. Diferentemente dos irmãos Wright, Santos Dumont tornou suas invenções públicas, não patenteando seus projetos para que a aviação se desenvolvesse livremente.',
+                major_contributions: [
+                    'Primeiro voo público oficialmente reconhecido com o avião 14-Bis',
+                    'Desenvolvimento de dirigíveis que popularizaram o voo',
+                    'Criação do Demoiselle, um dos primeiros aviões leves e acessíveis'
+                ],
+                timeline: [
+                    {year: '1873', event: 'Nascimento em Palmira (atual Santos Dumont), Minas Gerais'},
+                    {year: '1897', event: 'Muda-se para Paris e inicia experimentos com balões'},
+                    {year: '1901', event: 'Contorna a Torre Eiffel com o dirigível nº 6'},
+                    {year: '1906', event: 'Primeiro voo do 14-Bis em Paris'},
+                    {year: '1932', event: 'Falece no Guarujá aos 59 anos'}
+                ],
+                curiosities: [
+                    'Usava sempre terno e gravata, mesmo durante os voos',
+                    'Inventou o relógio de pulso masculino para consultar as horas durante o voo',
+                    'Nunca patenteou suas invenções, acreditando que a aviação deveria ser livre para todos'
+                ]
+            }
+        };
+
         // === FUNÇÕES AUXILIARES ===
         function showStatus(message, type = 'info') {
             statusDiv.textContent = message;
@@ -633,79 +772,247 @@
             hideAutoComplete();
 
             try {
-                const prompt = `
-                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia detalhada e factualmente precisa sobre a seguinte pessoa: "${personName}".
-
-                Se a pessoa não existir, for desconhecida, ou se o nome estiver claramente incorreto, responda com um JSON contendo apenas:
-                {
-                  "error": "PERSON_NOT_FOUND",
-                  "message": "Pessoa não encontrada ou nome incorreto"
+                // Verifica se o Puter está disponível
+                if (typeof puter === 'undefined' || !puter.ai) {
+                    console.log('Puter não disponível, tentando biografia de fallback...');
+                    const fallbackResult = tryFallbackBiography(personName);
+                    if (fallbackResult) {
+                        displayBiography(fallbackResult);
+                        showStatus('Biografia carregada com sucesso!', 'success');
+                        return;
+                    }
+                    throw new Error('Serviço de IA não está disponível e não há biografia de fallback.');
                 }
 
-                Caso contrário, responda **EXCLUSIVAMENTE** com um objeto JSON válido no seguinte formato. Não inclua texto ou explicações antes ou depois do JSON.
+                console.log('Iniciando geração de biografia para:', personName);
 
-                {
-                  "name": "Nome completo e correto da pessoa",
-                  "birth_date": "Data de nascimento (DD/MM/AAAA)",
-                  "birth_place": "Local de nascimento (Cidade, País)",
-                  "death_date": "Data da morte (DD/MM/AAAA) ou 'Ainda vivo(a)'",
-                  "death_place": "Local da morte ou 'N/A' se vivo(a)",
-                  "nationality": "Nacionalidade(s)",
-                  "main_areas": ["Área 1 de atuação", "Área 2 de atuação"],
-                  "biography": "Uma biografia rica e detalhada (mínimo de 3 parágrafos) cobrindo sua vida, carreira, realizações importantes e legado. O texto deve ser bem escrito e envolvente.",
-                  "major_contributions": [
-                    "Primeira contribuição ou feito principal, com uma breve explicação.",
-                    "Segundo feito principal, com uma breve explicação.",
-                    "Terceiro feito principal, com uma breve explicação."
-                  ],
-                  "timeline": [
-                    {"year": "AAAA", "event": "Um evento marcante na vida ou carreira."},
-                    {"year": "AAAA", "event": "Outro evento importante."},
-                    {"year": "AAAA", "event": "Mais um evento cronológico."}
-                  ],
-                  "curiosities": [
-                    "Uma curiosidade ou fato interessante sobre a pessoa.",
-                    "Outra curiosidade."
-                  ]
-                }
+                const prompt = `Crie uma biografia detalhada para: ${personName}
 
-                Instruções Importantes:
-                - Verifique as informações para garantir precisão. Se uma informação não estiver disponível, use "Informação não disponível".
-                - A biografia deve ter um tom educativo e ser acessível a um público geral.
-                - Se houver qualquer dúvida sobre a existência da pessoa, prefira retornar o erro.
-                `;
+Responda APENAS com um JSON válido neste formato exato:
+{
+  "name": "Nome completo da pessoa",
+  "birth_date": "DD/MM/AAAA ou Informação não disponível",
+  "birth_place": "Cidade, País ou Informação não disponível",
+  "death_date": "DD/MM/AAAA ou Ainda vivo(a) ou Informação não disponível",
+  "death_place": "Local ou N/A ou Informação não disponível",
+  "nationality": "Nacionalidade",
+  "main_areas": ["Área principal", "Área secundária"],
+  "biography": "Biografia detalhada em 3 parágrafos sobre vida, carreira e legado.",
+  "major_contributions": ["Contribuição 1", "Contribuição 2", "Contribuição 3"],
+  "timeline": [
+    {"year": "1900", "event": "Evento importante"},
+    {"year": "1920", "event": "Outro evento"},
+    {"year": "1940", "event": "Mais um evento"}
+  ],
+  "curiosities": ["Curiosidade 1", "Curiosidade 2"]
+}
 
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
+Se a pessoa não existir ou for desconhecida, responda:
+{"error": "PERSON_NOT_FOUND", "message": "Pessoa não encontrada"}
+
+Pessoa: ${personName}`;
+
+                console.log('Enviando prompt para IA...');
                 
+                const response = await puter.ai.chat([{ 
+                    role: 'user', 
+                    content: prompt 
+                }]);
+                
+                console.log('Resposta da IA recebida:', response);
+
                 if (!response || !response.message || !response.message.content) {
-                    throw new Error('A IA não retornou uma resposta válida.');
+                    throw new Error('Resposta da IA está vazia ou inválida.');
                 }
 
-                const content = response.message.content;
+                let content = response.message.content.trim();
+                console.log('Conteúdo da resposta:', content);
+
+                // Limpa o conteúdo para encontrar apenas o JSON
                 const jsonStart = content.indexOf('{');
                 const jsonEnd = content.lastIndexOf('}') + 1;
+                
                 if (jsonStart === -1 || jsonEnd === 0) {
-                    throw new Error('A resposta da IA não continha um JSON válido.');
+                    throw new Error('Nenhum JSON válido encontrado na resposta.');
                 }
+
                 const jsonString = content.substring(jsonStart, jsonEnd);
-                const biographyData = JSON.parse(jsonString);
+                console.log('JSON extraído:', jsonString);
+
+                let biographyData;
+                try {
+                    biographyData = JSON.parse(jsonString);
+                } catch (parseError) {
+                    console.error('Erro ao fazer parse do JSON:', parseError);
+                    // Tenta biografia de fallback em caso de erro de parse
+                    const fallbackResult = tryFallbackBiography(personName);
+                    if (fallbackResult) {
+                        displayBiography(fallbackResult);
+                        showStatus('Biografia carregada (dados locais)!', 'success');
+                        return;
+                    }
+                    throw new Error('Formato JSON inválido na resposta da IA.');
+                }
+
+                console.log('Dados da biografia parseados:', biographyData);
 
                 // Verifica se é um erro (pessoa não encontrada)
                 if (biographyData.error === 'PERSON_NOT_FOUND') {
+                    console.log('Pessoa não encontrada pela IA, tentando fallback...');
+                    const fallbackResult = tryFallbackBiography(personName);
+                    if (fallbackResult) {
+                        displayBiography(fallbackResult);
+                        showStatus('Biografia encontrada (dados locais)!', 'success');
+                        return;
+                    }
+                    
                     showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
                     const suggestions = findSimilarNames(personName, 8);
                     showSuggestions(suggestions);
                     return;
                 }
 
+                // Valida se tem os campos básicos
+                if (!biographyData.name) {
+                    // Tenta fallback se dados incompletos
+                    const fallbackResult = tryFallbackBiography(personName);
+                    if (fallbackResult) {
+                        displayBiography(fallbackResult);
+                        showStatus('Biografia carregada (dados locais)!', 'success');
+                        return;
+                    }
+                    throw new Error('Dados da biografia incompletos.');
+                }
+
+                displayBiography(biographyData);
+                showStatus('Biografia gerada com sucesso!', 'success');jsonString);
+                } catch (parseError) {
+                    console.error('Erro ao fazer parse do JSON:', parseError);
+                    throw new Error('Formato JSON inválido na resposta da IA.');
+                }
+
+                console.log('Dados da biografia parseados:', biographyData);
+
+                // Verifica se é um erro (pessoa não encontrada)
+                if (biographyData.error === 'PERSON_NOT_FOUND') {
+                    console.log('Pessoa não encontrada, mostrando sugestões...');
+                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
+                    const suggestions = findSimilarNames(personName, 8);
+                    showSuggestions(suggestions);
+                    return;
+                }
+
+                // Valida se tem os campos básicos
+                if (!biographyData.name) {
+                    throw new Error('Dados da biografia incompletos.');
+                }
+
                 displayBiography(biographyData);
                 showStatus('Biografia gerada com sucesso!', 'success');
 
             } catch (error) {
-                console.error('Erro na geração:', error);
+                console.error('Erro detalhado na geração:', error);
                 
-                // Em caso de erro, também mostra sugestões
-                showStatus(`Erro ao gerar biografia. Veja as sugestões abaixo:`, 'error');
+                // Tenta biografia de fallback antes de mostrar erro
+                const fallbackResult = tryFallbackBiography(personName);
+                if (fallbackResult) {
+                    displayBiography(fallbackResult);
+                    showStatus('Biografia carregada (modo offline)!', 'success');
+                    return;
+                }
+                
+                let errorMessage = 'Erro ao gerar biografia';
+                
+                if (error.message.includes('Puter')) {
+                    errorMessage = 'Serviço de IA não disponível';
+                } else if (error.message.includes('JSON')) {
+                    errorMessage = 'Erro no formato da resposta';
+                } else if (error.message.includes('rede') || error.message.includes('network')) {
+                    errorMessage = 'Erro de conexão';
+                }
+                
+                showStatus(`${errorMessage}. Veja as sugestões abaixo:`, 'error');
+                
+                // Mostra sugestões em caso de erro
+                const suggestions = findSimilarNames(personName, 8);
+                if (suggestions.length > 0) {
+                    showSuggestions(suggestions);
+                } else {
+                    // Se não há sugestões, mostra algumas pessoas famosas aleatórias
+                    const randomSuggestions = famousPeople
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 6);
+                    showSuggestions(randomSuggestions);
+                }
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🔍 Gerar Biografia Completa';
+            }
+        }
+
+        // === FUNÇÃO DE FALLBACK ===
+        function tryFallbackBiography(personName) {
+            const normalizedInput = personName.toLowerCase().trim();
+            
+            // Procura correspondência exata
+            for (const [key, biography] of Object.entries(fallbackBiographies)) {
+                if (key.toLowerCase() === normalizedInput) {
+                    console.log('Biografia de fallback encontrada:', key);
+                    return biography;
+                }
+            }
+            
+            // Procura correspondência parcial
+            for (const [key, biography] of Object.entries(fallbackBiographies)) {
+                const keyLower = key.toLowerCase();
+                if (keyLower.includes(normalizedInput) || normalizedInput.includes(keyLower)) {
+                    console.log('Biografia de fallback encontrada (correspondência parcial):', key);
+                    return biography;
+                }
+            }
+            
+            return null;
+        }jsonString);
+                } catch (parseError) {
+                    console.error('Erro ao fazer parse do JSON:', parseError);
+                    throw new Error('Formato JSON inválido na resposta da IA.');
+                }
+
+                console.log('Dados da biografia parseados:', biographyData);
+
+                // Verifica se é um erro (pessoa não encontrada)
+                if (biographyData.error === 'PERSON_NOT_FOUND') {
+                    console.log('Pessoa não encontrada, mostrando sugestões...');
+                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
+                    const suggestions = findSimilarNames(personName, 8);
+                    showSuggestions(suggestions);
+                    return;
+                }
+
+                // Valida se tem os campos básicos
+                if (!biographyData.name) {
+                    throw new Error('Dados da biografia incompletos.');
+                }
+
+                displayBiography(biographyData);
+                showStatus('Biografia gerada com sucesso!', 'success');
+
+            } catch (error) {
+                console.error('Erro detalhado na geração:', error);
+                
+                let errorMessage = 'Erro ao gerar biografia';
+                
+                if (error.message.includes('Puter')) {
+                    errorMessage = 'Serviço de IA não disponível';
+                } else if (error.message.includes('JSON')) {
+                    errorMessage = 'Erro no formato da resposta';
+                } else if (error.message.includes('rede') || error.message.includes('network')) {
+                    errorMessage = 'Erro de conexão';
+                }
+                
+                showStatus(`${errorMessage}. Veja as sugestões abaixo:`, 'error');
+                
+                // Mostra sugestões em caso de erro
                 const suggestions = findSimilarNames(personName, 8);
                 if (suggestions.length > 0) {
                     showSuggestions(suggestions);
