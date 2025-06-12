@@ -5,330 +5,131 @@
     <title>Gerador de Biografias</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #333;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container { 
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255,255,255,0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        h1 { text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
-        .search-box { 
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        input { 
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        input:focus { border-color: #667eea; }
-        button { 
-            padding: 15px 30px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.3s;
-        }
-        button:hover { transform: translateY(-2px); }
-        button:disabled { background: #999; transform: none; cursor: not-allowed; }
-        .status { 
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 8px;
-            text-align: center;
-            display: none;
-        }
-        .status.success { background: #d4edda; color: #155724; }
+        body { font-family: Arial, sans-serif; background: #667eea; color: #333; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .search { display: flex; gap: 10px; margin-bottom: 20px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 12px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; display: none; }
         .status.error { background: #f8d7da; color: #721c24; }
         .status.info { background: #cce5ff; color: #004085; }
-        .biography { 
-            margin-top: 30px;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border-left: 5px solid #667eea;
-            display: none;
-            line-height: 1.6;
-        }
-        .bio-title { 
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5rem;
-            text-align: center;
-        }
-        .quick-info {
-            background: #f8f9fa;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            padding: 25px;
-            margin-bottom: 30px;
-            display: grid;
-            grid-template-columns: 1fr 200px;
-            gap: 20px;
-            align-items: start;
-        }
-        .info-content h3 {
-            color: #667eea;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 5px;
-        }
-        .info-item {
-            margin-bottom: 12px;
-        }
-        .info-label {
-            font-weight: bold;
-            color: #333;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .info-value {
-            color: #555;
-            margin-left: 10px;
-        }
-        .photo-container {
-            text-align: center;
-        }
-        .photo {
-            width: 180px;
-            height: 220px;
-            border-radius: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            border: 3px solid #fff;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 7px;
-        }
-        .photo-caption {
-            font-size: 0.9rem;
-            color: #666;
-            font-style: italic;
-        }
-        .bio-text h2 {
-            color: #667eea;
-            font-size: 1.4rem;
-            margin: 30px 0 20px 0;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 5px;
-        }
-        .bio-text p { 
-            margin-bottom: 15px; 
-            text-align: justify; 
-        }
-        @media (max-width: 768px) {
-            .search-box { flex-direction: column; }
-            .quick-info {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            .photo {
-                width: 150px;
-                height: 180px;
-                margin: 0 auto 15px;
-            }
-        }
+        .status.success { background: #d4edda; color: #155724; }
+        .bio { margin-top: 20px; display: none; }
+        .info { background: #f8f9fa; border: 2px solid #667eea; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 150px; gap: 15px; }
+        .photo { width: 150px; height: 180px; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; border-radius: 8px; }
+        .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        h3 { color: #667eea; margin: 0 0 10px 0; }
+        .item { margin-bottom: 8px; }
+        .label { font-weight: bold; }
+        .bio-text p { margin-bottom: 10px; text-align: justify; }
+        @media (max-width: 600px) { .info { grid-template-columns: 1fr; text-align: center; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Gerador de Biografias</h1>
-        
-        <div class="search-box">
-            <input type="text" id="input" placeholder="Digite o nome de qualquer pessoa...">
-            <button onclick="generateBio()">🔍 Gerar Biografia</button>
+        <h1>📚 Biografias</h1>
+        <div class="search">
+            <input id="input" placeholder="Digite o nome de uma pessoa...">
+            <button onclick="generate()">Gerar</button>
         </div>
-        
         <div id="status" class="status"></div>
-        <div id="biography" class="biography"></div>
+        <div id="bio" class="bio"></div>
     </div>
 
     <script>
         const input = document.getElementById('input');
         const status = document.getElementById('status');
-        const biography = document.getElementById('biography');
+        const bio = document.getElementById('bio');
 
-        function showStatus(msg, type) {
+        function show(msg, type) {
             status.textContent = msg;
             status.className = `status ${type}`;
             status.style.display = 'block';
         }
 
-        function getInitials(name) {
-            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        }
-
-        async function generateBio() {
+        async function generate() {
             const name = input.value.trim();
-            if (!name) {
-                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
-                return;
-            }
+            if (!name) return show('Digite um nome', 'error');
 
-            showStatus('Gerando biografia completa...', 'info');
-            biography.style.display = 'none';
+            show('Gerando...', 'info');
+            bio.style.display = 'none';
 
             try {
-                if (typeof puter === 'undefined' || !puter.ai) {
-                    throw new Error('Serviço de IA não disponível');
-                }
+                if (!puter || !puter.ai) throw new Error('Serviço indisponível');
 
                 const response = await puter.ai.chat([{
                     role: 'user',
-                    content: `Gere informações completas sobre: ${name}
+                    content: `Crie uma biografia para: ${name}
 
-Responda APENAS com um JSON válido neste formato:
-{
-  "name": "Nome Completo da Pessoa",
-  "born_date": "DD de mês de AAAA ou Informação não disponível",
-  "born_place": "Cidade, País ou Informação não disponível", 
-  "died_date": "DD de mês de AAAA ou Ainda vivo(a) ou Informação não disponível",
-  "died_place": "Cidade, País ou N/A ou Informação não disponível",
-  "summary": "Resumo de uma linha sobre quem foi a pessoa e por que é conhecida",
-  "biography": "NOME DA PESSOA EM MAIÚSCULAS\\n\\nBiografia completa em formato narrativo com 6 parágrafos bem desenvolvidos seguindo o padrão acadêmico. Primeiro parágrafo sobre nascimento e primeiros anos. Segundo sobre formação e descobertas iniciais. Terceiro sobre principais contribuições. Quarto sobre contexto histórico. Quinto sobre legado e morte. Sexto sobre curiosidades e aspectos menos conhecidos."
-}
+Responda APENAS com JSON limpo sem quebras de linha ou caracteres especiais:
+{"name":"Nome completo","born":"Data nascimento","born_place":"Local nascimento","died":"Data morte ou Vivo","died_place":"Local morte ou N/A","summary":"Resumo curto","bio":"Biografia em texto corrido sem quebras de linha"}
 
-Se não encontrar a pessoa: {"error": "PESSOA_NAO_ENCONTRADA"}
-
-Pessoa: ${name}`
+Se não existir: {"error":"NOT_FOUND"}`
                 }]);
 
-                const content = response.message.content.trim();
-                const jsonStart = content.indexOf('{');
-                const jsonEnd = content.lastIndexOf('}') + 1;
+                let content = response.message.content.trim();
                 
-                if (jsonStart === -1) {
-                    throw new Error('Formato inválido');
-                }
+                // Limpa o conteúdo
+                content = content.replace(/```json|```/g, '');
+                content = content.replace(/[\n\r\t]/g, ' ');
+                content = content.replace(/\s+/g, ' ');
                 
-                const data = JSON.parse(content.substring(jsonStart, jsonEnd));
+                const start = content.indexOf('{');
+                const end = content.lastIndexOf('}') + 1;
                 
-                if (data.error === 'PESSOA_NAO_ENCONTRADA') {
-                    showStatus('Pessoa não encontrada. Tente um nome mais conhecido.', 'error');
-                    return;
-                }
+                if (start === -1) throw new Error('JSON não encontrado');
+                
+                let jsonStr = content.substring(start, end);
+                
+                // Remove caracteres problemáticos
+                jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, '');
+                
+                const data = JSON.parse(jsonStr);
+                
+                if (data.error) return show('Pessoa não encontrada', 'error');
 
-                displayBiography(data);
-                showStatus('Biografia gerada com sucesso!', 'success');
+                const initials = data.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+                const photoId = 'photo' + Date.now();
+                
+                bio.innerHTML = `
+                    <h2>${data.name}</h2>
+                    <div class="info">
+                        <div>
+                            <h3>Informações</h3>
+                            <div class="item"><span class="label">Nascimento:</span> ${data.born}</div>
+                            <div class="item"><span class="label">Local:</span> ${data.born_place}</div>
+                            ${data.died !== 'Vivo' ? `<div class="item"><span class="label">Morte:</span> ${data.died}</div>` : ''}
+                            ${data.died_place !== 'N/A' ? `<div class="item"><span class="label">Local:</span> ${data.died_place}</div>` : ''}
+                            <div class="item"><span class="label">Resumo:</span> ${data.summary}</div>
+                        </div>
+                        <div class="photo" id="${photoId}">${initials}</div>
+                    </div>
+                    <div class="bio-text">
+                        <h3>Biografia</h3>
+                        ${data.bio.split('.').filter(s => s.trim()).map(s => `<p>${s.trim()}.</p>`).join('')}
+                    </div>
+                `;
+                
+                bio.style.display = 'block';
+                show('Sucesso!', 'success');
+                
+                // Foto
+                fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(data.name)}`)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.thumbnail) {
+                            document.getElementById(photoId).innerHTML = `<img src="${d.thumbnail.source}" alt="${data.name}">`;
+                        }
+                    })
+                    .catch(() => {});
 
             } catch (error) {
-                console.error('Erro:', error);
-                showStatus('Erro ao gerar biografia. Tente novamente.', 'error');
+                show('Erro: ' + error.message, 'error');
             }
         }
 
-        function displayBiography(data) {
-            const initials = getInitials(data.name);
-            const photoId = `photo-${Date.now()}`;
-            
-            biography.innerHTML = `
-                <h1 class="bio-title">${data.name}</h1>
-                
-                <div class="quick-info">
-                    <div class="info-content">
-                        <h3>Informações Rápidas</h3>
-                        <div class="info-item">
-                            <span class="info-label">Nascimento</span>
-                            <span class="info-value">${data.born_date}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Local de Nascimento</span>
-                            <span class="info-value">${data.born_place}</span>
-                        </div>
-                        ${data.died_date && !data.died_date.includes('vivo') ? `
-                        <div class="info-item">
-                            <span class="info-label">Falecimento</span>
-                            <span class="info-value">${data.died_date}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Local de Falecimento</span>
-                            <span class="info-value">${data.died_place}</span>
-                        </div>
-                        ` : ''}
-                        <div class="info-item">
-                            <span class="info-label">Resumo</span>
-                            <span class="info-value">${data.summary}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="photo-container">
-                        <div class="photo" id="${photoId}">
-                            ${initials}
-                        </div>
-                        <div class="photo-caption">Fotografia de ${data.name}</div>
-                    </div>
-                </div>
-                
-                <div class="bio-text">
-                    <h2>Biografia</h2>
-                    ${data.biography.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('')}
-                </div>
-            `;
-            
-            biography.style.display = 'block';
-            biography.scrollIntoView({ behavior: 'smooth' });
-            
-            loadPhoto(data.name, photoId);
-        }
-
-        async function loadPhoto(personName, photoId) {
-            const photoElement = document.getElementById(photoId);
-            if (!photoElement) return;
-
-            try {
-                const searchUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName)}`;
-                const response = await fetch(searchUrl);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.thumbnail && data.thumbnail.source) {
-                        const img = new Image();
-                        img.onload = () => {
-                            photoElement.innerHTML = `<img src="${data.thumbnail.source}" alt="Foto de ${personName}">`;
-                        };
-                        img.src = data.thumbnail.source;
-                    }
-                }
-            } catch (error) {
-                console.log('Foto não encontrada, usando iniciais');
-            }
-        }
-
-        input.addEventListener('keypress', e => {
-            if (e.key === 'Enter') generateBio();
-        });
-
+        input.addEventListener('keypress', e => e.key === 'Enter' && generate());
         input.focus();
     </script>
 </body>
