@@ -2,72 +2,120 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>📚 Biografias com IA e Busca</title>
+  <title>Biografias com IA e MetaMask</title>
   <script src="https://js.puter.com/v2/"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
     .container { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; }
     h1 { text-align: center; color: #333; }
-    .search { position: relative; margin-bottom: 20px; }
-    input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; }
-    button { padding: 12px 20px; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
-    button:disabled { background: #a0c4e8; cursor: not-allowed; }
-    .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; display: none; z-index: 10; }
-    .suggestion { padding: 8px 12px; cursor: pointer; }
-    .suggestion:hover { background: #f0f0f0; }
-    .status { padding: 10px; margin-bottom: 20px; border-radius: 4px; display: none; }
+    .controls { display: flex; gap: 10px; margin-bottom: 15px; }
+    .controls button, .controls input { flex: 1; padding: 10px; border-radius: 4px; border: 1px solid #ccc; }
+    .controls button { background: #4a90e2; color: white; cursor: pointer; border: none; }
+    .controls button:disabled { background: #a0c4e8; cursor: not-allowed; }
+    .suggestions { background: #fff; border: 1px solid #ccc; margin-top: -5px; max-height: 150px; overflow-y: auto; position: absolute; width: calc(100% - 20px); border-radius: 0 0 4px 4px; display: none; z-index: 10; }
+    .suggestion { padding: 8px 10px; cursor: pointer; }
+    .suggestion:hover { background: #eaeaea; }
+    .status { padding: 10px; margin: 10px 0; border-radius: 4px; display: none; }
     .status.info { background: #d9edf7; color: #31708f; }
     .status.success { background: #dff0d8; color: #3c763d; }
     .status.error { background: #f2dede; color: #a94442; }
-    .bio { display: none; }
+    .bio { display: none; margin-top: 20px; }
     .info { display: flex; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-    .barcode { flex: 1; }
-    .photo { width: 120px; height: 150px; background: #e2e2e2; border-radius: 4px; margin-left: 20px; display: flex; align-items: center; justify-content: center; }
+    .info-details { flex: 1; }
+    .photo { width: 100px; height: 120px; background: #e2e2e2; border-radius: 4px; margin-left: 20px; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #666; }
     .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
     .bio-text { line-height: 1.6; }
+    .relative { position: relative; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Biografias Inteligentes</h1>
-    <div class="search">
-      <input id="input" placeholder="Digite um nome...">
-      <div id="suggestions" class="suggestions"></div>
-      <button id="btnGenerate" onclick="generate()" disabled>Gerar Biografia</button>
+    <div class="controls">
+      <button id="btnConnect">Conectar MetaMask</button>
+      <div class="relative">
+        <input id="input" placeholder="Digite um nome..." autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+      <button id="btnGenerate" disabled>Gerar Biografia</button>
     </div>
     <div id="status" class="status"></div>
     <div id="bio" class="bio">
-      <div class="info"><div class="barcode"><h2 id="name"></h2><div id="details"></div></div><div id="photo" class="photo"></div></div>
+      <div class="info">
+        <div class="info-details">
+          <h2 id="name"></h2>
+          <div id="details"></div>
+        </div>
+        <div id="photo" class="photo"></div>
+      </div>
       <div class="bio-text" id="bioText"></div>
     </div>
   </div>
 
   <script>
-    const localNames = [ /* lista local resumida */ "Einstein, Albert", "Newton, Isaac", "Ada Lovelace", "Galilei, Galileo" ];
-    const input = document.getElementById('input'), suggestions = document.getElementById('suggestions');
-    const btn = document.getElementById('btnGenerate'), status = document.getElementById('status');
-    const bio = document.getElementById('bio'), nameEl = document.getElementById('name');
-    const details = document.getElementById('details'), photo = document.getElementById('photo'), bioText = document.getElementById('bioText');
+    const localNames = [
+      "Einstein, Albert", "Newton, Isaac", "Ada Lovelace",
+      "Galilei, Galileo", "Curie, Marie", "Tesla, Nikola"
+    ];
+
+    const btnConnect = document.getElementById('btnConnect');
+    const input = document.getElementById('input');
+    const suggestions = document.getElementById('suggestions');
+    const btnGenerate = document.getElementById('btnGenerate');
+    const status = document.getElementById('status');
+    const bio = document.getElementById('bio');
+    const nameEl = document.getElementById('name');
+    const details = document.getElementById('details');
+    const photo = document.getElementById('photo');
+    const bioText = document.getElementById('bioText');
+
+    let isConnected = false;
+
+    btnConnect.addEventListener('click', async () => {
+      if (!window.ethereum) {
+        alert('MetaMask não detectada.');
+        return;
+      }
+      try {
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length) {
+          isConnected = true;
+          btnConnect.textContent = 'Conectada: ' + accounts[0].slice(0, 6) + '...';
+          showStatus('Carteira conectada.', 'success');
+          checkGenerateAvailability();
+        }
+      } catch (err) {
+        showStatus('Falha ao conectar carteira.', 'error');
+      }
+    });
 
     input.addEventListener('input', async () => {
       const q = input.value.trim();
-      btn.disabled = !q;
-      if (!q) return suggestions.style.display = 'none';
+      suggestions.innerHTML = '';
+      suggestions.style.display = 'none';
+      btnGenerate.disabled = !(q && isConnected);
 
-      // sugestões locais
-      const locals = localNames.filter(n => n.toLowerCase().includes(q.toLowerCase())).slice(0,5);
+      if (!q) return;
 
-      // sugestões da web (fictício usando Puter AI para buscar nomes semelhantes)
-      const response = await puter.ai.chat([{ role:'user', content:`Sugira 5 nomes de pessoas famosas cujo nome contenha: "${q}" (somente nomes)` }]);
+      const locals = localNames.filter(n =>
+        n.toLowerCase().includes(q.toLowerCase())
+      ).slice(0, 5);
+
       let aiSuggest = [];
       try {
-        aiSuggest = JSON.parse(response.message.content);
-      } catch(e){}
+        const res = await puter.ai.chat([{
+          role: 'user',
+          content: JSON.stringify({ query: q })
+        }]);
+        aiSuggest = JSON.parse(res.message.content);
+      } catch {}
 
-      const all = [...new Set([...locals, ...aiSuggest])].slice(0,10);
-      if (all.length === 0) return suggestions.style.display = 'none';
+      const all = [...new Set([...locals, ...aiSuggest])].slice(0, 10);
+      if (all.length === 0) return;
 
-      suggestions.innerHTML = all.map(n => `<div class="suggestion">${n}</div>`).join('');
+      suggestions.innerHTML = all.map(n =>
+        `<div class="suggestion">${n}</div>`
+      ).join('');
       suggestions.style.display = 'block';
     });
 
@@ -75,46 +123,77 @@
       if (e.target.matches('.suggestion')) {
         input.value = e.target.textContent;
         suggestions.style.display = 'none';
+        btnGenerate.disabled = false;
       }
     });
 
-    input.addEventListener('keypress', e => { if (e.key==='Enter' && input.value.trim()) generate(); });
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') {
+        suggestions.style.display = 'none';
+        if (!btnGenerate.disabled) generate();
+      }
+    });
 
-    function show(msg, type='info') {
+    btnGenerate.addEventListener('click', generate);
+
+    function showStatus(msg, type='info') {
       status.textContent = msg;
       status.className = `status ${type}`;
       status.style.display = 'block';
     }
 
+    function checkGenerateAvailability() {
+      btnGenerate.disabled = !(isConnected && input.value.trim());
+    }
+
     async function generate() {
       const nome = input.value.trim();
-      if (!nome) return;
-      show('Buscando biografia...', 'info');
+      if (!nome || !isConnected) {
+        showStatus('Certifique-se que a carteira esteja conectada e nome preenchido.', 'error');
+        return;
+      }
+      showStatus('Buscando biografia...', 'info');
       bio.style.display = 'none';
 
       try {
-        const res = await puter.ai.chat([{role:'user', content:`Biografia completa para: ${nome}\n\nJSON: {...}` }]);
-        const json = JSON.parse(res.message.content.replace(/```json|```/g,'').trim());
-        if (json.error) return show('Pessoa não encontrada', 'error');
+        const prompt = `
+Forneça um JSON com apenas os campos:
+name, born, born_place, died, died_place, summary, bio
+Sem texto adicional.
+
+Pessoa: ${nome}`;
+        const res = await puter.ai.chat([{ role: 'user', content: prompt }]);
+        let text = res.message.content.trim().replace(/```json|```/g, '').trim();
+        const json = JSON.parse(text);
+        if (json.error) {
+          showStatus('Pessoa não encontrada', 'error');
+          return;
+        }
 
         nameEl.textContent = json.name;
         let infoHTML = `<div><strong>Nascimento:</strong> ${json.born} — ${json.born_place}</div>`;
-        if (json.died!=='Vivo') infoHTML += `<div><strong>Morte:</strong> ${json.died} — ${json.died_place}</div>`;
+        if (json.died && json.died !== 'Vivo')
+          infoHTML += `<div><strong>Morte:</strong> ${json.died} — ${json.died_place}</div>`;
         infoHTML += `<div><strong>Resumo:</strong> ${json.summary}</div>`;
         details.innerHTML = infoHTML;
 
-        photo.innerHTML = json.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+        const initials = json.name.split(' ').map(w => w[0]).slice(0, 2).join('');
+        photo.textContent = initials;
         fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(json.name)}`)
-          .then(r=>r.json()).then(w => {
-            if (w.thumbnail?.source) photo.innerHTML = `<img src="${w.thumbnail.source}" alt="">`;
-          }).catch(()=>{});
+          .then(r => r.json())
+          .then(w => {
+            if (w.thumbnail?.source)
+              photo.innerHTML = `<img src="${w.thumbnail.source}" alt="${json.name}">`;
+          }).catch(() => {});
 
-        bioText.innerHTML = json.bio.split('.').filter(s=>s.trim()).map(s=>`<p>${s.trim()}.</p>`).join('');
+        bioText.innerHTML = json.bio.split('.')
+          .filter(s => s.trim())
+          .map(s => `<p>${s.trim()}.</p>`).join('');
         bio.style.display = 'block';
-        show('Biografia gerada com sucesso!', 'success');
-      } catch (e) {
-        show('Erro ao gerar biografia', 'error');
-        console.error(e);
+        showStatus('Biografia gerada com sucesso!', 'success');
+      } catch (err) {
+        console.error(err);
+        showStatus('Erro ao processar a biografia.', 'error');
       }
     }
   </script>
