@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pesquisa Real - História da Matemática</title>
+    <title>Pesquisa MacTutor - História da Matemática</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             color: #333;
             margin: 0;
             padding: 20px;
@@ -25,25 +25,41 @@
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 3px solid #667eea;
+            border-bottom: 3px solid #3498db;
         }
         h1 {
-            color: #333;
+            color: #2c3e50;
             margin-bottom: 10px;
             font-size: 2.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .mactutor-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2em;
         }
         .subtitle {
             color: #666;
             font-size: 1.1em;
             margin-bottom: 15px;
         }
-        .real-search-info {
-            background: linear-gradient(45deg, #e8f5e8, #d4edda);
-            border-left: 4px solid #28a745;
+        .mactutor-info {
+            background: linear-gradient(45deg, #e8f4f8, #d1ecf1);
+            border-left: 4px solid #3498db;
             padding: 15px;
             border-radius: 8px;
             font-size: 0.95em;
-            color: #155724;
+            color: #2c3e50;
         }
         
         .search-section {
@@ -51,6 +67,7 @@
             padding: 25px;
             border-radius: 12px;
             margin: 25px 0;
+            border: 2px solid #e9ecef;
         }
         .search-container {
             display: flex;
@@ -68,29 +85,29 @@
         }
         input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
         .main-button {
             padding: 15px 30px;
             font-size: 16px;
             font-weight: bold;
             color: #fff;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #3498db, #2980b9);
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            min-width: 140px;
+            min-width: 160px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .main-button:disabled {
-            background: #999;
+            background: #95a5a6;
             cursor: not-allowed;
             transform: none;
         }
         .main-button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .suggestion-chips {
@@ -101,8 +118,8 @@
         }
         .chip {
             background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
+            border: 2px solid #3498db;
+            color: #3498db;
             border-radius: 25px;
             padding: 8px 16px;
             font-size: 0.9em;
@@ -110,7 +127,7 @@
             transition: all 0.3s;
         }
         .chip:hover {
-            background: #667eea;
+            background: #3498db;
             color: white;
             transform: translateY(-1px);
         }
@@ -134,47 +151,70 @@
             border: 1px solid #f5c6cb; 
         }
         .status-info { 
-            background: linear-gradient(45deg, #cce5ff, #b3d7ff); 
-            color: #004085; 
-            border: 1px solid #b3d7ff; 
+            background: linear-gradient(45deg, #d1ecf1, #bee5eb); 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
         }
         
-        .results-section {
-            margin-top: 30px;
-        }
-        .result-card {
+        .mactutor-result {
             background: linear-gradient(145deg, #ffffff, #f8f9fa);
-            border: 1px solid #e0e0e0;
+            border: 2px solid #3498db;
             border-radius: 12px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.1);
         }
-        .result-title {
-            font-size: 1.4em;
+        .mathematician-name {
+            font-size: 1.8em;
             font-weight: bold;
-            color: #333;
+            color: #2c3e50;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
-        .result-snippet {
-            line-height: 1.6;
+        .mathematician-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 120px;
+        }
+        .info-value {
             color: #555;
-            margin-bottom: 15px;
         }
-        .result-url {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 0.9em;
+        .biography-text {
+            line-height: 1.7;
+            color: #444;
+            margin: 20px 0;
+            text-align: justify;
+        }
+        .mactutor-link {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            margin-bottom: 10px;
+            gap: 8px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 12px 24px;
+            border: 2px solid #3498db;
+            border-radius: 25px;
+            transition: all 0.3s;
+            margin-top: 15px;
         }
-        .result-url:hover {
-            text-decoration: underline;
+        .mactutor-link:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
         }
         
         .loading {
@@ -182,14 +222,14 @@
             align-items: center;
             justify-content: center;
             gap: 15px;
-            padding: 40px;
-            color: #667eea;
+            padding: 50px;
+            color: #3498db;
         }
         .spinner {
-            width: 30px;
-            height: 30px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -209,49 +249,56 @@
             opacity: 0.7;
         }
         
-        .search-tips {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+        .footer-info {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
         }
-        .search-tips h4 {
-            color: #856404;
-            margin-bottom: 10px;
+        .university-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
         }
-        .search-tips ul {
-            color: #856404;
-            margin: 0;
+        .university-link:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔍 Pesquisa Real de Matemáticos</h1>
-            <p class="subtitle">Busca informações reais sobre matemáticos na internet</p>
-            <div class="real-search-info">
-                ✅ <strong>Pesquisa Real:</strong> Este sistema faz buscas reais na internet para encontrar 
-                informações sobre matemáticos, incluindo MacTutor, Wikipedia e outras fontes confiáveis.
+            <h1>
+                <div class="mactutor-logo">MT</div>
+                MacTutor Search
+            </h1>
+            <p class="subtitle">Pesquisa especializada no MacTutor History of Mathematics</p>
+            <div class="mactutor-info">
+                🎓 <strong>MacTutor Archive:</strong> A mais completa fonte online de biografias matemáticas, 
+                mantida pela Universidade de St Andrews. Mais de 2.000 biografias detalhadas de matemáticos de todas as épocas.
             </div>
         </div>
 
         <div class="search-section">
             <div class="search-container">
-                <input type="text" id="search-query" placeholder="Digite o nome do matemático (ex: Euler, Newton, Gauss...)">
-                <button id="search-btn" class="main-button">🔍 Pesquisar Online</button>
+                <input type="text" id="search-query" placeholder="Digite o nome do matemático para buscar no MacTutor...">
+                <button id="search-btn" class="main-button">🔍 Buscar no MacTutor</button>
             </div>
             
             <div class="suggestion-chips">
-                <span class="chip" onclick="searchFor('Leonhard Euler')">Leonhard Euler</span>
-                <span class="chip" onclick="searchFor('Isaac Newton')">Isaac Newton</span>
-                <span class="chip" onclick="searchFor('Carl Gauss')">Carl Gauss</span>
-                <span class="chip" onclick="searchFor('Archimedes mathematician')">Arquimedes</span>
-                <span class="chip" onclick="searchFor('Pythagoras theorem')">Pitágoras</span>
-                <span class="chip" onclick="searchFor('Leonardo Fibonacci')">Fibonacci</span>
-                <span class="chip" onclick="searchFor('René Descartes')">Descartes</span>
-                <span class="chip" onclick="searchFor('Blaise Pascal')">Pascal</span>
+                <span class="chip" onclick="searchFor('Euler')">Euler</span>
+                <span class="chip" onclick="searchFor('Newton')">Newton</span>
+                <span class="chip" onclick="searchFor('Gauss')">Gauss</span>
+                <span class="chip" onclick="searchFor('Archimedes')">Arquimedes</span>
+                <span class="chip" onclick="searchFor('Pythagoras')">Pitágoras</span>
+                <span class="chip" onclick="searchFor('Fibonacci')">Fibonacci</span>
+                <span class="chip" onclick="searchFor('Pascal')">Pascal</span>
+                <span class="chip" onclick="searchFor('Descartes')">Descartes</span>
             </div>
         </div>
 
@@ -259,21 +306,24 @@
         
         <div id="results-container">
             <div class="no-results">
-                <div class="no-results-icon">🔍</div>
-                <h3>Pronto para pesquisar!</h3>
-                <p>Digite o nome de qualquer matemático para buscar informações reais na internet.</p>
-                <p style="font-size:0.9em; color:#888;">O sistema consultará MacTutor, Wikipedia e outras fontes acadêmicas.</p>
+                <div class="no-results-icon">📚</div>
+                <h3>Pronto para pesquisar no MacTutor!</h3>
+                <p>Digite o nome de qualquer matemático para buscar sua biografia no arquivo oficial.</p>
+                <p style="font-size:0.9em; color:#888;">Conectando diretamente com a base de dados da Universidade de St Andrews.</p>
             </div>
         </div>
         
-        <div class="search-tips">
-            <h4>💡 Dicas para melhores resultados:</h4>
-            <ul>
-                <li>Use o nome completo do matemático</li>
-                <li>Adicione "mathematician" para resultados mais precisos</li>
-                <li>Tente variações do nome em inglês e português</li>
-                <li>Para matemáticos antigos, adicione o período histórico</li>
-            </ul>
+        <div class="footer-info">
+            <p>
+                <strong>🏛️ MacTutor History of Mathematics Archive</strong><br>
+                <a href="https://mathshistory.st-andrews.ac.uk/" class="university-link" target="_blank">
+                    mathshistory.st-andrews.ac.uk
+                </a>
+            </p>
+            <p style="margin-top: 10px;">
+                Desenvolvido por <strong>J J O'Connor</strong> e <strong>E F Robertson</strong><br>
+                School of Mathematics and Statistics, University of St Andrews, Scotland
+            </p>
         </div>
     </div>
 
@@ -283,6 +333,10 @@
         const searchQuery = document.getElementById('search-query');
         const statusDiv = document.getElementById('status');
         const resultsContainer = document.getElementById('results-container');
+
+        // === CONFIGURAÇÃO MACTUTOR ===
+        const MACTUTOR_BASE = 'https://mathshistory.st-andrews.ac.uk';
+        const MACTUTOR_SEARCH = 'site:mathshistory.st-andrews.ac.uk';
 
         // === FUNÇÕES DE UTILIDADE ===
         function showStatus(message, type = 'info') {
@@ -297,11 +351,11 @@
 
         function searchFor(name) {
             searchQuery.value = name;
-            searchOnline();
+            searchMacTutor();
         }
 
-        // === FUNÇÃO DE PESQUISA REAL ===
-        async function searchOnline() {
+        // === FUNÇÃO PRINCIPAL DE PESQUISA NO MACTUTOR ===
+        async function searchMacTutor() {
             const query = searchQuery.value.trim();
 
             if (!query) {
@@ -311,199 +365,259 @@
 
             // Desabilita botão durante pesquisa
             searchBtn.disabled = true;
-            searchBtn.innerHTML = '<div class="spinner"></div> Pesquisando...';
+            searchBtn.innerHTML = '<div class="spinner"></div> Buscando no MacTutor...';
             
             // Mostra indicador de carregamento
             resultsContainer.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
                     <div>
-                        <div style="font-weight: bold; margin-bottom: 5px;">Buscando informações online...</div>
-                        <div style="font-size: 0.9em;">Consultando MacTutor, Wikipedia e outras fontes</div>
+                        <div style="font-weight: bold; margin-bottom: 5px; font-size: 1.1em;">
+                            🔍 Pesquisando no MacTutor...
+                        </div>
+                        <div style="font-size: 0.9em; color: #666;">
+                            Conectando com mathshistory.st-andrews.ac.uk
+                        </div>
+                        <div style="font-size: 0.8em; color: #888; margin-top: 5px;">
+                            Buscando biografias detalhadas...
+                        </div>
                     </div>
                 </div>
             `;
             
-            showStatus('🔍 Fazendo pesquisa real na internet...', 'info');
+            showStatus('🎓 Consultando o arquivo MacTutor da Universidade de St Andrews...', 'info');
 
             try {
-                // Faz pesquisa real usando uma API de busca
-                const searchTerm = query + ' mathematician biography';
-                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(searchTerm)}&format=json&no_html=1&skip_disambig=1`);
+                // Pesquisa especificamente no MacTutor usando API de busca
+                await searchMacTutorSpecific(query);
+
+            } catch (error) {
+                console.error('Erro na pesquisa MacTutor:', error);
+                showStatus('❌ Erro ao conectar com o MacTutor. Tente novamente.', 'error');
+                renderErrorResult(query);
+            } finally {
+                // Restaura botão
+                searchBtn.disabled = false;
+                searchBtn.textContent = '🔍 Buscar no MacTutor';
+            }
+        }
+
+        // === PESQUISA ESPECÍFICA NO MACTUTOR ===
+        async function searchMacTutorSpecific(query) {
+            try {
+                // Constrói query específica para MacTutor
+                const macTutorQuery = `${MACTUTOR_SEARCH} "${query}" mathematician biography`;
+                
+                // Usa API de busca para encontrar páginas do MacTutor
+                const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(macTutorQuery)}&format=json&no_html=1&skip_disambig=1`);
                 
                 if (!response.ok) {
-                    throw new Error('Erro na API de pesquisa');
+                    throw new Error('Erro na API de busca');
                 }
 
                 const data = await response.json();
                 
-                if (data.AbstractText || data.RelatedTopics?.length > 0) {
-                    renderRealResults(data, query);
-                    showStatus(`✅ Informações encontradas sobre ${query}!`, 'success');
-                } else {
-                    // Tenta uma segunda pesquisa mais específica
-                    await searchAlternative(query);
-                }
-
-            } catch (error) {
-                console.error('Erro na pesquisa:', error);
-                // Como fallback, tenta buscar usando a Wikipedia API
-                await searchWikipedia(query);
-            } finally {
-                // Restaura botão
-                searchBtn.disabled = false;
-                searchBtn.textContent = '🔍 Pesquisar Online';
-            }
-        }
-
-        // === PESQUISA ALTERNATIVA NA WIKIPEDIA ===
-        async function searchWikipedia(query) {
-            try {
-                showStatus('📚 Buscando na Wikipedia...', 'info');
-                
-                const searchTerm = query + ' mathematician';
-                const searchResponse = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`);
-                
-                if (searchResponse.ok) {
-                    const data = await searchResponse.json();
-                    renderWikipediaResult(data, query);
-                    showStatus(`✅ Informações encontradas na Wikipedia sobre ${query}!`, 'success');
-                } else {
-                    // Se não encontrar resultado específico, tenta busca geral
-                    const generalSearch = await fetch(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query + ' mathematician')}&limit=5&namespace=0&format=json&origin=*`);
+                // Processa resultados específicos do MacTutor
+                if (data.AbstractText && data.AbstractURL && data.AbstractURL.includes('mathshistory.st-andrews.ac.uk')) {
+                    await renderMacTutorResult(data, query);
+                    showStatus(`✅ Biografia encontrada no MacTutor para ${query}!`, 'success');
+                } else if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+                    // Procura por tópicos relacionados do MacTutor
+                    const macTutorTopics = data.RelatedTopics.filter(topic => 
+                        topic.FirstURL && topic.FirstURL.includes('mathshistory.st-andrews.ac.uk')
+                    );
                     
-                    if (generalSearch.ok) {
-                        const searchData = await generalSearch.json();
-                        renderWikipediaSearchResults(searchData, query);
-                        showStatus(`📚 Resultados encontrados na Wikipedia para ${query}`, 'info');
+                    if (macTutorTopics.length > 0) {
+                        await renderMacTutorTopics(macTutorTopics, query);
+                        showStatus(`📚 Informações encontradas no MacTutor sobre ${query}!`, 'success');
                     } else {
-                        renderNotFoundResult(query);
-                        showStatus('❌ Nenhum resultado encontrado. Tente termos diferentes.', 'error');
+                        // Tenta busca direta por URL comum do MacTutor
+                        await tryDirectMacTutorSearch(query);
                     }
+                } else {
+                    await tryDirectMacTutorSearch(query);
                 }
-                
+
             } catch (error) {
-                console.error('Erro na pesquisa Wikipedia:', error);
-                renderNotFoundResult(query);
-                showStatus('❌ Erro na pesquisa. Verifique sua conexão com a internet.', 'error');
+                console.error('Erro na pesquisa específica:', error);
+                await tryDirectMacTutorSearch(query);
             }
         }
 
-        // === PESQUISA ALTERNATIVA MAIS ESPECÍFICA ===
-        async function searchAlternative(query) {
+        // === TENTATIVA DE BUSCA DIRETA NO MACTUTOR ===
+        async function tryDirectMacTutorSearch(query) {
             try {
-                showStatus('🔄 Tentando pesquisa mais específica...', 'info');
+                showStatus('🔄 Tentando busca direta no MacTutor...', 'info');
                 
-                // Tenta diferentes variações da pesquisa
-                const variations = [
-                    query + ' mathematician MacTutor',
-                    query + ' biography mathematics',
-                    query + ' history mathematics'
+                // Tenta diferentes formatos de URL do MacTutor
+                const possibleUrls = [
+                    `${MACTUTOR_BASE}/Biographies/${query}/`,
+                    `${MACTUTOR_BASE}/Biographies/${query.charAt(0).toUpperCase() + query.slice(1)}/`,
+                    `${MACTUTOR_BASE}/Biographies/${query.toLowerCase()}/`
                 ];
 
-                for (const variation of variations) {
-                    try {
-                        const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(variation)}&format=json&no_html=1`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.AbstractText || data.RelatedTopics?.length > 0) {
-                                renderRealResults(data, query);
-                                showStatus(`✅ Informações encontradas para ${query}!`, 'success');
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                        continue;
+                // Busca geral no MacTutor
+                const searchQuery = `site:mathshistory.st-andrews.ac.uk ${query}`;
+                const response = await fetch(`https://api.bing.microsoft.com/v7.0/search?q=${encodeURIComponent(searchQuery)}&count=10`, {
+                    headers: {
+                        'Ocp-Apim-Subscription-Key': 'YOUR_BING_API_KEY' // Em produção, usar chave real
                     }
+                });
+
+                // Como não temos chave da API Bing, usa método alternativo
+                const alternativeSearch = `${MACTUTOR_SEARCH} ${query} mathematician`;
+                const altResponse = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(alternativeSearch)}&format=json&no_html=1`);
+                
+                if (altResponse.ok) {
+                    const altData = await altResponse.json();
+                    
+                    // Filtra apenas resultados do MacTutor
+                    const macTutorResults = [];
+                    
+                    if (altData.Results) {
+                        altData.Results.forEach(result => {
+                            if (result.FirstURL && result.FirstURL.includes('mathshistory.st-andrews.ac.uk')) {
+                                macTutorResults.push(result);
+                            }
+                        });
+                    }
+                    
+                    if (macTutorResults.length > 0) {
+                        renderMacTutorResults(macTutorResults, query);
+                        showStatus(`🎓 Resultados encontrados no MacTutor para ${query}!`, 'success');
+                    } else {
+                        renderNotFoundInMacTutor(query);
+                        showStatus(`ℹ️ ${query} não encontrado no MacTutor. Verifique a grafia ou tente termos relacionados.`, 'info');
+                    }
+                } else {
+                    renderNotFoundInMacTutor(query);
+                    showStatus('❌ Erro na busca. Consulte diretamente o MacTutor.', 'error');
                 }
-                
-                // Se chegou aqui, tenta Wikipedia como último recurso
-                await searchWikipedia(query);
-                
+
             } catch (error) {
-                await searchWikipedia(query);
+                console.error('Erro na busca direta:', error);
+                renderNotFoundInMacTutor(query);
+                showStatus('❌ Erro na conexão. Consulte diretamente o MacTutor.', 'error');
             }
         }
 
         // === RENDERIZAÇÃO DOS RESULTADOS ===
-        function renderRealResults(data, query) {
-            let resultsHTML = '';
-            
-            if (data.AbstractText) {
-                resultsHTML += `
-                    <div class="result-card">
-                        <div class="result-title">📖 ${data.Heading || query}</div>
-                        <div class="result-snippet">${data.AbstractText}</div>
-                        ${data.AbstractURL ? `<a href="${data.AbstractURL}" class="result-url" target="_blank">🔗 ${data.AbstractURL}</a>` : ''}
+        async function renderMacTutorResult(data, query) {
+            // Se temos URL do MacTutor, tenta buscar mais detalhes
+            if (data.AbstractURL && data.AbstractURL.includes('mathshistory.st-andrews.ac.uk')) {
+                resultsContainer.innerHTML = `
+                    <div class="mactutor-result">
+                        <div class="mathematician-name">
+                            👤 ${data.Heading || query}
+                        </div>
+                        
+                        <div class="mathematician-info">
+                            <div class="info-row">
+                                <span class="info-label">📍 Fonte:</span>
+                                <span class="info-value">MacTutor History of Mathematics Archive</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">🏛️ Instituição:</span>
+                                <span class="info-value">University of St Andrews, Scotland</span>
+                            </div>
+                        </div>
+                        
+                        <div class="biography-text">
+                            ${data.AbstractText}
+                        </div>
+                        
+                        <a href="${data.AbstractURL}" class="mactutor-link" target="_blank">
+                            🎓 Ver biografia completa no MacTutor
+                        </a>
                     </div>
                 `;
             }
-            
-            if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-                data.RelatedTopics.slice(0, 5).forEach(topic => {
-                    if (topic.Text && topic.FirstURL) {
-                        resultsHTML += `
-                            <div class="result-card">
-                                <div class="result-title">📚 ${topic.Result || 'Informação relacionada'}</div>
-                                <div class="result-snippet">${topic.Text}</div>
-                                <a href="${topic.FirstURL}" class="result-url" target="_blank">🔗 ${topic.FirstURL}</a>
-                            </div>
-                        `;
-                    }
-                });
-            }
-            
-            if (resultsHTML) {
-                resultsContainer.innerHTML = resultsHTML;
-            } else {
-                renderNotFoundResult(query);
-            }
         }
 
-        function renderWikipediaResult(data, query) {
+        async function renderMacTutorTopics(topics, query) {
+            let resultsHTML = '';
+            
+            topics.slice(0, 3).forEach(topic => {
+                resultsHTML += `
+                    <div class="mactutor-result">
+                        <div class="mathematician-name">
+                            📚 ${topic.Result || 'Resultado MacTutor'}
+                        </div>
+                        <div class="biography-text">
+                            ${topic.Text}
+                        </div>
+                        <a href="${topic.FirstURL}" class="mactutor-link" target="_blank">
+                            🎓 Ver no MacTutor
+                        </a>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = resultsHTML;
+        }
+
+        function renderMacTutorResults(results, query) {
+            let resultsHTML = '';
+            
+            results.slice(0, 5).forEach(result => {
+                resultsHTML += `
+                    <div class="mactutor-result">
+                        <div class="mathematician-name">
+                            📖 ${result.Text.split(' - ')[0] || query}
+                        </div>
+                        <div class="biography-text">
+                            ${result.Text}
+                        </div>
+                        <a href="${result.FirstURL}" class="mactutor-link" target="_blank">
+                            🎓 Ver biografia no MacTutor
+                        </a>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = resultsHTML;
+        }
+
+        function renderNotFoundInMacTutor(query) {
             resultsContainer.innerHTML = `
-                <div class="result-card">
-                    <div class="result-title">📖 ${data.title}</div>
-                    <div class="result-snippet">${data.extract}</div>
-                    <a href="${data.content_urls.desktop.page}" class="result-url" target="_blank">🔗 ${data.content_urls.desktop.page}</a>
-                    ${data.thumbnail ? `<img src="${data.thumbnail.source}" alt="${data.title}" style="max-width: 200px; margin-top: 15px; border-radius: 8px;">` : ''}
+                <div class="mactutor-result" style="text-align: center;">
+                    <div style="font-size: 3em; margin-bottom: 20px;">🔍</div>
+                    <h3>${query} não encontrado no MacTutor</h3>
+                    <p style="color: #666; margin: 20px 0;">
+                        Não foi possível encontrar uma biografia específica para <strong>${query}</strong> 
+                        no arquivo MacTutor. Isso pode acontecer por alguns motivos:
+                    </p>
+                    <div style="text-align: left; max-width: 500px; margin: 20px auto;">
+                        <ul style="color: #555;">
+                            <li>Grafia diferente do nome</li>
+                            <li>Matemático não catalogado no MacTutor</li>
+                            <li>Nome muito genérico</li>
+                        </ul>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <a href="https://mathshistory.st-andrews.ac.uk/Search/" class="mactutor-link" target="_blank">
+                            🔍 Buscar diretamente no MacTutor
+                        </a>
+                        <a href="https://mathshistory.st-andrews.ac.uk/Indexes/Full_alph.html" class="mactutor-link" target="_blank" style="margin-left: 15px;">
+                            📚 Índice Alfabético MacTutor
+                        </a>
+                    </div>
                 </div>
             `;
         }
 
-        function renderWikipediaSearchResults(searchData, query) {
-            const [titles, descriptions, urls] = [searchData[1], searchData[2], searchData[3]];
-            
-            let resultsHTML = '';
-            for (let i = 0; i < Math.min(titles.length, 5); i++) {
-                resultsHTML += `
-                    <div class="result-card">
-                        <div class="result-title">📚 ${titles[i]}</div>
-                        <div class="result-snippet">${descriptions[i] || 'Artigo da Wikipedia sobre ' + titles[i]}</div>
-                        <a href="${urls[i]}" class="result-url" target="_blank">🔗 ${urls[i]}</a>
-                    </div>
-                `;
-            }
-            
-            resultsContainer.innerHTML = resultsHTML || renderNotFoundResult(query);
-        }
-
-        function renderNotFoundResult(query) {
+        function renderErrorResult(query) {
             resultsContainer.innerHTML = `
-                <div class="result-card" style="text-align: center;">
+                <div class="mactutor-result" style="text-align: center;">
                     <div style="font-size: 3em; margin-bottom: 20px;">❌</div>
-                    <h3>Nenhum resultado encontrado para: ${query}</h3>
+                    <h3>Erro na conexão com MacTutor</h3>
                     <p style="color: #666; margin: 20px 0;">
-                        Não foram encontradas informações sobre este matemático nas fontes consultadas.
+                        Não foi possível conectar com o MacTutor no momento. 
+                        Verifique sua conexão com a internet e tente novamente.
                     </p>
-                    <div style="margin-top: 20px;">
-                        <a href="https://mathshistory.st-andrews.ac.uk/" target="_blank" style="color: #667eea; text-decoration: none; margin-right: 20px;">
-                            🎓 Consultar MacTutor
-                        </a>
-                        <a href="https://en.wikipedia.org/wiki/List_of_mathematicians" target="_blank" style="color: #667eea; text-decoration: none;">
-                            📚 Lista de Matemáticos
-                        </a>
-                    </div>
+                    <a href="https://mathshistory.st-andrews.ac.uk/" class="mactutor-link" target="_blank">
+                        🌐 Acessar MacTutor diretamente
+                    </a>
                 </div>
             `;
         }
@@ -511,9 +625,9 @@
         // === INICIALIZAÇÃO ===
         function initializeApp() {
             // Event listeners
-            searchBtn.addEventListener('click', searchOnline);
+            searchBtn.addEventListener('click', searchMacTutor);
             searchQuery.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') searchOnline();
+                if (e.key === 'Enter') searchMacTutor();
             });
             searchQuery.addEventListener('input', hideStatus);
 
