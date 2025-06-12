@@ -286,6 +286,15 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
         }
+        
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(127, 140, 141, 0.4);
+        }
 
         /* Área do Quiz */
         .quiz-container {
@@ -386,6 +395,7 @@
             justify-content: center;
             margin-right: 15px;
             font-weight: 600;
+            flex-shrink: 0;
         }
 
         .option.correct .option-letter {
@@ -420,6 +430,78 @@
             color: #555;
             line-height: 1.6;
         }
+        
+        /* --- ESTILOS DO CHAT DA IA --- */
+        #ai-chat-container {
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+        }
+
+        #ai-chat-container h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #chat-messages {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background-color: #d1e7fd;
+            color: #0c5460;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background-color: #e9ecef;
+            color: #495057;
+            align-self: flex-start;
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        #chat-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        #chat-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        #chat-loading {
+            font-style: italic;
+            color: #6c757d;
+            padding: 5px 0;
+        }
+        /* --- FIM DOS ESTILOS DO CHAT --- */
+
 
         /* Resultado Final */
         .quiz-results {
@@ -512,13 +594,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- Menu Lateral -->
+        <!-- Menu Lateral (sem alterações) -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>🧮 O Mundo da Matemática</h1>
                 <p>21 seções • 218 aulas</p>
             </div>
-
+            <!-- ... todas as .grade-section ... -->
             <!-- Seção: Bem-vindo ao curso -->
             <div class="grade-section">
                 <div class="grade-header" data-grade="bem-vindo">
@@ -872,7 +954,6 @@
                     <div class="topic-item" data-topic="psa">PSA</div>
                 </div>
             </div>
-
         </div>
 
         <!-- Área Principal -->
@@ -970,6 +1051,23 @@
                                 <h4>💡 Explicação:</h4>
                                 <p id="explanation-text"></p>
                             </div>
+                            
+                            <!-- Botão para abrir o chat e o container do chat -->
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button class="btn btn-secondary" id="ask-ai-btn" onclick="toggleChat()" style="display: none;">
+                                    🤔 Tirar Dúvida com IA
+                                </button>
+                            </div>
+                            <div id="ai-chat-container" style="display: none;">
+                                <h4>💬 Converse com o Tutor IA</h4>
+                                <div id="chat-messages"></div>
+                                <div id="chat-loading" style="display: none;">Pensando...</div>
+                                <div class="chat-input-area">
+                                    <input type="text" id="chat-input" placeholder="Digite sua dúvida sobre esta questão...">
+                                    <button class="btn btn-primary" id="send-chat-btn" onclick="sendMessageToAI()" style="padding: 10px 15px;">Enviar</button>
+                                </div>
+                            </div>
+                            
                             <div style="text-align: center; margin-top: 25px;">
                                 <button class="btn btn-success" id="next-btn" onclick="nextQuestion()" style="display: none;">
                                     Próxima Questão →
@@ -1040,6 +1138,7 @@
         let questionCount = 20;
         let difficulty = 'medio';
         let isAnswered = false;
+        let chatHistory = []; // NOVO: Histórico do chat para a questão atual
 
         // Elementos DOM
         const elements = {
@@ -1050,7 +1149,15 @@
             topicTitle: document.getElementById('topic-title'),
             topicDescription: document.getElementById('topic-description'),
             statusIndicator: document.getElementById('status-indicator'),
-            loadingOverlay: document.getElementById('loading-overlay')
+            loadingOverlay: document.getElementById('loading-overlay'),
+            // NOVO: Elementos do Chat
+            askAiBtn: document.getElementById('ask-ai-btn'),
+            aiChatContainer: document.getElementById('ai-chat-container'),
+            chatMessages: document.getElementById('chat-messages'),
+            chatInput: document.getElementById('chat-input'),
+            sendChatBtn: document.getElementById('send-chat-btn'),
+            chatLoading: document.getElementById('chat-loading'),
+            nextBtn: document.getElementById('next-btn')
         };
 
         // Inicialização
@@ -1063,10 +1170,6 @@
             document.querySelectorAll('.grade-header').forEach(header => {
                 header.addEventListener('click', function() {
                     const isActive = this.classList.contains('active');
-                    // Opcional: Fechar outros menus ao abrir um novo
-                    // document.querySelectorAll('.grade-header.active').forEach(h => h.classList.remove('active'));
-                    // document.querySelectorAll('.topics-list.active').forEach(list => list.classList.remove('active'));
-                    
                     this.classList.toggle('active');
                     this.nextElementSibling.classList.toggle('active');
                 });
@@ -1081,6 +1184,14 @@
             });
             document.getElementById('difficulty-level').addEventListener('change', function() {
                 difficulty = this.value;
+            });
+            
+            // NOVO: Listener para o input do chat (enviar com Enter)
+            elements.chatInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    sendMessageToAI();
+                }
             });
         }
         
@@ -1236,7 +1347,14 @@
             selectedAnswer = null;
             isAnswered = false;
             document.getElementById('explanation').classList.remove('show');
-            document.getElementById('next-btn').style.display = 'none';
+            elements.nextBtn.style.display = 'none';
+
+            // NOVO: Resetar e esconder o chat
+            elements.askAiBtn.style.display = 'none';
+            elements.aiChatContainer.style.display = 'none';
+            elements.chatMessages.innerHTML = '';
+            chatHistory = [];
+            
             updateProgress();
         }
 
@@ -1266,7 +1384,11 @@
             
             document.getElementById('explanation-text').textContent = question.explanation;
             document.getElementById('explanation').classList.add('show');
-            document.getElementById('next-btn').style.display = 'inline-block';
+            elements.nextBtn.style.display = 'inline-block';
+            
+            // NOVO: Exibir o botão para tirar dúvida
+            elements.askAiBtn.style.display = 'inline-block';
+
             updateScore();
         }
 
@@ -1274,6 +1396,53 @@
             currentQuestionIndex++;
             displayQuestion();
         }
+        
+        // --- FUNÇÕES DO CHAT DA IA ---
+        
+        function toggleChat() {
+            elements.aiChatContainer.style.display = 'block';
+            elements.askAiBtn.style.display = 'none'; // Esconde o botão depois de clicado
+        }
+
+        async function sendMessageToAI() {
+            const userMessage = elements.chatInput.value.trim();
+            if (!userMessage) return;
+
+            addMessageToChat('user', userMessage);
+            elements.chatInput.value = '';
+            elements.chatLoading.style.display = 'block';
+
+            const currentQuestion = questions[currentQuestionIndex];
+            const contextPrompt = `Você é um tutor de matemática amigável e prestativo. Um aluno tem uma dúvida sobre a seguinte questão de um quiz:\n\n**Tópico:** ${currentTopicTitle}\n\n**Questão:** ${currentQuestion.question}\n\n**Opções:**\n${currentQuestion.options.join('\n')}\n\n**Resposta Correta:** ${currentQuestion.options[currentQuestion.correct]}\n\n**Explicação Fornecida:** ${currentQuestion.explanation}\n\nO aluno já viu a explicação, mas ainda tem uma dúvida. Responda à pergunta do aluno de forma clara, didática e focada no contexto da questão. Seja encorajador.`;
+
+            // Adiciona a mensagem do usuário ao histórico
+            chatHistory.push({ role: 'user', content: userMessage });
+
+            try {
+                const response = await puter.ai.chat(chatHistory, { system_prompt: contextPrompt });
+                const aiMessage = response.message.content;
+                
+                addMessageToChat('assistant', aiMessage);
+                chatHistory.push({ role: 'assistant', content: aiMessage });
+
+            } catch (error) {
+                console.error("Erro no chat com a IA:", error);
+                addMessageToChat('assistant', "Desculpe, ocorreu um erro ao conectar com o tutor. Tente novamente.");
+            } finally {
+                elements.chatLoading.style.display = 'none';
+            }
+        }
+        
+        function addMessageToChat(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role === 'user' ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = text;
+            elements.chatMessages.appendChild(messageDiv);
+            // Auto-scroll para a última mensagem
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
+
+        // --- FIM DAS FUNÇÕES DO CHAT ---
 
         function showResults() {
             hideAllScreens();
