@@ -309,6 +309,83 @@
             background: #218838;
         }
 
+        .suggestions-container {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .suggestions-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .suggestion-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .auto-complete-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .auto-complete-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .auto-complete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+
+        .auto-complete-item:hover,
+        .auto-complete-item.selected {
+            background-color: #f8f9fa;
+        }
+
+        .auto-complete-item:last-child {
+            border-bottom: none;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -352,12 +429,20 @@
         </div>
 
         <div class="search-section">
-            <input type="text" id="person-input" class="search-input" 
-                   placeholder="Digite o nome de qualquer pessoa (ex: Albert Einstein, Cleópatra...)" autocomplete="off">
+            <div class="auto-complete-container">
+                <input type="text" id="person-input" class="search-input" 
+                       placeholder="Digite o nome de qualquer pessoa (ex: Albert Einstein, Cleópatra...)" autocomplete="off">
+                <div id="auto-complete-suggestions" class="auto-complete-suggestions"></div>
+            </div>
             <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
         </div>
         
         <div id="status"></div>
+        
+        <div id="suggestions-container" class="suggestions-container">
+            <div class="suggestions-title">🤔 Talvez você quis dizer:</div>
+            <div id="suggestions-grid" class="suggestions-grid"></div>
+        </div>
         
         <div class="biography-container" id="biography-container">
             <!-- A biografia gerada aparecerá aqui -->
@@ -370,17 +455,166 @@
         const personInput = document.getElementById('person-input');
         const statusDiv = document.getElementById('status');
         const biographyContainer = document.getElementById('biography-container');
+        const suggestionsContainer = document.getElementById('suggestions-container');
+        const suggestionsGrid = document.getElementById('suggestions-grid');
+        const autoCompleteSuggestions = document.getElementById('auto-complete-suggestions');
+
+        let currentSuggestionIndex = -1;
+        let autoCompleteTimeout = null;
+
+        // === BASE DE DADOS DE PESSOAS FAMOSAS ===
+        const famousPeople = [
+            // Cientistas
+            'Albert Einstein', 'Marie Curie', 'Isaac Newton', 'Charles Darwin', 'Galileu Galilei', 
+            'Nikola Tesla', 'Stephen Hawking', 'Leonardo da Vinci', 'Aristoteles', 'Platão',
+            
+            // Políticos e Líderes
+            'Nelson Mandela', 'Mahatma Gandhi', 'Winston Churchill', 'Abraham Lincoln', 'John F. Kennedy',
+            'Cleopatra', 'Julio César', 'Napoleon Bonaparte', 'George Washington', 'Martin Luther King Jr.',
+            
+            // Artistas e Escritores
+            'William Shakespeare', 'Pablo Picasso', 'Vincent van Gogh', 'Frida Kahlo', 'Mozart',
+            'Beethoven', 'Michelangelo', 'Clarice Lispector', 'Machado de Assis', 'Oscar Wilde',
+            
+            // Brasileiros
+            'Santos Dumont', 'Pelé', 'Ayrton Senna', 'Carmen Miranda', 'Caetano Veloso',
+            'Gilberto Gil', 'Chico Buarque', 'Tarsila do Amaral', 'Oscar Niemeyer', 'Ronaldinho',
+            
+            // Inventores e Empresários
+            'Thomas Edison', 'Steve Jobs', 'Bill Gates', 'Henry Ford', 'Alexander Graham Bell',
+            
+            // Filósofos
+            'Socrates', 'Confucio', 'Friedrich Nietzsche', 'Immanuel Kant', 'Jean-Paul Sartre',
+            
+            // Exploradores
+            'Cristovão Colombo', 'Vasco da Gama', 'Marco Polo', 'Fernão de Magalhães',
+            
+            // Outros
+            'Anne Frank', 'Mother Teresa', 'Walt Disney', 'Coco Chanel', 'Marilyn Monroe'
+        ];
 
         // === FUNÇÕES AUXILIARES ===
         function showStatus(message, type = 'info') {
             statusDiv.textContent = message;
             statusDiv.className = `status-${type}`;
             statusDiv.style.display = 'block';
+            suggestionsContainer.style.display = 'none';
         }
         
         function fillExample(name) {
             personInput.value = name;
             personInput.focus();
+            hideAutoComplete();
+            hideSuggestions();
+        }
+
+        function hideSuggestions() {
+            suggestionsContainer.style.display = 'none';
+        }
+
+        function hideAutoComplete() {
+            autoCompleteSuggestions.style.display = 'none';
+            currentSuggestionIndex = -1;
+        }
+
+        // === FUNÇÕES DE SUGESTÃO ===
+        function calculateDistance(str1, str2) {
+            const matrix = [];
+            const len1 = str1.length;
+            const len2 = str2.length;
+
+            for (let i = 0; i <= len2; i++) {
+                matrix[i] = [i];
+            }
+
+            for (let j = 0; j <= len1; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+
+            return matrix[len2][len1];
+        }
+
+        function findSimilarNames(input, maxSuggestions = 6) {
+            const inputLower = input.toLowerCase().trim();
+            if (inputLower.length < 2) return [];
+
+            const suggestions = [];
+            
+            for (const person of famousPeople) {
+                const personLower = person.toLowerCase();
+                const distance = calculateDistance(inputLower, personLower);
+                const maxLen = Math.max(inputLower.length, personLower.length);
+                const similarity = 1 - (distance / maxLen);
+                
+                // Inclui se tem similaridade > 0.4 ou se contém as palavras
+                if (similarity > 0.4 || 
+                    personLower.includes(inputLower) || 
+                    inputLower.split(' ').every(word => personLower.includes(word))) {
+                    suggestions.push({
+                        name: person,
+                        similarity: similarity,
+                        distance: distance
+                    });
+                }
+            }
+
+            return suggestions
+                .sort((a, b) => b.similarity - a.similarity)
+                .slice(0, maxSuggestions)
+                .map(s => s.name);
+        }
+
+        function showSuggestions(suggestions) {
+            if (suggestions.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            suggestionsGrid.innerHTML = suggestions
+                .map(name => `
+                    <div class="suggestion-item" onclick="selectSuggestion('${name}')">
+                        ${name}
+                    </div>
+                `).join('');
+
+            suggestionsContainer.style.display = 'block';
+        }
+
+        function selectSuggestion(name) {
+            personInput.value = name;
+            hideSuggestions();
+            hideAutoComplete();
+            generateBiography();
+        }
+
+        function showAutoComplete(suggestions) {
+            if (suggestions.length === 0) {
+                hideAutoComplete();
+                return;
+            }
+
+            autoCompleteSuggestions.innerHTML = suggestions
+                .map((name, index) => `
+                    <div class="auto-complete-item" onclick="selectSuggestion('${name}')" data-index="${index}">
+                        ${name}
+                    </div>
+                `).join('');
+
+            autoCompleteSuggestions.style.display = 'block';
         }
 
         // === FUNÇÃO PRINCIPAL ===
@@ -395,12 +629,20 @@
             generateBtn.textContent = 'Pesquisando...';
             showStatus('Coletando informações... Isso pode levar um momento.', 'info');
             biographyContainer.style.display = 'none';
+            hideSuggestions();
+            hideAutoComplete();
 
             try {
                 const prompt = `
                 Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia detalhada e factualmente precisa sobre a seguinte pessoa: "${personName}".
 
-                Responda **EXCLUSIVAMENTE** com um objeto JSON válido no seguinte formato. Não inclua texto ou explicações antes ou depois do JSON.
+                Se a pessoa não existir, for desconhecida, ou se o nome estiver claramente incorreto, responda com um JSON contendo apenas:
+                {
+                  "error": "PERSON_NOT_FOUND",
+                  "message": "Pessoa não encontrada ou nome incorreto"
+                }
+
+                Caso contrário, responda **EXCLUSIVAMENTE** com um objeto JSON válido no seguinte formato. Não inclua texto ou explicações antes ou depois do JSON.
 
                 {
                   "name": "Nome completo e correto da pessoa",
@@ -430,6 +672,7 @@
                 Instruções Importantes:
                 - Verifique as informações para garantir precisão. Se uma informação não estiver disponível, use "Informação não disponível".
                 - A biografia deve ter um tom educativo e ser acessível a um público geral.
+                - Se houver qualquer dúvida sobre a existência da pessoa, prefira retornar o erro.
                 `;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
@@ -447,12 +690,32 @@
                 const jsonString = content.substring(jsonStart, jsonEnd);
                 const biographyData = JSON.parse(jsonString);
 
+                // Verifica se é um erro (pessoa não encontrada)
+                if (biographyData.error === 'PERSON_NOT_FOUND') {
+                    showStatus('Pessoa não encontrada. Veja as sugestões abaixo:', 'error');
+                    const suggestions = findSimilarNames(personName, 8);
+                    showSuggestions(suggestions);
+                    return;
+                }
+
                 displayBiography(biographyData);
                 showStatus('Biografia gerada com sucesso!', 'success');
 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
+                
+                // Em caso de erro, também mostra sugestões
+                showStatus(`Erro ao gerar biografia. Veja as sugestões abaixo:`, 'error');
+                const suggestions = findSimilarNames(personName, 8);
+                if (suggestions.length > 0) {
+                    showSuggestions(suggestions);
+                } else {
+                    // Se não há sugestões, mostra algumas pessoas famosas aleatórias
+                    const randomSuggestions = famousPeople
+                        .sort(() => 0.5 - Math.random())
+                        .slice(0, 6);
+                    showSuggestions(randomSuggestions);
+                }
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '🔍 Gerar Biografia Completa';
@@ -762,15 +1025,79 @@
             biographyContainer.innerHTML = '';
             personInput.value = '';
             statusDiv.style.display = 'none';
+            hideSuggestions();
+            hideAutoComplete();
             personInput.focus();
         }
         
-        // === INICIALIZAÇÃO ===
+        // === INICIALIZAÇÃO E EVENTOS ===
         generateBtn.addEventListener('click', generateBiography);
         
         personInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
+                if (currentSuggestionIndex >= 0) {
+                    const suggestions = Array.from(autoCompleteSuggestions.children);
+                    if (suggestions[currentSuggestionIndex]) {
+                        const name = suggestions[currentSuggestionIndex].textContent;
+                        selectSuggestion(name);
+                        return;
+                    }
+                }
                 generateBiography();
+            }
+        });
+
+        // Auto-complete enquanto digita
+        personInput.addEventListener('input', function(e) {
+            const input = e.target.value.trim();
+            
+            if (autoCompleteTimeout) {
+                clearTimeout(autoCompleteTimeout);
+            }
+            
+            if (input.length < 2) {
+                hideAutoComplete();
+                return;
+            }
+            
+            autoCompleteTimeout = setTimeout(() => {
+                const suggestions = findSimilarNames(input, 5);
+                showAutoComplete(suggestions);
+            }, 300);
+        });
+
+        // Navegação com teclado no auto-complete
+        personInput.addEventListener('keydown', function(e) {
+            const suggestions = Array.from(autoCompleteSuggestions.children);
+            
+            if (suggestions.length === 0) return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, suggestions.length - 1);
+                updateSuggestionSelection(suggestions);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, -1);
+                updateSuggestionSelection(suggestions);
+            } else if (e.key === 'Escape') {
+                hideAutoComplete();
+            }
+        });
+
+        function updateSuggestionSelection(suggestions) {
+            suggestions.forEach((item, index) => {
+                item.classList.toggle('selected', index === currentSuggestionIndex);
+            });
+        }
+
+        // Clica fora para fechar
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.auto-complete-container')) {
+                hideAutoComplete();
+            }
+            if (!e.target.closest('.suggestions-container') && !e.target.closest('.search-section')) {
+                hideSuggestions();
             }
         });
 
@@ -778,6 +1105,7 @@
         window.fillExample = fillExample;
         window.clearBiography = clearBiography;
         window.retryPhotoLoad = retryPhotoLoad;
+        window.selectSuggestion = selectSuggestion;
 
         personInput.focus();
     </script>
