@@ -5,6 +5,9 @@
     <title>Gerador de Questões e Quiz Matemático com Tutor</title>
     <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
+    <!-- MathJax para renderizar fórmulas matemáticas -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
         body {
@@ -674,12 +677,13 @@
                           "text": "Texto da questão.",
                           "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
                           "correct_answer": "A letra ou texto da resposta correta.",
-                          "explanation": "Explicação da resposta correta."
+                          "explanation": "Explicação da resposta correta, usando LaTeX para fórmulas (ex.: \\(x^2\\))."
                         }
                       ]
                     }
                     - Para verdadeiro/falso, use ["Verdadeiro", "Falso"].
                     - As questões devem ser claras e educacionais.
+                    - Use LaTeX para todas as fórmulas matemáticas.
                 `;
                 
                 const response = await puter.ai.chat([{ role: 'user', content: finalPrompt }]);
@@ -699,6 +703,7 @@
                     questionsDatabase.unshift(...newQuestions);
                     saveToLocalStorage();
                     renderQuestions();
+                    MathJax.typeset(); // Renderiza as fórmulas com MathJax
                     showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
                     throw new Error('Não foi possível extrair questões da resposta da IA.');
@@ -755,6 +760,7 @@
                 `;
                 questionsContainer.appendChild(card);
             });
+            MathJax.typeset(); // Renderiza as fórmulas com MathJax após adicionar questões
         }
 
         // Verifica a resposta no modo quiz
@@ -774,6 +780,7 @@
             } else {
                 showStatus('Incorreto. Veja a resposta correta e a explicação abaixo.', 'error');
             }
+            MathJax.typeset(); // Renderiza fórmulas na explicação
         }
 
         // Remove uma questão da lista
@@ -804,6 +811,7 @@
             tutorQuestionInput.value = '';
             tutorResponseDiv.innerHTML = '';
             tutorModal.style.display = 'flex';
+            MathJax.typeset(); // Renderiza fórmulas no contexto da questão
         }
 
         // Fecha o modal do tutor
@@ -832,7 +840,7 @@
                     - Resposta correta: ${question.correct_answer}
                     - Explicação original: ${question.explanation || 'Não fornecida.'}
                     Dúvida do usuário: ${doubt}
-                    Forneça uma explicação detalhada, com exemplos práticos, e, se aplicável, sugira um exercício adicional relacionado ao tema. Responda em português.
+                    Forneça uma explicação detalhada, com exemplos práticos, e, se aplicável, sugira um exercício adicional relacionado ao tema. Responda em português e use LaTeX para todas as fórmulas matemáticas (ex.: \\(x^2\\)).
                 `;
                 
                 const response = await puter.ai.chat([{ role: 'user', content: tutorPrompt }]);
@@ -846,6 +854,7 @@
                 saveTutorHistory(doubt, tutorResponse, question.subtopic, question.text);
                 renderTutorHistory();
                 showStatus('Dúvida respondida com sucesso!', 'success');
+                MathJax.typeset(); // Renderiza fórmulas na resposta do tutor
 
             } catch (error) {
                 console.error('Erro na consulta ao tutor:', error);
@@ -895,6 +904,7 @@
                 `;
                 tutorHistoryContainer.appendChild(historyItem);
             });
+            MathJax.typeset(); // Renderiza fórmulas no histórico
         }
 
         // Remove uma entrada do histórico do tutor
@@ -947,6 +957,8 @@
                 <html>
                 <head>
                     <title>Lista de Questões</title>
+                    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+                    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
                     <style>
                         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                         .page-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
@@ -964,6 +976,9 @@
                         <h2 class="section-title">✅ Gabarito e Resoluções</h2>
                         ${answersSection}
                     </div>
+                    <script>
+                        MathJax.typeset();
+                    </script>
                 </body>
                 </html>
             `;
