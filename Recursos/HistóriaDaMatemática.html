@@ -2,25 +2,28 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Biografias</title>
+    <title>Biografias</title>
     <script src="https://js.puter.com/v2/"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #667eea; color: #333; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
-        h1 { text-align: center; margin-bottom: 30px; }
-        .search { display: flex; gap: 10px; margin-bottom: 20px; }
-        input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 12px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        h1 { text-align: center; margin-bottom: 20px; }
+        .search { position: relative; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
+        .suggestion { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .suggestion:hover { background: #f0f0f0; }
         .status { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; display: none; }
         .status.error { background: #f8d7da; color: #721c24; }
         .status.info { background: #cce5ff; color: #004085; }
         .status.success { background: #d4edda; color: #155724; }
         .bio { margin-top: 20px; display: none; }
-        .info { background: #f8f9fa; border: 2px solid #667eea; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 150px; gap: 15px; }
-        .photo { width: 150px; height: 180px; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; border-radius: 8px; }
-        .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+        .info { background: #f8f9fa; border: 1px solid #667eea; border-radius: 5px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 100px; gap: 10px; }
+        .photo { width: 100px; height: 120px; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border-radius: 5px; }
+        .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
         h3 { color: #667eea; margin: 0 0 10px 0; }
-        .item { margin-bottom: 8px; }
+        .item { margin-bottom: 5px; }
         .label { font-weight: bold; }
         .bio-text p { margin-bottom: 10px; text-align: justify; }
         @media (max-width: 600px) { .info { grid-template-columns: 1fr; text-align: center; } }
@@ -31,6 +34,7 @@
         <h1>📚 Biografias</h1>
         <div class="search">
             <input id="input" placeholder="Digite o nome de uma pessoa...">
+            <div id="suggestions" class="suggestions"></div>
             <button onclick="generate()">Gerar</button>
         </div>
         <div id="status" class="status"></div>
@@ -38,14 +42,42 @@
     </div>
 
     <script>
+        const names = ['Aaboe, Asger', 'Abbe, Ernst', 'Abbott, Edwin', 'Abel, Niels Henrik', 'Abraham bar Hiyya', 'Abraham, Max', 'Abu Kamil Shuja', 'Ackermann, Wilhelm', 'Adams, John Couch', 'Adem, José', 'Adleman, Leonard', 'Adrain, Robert', 'Agnesi, Maria', 'Ahlfors, Lars', 'Ahmed ibn Yusuf', 'Airy, George', 'Aitken, Alec', 'Ajima, Naonobu', 'al-Kashi, Ghiyath', 'al-Khwarizmi, Abu', 'Albert, A Adrian', 'Alembert, Jean d', 'Alexander, James', 'Alexandrov, Pavel', 'Ali Qushji', 'Apollonius of Perga', 'Archimedes of Syracuse', 'Archytas of Tarentum', 'Argand, Jean', 'Aristotle', 'Arnold, Vladimir', 'Artin, Emil', 'Aryabhata I', 'Atiyah, Michael', 'Aubin, Thierry', 'Babbage, Charles', 'Bachelier, Louis', 'Bachet, Claude', 'Bacon, Roger', 'Baer, Reinhold', 'Baire, René-Louis', 'Baker, Alan', 'Banach, Stefan', 'Banneker, Benjamin', 'Barrow, Isaac', 'Bateman, Harry', 'Bayes, Thomas', 'Beale, Dorothea', 'Bell, Eric Temple', 'Beltrami, Eugenio', 'Bernays, Paul', 'Bernoulli, Daniel', 'Bernoulli, Jacob', 'Bernoulli, Johann', 'Bernstein, Sergei', 'Bers, Lipa', 'Bertrand, Joseph', 'Bessel, Wilhelm', 'Betti, Enrico', 'Bhaskara II', 'Bianchi, Luigi', 'Binet, Jacques', 'Birkhoff, George', 'Black, Fischer', 'Blackwell, David', 'Blaschke, Wilhelm', 'Bliss, Gilbert', 'Bochner, Salomon', 'Bohr, Harald', 'Bohr, Niels', 'Bolyai, János', 'Bolzano, Bernard', 'Bombelli, Rafael', 'Bonnet, Pierre', 'Boole, George', 'Borel, Émile', 'Born, Max', 'Borsuk, Karol', 'Bott, Raoul', 'Bourbaki, Nicolas', 'Brahe, Tycho', 'Brahmagupta', 'Brauer, Richard', 'Brianchon, Charles', 'Briggs, Henry', 'Bring, Erland', 'Brioschi, Francesco', 'Brouwer, L E J', 'Brown, Ernest', 'Bruno, Giordano', 'Buffon, Georges', 'Burali-Forti, Cesare', 'Burkhardt, Heinrich', 'Burnside, William', 'Byron, Ada Lovelace', 'Cajori, Florian', 'Cantor, Georg', 'Cantor, Moritz', 'Carathéodory, Constantin', 'Cardano, Girolamo', 'Carnot, Lazare', 'Carroll, Lewis', 'Cartan, Élie', 'Cartesian, René', 'Cartwright, Mary', 'Catalan, Eugène', 'Cauchy, Augustin-Louis', 'Cavalieri, Bonaventura', 'Cayley, Arthur', 'Cesàro, Ernesto', 'Ceva, Giovanni', 'Chasles, Michel', 'Chebyshev, Pafnuty', 'Chern, Shiing-shen', 'Chevalley, Claude', 'Chisholm Young, Grace', 'Cholesky, Andre-Louis', 'Christoffel, Elwin', 'Chrystal, George', 'Church, Alonzo', 'Clairaut, Alexis', 'Clapeyron, Émile', 'Clausius, Rudolf', 'Clebsch, Alfred', 'Clifford, William', 'Coble, Arthur', 'Cohen, Paul', 'Cole, Frank', 'Collins, John', 'Commandino, Frederico', 'Condorcet, Marie Jean', 'Conway, John H', 'Coolidge, Julian', 'Copernicus, Nicolaus', 'Coriolis, Gustave de', 'Coulomb, Charles de', 'Courant, Richard', 'Coxeter, Donald', 'Cramer, Gabriel', 'Cremona, Luigi', 'Cunha, Anastácio da', 'Curry, Haskell', 'Dantzig, George', 'Darboux, Gaston', 'Darwin, Charles', 'Davenport, Harold', 'De Morgan, Augustus', 'Dedekind, Richard', 'Dehn, Max', 'Deligne, Pierre', 'Democritus', 'Denjoy, Arnaud', 'Desargues, Girard', 'Descartes, René', 'Dickson, Leonard', 'Dieudonné, Jean', 'Dijkstra, Edsger', 'Dini, Ulisse', 'Diophantus', 'Dirac, Paul', 'Dirichlet, Lejeune', 'Doob, Joseph', 'Douglas, Jesse', 'Drinfeld, Vladimir', 'du Châtelet, Émilie', 'Duhem, Pierre', 'Dürer, Albrecht', 'Dyson, Freeman', 'Eddington, Arthur', 'Ehrhart, Eugène', 'Einstein, Albert', 'Eisenstein, Gotthold', 'Engel, Friedrich', 'Enriques, Federigo', 'Eratosthenes', 'Erdős, Paul', 'Euclid', 'Eudoxus', 'Euler, Leonhard', 'Faber, Georg', 'Fagnano, Giulio', 'Faraday, Michael', 'Fatou, Pierre', 'Faulhaber, Johann', 'Fejér, Lipót', 'Fermat, Pierre de', 'Ferrari, Lodovico', 'Ferro, Scipione del', 'Feuerbach, Karl', 'Feynman, Richard', 'Fibonacci, Leonardo', 'Fields, John', 'Fine, Henry', 'Fisher, Ronald', 'Flajolet, Philippe', 'Fourier, Joseph', 'Fraenkel, Adolf', 'Franklin, Benjamin', 'Fréchet, Maurice', 'Fredholm, Ivar', 'Frege, Gottlob', 'Fresnel, Augustin', 'Freudenthal, Hans', 'Friedmann, Alexander', 'Frobenius, Georg', 'Fubini, Guido', 'Fuchs, Lazarus', 'Fueter, Rudolph', 'Furstenberg, Hillel', 'Gale, David', 'Galois, Évariste', 'Galton, Francis', 'Gauss, Carl Friedrich', 'Gelfand, Israil', 'Gergonne, Joseph', 'Germain, Sophie', 'Gibbs, Josiah Willard', 'Gödel, Kurt', 'Goldbach, Christian', 'Goursat, Édouard', 'Graham, Ronald', 'Gram, Jorgen', 'Grassmann, Hermann', 'Green, George', 'Gregory, James', 'Griffiths, Phillip', 'Gromov, Mikhael', 'Grothendieck, Alexander', 'Gunter, Edmund', 'Haar, Alfréd', 'Hadamard, Jacques', 'Hahn, Hans', 'Halley, Edmond', 'Halmos, Paul', 'Hamilton, William', 'Hamming, Richard', 'Hankel, Hermann', 'Hardy, G H', 'Harnack, Axel', 'Harriot, Thomas', 'Hasse, Helmut', 'Hausdorff, Felix', 'Hawking, Stephen', 'Heath, Thomas', 'Heaviside, Oliver', 'Hecke, Erich', 'Heine, Eduard', 'Heisenberg, Werner', 'Hellinger, Ernst', 'Helmholtz, Hermann von', 'Hensel, Kurt', 'Hermite, Charles', 'Heron', 'Herschel, John', 'Hesse, Otto', 'Hilbert, David', 'Hill, George', 'Hipparchus', 'Hippocrates', 'Hirzebruch, Friedrich', 'Hobbes, Thomas', 'Hodge, William', 'Hölder, Otto', 'Hooke, Robert', 'Hopf, Heinz', 'Hôpital, Guillaume de L', 'Horner, William', 'Householder, Alston', 'Hua Loo-Keng', 'Hubble, Edwin', 'Hudde, Johann', 'Hurwitz, Adolf', 'Hutton, Charles', 'Huygens, Christiaan', 'Hypatia', 'ibn al-Haytham', 'Jacobi, Carl', 'Jacobson, Nathan', 'Jeans, James', 'Jeffreys, Harold', 'Jensen, Johan', 'Jevons, William', 'Jordan, Camille', 'Julia, Gaston', 'Jung, Heinrich', 'Kac, Mark', 'Kähler, Erich', 'Kakutani, Shizuo', 'Kaluza, Theodor', 'Kant, Immanuel', 'Kantorovich, Leonid', 'Kaplansky, Irving', 'Karlin, Samuel', 'Kármán, Theodore von', 'Kato, Tosio', 'Kepler, Johannes', 'Kerr, Roy', 'Keynes, John Maynard', 'Khinchin, Aleksandr', 'Killing, Wilhelm', 'Kirchhoff, Gustav', 'Kleene, Stephen', 'Klein, Felix', 'Kline, Morris', 'Knuth, Donald', 'Koch, Helge von', 'Koenigs, Gabriel', 'Kolmogorov, Andrey', 'König, Julius', 'Kontsevich, Maxim', 'Koopman, Tjalling', 'Korteweg, Diederik', 'Kovalevskaya, Sofia', 'Kramers, Hendrik', 'Kramp, Christian', 'Krein, Mark', 'Kronecker, Leopold', 'Krull, Wolfgang', 'Kruskal, Martin', 'Kummer, Eduard', 'Kuratowski, Kazimierz', 'Kutta, Martin', 'Lacroix, Sylvestre', 'Ladyzhenskaya, Olga', 'Lafforgue, Laurent', 'Lagrange, Joseph-Louis', 'Laguerre, Edmond', 'Lalande, Joseph-Jérôme', 'Lamb, Horace', 'Lambert, Johann', 'Lamé, Gabriel', 'Landen, John', 'Landau, Edmund', 'Lang, Serge', 'Langlands, Robert', 'Laplace, Pierre-Simon', 'Larmor, Joseph', 'Laurent, Pierre', 'Lax, Peter', 'Lebesgue, Henri', 'Legendre, Adrien-Marie', 'Lehmer, Derrick', 'Leibniz, Gottfried', 'Lemoine, Émile', 'Leonardo da Vinci', 'Leray, Jean', 'Levi-Civita, Tullio', 'Levy, Paul', 'Lhuilier, Simon', 'Lie, Sophus', 'Lindelöf, Ernst', 'Lindemann, Ferdinand von', 'Linnik, Yuri', 'Lions, Jacques-Louis', 'Liouville, Joseph', 'Lipschitz, Rudolf', 'Listing, Johann', 'Littlewood, John', 'Liu Hui', 'Lobachevsky, Nikolai', 'Lorentz, Hendrik', 'Lorenz, Edward', 'Lovelace, Ada', 'Lucas, Édouard', 'Luzin, Nikolai', 'Lyapunov, Aleksandr', 'Mac Lane, Saunders', 'Machin, John', 'Maclaurin, Colin', 'Madhava', 'Mahavira', 'Mandelbrot, Benoit', 'Margulis, Gregori', 'Markov, Andrei', 'Mascheroni, Lorenzo', 'Maxwell, James Clerk', 'Mazur, Barry', 'Menaechmus', 'Menelaus', 'Menger, Karl', 'Mercator, Gerardus', 'Mersenne, Marin', 'Mertens, Franz', 'Minkowski, Hermann', 'Mirzakhani, Maryam', 'Mittag-Leffler, Gösta', 'Möbius, August', 'Monge, Gaspard', 'Montmort, Pierre de', 'Moore, Eliakim', 'Mordell, Louis', 'Morera, Giacinto', 'Moser, Jürgen', 'Mostow, George', 'Motzkin, Theodore', 'Mumford, David', 'Narayana', 'Nash, John', 'Navier, Claude', 'Nevanlinna, Rolf', 'Newcomb, Simon', 'Newman, Maxwell', 'Newton, Isaac', 'Neyman, Jerzy', 'Nicholas of Cusa', 'Nicolai, Friedrich', 'Nicomachus', 'Nielsen, Jakob', 'Nightingale, Florence', 'Nirenberg, Louis', 'Niven, Ivan', 'Noether, Emmy', 'Noether, Max', 'Norbert, Wiener', 'Novikov, Sergei', 'Oenopides', 'Ohm, Georg', 'Oka, Kiyoshi', 'Okounkov, Andrei', 'Omar Khayyam', 'Ore, Oystein', 'Oresme, Nicole', 'Osgood, William', 'Ostrogradski, Mikhail', 'Oughtred, William', 'Ozanam, Jacques', 'Pacioli, Luca', 'Padé, Henri', 'Painlevé, Paul', 'Pappus', 'Parmenides', 'Pascal, Blaise', 'Pasch, Moritz', 'Pauli, Wolfgang', 'Peano, Giuseppe', 'Pearson, Karl', 'Peirce, Benjamin', 'Pell, John', 'Penrose, Roger', 'Perelman, Grigori', 'Perron, Oskar', 'Petersen, Julius', 'Pfaff, Johann', 'Picard, Émile', 'Pick, Georg', 'Pieri, Mario', 'Pierpont, James', 'Pincherle, Salvatore', 'Pisano, Leonardo', 'Pitot, Henri', 'Plana, Giovanni', 'Planck, Max', 'Plateau, Joseph', 'Plato', 'Playfair, John', 'Plemelj, Josip', 'Plücker, Julius', 'Poincaré, Henri', 'Poinsot, Louis', 'Poisson, Siméon', 'Pólya, George', 'Pompeiu, Dimitrie', 'Poncelet, Jean-Victor', 'Pontryagin, Lev', 'Post, Emil', 'Pringsheim, Alfred', 'Proclus', 'Ptolemy', 'Pythagoras', 'Qin Jiushao', 'Quetelet, Adolphe', 'Quillen, Daniel', 'Radon, Johann', 'Ramanujan, Srinivasa', 'Ramsey, Frank', 'Rankin, Robert', 'Rayleigh, Lord', 'Recorde, Robert', 'Rédei, László', 'Rees, Mina', 'Regiomontanus', 'Reidemeister, Kurt', 'Ricci-Curbastro, Gregorio', 'Richardson, Lewis', 'Riemann, Bernhard', 'Riesz, Frigyes', 'Ritt, Joseph', 'Robinson, Julia', 'Rodrigues, Olinde', 'Rolle, Michel', 'Roth, Klaus', 'Rouché, Eugène', 'Routh, Edward', 'Ruffini, Paolo', 'Runge, Carl', 'Russell, Bertrand', 'Rutherford, Ernest', 'Saccheri, Giovanni', 'Saint-Venant, Adhémar', 'Salmon, George', 'Samelson, Hans', 'Schauder, Juliusz', 'Schläfli, Ludwig', 'Schmidt, Erhard', 'Schönflies, Arthur', 'Schouten, Jan', 'Schröder, Ernst', 'Schrödinger, Erwin', 'Schur, Issai', 'Schwarz, Hermann', 'Scott, Charlotte', 'Segre, Corrado', 'Seidel, Philipp von', 'Selberg, Atle', 'Serre, Jean-Pierre', 'Serret, Joseph', 'Shannon, Claude', 'Shafarevich, Igor', 'Shelah, Saharon', 'Shimura, Goro', 'Siegel, Carl', 'Sierpinski, Waclaw', 'Simson, Robert', 'Singer, Isadore', 'Skolem, Thoralf', 'Smale, Stephen', 'Smith, Henry', 'Snell, Willebrord', 'Sobolev, Sergei', 'Sommerfeld, Arnold', 'Sperner, Emanuel', 'Srinivasa Ramanujan', 'Steiner, Jakob', 'Steinhaus, Hugo', 'Steinitz, Ernst', 'Steklov, Vladimir', 'Stern, Moritz', 'Stevin, Simon', 'Stewart, Matthew', 'Stieltjes, Thomas', 'Stirling, James', 'Stokes, George', 'Stone, Marshall', 'Stormer, Fredrik', 'Struik, Dirk', 'Sturm, Charles', 'Sullivan, Dennis', 'Sun Zi', 'Sylvester, James', 'Szegö, Gábor', 'Szemerédi, Endre', 'Takagi, Teiji', 'Tamarkin, Jacob', 'Taniyama, Yutaka', 'Tao, Terence', 'Tartaglia, Niccolò', 'Tate, John', 'Tauber, Alfred', 'Taussky-Todd, Olga', 'Taylor, Brook', 'Teichmüller, Oswald', 'Thales', 'Theaetetus', 'Theodorus', 'Theon', 'Thiele, Thorvald', 'Thom, René', 'Thompson, John', 'Thomson, William', 'Thue, Axel', 'Thurston, William', 'Tits, Jacques', 'Todd, John', 'Toeplitz, Otto', 'Torricelli, Evangelista', 'Tricomi, Francesco', 'Truesdell, Clifford', 'Tschirnhaus, Ehrenfried von', 'Tucker, Albert', 'Tukey, John', 'Turán, Paul', 'Turing, Alan', 'Turnbull, Herbert', 'Tutte, William', 'Tychonoff, Andrey', 'Uhlenbeck, Karen', 'Ulam, Stanislaw', 'Ulugh Beg', 'Urysohn, Pavel', 'Vailati, Giovanni', 'Valiant, Leslie', 'van der Waerden, Bartel', 'Vandermonde, Alexandre', 'Varadhan, Srinivasa', 'Varga, Richard', 'Varignon, Pierre', 'Veblen, Oswald', 'Venn, John', 'Veronese, Giuseppe', 'Vessiot, Ernest', 'Viazovska, Maryna', 'Viète, François', 'Vietoris, Leopold', 'Vinogradov, Ivan', 'Vitali, Giuseppe', 'Vitruvius', 'Viviani, Vincenzo', 'Volterra, Vito', 'von Neumann, John', 'Voronoy, Georgy', 'Wald, Abraham', 'Walker, Gilbert', 'Wall, Hubert', 'Wallace, William', 'Wallis, John', 'Wang, Hao', 'Wantzel, Pierre', 'Waring, Edward', 'Watson, G Neville', 'Weber, Heinrich', 'Wedderburn, Joseph', 'Weierstrass, Karl', 'Weil, André', 'Weinstein, Alexander', 'Wessel, Caspar', 'Weyl, Hermann', 'Wheeler, Anna', 'Whitehead, Alfred', 'Whitehead, J Henry', 'Whitney, Hassler', 'Whittaker, Edmund', 'Widder, David', 'Wiener, Norbert', 'Wigner, Eugene', 'Wiles, Andrew', 'Wilkins, Ernest', 'Wilson, John', 'Wiman, Anders', 'Witt, Ernst', 'Witten, Edward', 'Wittgenstein, Ludwig', 'Wolf, Rudolf', 'Woodhouse, Robert', 'Wren, Christopher', 'Wright, Edward', 'Wronski, Josef', 'Wu, Wen-Tsun', 'Yau, Shing-Tung', 'Young, Grace', 'Young, William', 'Zariski, Oscar', 'Zassenhaus, Hans', 'Zeeman, Christopher', 'Zelmanov, Efim', 'Zeno', 'Zermelo, Ernst', 'Zhu Shijie', 'Zippin, Leo', 'Zorn, Max', 'Zu Chongzhi', 'Zuse, Konrad', 'Zygmund, Antoni'];
+
         const input = document.getElementById('input');
         const status = document.getElementById('status');
         const bio = document.getElementById('bio');
+        const suggestions = document.getElementById('suggestions');
+
+        let filtered = [];
 
         function show(msg, type) {
             status.textContent = msg;
             status.className = `status ${type}`;
             status.style.display = 'block';
+        }
+
+        function filter(query) {
+            if (!query) return [];
+            return names.filter(name => 
+                name.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 10);
+        }
+
+        function showSuggestions(list) {
+            if (list.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            suggestions.innerHTML = list.map(name => 
+                `<div class="suggestion" onclick="select('${name}')">${name}</div>`
+            ).join('');
+            suggestions.style.display = 'block';
+        }
+
+        function select(name) {
+            input.value = name;
+            suggestions.style.display = 'none';
         }
 
         async function generate() {
@@ -54,51 +86,25 @@
 
             show('Gerando...', 'info');
             bio.style.display = 'none';
+            suggestions.style.display = 'none';
 
             try {
-                if (!puter || !puter.ai) throw new Error('Serviço indisponível');
-
                 const response = await puter.ai.chat([{
                     role: 'user',
-                    content: `Crie uma biografia acadêmica completa e detalhada para: ${name}
+                    content: `Biografia completa para: ${name}
 
-IMPORTANTE: Use informações atualizadas até 2024. Verifique datas de morte se a pessoa já faleceu.
+JSON:
+{"name":"Nome","born":"Data","born_place":"Local","died":"Data ou Vivo","died_place":"Local","summary":"Resumo","bio":"Biografia detalhada"}
 
-A biografia deve seguir este modelo acadêmico com 5-6 parágrafos extensos:
-
-1º PARÁGRAFO: Nascimento, família, contexto social, primeiros anos, educação inicial
-2º PARÁGRAFO: Formação acadêmica/profissional, primeiras experiências, descobertas iniciais  
-3º PARÁGRAFO: Principais realizações, obras, teorias, contribuições mais importantes
-4º PARÁGRAFO: Contexto histórico da época, influências recebidas e exercidas sobre outros
-5º PARÁGRAFO: Legado, impacto na posteridade, reconhecimento, morte (incluir data exata de falecimento se aplicável)
-6º PARÁGRAFO: Curiosidades, aspectos pessoais menos conhecidos, outras atividades
-
-EXEMPLO: Pelé nasceu em 23/10/1940 e MORREU em 29/12/2022 em São Paulo.
-
-Responda APENAS com JSON limpo e informações CORRETAS E ATUALIZADAS:
-{"name":"Nome completo","born":"DD de mês de AAAA","born_place":"Cidade, País","died":"DD de mês de AAAA ou Ainda vivo","died_place":"Cidade, País ou N/A","summary":"Resumo de uma linha sobre suas principais contribuições","bio":"Biografia acadêmica completa com 6 parágrafos extensos de pelo menos 4-5 frases cada, escrita em linguagem erudita como enciclopédia universitária, com informações CORRETAS e ATUALIZADAS"}
-
-Se não existir: {"error":"NOT_FOUND"}`
+Se não existe: {"error":"NOT_FOUND"}`
                 }]);
 
                 let content = response.message.content.trim();
-                
-                // Limpa o conteúdo
-                content = content.replace(/```json|```/g, '');
-                content = content.replace(/[\n\r\t]/g, ' ');
-                content = content.replace(/\s+/g, ' ');
+                content = content.replace(/```json|```/g, '').replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ');
                 
                 const start = content.indexOf('{');
                 const end = content.lastIndexOf('}') + 1;
-                
-                if (start === -1) throw new Error('JSON não encontrado');
-                
-                let jsonStr = content.substring(start, end);
-                
-                // Remove caracteres problemáticos
-                jsonStr = jsonStr.replace(/[\x00-\x1F\x7F]/g, '');
-                
-                const data = JSON.parse(jsonStr);
+                const data = JSON.parse(content.substring(start, end).replace(/[\x00-\x1F\x7F]/g, ''));
                 
                 if (data.error) return show('Pessoa não encontrada', 'error');
 
@@ -113,77 +119,57 @@ Se não existir: {"error":"NOT_FOUND"}`
                             <div class="item"><span class="label">Nascimento:</span> ${data.born}</div>
                             <div class="item"><span class="label">Local:</span> ${data.born_place}</div>
                             ${data.died !== 'Vivo' ? `<div class="item"><span class="label">Morte:</span> ${data.died}</div>` : ''}
-                            ${data.died_place !== 'N/A' ? `<div class="item"><span class="label">Local:</span> ${data.died_place}</div>` : ''}
+                            ${data.died_place !== 'N/A' && data.died_place !== 'Local' ? `<div class="item"><span class="label">Local:</span> ${data.died_place}</div>` : ''}
                             <div class="item"><span class="label">Resumo:</span> ${data.summary}</div>
                         </div>
                         <div class="photo" id="${photoId}">${initials}</div>
                     </div>
                     <div class="bio-text">
                         <h3>Biografia</h3>
-                        ${data.bio.replace(/(\. )([A-Z])/g, '.</p><p>$2').split('<p>').map(p => p.trim() ? `<p>${p.replace('</p>', '')}</p>` : '').join('')}
+                        ${data.bio.split('.').filter(s => s.trim()).map(s => `<p>${s.trim()}.</p>`).join('')}
                     </div>
                 `;
                 
                 bio.style.display = 'block';
                 show('Sucesso!', 'success');
                 
-                // Foto melhorada
-                const photoEl = document.getElementById(photoId);
-                loadPhoto(data.name, photoEl);
+                // Foto
+                fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(data.name)}`)
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.thumbnail) {
+                            document.getElementById(photoId).innerHTML = `<img src="${d.thumbnail.source}" alt="${data.name}">`;
+                        }
+                    })
+                    .catch(() => {});
 
             } catch (error) {
                 show('Erro: ' + error.message, 'error');
             }
         }
 
-        async function loadPhoto(personName, photoElement) {
-            const queries = [
-                personName,
-                personName.replace(/\s+de\s+/g, ' '),
-                personName.split(' ').slice(0, 2).join(' ')
-            ];
+        input.addEventListener('input', e => {
+            filtered = filter(e.target.value);
+            showSuggestions(filtered);
+        });
 
-            for (const query of queries) {
-                try {
-                    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.thumbnail?.source) {
-                            const img = new Image();
-                            img.onload = () => {
-                                photoElement.innerHTML = `<img src="${data.thumbnail.source}" alt="${personName}">`;
-                            };
-                            img.onerror = () => {
-                                console.log('Erro ao carregar:', data.thumbnail.source);
-                            };
-                            img.src = data.thumbnail.source;
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log('Tentativa falhou:', query);
+        input.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                if (filtered.length > 0 && input.value.toLowerCase() !== filtered[0].toLowerCase()) {
+                    select(filtered[0]);
+                } else {
+                    generate();
                 }
             }
-            
-            // Tenta Wikipedia em português
-            try {
-                const response = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.thumbnail?.source) {
-                        const img = new Image();
-                        img.onload = () => {
-                            photoElement.innerHTML = `<img src="${data.thumbnail.source}" alt="${personName}">`;
-                        };
-                        img.src = data.thumbnail.source;
-                    }
-                }
-            } catch (e) {
-                console.log('Wikipedia PT falhou');
-            }
-        }
+        });
 
-        input.addEventListener('keypress', e => e.key === 'Enter' && generate());
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search')) {
+                suggestions.style.display = 'none';
+            }
+        });
+
+        window.select = select;
         input.focus();
     </script>
 </body>
