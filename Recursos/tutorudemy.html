@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📚 O Mundo da Matemática - Plataforma Interativa com IA</title>
     <script src="https://js.puter.com/v2/"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
     <style>
         * {
             margin: 0;
@@ -1428,6 +1443,7 @@ REGRAS OBRIGATÓRIAS:
 4. Inclua uma explicação detalhada e pedagógica da resposta correta
 5. Varie os tipos de questões (cálculo, conceitual, aplicação, resolução de problemas)
 6. Use linguagem clara e apropriada para o nível escolhido
+7. Use notação matemática LaTeX adequada entre \\( \\) para fórmulas inline e \\[ \\] para fórmulas em bloco
 
 FORMATO JSON OBRIGATÓRIO (sem texto antes ou depois, apenas o JSON):
 {
@@ -1539,7 +1555,7 @@ Gere todas as ${questionCount} questões agora:`;
             
             const question = questions[currentQuestionIndex];
             document.getElementById('question-number').textContent = `Questão ${currentQuestionIndex + 1}`;
-            document.getElementById('question-text').textContent = question.question;
+            document.getElementById('question-text').innerHTML = question.question;
             
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
@@ -1560,6 +1576,11 @@ Gere todas as ${questionCount} questões agora:`;
             document.getElementById('explanation').classList.remove('show');
             document.getElementById('next-btn').style.display = 'none';
             updateProgress();
+            
+            // Renderiza fórmulas matemáticas
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('question-text'), optionsContainer]).catch(err => console.log(err));
+            }
         }
 
         function selectAnswer(answerIndex, optionElement) {
@@ -1596,10 +1617,15 @@ Gere todas as ${questionCount} questões agora:`;
             });
             
             // Mostra explicação
-            document.getElementById('explanation-text').textContent = question.explanation;
+            document.getElementById('explanation-text').innerHTML = question.explanation;
             document.getElementById('explanation').classList.add('show');
             document.getElementById('next-btn').style.display = 'inline-block';
             updateScore();
+            
+            // Renderiza fórmulas matemáticas na explicação
+            if (window.MathJax) {
+                MathJax.typesetPromise([document.getElementById('explanation')]).catch(err => console.log(err));
+            }
         }
 
         function nextQuestion() {
@@ -1670,9 +1696,14 @@ Gere todas as ${questionCount} questões agora:`;
         function addChatMessage(type, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${type}`;
-            messageDiv.textContent = content;
+            messageDiv.innerHTML = content;
             elements.chatMessages.appendChild(messageDiv);
             elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+            
+            // Renderiza fórmulas matemáticas no chat
+            if (window.MathJax && type === 'assistant') {
+                MathJax.typesetPromise([messageDiv]).catch(err => console.log(err));
+            }
         }
 
         async function sendChatMessage() {
@@ -1701,7 +1732,7 @@ Gere todas as ${questionCount} questões agora:`;
                     context += `A questão atual é: "${currentQuestion.question}" com opções: ${currentQuestion.options.join(', ')}. `;
                 }
                 
-                context += `Responda de forma clara, pedagógica e encorajadora. Use exemplos quando apropriado.`;
+                context += `Responda de forma clara, pedagógica e encorajadora. Use exemplos quando apropriado. Use notação LaTeX para fórmulas matemáticas entre \\( \\) para inline e \\[ \\] para bloco.`;
                 
                 // Monta histórico da conversa
                 const chatMessages = [
