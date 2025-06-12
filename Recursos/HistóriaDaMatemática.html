@@ -62,17 +62,21 @@
                     role: 'user',
                     content: `Crie uma biografia acadêmica completa e detalhada para: ${name}
 
+IMPORTANTE: Use informações atualizadas até 2024. Verifique datas de morte se a pessoa já faleceu.
+
 A biografia deve seguir este modelo acadêmico com 5-6 parágrafos extensos:
 
 1º PARÁGRAFO: Nascimento, família, contexto social, primeiros anos, educação inicial
 2º PARÁGRAFO: Formação acadêmica/profissional, primeiras experiências, descobertas iniciais  
 3º PARÁGRAFO: Principais realizações, obras, teorias, contribuições mais importantes
 4º PARÁGRAFO: Contexto histórico da época, influências recebidas e exercidas sobre outros
-5º PARÁGRAFO: Legado, impacto na posteridade, reconhecimento, morte (se aplicável)
+5º PARÁGRAFO: Legado, impacto na posteridade, reconhecimento, morte (incluir data exata de falecimento se aplicável)
 6º PARÁGRAFO: Curiosidades, aspectos pessoais menos conhecidos, outras atividades
 
-Responda APENAS com JSON limpo:
-{"name":"Nome completo","born":"DD de mês de AAAA","born_place":"Cidade, País","died":"DD de mês de AAAA ou Ainda vivo","died_place":"Cidade, País ou N/A","summary":"Resumo de uma linha sobre suas principais contribuições","bio":"Biografia acadêmica completa com 6 parágrafos extensos de pelo menos 4-5 frases cada, escrita em linguagem erudita como enciclopédia universitária"}
+EXEMPLO: Pelé nasceu em 23/10/1940 e MORREU em 29/12/2022 em São Paulo.
+
+Responda APENAS com JSON limpo e informações CORRETAS E ATUALIZADAS:
+{"name":"Nome completo","born":"DD de mês de AAAA","born_place":"Cidade, País","died":"DD de mês de AAAA ou Ainda vivo","died_place":"Cidade, País ou N/A","summary":"Resumo de uma linha sobre suas principais contribuições","bio":"Biografia acadêmica completa com 6 parágrafos extensos de pelo menos 4-5 frases cada, escrita em linguagem erudita como enciclopédia universitária, com informações CORRETAS e ATUALIZADAS"}
 
 Se não existir: {"error":"NOT_FOUND"}`
                 }]);
