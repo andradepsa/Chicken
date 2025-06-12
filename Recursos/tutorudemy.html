@@ -1001,13 +1001,11 @@
                     <div class="form-group">
                         <label for="question-count">Quantidade de Questões:</label>
                         <select id="question-count">
+                            <option value="5">5 questões</option>
                             <option value="10">10 questões</option>
-                            <option value="15">15 questões</option>
-                            <option value="20" selected>20 questões</option>
+                            <option value="15" selected>15 questões</option>
+                            <option value="20">20 questões</option>
                             <option value="25">25 questões</option>
-                            <option value="30">30 questões</option>
-                            <option value="40">40 questões</option>
-                            <option value="50">50 questões</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1139,9 +1137,8 @@
         let currentQuestionIndex = 0;
         let userAnswers = [];
         let score = { correct: 0, incorrect: 0 };
-        let selectedAnswer = null;
-        let questionCount = 20;
-        let difficulty = 'medio';
+        let questionCount = 15; // Valor padrão
+        let difficulty = 'medio'; // Valor padrão
         let isAnswered = false;
         let chatHistory = []; // Histórico do chat para a API
 
@@ -1261,13 +1258,9 @@
                 return questionsData.questions;
             } catch (error) {
                 console.error('Erro ao gerar questões:', error);
-                showStatus('❌ Erro ao gerar questões. Usando fallback.', 'error');
-                return generateFallbackQuestions();
+                showStatus('❌ Erro ao gerar questões. Tente novamente.', 'error');
+                return []; // Retorna array vazio em caso de erro
             }
-        }
-
-        function generateFallbackQuestions() {
-            // ... (função sem alterações)
         }
 
         async function startQuiz() {
@@ -1281,7 +1274,8 @@
                 questions = await generateQuestionsWithAI();
                 
                 if (!questions || questions.length === 0) {
-                    alert('Não foi possível gerar as questões. Tente novamente.');
+                    alert('Não foi possível gerar as questões. Por favor, tente novamente ou escolha outro tópico.');
+                    resetQuiz(); // Volta para a tela inicial
                     return;
                 }
                 
@@ -1383,58 +1377,57 @@
             displayQuestion();
         }
         
-        // --- FUNÇÕES DO CHAT DA IA (LÓGICA CORRIGIDA) ---
+        // --- FUNÇÕES DO CHAT DA IA (LÓGICA CORRIGIDA E ROBUSTA) ---
         
         function toggleChat() {
             elements.aiChatContainer.style.display = 'block';
             elements.askAiBtn.style.display = 'none';
+            elements.chatInput.focus();
         }
 
         async function sendMessageToAI() {
             const userMessage = elements.chatInput.value.trim();
             if (!userMessage) return;
 
+            // Adiciona a mensagem do usuário ao histórico e à interface
+            chatHistory.push({ role: 'user', content: userMessage });
             addMessageToChat('user', userMessage);
+            
             elements.chatInput.value = '';
             elements.chatLoading.style.display = 'block';
             elements.sendChatBtn.disabled = true;
 
             const currentQuestion = questions[currentQuestionIndex];
             
-            // Define o prompt do sistema (persona da IA)
-            const systemPrompt = "Você é um tutor de matemática amigável e prestativo. Um aluno tem uma dúvida sobre uma questão de um quiz. Responda à pergunta do aluno de forma clara, didática e focada no contexto fornecido. Seja encorajador.";
-            
-            // Se for a primeira mensagem, injeta o contexto completo.
-            if (chatHistory.length === 0) {
-                const context = `---
-CONTEXTO DA QUESTÃO (NÃO mostre isso para o usuário, apenas use para responder):
-Tópico: ${currentTopicTitle}
-Questão: ${currentQuestion.question}
-Opções: ${currentQuestion.options.join(', ')}
-Resposta Correta: ${currentQuestion.options[currentQuestion.correct]}
-Explicação Fornecida: ${currentQuestion.explanation}
----
-A dúvida do aluno é: ${userMessage}`;
-                chatHistory.push({ role: 'user', content: context });
-            } else {
-                // Para perguntas seguintes, apenas adiciona a nova mensagem.
-                chatHistory.push({ role: 'user', content: userMessage });
-            }
+            // CONSTRÓI O PROMPT DE SISTEMA COM TODO O CONTEXTO NECESSÁRIO
+            const systemPromptWithContext = `Você é um tutor de matemática amigável, didático e encorajador. Sua tarefa é responder à dúvida de um aluno sobre uma questão específica de um quiz.
 
+---
+INFORMAÇÕES SOBRE A QUESTÃO (Use-as para responder, mas não as repita para o aluno):
+- Tópico do Quiz: ${currentTopicTitle}
+- Enunciado da Questão: "${currentQuestion.question}"
+- Opções: ${currentQuestion.options.join('; ')}
+- Resposta Correta: "${currentQuestion.options[currentQuestion.correct]}"
+- Explicação já fornecida ao aluno: "${currentQuestion.explanation}"
+---
+
+O histórico da conversa até agora está abaixo. Responda à última pergunta do aluno com base em todo esse contexto.`;
+            
             try {
-                // A chamada agora usa o chatHistory que contém o contexto
-                const response = await puter.ai.chat(chatHistory, { system_prompt: systemPrompt });
+                // A chamada agora usa o histórico limpo e o system_prompt com contexto
+                const response = await puter.ai.chat(chatHistory, { system_prompt: systemPromptWithContext });
                 const aiMessage = response.message.content;
                 
-                addMessageToChat('assistant', aiMessage);
-                // Adiciona a resposta da IA ao histórico para manter a conversa
+                // Adiciona a resposta da IA ao histórico e à interface
                 chatHistory.push({ role: 'assistant', content: aiMessage });
+                addMessageToChat('assistant', aiMessage);
 
             } catch (error) {
                 console.error("Erro no chat com a IA:", error);
                 const errorMessage = "Desculpe, ocorreu um erro ao conectar com o tutor. Por favor, tente novamente.";
                 addMessageToChat('assistant', errorMessage);
-                chatHistory.push({ role: 'assistant', content: errorMessage });
+                // Remove a última mensagem do usuário do histórico em caso de erro para permitir nova tentativa
+                chatHistory.pop();
             } finally {
                 elements.chatLoading.style.display = 'none';
                 elements.sendChatBtn.disabled = false;
