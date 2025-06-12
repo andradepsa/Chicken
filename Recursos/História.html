@@ -81,9 +81,11 @@
             font-weight: bold;
             font-size: 1.1em;
             margin-bottom: 10px;
+            color: #333;
         }
         .result-text {
             margin-bottom: 10px;
+            line-height: 1.5;
         }
         .result-source {
             color: #007bff;
@@ -93,26 +95,86 @@
         .result-source:hover {
             text-decoration: underline;
         }
+        .no-results {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Pesquisa em História da Matemática</h1>
-        <p class="subtitle">Digite sua pergunta ou termo para pesquisar no MathsHistory.</p>
+        <p class="subtitle">Digite sua pergunta ou termo para pesquisar informações sobre matemáticos e conceitos históricos.</p>
 
         <div>
-            <input type="text" id="search-query" placeholder="Ex: Quem foi Euler?">
+            <input type="text" id="search-query" placeholder="Ex: Quem foi Euler? | Teorema de Pitágoras | História do Cálculo">
             <button id="search-btn" class="main-button">🔍 Pesquisar</button>
         </div>
 
         <div id="status"></div>
         
         <div id="results-container">
-            <p style="text-align:center; color:#888;">Os resultados da sua pesquisa aparecerão aqui.</p>
+            <p class="no-results">Os resultados da sua pesquisa aparecerão aqui.</p>
         </div>
     </div>
 
     <script>
+        // === BANCO DE DADOS SIMULADO ===
+        const mathHistoryDB = {
+            'euler': {
+                title: 'Leonhard Euler (1707-1783)',
+                text: 'Leonhard Euler foi um matemático suíço considerado um dos maiores matemáticos de todos os tempos. Contribuiu para diversos campos como análise matemática, teoria dos números, geometria e mecânica. É famoso pela identidade de Euler (e^(iπ) + 1 = 0) e por ter introduzido muito da notação matemática moderna, incluindo a função f(x) e o número e.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Euler/'
+            },
+            'pitágoras': {
+                title: 'Teorema de Pitágoras',
+                text: 'O Teorema de Pitágoras, atribuído ao matemático grego Pitágoras (c. 570-495 a.C.), estabelece que em um triângulo retângulo, o quadrado da hipotenusa é igual à soma dos quadrados dos outros dois lados. Embora conhecido anteriormente pelos babilônios, Pitágoras é creditado com a primeira demonstração formal.',
+                source: 'https://mathshistory.st-andrews.ac.uk/HistTopics/Pythagoras_theorem/'
+            },
+            'newton': {
+                title: 'Isaac Newton (1643-1727)',
+                text: 'Isaac Newton foi um físico e matemático inglês, considerado uma das figuras mais influentes da Revolução Científica. Co-desenvolveu o cálculo diferencial e integral (junto com Leibniz), formulou as leis do movimento e da gravitação universal, e fez contribuições fundamentais à ótica.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Newton/'
+            },
+            'leibniz': {
+                title: 'Gottfried Wilhelm Leibniz (1646-1716)',
+                text: 'Leibniz foi um filósofo e matemático alemão que co-desenvolveu o cálculo diferencial e integral independentemente de Newton. Sua notação para o cálculo (dx, dy, ∫) é amplamente usada hoje. Também contribuiu para a lógica, filosofia e desenvolveu o sistema binário.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Leibniz/'
+            },
+            'gauss': {
+                title: 'Carl Friedrich Gauss (1777-1855)',
+                text: 'Conhecido como o "Príncipe da Matemática", Gauss foi um matemático alemão que contribuiu significativamente para teoria dos números, análise, geometria diferencial, geodésia e física. Aos 19 anos, provou que era possível construir um heptadecágono regular com régua e compasso.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Gauss/'
+            },
+            'cálculo': {
+                title: 'História do Cálculo',
+                text: 'O cálculo diferencial e integral foi desenvolvido independentemente por Isaac Newton (1665-1667) e Gottfried Leibniz (1674-1676). Newton desenvolveu sua "teoria das fluxões" para resolver problemas de física, enquanto Leibniz focou no aspecto puramente matemático. Sua disputa sobre prioridade foi uma das maiores controvérsias matemáticas da história.',
+                source: 'https://mathshistory.st-andrews.ac.uk/HistTopics/The_rise_of_calculus/'
+            },
+            'fibonacci': {
+                title: 'Leonardo Fibonacci (c. 1170-1250)',
+                text: 'Leonardo de Pisa, conhecido como Fibonacci, foi um matemático italiano que introduziu o sistema de numeração hindu-arábico na Europa através de seu livro "Liber Abaci" (1202). É famoso pela sequência de Fibonacci: 1, 1, 2, 3, 5, 8, 13, 21, 34..., onde cada número é a soma dos dois anteriores.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Fibonacci/'
+            },
+            'arquimedes': {
+                title: 'Arquimedes (c. 287-212 a.C.)',
+                text: 'Arquimedes de Siracusa foi um matemático, físico e inventor grego antigo. Descobriu métodos para calcular áreas e volumes, aproximou o valor de π, desenvolveu o princípio da alavanca e o princípio do empuxo. Seus métodos anteciparam o cálculo integral por quase 2000 anos.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Archimedes/'
+            },
+            'descartes': {
+                title: 'René Descartes (1596-1650)',
+                text: 'Descartes foi um filósofo e matemático francês que criou a geometria analítica, conectando álgebra e geometria através do sistema de coordenadas cartesianas. Seu trabalho "La Géométrie" (1637) revolucionou a matemática ao permitir resolver problemas geométricos algebricamente.',
+                source: 'https://mathshistory.st-andrews.ac.uk/Biographies/Descartes/'
+            },
+            'zero': {
+                title: 'História do Zero',
+                text: 'O conceito de zero como número foi desenvolvido independentemente por várias civilizações. Os babilônios usavam um placeholder por volta de 400 a.C., mas foi na Índia (século V) que o zero foi tratado como um número real. O matemático Brahmagupta (628 d.C.) foi o primeiro a dar regras para computar com zero.',
+                source: 'https://mathshistory.st-andrews.ac.uk/HistTopics/Zero/'
+            }
+        };
+
         // === VARIÁVEIS GLOBAIS ===
         const searchBtn = document.getElementById('search-btn');
         const searchQuery = document.getElementById('search-query');
@@ -128,6 +190,33 @@
             statusDiv.style.display = 'block';
         }
 
+        // Função para buscar no banco de dados local
+        function searchInDatabase(query) {
+            const results = [];
+            const searchTerm = query.toLowerCase().trim();
+            
+            // Busca exata por chaves
+            for (const [key, data] of Object.entries(mathHistoryDB)) {
+                if (searchTerm.includes(key) || key.includes(searchTerm)) {
+                    results.push(data);
+                }
+            }
+            
+            // Busca parcial no título e texto
+            if (results.length === 0) {
+                for (const [key, data] of Object.entries(mathHistoryDB)) {
+                    const titleMatch = data.title.toLowerCase().includes(searchTerm);
+                    const textMatch = data.text.toLowerCase().includes(searchTerm);
+                    
+                    if (titleMatch || textMatch) {
+                        results.push(data);
+                    }
+                }
+            }
+            
+            return results;
+        }
+
         // Função principal que realiza a pesquisa
         async function searchMathHistory() {
             const query = searchQuery.value.trim();
@@ -141,31 +230,29 @@
             searchBtn.textContent = 'Pesquisando...';
             showStatus('Buscando informações. Aguarde...', 'info');
 
+            // Simula um pequeno delay para parecer mais realista
+            await new Promise(resolve => setTimeout(resolve, 800));
+
             try {
-                const response = await fetch('http://localhost:5000/api/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-
-                const results = await response.json();
+                const results = searchInDatabase(query);
 
                 if (results.length > 0) {
                     renderResults(results);
-                    showStatus('Pesquisa concluída com sucesso!', 'success');
+                    showStatus(`Encontrados ${results.length} resultado(s) para sua pesquisa!`, 'success');
                 } else {
-                    resultsContainer.innerHTML = '<p style="text-align:center; color:#888;">Nenhum resultado encontrado.</p>';
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            <p>Nenhum resultado encontrado para "${query}".</p>
+                            <p>Tente pesquisar por: Euler, Pitágoras, Newton, Leibniz, Gauss, Cálculo, Fibonacci, Arquimedes, Descartes, Zero</p>
+                        </div>
+                    `;
                     showStatus('Nenhum resultado encontrado para sua pesquisa.', 'info');
                 }
 
             } catch (error) {
                 console.error('Erro na pesquisa:', error);
                 showStatus(`Ocorreu um erro: ${error.message}`, 'error');
-                resultsContainer.innerHTML = '<p style="text-align:center; color:#888;">Erro ao realizar a pesquisa.</p>';
+                resultsContainer.innerHTML = '<p class="no-results">Erro ao realizar a pesquisa.</p>';
             } finally {
                 searchBtn.disabled = false;
                 searchBtn.textContent = '🔍 Pesquisar';
@@ -179,9 +266,9 @@
                 const card = document.createElement('div');
                 card.className = 'result-card';
                 card.innerHTML = `
-                    <div class="result-title">${result.title || 'Resultado'}</div>
+                    <div class="result-title">${result.title}</div>
                     <div class="result-text">${result.text}</div>
-                    ${result.source ? `<a href="${result.source}" class="result-source" target="_blank">Fonte: ${result.source}</a>` : ''}
+                    ${result.source ? `<a href="${result.source}" class="result-source" target="_blank">📚 Fonte: MacTutor History of Mathematics</a>` : ''}
                 `;
                 resultsContainer.appendChild(card);
             });
@@ -190,12 +277,14 @@
         // === INICIALIZAÇÃO ===
         function initializeApp() {
             searchBtn.addEventListener('click', searchMathHistory);
+            // Permite pesquisa ao pressionar Enter
             searchQuery.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') searchMathHistory();
             });
         }
 
-        initializeApp();
+        // Inicializa a aplicação quando a página carrega
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
