@@ -117,7 +117,7 @@
             border-left: 5px solid #667eea;
         }
         
-        .mathematician-header { /* A classe mantém o nome, mas o conteúdo é genérico */
+        .mathematician-header {
             display: flex;
             gap: 30px;
             margin-bottom: 30px;
@@ -133,6 +133,7 @@
             object-fit: cover;
             border: 3px solid #fff;
             background: #f0f2f5;
+            overflow: hidden;
         }
         
         .photo-placeholder {
@@ -285,6 +286,27 @@
             background: #f8f9fa;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .photo-error {
+            font-size: 12px;
+            color: #dc3545;
+            margin-top: 5px;
+        }
+
+        .photo-retry-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .photo-retry-btn:hover {
+            background: #218838;
         }
 
         @keyframes spin {
@@ -448,7 +470,7 @@
                         <div class="mathematician-photo" id="${photoId}">
                             <div class="photo-placeholder">
                                 <div class="loading-photo"></div>
-                                <div>Carregando foto...</div>
+                                <div>Procurando foto...</div>
                             </div>
                         </div>
                         
@@ -522,45 +544,217 @@
             loadPersonPhoto(data.name, photoId);
         }
 
+        // === FUNÇÃO MELHORADA PARA CARREGAR FOTOS ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
-            if (!photoElement) return;
+            if (!photoElement) {
+                console.error('Elemento da foto não encontrado:', photoElementId);
+                return;
+            }
 
-            try {
-                // Tenta buscar a imagem na Wikipedia
-                const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`);
-                const data = await response.json();
+            console.log(`Tentando carregar foto para: ${personName}`);
+            
+            // Array de diferentes fontes de imagem para tentar
+            const imageSources = [
+                () => tryWikipediaAPI(personName),
+                () => tryWikipediaDirectSearch(personName),
+                () => tryWikimediaCommons(personName)
+            ];
+
+            let photoLoaded = false;
+            let attemptCount = 0;
+
+            for (const sourceFunction of imageSources) {
+                if (photoLoaded) break;
                 
-                if (data.thumbnail && data.thumbnail.source) {
-                    const img = new Image();
-                    img.onload = () => {
-                        photoElement.innerHTML = `<img src="${data.thumbnail.source}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
-                    };
-                    img.onerror = () => showCustomPlaceholder(personName, photoElementId);
-                    img.src = data.thumbnail.source;
-                } else {
-                    showCustomPlaceholder(personName, photoElementId);
+                attemptCount++;
+                updatePhotoStatus(photoElement, `Tentativa ${attemptCount}/3...`);
+                
+                try {
+                    const imageUrl = await sourceFunction();
+                    if (imageUrl) {
+                        const success = await loadImageWithFallback(imageUrl, personName, photoElement);
+                        if (success) {
+                            photoLoaded = true;
+                            console.log(`Foto carregada com sucesso na tentativa ${attemptCount}:`, imageUrl);
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message);
                 }
-            } catch (error) {
-                console.error('Erro ao carregar foto da Wikipedia:', error);
-                showCustomPlaceholder(personName, photoElementId);
+                
+                // Pequena pausa entre tentativas
+                if (!photoLoaded && attemptCount < imageSources.length) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+
+            if (!photoLoaded) {
+                console.log(`Nenhuma foto encontrada para ${personName}, usando placeholder`);
+                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
             }
         }
 
-        function showCustomPlaceholder(name, elementId) {
+        // === MÉTODOS DE BUSCA DE IMAGENS ===
+        async function tryWikipediaAPI(personName) {
+            console.log('Tentando Wikipedia API...');
+            
+            // Tenta múltiplas variações do nome
+            const nameVariations = [
+                personName,
+                personName.replace(/\s+/g, '_'),
+                personName.split(' ').join('_')
+            ];
+
+            for (const name of nameVariations) {
+                try {
+                    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
+                    console.log('URL da Wikipedia:', url);
+                    
+                    const response = await fetch(url, {
+                        headers: {
+                            'User-Agent': 'BiographyGenerator/1.0 (https://biography-generator.com)'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Status ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Resposta da Wikipedia:', data);
+                    
+                    if (data.thumbnail && data.thumbnail.source) {
+                        return data.thumbnail.source.replace(/\/\d+px-/, '/300px-'); // Aumenta resolução
+                    }
+                } catch (error) {
+                    console.warn(`Erro com variação "${name}":`, error.message);
+                }
+            }
+            
+            return null;
+        }
+
+        async function tryWikipediaDirectSearch(personName) {
+            console.log('Tentando busca direta Wikipedia...');
+            
+            try {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&format=json&origin=*`;
+                
+                const searchResponse = await fetch(searchUrl);
+                if (!searchResponse.ok) throw new Error('Falha na busca');
+                
+                const searchData = await searchResponse.json();
+                
+                if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
+                    const firstResult = searchData.query.search[0];
+                    return await tryWikipediaAPI(firstResult.title);
+                }
+            } catch (error) {
+                console.warn('Erro na busca direta:', error.message);
+            }
+            
+            return null;
+        }
+
+        async function tryWikimediaCommons(personName) {
+            console.log('Tentando Wikimedia Commons...');
+            
+            try {
+                const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
+                
+                const response = await fetch(searchUrl);
+                if (!response.ok) throw new Error('Falha no Wikimedia Commons');
+                
+                const data = await response.json();
+                
+                if (data.query && data.query.search && data.query.search.length > 0) {
+                    const fileName = data.query.search[0].title;
+                    const imageUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
+                    return imageUrl;
+                }
+            } catch (error) {
+                console.warn('Erro no Wikimedia Commons:', error.message);
+            }
+            
+            return null;
+        }
+
+        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK ===
+        async function loadImageWithFallback(imageUrl, personName, photoElement) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                
+                img.onload = () => {
+                    console.log('Imagem carregada com sucesso:', imageUrl);
+                    photoElement.innerHTML = `
+                        <img src="${imageUrl}" 
+                             alt="Foto de ${personName}" 
+                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="photo-placeholder" style="display: none;">
+                            <div style="font-size: 48px; font-weight: bold;">${getInitials(personName)}</div>
+                            <div style="font-size: 12px; opacity: 0.8;">Erro ao carregar</div>
+                        </div>
+                    `;
+                    resolve(true);
+                };
+                
+                img.onerror = (error) => {
+                    console.warn('Erro ao carregar imagem:', imageUrl, error);
+                    resolve(false);
+                };
+                
+                // Timeout de 10 segundos
+                setTimeout(() => {
+                    console.warn('Timeout ao carregar imagem:', imageUrl);
+                    resolve(false);
+                }, 10000);
+                
+                img.src = imageUrl;
+            });
+        }
+
+        // === FUNÇÕES AUXILIARES ===
+        function updatePhotoStatus(photoElement, message) {
+            photoElement.innerHTML = `
+                <div class="photo-placeholder">
+                    <div class="loading-photo"></div>
+                    <div>${message}</div>
+                </div>
+            `;
+        }
+
+        function getInitials(name) {
+            return name.split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .substring(0, 2)
+                      .toUpperCase();
+        }
+
+        function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
             const photoElement = document.getElementById(elementId);
             if (!photoElement) return;
 
-            const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const initials = getInitials(name);
             const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
             const color = colors[name.length % colors.length];
 
             photoElement.innerHTML = `
                 <div class="photo-placeholder" style="background: ${color};">
                     <div style="font-size: 48px; font-weight: bold;">${initials}</div>
-                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Foto não encontrada</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div>
+                    <button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">
+                        Tentar novamente
+                    </button>
                 </div>
             `;
+        }
+
+        function retryPhotoLoad(personName, photoElementId) {
+            console.log('Tentando recarregar foto para:', personName);
+            loadPersonPhoto(personName, photoElementId);
         }
 
         function clearBiography() {
@@ -580,8 +774,10 @@
             }
         });
 
+        // Torna as funções disponíveis globalmente
         window.fillExample = fillExample;
         window.clearBiography = clearBiography;
+        window.retryPhotoLoad = retryPhotoLoad;
 
         personInput.focus();
     </script>
