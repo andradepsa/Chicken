@@ -1,167 +1,122 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Biografias</title>
-    <script src="https://js.puter.com/v2/"></script>
-    <style>
-        body { font-family: Arial, sans-serif; background: #667eea; color: #333; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
-        h1 { text-align: center; margin-bottom: 20px; color: white; }
-        .search { position: relative; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 100%; padding: 12px; background: #4455cc; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-        .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; max-height: 200px; overflow-y: auto; z-index: 1000; display: none; }
-        .suggestion { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .suggestion:hover { background: #f0f0f0; }
-        .status { padding: 10px; margin: 10px 0; border-radius: 5px; text-align: center; display: none; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .status.info { background: #cce5ff; color: #004085; }
-        .status.success { background: #d4edda; color: #155724; }
-        .bio { margin-top: 20px; display: none; }
-        .info { background: #f8f9fa; border: 1px solid #667eea; border-radius: 5px; padding: 15px; margin-bottom: 15px; display: grid; grid-template-columns: 1fr 100px; gap: 10px; }
-        .photo { width: 100px; height: 120px; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border-radius: 5px; }
-        .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; }
-        h3 { color: #667eea; margin: 0 0 10px 0; }
-        .item { margin-bottom: 5px; }
-        .label { font-weight: bold; }
-        .bio-text p { margin-bottom: 10px; text-align: justify; }
-        @media (max-width: 600px) { .info { grid-template-columns: 1fr; text-align: center; } }
-    </style>
+  <meta charset="UTF-8">
+  <title>📚 Biografias com IA e Busca</title>
+  <script src="https://js.puter.com/v2/"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 20px; }
+    h1 { text-align: center; color: #333; }
+    .search { position: relative; margin-bottom: 20px; }
+    input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; }
+    button { padding: 12px 20px; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+    button:disabled { background: #a0c4e8; cursor: not-allowed; }
+    .suggestions { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; display: none; z-index: 10; }
+    .suggestion { padding: 8px 12px; cursor: pointer; }
+    .suggestion:hover { background: #f0f0f0; }
+    .status { padding: 10px; margin-bottom: 20px; border-radius: 4px; display: none; }
+    .status.info { background: #d9edf7; color: #31708f; }
+    .status.success { background: #dff0d8; color: #3c763d; }
+    .status.error { background: #f2dede; color: #a94442; }
+    .bio { display: none; }
+    .info { display: flex; align-items: center; background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    .barcode { flex: 1; }
+    .photo { width: 120px; height: 150px; background: #e2e2e2; border-radius: 4px; margin-left: 20px; display: flex; align-items: center; justify-content: center; }
+    .photo img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .bio-text { line-height: 1.6; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 Biografias</h1>
-        <div class="search">
-            <input id="input" placeholder="Digite o nome de uma pessoa...">
-            <div id="suggestions" class="suggestions"></div>
-            <button onclick="generate()">Gerar</button>
-        </div>
-        <div id="status" class="status"></div>
-        <div id="bio" class="bio"></div>
+  <div class="container">
+    <h1>Biografias Inteligentes</h1>
+    <div class="search">
+      <input id="input" placeholder="Digite um nome...">
+      <div id="suggestions" class="suggestions"></div>
+      <button id="btnGenerate" onclick="generate()" disabled>Gerar Biografia</button>
     </div>
+    <div id="status" class="status"></div>
+    <div id="bio" class="bio">
+      <div class="info"><div class="barcode"><h2 id="name"></h2><div id="details"></div></div><div id="photo" class="photo"></div></div>
+      <div class="bio-text" id="bioText"></div>
+    </div>
+  </div>
 
-    <script>
-        const names = [ /* ...seu array de nomes aqui... */ ];
+  <script>
+    const localNames = [ /* lista local resumida */ "Einstein, Albert", "Newton, Isaac", "Ada Lovelace", "Galilei, Galileo" ];
+    const input = document.getElementById('input'), suggestions = document.getElementById('suggestions');
+    const btn = document.getElementById('btnGenerate'), status = document.getElementById('status');
+    const bio = document.getElementById('bio'), nameEl = document.getElementById('name');
+    const details = document.getElementById('details'), photo = document.getElementById('photo'), bioText = document.getElementById('bioText');
 
-        const input = document.getElementById('input');
-        const suggestions = document.getElementById('suggestions');
-        const status = document.getElementById('status');
-        const bio = document.getElementById('bio');
+    input.addEventListener('input', async () => {
+      const q = input.value.trim();
+      btn.disabled = !q;
+      if (!q) return suggestions.style.display = 'none';
 
-        function show(msg, type) {
-            status.textContent = msg;
-            status.className = `status ${type}`;
-            status.style.display = 'block';
-        }
+      // sugestões locais
+      const locals = localNames.filter(n => n.toLowerCase().includes(q.toLowerCase())).slice(0,5);
 
-        function filterNames(query) {
-            if (!query) return [];
-            return names.filter(name =>
-                name.toLowerCase().includes(query.toLowerCase())
-            ).slice(0, 10);
-        }
+      // sugestões da web (fictício usando Puter AI para buscar nomes semelhantes)
+      const response = await puter.ai.chat([{ role:'user', content:`Sugira 5 nomes de pessoas famosas cujo nome contenha: "${q}" (somente nomes)` }]);
+      let aiSuggest = [];
+      try {
+        aiSuggest = JSON.parse(response.message.content);
+      } catch(e){}
 
-        function showSuggestions(list) {
-            if (list.length === 0) {
-                suggestions.style.display = 'none';
-                return;
-            }
-            suggestions.innerHTML = list
-                .map(name => `<div class="suggestion">${name}</div>`)
-                .join('');
-            suggestions.style.display = 'block';
-        }
+      const all = [...new Set([...locals, ...aiSuggest])].slice(0,10);
+      if (all.length === 0) return suggestions.style.display = 'none';
 
-        suggestions.addEventListener('click', e => {
-            if (e.target.classList.contains('suggestion')) {
-                input.value = e.target.textContent;
-                suggestions.style.display = 'none';
-            }
-        });
+      suggestions.innerHTML = all.map(n => `<div class="suggestion">${n}</div>`).join('');
+      suggestions.style.display = 'block';
+    });
 
-        input.addEventListener('input', () => {
-            const list = filterNames(input.value);
-            showSuggestions(list);
-        });
+    suggestions.addEventListener('click', e => {
+      if (e.target.matches('.suggestion')) {
+        input.value = e.target.textContent;
+        suggestions.style.display = 'none';
+      }
+    });
 
-        input.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-                suggestions.style.display = 'none';
-                generate();
-            }
-        });
+    input.addEventListener('keypress', e => { if (e.key==='Enter' && input.value.trim()) generate(); });
 
-        async function generate() {
-            const name = input.value.trim();
-            if (!name) return show('Digite um nome', 'error');
+    function show(msg, type='info') {
+      status.textContent = msg;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+    }
 
-            show('Gerando...', 'info');
-            bio.style.display = 'none';
+    async function generate() {
+      const nome = input.value.trim();
+      if (!nome) return;
+      show('Buscando biografia...', 'info');
+      bio.style.display = 'none';
 
-            try {
-                const response = await puter.ai.chat([{
-                    role: 'user',
-                    content: `Biografia completa para: ${name}
+      try {
+        const res = await puter.ai.chat([{role:'user', content:`Biografia completa para: ${nome}\n\nJSON: {...}` }]);
+        const json = JSON.parse(res.message.content.replace(/```json|```/g,'').trim());
+        if (json.error) return show('Pessoa não encontrada', 'error');
 
-JSON:
-{"name":"Nome","born":"Data","born_place":"Local","died":"Data ou Vivo","died_place":"Local","summary":"Resumo","bio":"Biografia detalhada"}
+        nameEl.textContent = json.name;
+        let infoHTML = `<div><strong>Nascimento:</strong> ${json.born} — ${json.born_place}</div>`;
+        if (json.died!=='Vivo') infoHTML += `<div><strong>Morte:</strong> ${json.died} — ${json.died_place}</div>`;
+        infoHTML += `<div><strong>Resumo:</strong> ${json.summary}</div>`;
+        details.innerHTML = infoHTML;
 
-Se não existe: {"error":"NOT_FOUND"}`
-                }]);
+        photo.innerHTML = json.name.split(' ').map(w=>w[0]).slice(0,2).join('');
+        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(json.name)}`)
+          .then(r=>r.json()).then(w => {
+            if (w.thumbnail?.source) photo.innerHTML = `<img src="${w.thumbnail.source}" alt="">`;
+          }).catch(()=>{});
 
-                let text = response.message.content
-                    .replace(/```json|```/g, '')
-                    .trim();
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                const data = JSON.parse(text.substring(jsonStart, jsonEnd));
-
-                if (data.error) {
-                    show('Pessoa não encontrada', 'error');
-                    return;
-                }
-
-                const initials = data.name.split(' ')
-                    .map(n => n[0]).join('').substring(0,2);
-                const photoId = 'photo' + Date.now();
-
-                bio.innerHTML = `
-                    <h2>${data.name}</h2>
-                    <div class="info">
-                        <div>
-                            <h3>Informações</h3>
-                            <div class="item"><span class="label">Nascimento:</span> ${data.born}</div>
-                            <div class="item"><span class="label">Local:</span> ${data.born_place}</div>
-                            ${data.died !== 'Vivo' ? `<div class="item"><span class="label">Morte:</span> ${data.died}</div>` : ''}
-                            ${data.died_place && data.died_place !== 'N/A' ? `<div class="item"><span class="label">Local:</span> ${data.died_place}</div>` : ''}
-                            <div class="item"><span class="label">Resumo:</span> ${data.summary}</div>
-                        </div>
-                        <div class="photo" id="${photoId}">${initials}</div>
-                    </div>
-                    <div class="bio-text">
-                        <h3>Biografia</h3>
-                        ${data.bio.split('.')
-                            .filter(s => s.trim())
-                            .map(s => `<p>${s.trim()}.</p>`).join('')}
-                    </div>`;
-                bio.style.display = 'block';
-                show('Sucesso!', 'success');
-
-                fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(data.name)}`)
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.thumbnail && d.thumbnail.source) {
-                            document.getElementById(photoId).innerHTML =
-                                `<img src="${d.thumbnail.source}" alt="${data.name}">`;
-                        }
-                    })
-                    .catch(() => {});
-
-            } catch (err) {
-                show('Erro: ' + err.message, 'error');
-            }
-        }
-    </script>
+        bioText.innerHTML = json.bio.split('.').filter(s=>s.trim()).map(s=>`<p>${s.trim()}.</p>`).join('');
+        bio.style.display = 'block';
+        show('Biografia gerada com sucesso!', 'success');
+      } catch (e) {
+        show('Erro ao gerar biografia', 'error');
+        console.error(e);
+      }
+    }
+  </script>
 </body>
 </html>
