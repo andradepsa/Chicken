@@ -132,6 +132,31 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             object-fit: cover;
             border: 3px solid #fff;
+            background: #f0f2f5;
+        }
+        
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            border-radius: 7px;
+        }
+        
+        .loading-photo {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
         }
         
         .mathematician-info {
@@ -452,25 +477,17 @@
 
         // === FUNÇÃO DE EXIBIÇÃO ===
         function displayBiography(data) {
+            const photoId = `photo-${Date.now()}`;
             const biographyHTML = `
                 <div class="biography-card">
                     <button class="clear-button" onclick="clearBiography()">Limpar</button>
                     
                     <div class="mathematician-header">
-                        <div class="mathematician-photo" style="
-                            background: linear-gradient(45deg, #667eea, #764ba2);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: white;
-                            font-size: 24px;
-                            text-align: center;
-                            padding: 20px;
-                        ">
-                            👨‍🔬<br>
-                            <small style="font-size: 12px; margin-top: 10px; display: block;">
-                                ${data.photo_description || 'Retrato histórico'}
-                            </small>
+                        <div class="mathematician-photo" id="${photoId}">
+                            <div class="photo-placeholder">
+                                <div class="loading-photo"></div>
+                                <div>Carregando foto...</div>
+                            </div>
                         </div>
                         
                         <div class="mathematician-info">
@@ -577,6 +594,112 @@
 
             biographyContainer.innerHTML = biographyHTML;
             biographyContainer.style.display = 'block';
+            
+            // Carregar foto real do matemático
+            loadMathematicianPhoto(data.name, photoId);
+        }
+
+        // === FUNÇÃO PARA CARREGAR FOTOS REAIS ===
+        async function loadMathematicianPhoto(mathematicianName, photoElementId) {
+            const photoElement = document.getElementById(photoElementId);
+            
+            try {
+                // Lista de fontes de imagem para tentar
+                const imageSources = [
+                    // Wikipedia API para buscar imagens
+                    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(mathematicianName)}`,
+                    // Unsplash para retratos históricos
+                    `https://source.unsplash.com/200x250/?mathematician,portrait,${encodeURIComponent(mathematicianName)}`,
+                    // Wikimedia Commons
+                    `https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=pageimages&titles=${encodeURIComponent(mathematicianName)}&pithumbsize=200&origin=*`
+                ];
+
+                // Tentar carregar da Wikipedia primeiro
+                try {
+                    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(mathematicianName)}`);
+                    const data = await response.json();
+                    
+                    if (data.thumbnail && data.thumbnail.source) {
+                        const img = new Image();
+                        img.onload = function() {
+                            photoElement.innerHTML = `<img src="${data.thumbnail.source}" alt="${mathematicianName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
+                        };
+                        img.onerror = function() {
+                            loadFallbackImage(mathematicianName, photoElementId);
+                        };
+                        img.src = data.thumbnail.source;
+                        return;
+                    }
+                } catch (error) {
+                    console.log('Wikipedia não funcionou, tentando outras fontes...');
+                }
+
+                // Se Wikipedia falhar, tentar outras fontes
+                loadFallbackImage(mathematicianName, photoElementId);
+                
+            } catch (error) {
+                console.error('Erro ao carregar foto:', error);
+                loadFallbackImage(mathematicianName, photoElementId);
+            }
+        }
+
+        function loadFallbackImage(mathematicianName, photoElementId) {
+            const photoElement = document.getElementById(photoElementId);
+            
+            // Tentar diferentes URLs de imagem
+            const imageUrls = [
+                `https://source.unsplash.com/200x250/?portrait,mathematician,${encodeURIComponent(mathematicianName)}`,
+                `https://source.unsplash.com/200x250/?portrait,scientist,historical`,
+                `https://source.unsplash.com/200x250/?portrait,academic,scholar`,
+                `https://picsum.photos/200/250?random=${Math.floor(Math.random() * 1000)}`
+            ];
+
+            let currentUrlIndex = 0;
+
+            function tryNextImage() {
+                if (currentUrlIndex >= imageUrls.length) {
+                    // Se todas as fontes falharem, mostrar placeholder personalizado
+                    showCustomPlaceholder(mathematicianName, photoElementId);
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = function() {
+                    photoElement.innerHTML = `<img src="${imageUrls[currentUrlIndex]}" alt="${mathematicianName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
+                };
+                img.onerror = function() {
+                    currentUrlIndex++;
+                    tryNextImage();
+                };
+                img.src = imageUrls[currentUrlIndex];
+            }
+
+            tryNextImage();
+        }
+
+        function showCustomPlaceholder(mathematicianName, photoElementId) {
+            const photoElement = document.getElementById(photoElementId);
+            
+            // Criar avatar personalizado baseado no nome
+            const initials = mathematicianName.split(' ').map(n => n[0]).join('').substring(0, 2);
+            const colors = [
+                'linear-gradient(45deg, #667eea, #764ba2)',
+                'linear-gradient(45deg, #f093fb, #f5576c)',
+                'linear-gradient(45deg, #4facfe, #00f2fe)',
+                'linear-gradient(45deg, #43e97b, #38f9d7)',
+                'linear-gradient(45deg, #fa709a, #fee140)',
+                'linear-gradient(45deg, #a8edea, #fed6e3)'
+            ];
+            
+            const colorIndex = mathematicianName.length % colors.length;
+            
+            photoElement.innerHTML = `
+                <div class="photo-placeholder" style="background: ${colors[colorIndex]}">
+                    <div style="font-size: 48px; font-weight: bold; margin-bottom: 10px;">${initials}</div>
+                    <div style="font-size: 14px; font-weight: 500;">${mathematicianName}</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">Matemático</div>
+                </div>
+            `;
         }
 
         function clearBiography() {
