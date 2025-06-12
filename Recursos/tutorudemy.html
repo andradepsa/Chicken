@@ -2,12 +2,9 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões e Quiz Matemático com Tutor</title>
+    <title>Gerador de Questões e Quiz Matemático</title>
     <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
-    <!-- MathJax para renderizar fórmulas matemáticas -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <style>
         body {
@@ -95,9 +92,9 @@
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px dashed #ccc;
-            display: none;
+            display: none; /* Escondido até verificar no quiz */
         }
-        .remove-btn, .check-btn, .tutor-btn {
+        .remove-btn, .check-btn {
             background-color: #dc3545;
             color: white;
             padding: 5px 10px;
@@ -109,9 +106,6 @@
         }
         .check-btn {
             background-color: #28a745;
-        }
-        .tutor-btn {
-            background-color: #17a2b8;
         }
         #actions-container {
             display: none;
@@ -133,86 +127,17 @@
         }
         .pdf-button { background-color: #28a745; }
         .clear-button { background-color: #6c757d; }
-        .tutor-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .tutor-modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-        .tutor-modal-content h2 {
-            margin-top: 0;
-            color: #333;
-        }
-        .tutor-modal-content textarea {
-            width: 100%;
-            height: 100px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            resize: vertical;
-        }
-        .tutor-modal-content select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-        .tutor-response {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-top: 10px;
-        }
-        .close-modal {
-            background-color: #dc3545;
-            color: white;
-            padding: 5px 10px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            float: right;
-        }
-        #tutor-history-container {
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .tutor-history-item {
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Gerador de Questões e Quiz Matemático com Tutor</h1>
+        <h1>Gerador de Questões e Quiz Matemático</h1>
         <p class="subtitle">Escolha um tópico, tipo (perguntas ou quiz) e a quantidade de questões.</p>
 
         <div>
             <select id="topic" onchange="updateSubtopics()">
                 <option value="">Selecione um tópico</option>
+                <!-- Tópicos serão preenchidos via JavaScript -->
             </select>
             <select id="subtopic">
                 <option value="">Selecione um subtema</option>
@@ -234,27 +159,6 @@
 
         <div id="questions-container">
             <p style="text-align:center; color:#888;">Suas questões ou quiz aparecerão aqui.</p>
-        </div>
-
-        <div id="tutor-history-container">
-            <h2>Histórico do Tutor</h2>
-            <p style="text-align:center; color:#888;">Suas dúvidas e respostas aparecerão aqui.</p>
-        </div>
-
-        <div id="tutor-modal" class="tutor-modal">
-            <div class="tutor-modal-content">
-                <button class="close-modal" onclick="closeTutorModal()">Fechar</button>
-                <h2>Perguntar ao Tutor</h2>
-                <p id="tutor-question-context"></p>
-                <select id="tutor-level">
-                    <option value="beginner">Iniciante</option>
-                    <option value="intermediate">Intermediário</option>
-                    <option value="advanced">Avançado</option>
-                </select>
-                <textarea id="tutor-question" placeholder="Digite sua dúvida sobre a questão ou tema..."></textarea>
-                <button class="main-button" onclick="submitTutorQuestion()">Enviar Dúvida</button>
-                <div id="tutor-response" class="tutor-response"></div>
-            </div>
         </div>
     </div>
 
@@ -588,8 +492,6 @@
 
         // === VARIÁVEIS GLOBAIS ===
         let questionsDatabase = [];
-        let tutorHistory = [];
-        let currentQuestionId = null;
         const topicSelect = document.getElementById('topic');
         const subtopicSelect = document.getElementById('subtopic');
         const typeSelect = document.getElementById('type');
@@ -600,12 +502,6 @@
         const actionsContainer = document.getElementById('actions-container');
         const pdfBtn = document.getElementById('pdf-btn');
         const clearBtn = document.getElementById('clear-btn');
-        const tutorModal = document.getElementById('tutor-modal');
-        const tutorQuestionContext = document.getElementById('tutor-question-context');
-        const tutorLevelSelect = document.getElementById('tutor-level');
-        const tutorQuestionInput = document.getElementById('tutor-question');
-        const tutorResponseDiv = document.getElementById('tutor-response');
-        const tutorHistoryContainer = document.getElementById('tutor-history-container');
 
         // === FUNÇÕES DE LÓGICA ===
 
@@ -638,10 +534,9 @@
             statusDiv.textContent = message;
             statusDiv.className = `status-${type}`;
             statusDiv.style.display = 'block';
-            setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
         }
 
-        // Gera um ID único para cada questão ou interação
+        // Gera um ID único para cada questão
         function generateId() {
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
@@ -677,13 +572,12 @@
                           "text": "Texto da questão.",
                           "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
                           "correct_answer": "A letra ou texto da resposta correta.",
-                          "explanation": "Explicação da resposta correta, usando LaTeX para fórmulas (ex.: \\(x^2\\))."
+                          "explanation": "Explicação da resposta correta."
                         }
                       ]
                     }
                     - Para verdadeiro/falso, use ["Verdadeiro", "Falso"].
                     - As questões devem ser claras e educacionais.
-                    - Use LaTeX para todas as fórmulas matemáticas.
                 `;
                 
                 const response = await puter.ai.chat([{ role: 'user', content: finalPrompt }]);
@@ -697,13 +591,12 @@
                 const jsonString = response.message.content.substring(jsonStart, jsonEnd);
                 const parsed = JSON.parse(jsonString);
 
-                const newQuestions = parsed.questions ? parsed.questions.map(q => ({ ...q, id: generateId(), type, subtopic })) : [];
+                const newQuestions = parsed.questions ? parsed.questions.map(q => ({ ...q, id: generateId(), type })) : [];
 
                 if (newQuestions.length > 0) {
                     questionsDatabase.unshift(...newQuestions);
                     saveToLocalStorage();
                     renderQuestions();
-                    MathJax.typeset(); // Renderiza as fórmulas com MathJax
                     showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
                     throw new Error('Não foi possível extrair questões da resposta da IA.');
@@ -750,7 +643,6 @@
                 card.innerHTML = `
                     <button class="remove-btn" onclick="removeQuestion('${q.id}')">Remover</button>
                     ${q.type === 'quiz' ? `<button class="check-btn" onclick="checkAnswer('${q.id}')">Verificar Resposta</button>` : ''}
-                    <button class="tutor-btn" onclick="openTutorModal('${q.id}')">Perguntar ao Tutor</button>
                     <div class="question-text">${q.text}</div>
                     ${optionsHTML}
                     <div class="question-answer" id="answer-${q.id}">
@@ -760,7 +652,6 @@
                 `;
                 questionsContainer.appendChild(card);
             });
-            MathJax.typeset(); // Renderiza as fórmulas com MathJax após adicionar questões
         }
 
         // Verifica a resposta no modo quiz
@@ -780,7 +671,6 @@
             } else {
                 showStatus('Incorreto. Veja a resposta correta e a explicação abaixo.', 'error');
             }
-            MathJax.typeset(); // Renderiza fórmulas na explicação
         }
 
         // Remove uma questão da lista
@@ -799,120 +689,6 @@
                 renderQuestions();
                 showStatus('Lista limpa.', 'info');
             }
-        }
-
-        // === FUNÇÕES DO TUTOR ===
-
-        // Abre o modal do tutor
-        function openTutorModal(questionId) {
-            currentQuestionId = questionId;
-            const question = questionsDatabase.find(q => q.id === questionId);
-            tutorQuestionContext.innerHTML = `<strong>Questão:</strong> ${question.text}<br><strong>Tema:</strong> ${question.subtopic}`;
-            tutorQuestionInput.value = '';
-            tutorResponseDiv.innerHTML = '';
-            tutorModal.style.display = 'flex';
-            MathJax.typeset(); // Renderiza fórmulas no contexto da questão
-        }
-
-        // Fecha o modal do tutor
-        function closeTutorModal() {
-            tutorModal.style.display = 'none';
-            currentQuestionId = null;
-        }
-
-        // Envia a dúvida ao tutor
-        async function submitTutorQuestion() {
-            const question = questionsDatabase.find(q => q.id === currentQuestionId);
-            const doubt = tutorQuestionInput.value.trim();
-            const level = tutorLevelSelect.value;
-
-            if (!doubt) {
-                showStatus('Por favor, digite uma dúvida.', 'error');
-                return;
-            }
-
-            try {
-                const tutorPrompt = `
-                    Você é um tutor especializado em matemática. Responda à dúvida do usuário de forma clara, educacional e adaptada ao nível de conhecimento "${level}" (iniciante, intermediário ou avançado).
-                    Contexto da questão:
-                    - Tema: ${question.subtopic}
-                    - Questão: ${question.text}
-                    - Resposta correta: ${question.correct_answer}
-                    - Explicação original: ${question.explanation || 'Não fornecida.'}
-                    Dúvida do usuário: ${doubt}
-                    Forneça uma explicação detalhada, com exemplos práticos, e, se aplicável, sugira um exercício adicional relacionado ao tema. Responda em português e use LaTeX para todas as fórmulas matemáticas (ex.: \\(x^2\\)).
-                `;
-                
-                const response = await puter.ai.chat([{ role: 'user', content: tutorPrompt }]);
-                
-                if (!response || !response.message || !response.message.content) {
-                    throw new Error('A IA não retornou uma resposta válida.');
-                }
-
-                const tutorResponse = response.message.content;
-                tutorResponseDiv.innerHTML = tutorResponse;
-                saveTutorHistory(doubt, tutorResponse, question.subtopic, question.text);
-                renderTutorHistory();
-                showStatus('Dúvida respondida com sucesso!', 'success');
-                MathJax.typeset(); // Renderiza fórmulas na resposta do tutor
-
-            } catch (error) {
-                console.error('Erro na consulta ao tutor:', error);
-                showStatus(`Ocorreu um erro: ${error.message}`, 'error');
-            }
-        }
-
-        // Salva o histórico de interações do tutor
-        function saveTutorHistory(doubt, response, subtopic, questionText) {
-            tutorHistory.unshift({
-                id: generateId(),
-                doubt,
-                response,
-                subtopic,
-                questionText,
-                timestamp: new Date().toLocaleString('pt-BR')
-            });
-            localStorage.setItem('tutorHistory', JSON.stringify(tutorHistory));
-        }
-
-        // Carrega o histórico do tutor do localStorage
-        function loadTutorHistory() {
-            const saved = localStorage.getItem('tutorHistory');
-            if (saved) {
-                tutorHistory = JSON.parse(saved);
-            }
-        }
-
-        // Exibe o histórico do tutor
-        function renderTutorHistory() {
-            if (tutorHistory.length === 0) {
-                tutorHistoryContainer.innerHTML = '<h2>Histórico do Tutor</h2><p style="text-align:center; color:#888;">Nenhuma dúvida registrada.</p>';
-                return;
-            }
-
-            tutorHistoryContainer.innerHTML = '<h2>Histórico do Tutor</h2>';
-            tutorHistory.forEach(item => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'tutor-history-item';
-                historyItem.innerHTML = `
-                    <p><strong>Tema:</strong> ${item.subtopic}</p>
-                    <p><strong>Questão:</strong> ${item.questionText}</p>
-                    <p><strong>Dúvida:</strong> ${item.doubt}</p>
-                    <p><strong>Resposta:</strong> ${item.response}</p>
-                    <p><strong>Data:</strong> ${item.timestamp}</p>
-                    <button class="remove-btn" onclick="removeTutorHistory('${item.id}')">Remover</button>
-                `;
-                tutorHistoryContainer.appendChild(historyItem);
-            });
-            MathJax.typeset(); // Renderiza fórmulas no histórico
-        }
-
-        // Remove uma entrada do histórico do tutor
-        function removeTutorHistory(historyId) {
-            tutorHistory = tutorHistory.filter(item => item.id !== historyId);
-            localStorage.setItem('tutorHistory', JSON.stringify(tutorHistory));
-            renderTutorHistory();
-            showStatus('Entrada do histórico removida.', 'info');
         }
 
         // === FUNÇÕES DE ARMAZENAMENTO E PDF ===
@@ -957,8 +733,6 @@
                 <html>
                 <head>
                     <title>Lista de Questões</title>
-                    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-                    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
                     <style>
                         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                         .page-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
@@ -976,9 +750,6 @@
                         <h2 class="section-title">✅ Gabarito e Resoluções</h2>
                         ${answersSection}
                     </div>
-                    <script>
-                        MathJax.typeset();
-                    </script>
                 </body>
                 </html>
             `;
@@ -1008,14 +779,8 @@
             clearBtn.addEventListener('click', clearAllQuestions);
             window.removeQuestion = removeQuestion;
             window.checkAnswer = checkAnswer;
-            window.openTutorModal = openTutorModal;
-            window.closeTutorModal = closeTutorModal;
-            window.submitTutorQuestion = submitTutorQuestion;
-            window.removeTutorHistory = removeTutorHistory;
             loadFromLocalStorage();
-            loadTutorHistory();
             renderQuestions();
-            renderTutorHistory();
         }
         
         initializeApp();
