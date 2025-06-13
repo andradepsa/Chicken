@@ -294,11 +294,11 @@
                     ---<br><br>
                     🤖 <strong>IAs Disponíveis:</strong><br>
                     • Puter AI (principal)<br>
+                    • Hugging Face (sem login)<br>
                     • Poe.com (Claude, GPT-4)<br>
                     • You.com (GPT-4 gratuito)<br>
                     • Perplexity AI (pesquisa)<br>
-                    • Character.AI (ilimitado)<br>
-                    • Hugging Face (open source)<br><br>
+                    • Character.AI (ilimitado)<br><br>
                     <strong>👤 Faça login em pelo menos uma IA para começar!</strong>
                 </p>
             </div>
@@ -364,9 +364,17 @@
                         description: 'Principal'
                     },
                     {
+                        key: 'hf',
+                        name: 'Hugging Face',
+                        priority: 2,
+                        status: { loggedIn: false, quota: 30, maxQuota: 100, available: true },
+                        icon: '🤗',
+                        description: 'Open Source (sem login)'
+                    },
+                    {
                         key: 'poe',
                         name: 'Poe.com',
-                        priority: 2,
+                        priority: 3,
                         status: { loggedIn: false, quota: 0, maxQuota: 50, available: false },
                         icon: '🎭',
                         description: 'Claude, GPT-4'
@@ -374,7 +382,7 @@
                     {
                         key: 'you',
                         name: 'You.com',
-                        priority: 3,
+                        priority: 4,
                         status: { loggedIn: false, quota: 0, maxQuota: 30, available: false },
                         icon: '🔍',
                         description: 'GPT-4 + Busca'
@@ -382,7 +390,7 @@
                     {
                         key: 'perplexity',
                         name: 'Perplexity',
-                        priority: 4,
+                        priority: 5,
                         status: { loggedIn: false, quota: 5, maxQuota: 5, available: false },
                         icon: '🔬',
                         description: 'Pesquisa Pro'
@@ -390,18 +398,10 @@
                     {
                         key: 'character',
                         name: 'Character.AI',
-                        priority: 5,
+                        priority: 6,
                         status: { loggedIn: false, quota: 100, maxQuota: 100, available: false },
                         icon: '🎭',
                         description: 'Ilimitado'
-                    },
-                    {
-                        key: 'hf',
-                        name: 'Hugging Face',
-                        priority: 6,
-                        status: { loggedIn: false, quota: 30, maxQuota: 100, available: true },
-                        icon: '🤗',
-                        description: 'Open Source'
                     }
                 ];
                 
@@ -412,7 +412,7 @@
             initializeUI() {
                 this.updateProvidersDisplay();
                 
-                // Simula Hugging Face disponível sem login
+                // Hugging Face disponível sem login
                 setTimeout(() => {
                     this.providers.find(p => p.key === 'hf').status.available = true;
                     this.updateProvidersDisplay();
@@ -484,6 +484,9 @@
                         case 'puter':
                             result = await this.callPuter(prompt);
                             break;
+                        case 'hf':
+                            result = await this.callHuggingFace(prompt);
+                            break;
                         case 'poe':
                             result = await this.callPoe(prompt);
                             break;
@@ -495,9 +498,6 @@
                             break;
                         case 'character':
                             result = await this.callCharacter(prompt);
-                            break;
-                        case 'hf':
-                            result = await this.callHuggingFace(prompt);
                             break;
                         default:
                             throw new Error('Provider não implementado');
@@ -529,32 +529,11 @@
             // === MÉTODOS DE CHAMADA DAS IAs ===
             
             async callPuter(prompt) {
-                if (!currentUser) {
-                    throw new Error('Usuário não logado no Puter');
-                }
-                
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
+                if (!response || !response.message || !response.message.content) {
+                    throw new Error('Resposta inválida da IA do Puter.');
+                }
                 return response.message.content.trim();
-            }
-            
-            async callPoe(prompt) {
-                // Simula chamada via iframe/postMessage para Poe
-                return await this.simulateAICall('Poe.com', prompt);
-            }
-            
-            async callYou(prompt) {
-                // Simula chamada via iframe/postMessage para You.com
-                return await this.simulateAICall('You.com', prompt);
-            }
-            
-            async callPerplexity(prompt) {
-                // Simula chamada via iframe/postMessage para Perplexity
-                return await this.simulateAICall('Perplexity', prompt);
-            }
-            
-            async callCharacter(prompt) {
-                // Simula chamada via iframe/postMessage para Character.AI
-                return await this.simulateAICall('Character.AI', prompt);
             }
             
             async callHuggingFace(prompt) {
@@ -582,26 +561,89 @@
                         return result[0].generated_text || result[0].text || 'Resposta gerada pelo Hugging Face';
                     } else if (result.generated_text) {
                         return result.generated_text;
+                    } else {
+                        throw new Error('Resposta inválida do Hugging Face');
                     }
-                    
-                    return 'Resposta gerada pelo Hugging Face para: ' + prompt.substring(0, 50) + '...';
-                    
                 } catch (error) {
-                    throw new Error(`Erro no Hugging Face: ${error.message}`);
+                    throw new Error(`Hugging Face API error: ${error.message}`);
                 }
             }
             
-            async simulateAICall(aiName, prompt) {
-                // Simula resposta de IA (substituir por implementação real via iframe/postMessage)
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                const responses = [
-                    `Esta é uma resposta gerada pelo ${aiName} para seu prompt sobre "${prompt.substring(0, 50)}...". O sistema está funcionando corretamente e pode gerar conteúdo acadêmico de qualidade.`,
-                    `Resposta do ${aiName}: Baseado em sua solicitação, posso fornecer informações relevantes e estruturadas para seu artigo científico. O tema abordado é interessante e merece uma análise detalhada.`,
-                    `${aiName} processou sua requisição com sucesso. O conteúdo gerado segue padrões acadêmicos e pode ser utilizado como base para desenvolvimento de trabalhos científicos de qualidade.`
-                ];
-                
-                return responses[Math.floor(Math.random() * responses.length)];
+            async callPoe(prompt) {
+                // Implementação via popup/iframe
+                return new Promise((resolve, reject) => {
+                    const popup = window.open('https://poe.com', 'poe_window', 'width=800,height=600');
+                    
+                    // Simula interação (na prática, seria via API ou postMessage)
+                    setTimeout(() => {
+                        popup.close();
+                        resolve(`Resposta simulada do Poe.com para: ${prompt.substring(0, 50)}...`);
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        if (!popup.closed) {
+                            popup.close();
+                            reject(new Error('Timeout no Poe.com'));
+                        }
+                    }, 10000);
+                });
+            }
+            
+            async callYou(prompt) {
+                // Implementação via popup/iframe
+                return new Promise((resolve, reject) => {
+                    const popup = window.open('https://you.com', 'you_window', 'width=800,height=600');
+                    
+                    setTimeout(() => {
+                        popup.close();
+                        resolve(`Resposta simulada do You.com para: ${prompt.substring(0, 50)}...`);
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        if (!popup.closed) {
+                            popup.close();
+                            reject(new Error('Timeout no You.com'));
+                        }
+                    }, 10000);
+                });
+            }
+            
+            async callPerplexity(prompt) {
+                // Implementação via popup/iframe
+                return new Promise((resolve, reject) => {
+                    const popup = window.open('https://perplexity.ai', 'perplexity_window', 'width=800,height=600');
+                    
+                    setTimeout(() => {
+                        popup.close();
+                        resolve(`Resposta simulada do Perplexity para: ${prompt.substring(0, 50)}...`);
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        if (!popup.closed) {
+                            popup.close();
+                            reject(new Error('Timeout no Perplexity'));
+                        }
+                    }, 10000);
+                });
+            }
+            
+            async callCharacter(prompt) {
+                // Implementação via popup/iframe
+                return new Promise((resolve, reject) => {
+                    const popup = window.open('https://character.ai', 'character_window', 'width=800,height=600');
+                    
+                    setTimeout(() => {
+                        popup.close();
+                        resolve(`Resposta simulada do Character.AI para: ${prompt.substring(0, 50)}...`);
+                    }, 3000);
+                    
+                    setTimeout(() => {
+                        if (!popup.closed) {
+                            popup.close();
+                            reject(new Error('Timeout no Character.AI'));
+                        }
+                    }, 10000);
+                });
             }
             
             // === MÉTODOS DE LOGIN ===
@@ -609,24 +651,40 @@
             async login(providerKey) {
                 const provider = this.providers.find(p => p.key === providerKey);
                 
+                if (!provider) return;
+                
                 if (provider.status.loggedIn) {
                     // Logout
-                    provider.status.loggedIn = false;
-                    provider.status.available = false;
-                    provider.status.quota = 0;
-                    log(`👋 Logout realizado do ${provider.name}`, 'info');
+                    provider.status = { loggedIn: false, quota: 0, available: false };
+                    log(`👋 Logout realizado: ${provider.name}`, 'info');
                 } else {
                     // Login
                     try {
-                        const success = await this.performLogin(provider);
-                        if (success) {
-                            provider.status.loggedIn = true;
-                            provider.status.available = true;
-                            provider.status.quota = provider.status.maxQuota;
-                            log(`✅ Login realizado no ${provider.name}!`, 'success');
-                        } else {
-                            log(`❌ Login falhou no ${provider.name}`, 'error');
+                        log(`🔐 Fazendo login em ${provider.name}...`, 'info');
+                        
+                        switch (providerKey) {
+                            case 'puter':
+                                await this.loginPuter();
+                                break;
+                            case 'hf':
+                                await this.loginHuggingFace();
+                                break;
+                            case 'poe':
+                                await this.loginPoe();
+                                break;
+                            case 'you':
+                                await this.loginYou();
+                                break;
+                            case 'perplexity':
+                                await this.loginPerplexity();
+                                break;
+                            case 'character':
+                                await this.loginCharacter();
+                                break;
                         }
+                        
+                        log(`✅ Login realizado: ${provider.name}`, 'success');
+                        
                     } catch (error) {
                         log(`❌ Erro no login ${provider.name}: ${error.message}`, 'error');
                     }
@@ -635,96 +693,73 @@
                 this.updateProvidersDisplay();
             }
             
-            async performLogin(provider) {
-                switch (provider.key) {
-                    case 'puter':
-                        return await this.loginPuter();
-                    case 'hf':
-                        return await this.loginHuggingFace();
-                    default:
-                        return await this.loginViaPopup(provider);
-                }
-            }
-            
             async loginPuter() {
                 try {
                     await puter.auth.signIn();
                     const user = await puter.auth.getUser();
                     if (user && user.username) {
-                        currentUser = user;
+                        const provider = this.providers.find(p => p.key === 'puter');
+                        provider.status = { loggedIn: true, quota: 100, maxQuota: 100, available: true };
                         return true;
                     }
-                    return false;
                 } catch (error) {
-                    throw new Error('Erro no login Puter');
+                    throw new Error('Falha no login do Puter');
                 }
             }
             
             async loginHuggingFace() {
-                // Para HF, simula login (aumenta quota)
-                return new Promise((resolve) => {
-                    const popup = window.open('https://huggingface.co/login', 'hf_login', 'width=600,height=500');
-                    
-                    const checkClosed = setInterval(() => {
-                        if (popup.closed) {
-                            clearInterval(checkClosed);
-                            resolve(true); // Simula sucesso
-                        }
-                    }, 1000);
-                    
-                    setTimeout(() => {
-                        if (!popup.closed) {
-                            popup.close();
-                            clearInterval(checkClosed);
-                            resolve(false);
-                        }
-                    }, 30000);
-                });
+                // HF funciona sem login, então apenas ativa
+                const provider = this.providers.find(p => p.key === 'hf');
+                provider.status = { loggedIn: true, quota: 1000, maxQuota: 1000, available: true };
+                return true;
             }
             
-            async loginViaPopup(provider) {
-                const urls = {
-                    poe: 'https://poe.com',
-                    you: 'https://you.com',
-                    perplexity: 'https://perplexity.ai',
-                    character: 'https://character.ai'
-                };
-                
-                return new Promise((resolve) => {
-                    log(`🔄 Abrindo login para ${provider.name}...`, 'info');
+            async loginPoe() {
+                return this.simulateLogin('poe', 50);
+            }
+            
+            async loginYou() {
+                return this.simulateLogin('you', 30);
+            }
+            
+            async loginPerplexity() {
+                return this.simulateLogin('perplexity', 5);
+            }
+            
+            async loginCharacter() {
+                return this.simulateLogin('character', 100);
+            }
+            
+            async simulateLogin(providerKey, quota) {
+                return new Promise((resolve, reject) => {
+                    const provider = this.providers.find(p => p.key === providerKey);
+                    const popup = window.open(`https://${providerKey === 'character' ? 'character.ai' : providerKey + '.com'}`, 
+                                             `${providerKey}_login`, 'width=600,height=500');
                     
-                    const popup = window.open(
-                        urls[provider.key],
-                        `${provider.key}_login`,
-                        'width=800,height=600,scrollbars=yes,resizable=yes'
-                    );
-                    
-                    const checkClosed = setInterval(() => {
+                    const checkInterval = setInterval(() => {
                         if (popup.closed) {
-                            clearInterval(checkClosed);
-                            // Simula verificação de login
-                            setTimeout(() => {
-                                resolve(Math.random() > 0.2); // 80% de chance de sucesso
-                            }, 1000);
+                            clearInterval(checkInterval);
+                            // Simula login bem-sucedido
+                            provider.status = { loggedIn: true, quota: quota, maxQuota: quota, available: true };
+                            resolve(true);
                         }
                     }, 1000);
                     
+                    // Timeout após 2 minutos
                     setTimeout(() => {
+                        clearInterval(checkInterval);
                         if (!popup.closed) {
                             popup.close();
-                            clearInterval(checkClosed);
-                            log(`⏰ Timeout no login ${provider.name}`, 'warning');
-                            resolve(false);
                         }
-                    }, 60000);
+                        reject(new Error('Timeout no login'));
+                    }, 120000);
                 });
             }
         }
-        
-        // === INICIALIZAÇÃO DO SISTEMA MULTI-IA ===
-        let multiAI;
-        let currentUser = null;
-        
+
+        // Inicializa o sistema Multi-IA
+        const multiAI = new MultiAISystem();
+
         // --- ELEMENTOS DA UI ---
         const elements = {
             startBtn: document.getElementById('startBtn'),
@@ -768,11 +803,6 @@
         let currentParagraphId = null;
         let currentModalReferences = [];
 
-        // === FUNÇÃO PRINCIPAL QUE SUBSTITUI callPuterAI ===
-        async function callPuterAI(prompt) {
-            return await multiAI.generateContent(prompt);
-        }
-
         // --- FUNÇÃO DE FORMATAÇÃO ABNT ---
         function formatABNTFields() {
             const universidadeInput = document.getElementById('universidade');
@@ -780,7 +810,7 @@
             const emailInput = document.getElementById('email');
             const cursoInput = document.getElementById('curso');
 
-            // Formata Universidade
+            // Formata Universidade: Primeira letra de cada palavra em maiúscula, exceto preposições
             let universidade = universidadeInput.value.trim();
             universidade = universidade.replace(/\w\S*/g, word => 
                 ['de', 'da', 'do', 'dos', 'das', 'e', 'em', 'para', 'por'].includes(word.toLowerCase()) 
@@ -789,7 +819,7 @@
             );
             universidadeInput.value = universidade;
 
-            // Formata Autor
+            // Formata Autor: Sobrenome em maiúsculas, prenome com inicial maiúscula
             let autor = autorInput.value.trim();
             if (autor) {
                 const names = autor.split(' ');
@@ -805,14 +835,14 @@
                 autorInput.value = autor;
             }
 
-            // Formata Email
+            // Formata Email: Tudo em minúsculas
             let email = emailInput.value.trim();
             if (email) {
                 email = email.toLowerCase();
                 emailInput.value = email;
             }
 
-            // Formata Curso
+            // Formata Curso: Primeira letra de cada palavra em maiúscula
             let curso = cursoInput.value.trim();
             if (curso) {
                 curso = curso.replace(/\w\S*/g, word => 
@@ -822,6 +852,16 @@
             }
 
             return { universidade, autor, email, curso };
+        }
+
+        // --- FUNÇÃO DE GERAÇÃO COM MULTI-IA ---
+        async function callPuterAI(prompt) {
+            try {
+                return await multiAI.generateContent(prompt);
+            } catch (error) {
+                console.error('Erro no sistema Multi-IA:', error);
+                throw error;
+            }
         }
 
         // --- SISTEMA ANTI-REPETIÇÃO ---
@@ -859,12 +899,14 @@
                 const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
                 const result = JSON.parse(jsonString);
                 
+                // Garante que topics tenha até 5 itens, preenchendo com vazios se necessário
                 result.topics = result.topics.slice(0, 5);
                 while (result.topics.length < 5) result.topics.push("");
                 
                 return result;
             } catch (error) {
                 console.error('Erro ao extrair tema e assuntos:', error);
+                // Fallback para método básico
                 const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por'];
                 const cleanText = text.toLowerCase().replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
                 const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word));
@@ -948,10 +990,6 @@
         }
         
         function triggerParagraphOptions(phase) {
-            if (!multiAI.getNextAvailableProvider()) {
-                log('❌ Nenhuma IA disponível! Faça login em pelo menos uma IA.', 'error');
-                return;
-            }
             if (phase === 'inicio' && sessionActive) {
                 alert('Uma seção já está em andamento. Clique em FIM para concluí-la primeiro.');
                 return;
@@ -1016,6 +1054,51 @@
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
         
+        // Busca automática de referência para geração de parágrafos
+        async function fetchSingleRealReference(startPhrase) {
+            log('Buscando referência real...', 'info');
+            try {
+                const relevantTerms = extractRelevantTerms(startPhrase, userInputs.titulo);
+                const query = relevantTerms.join(' ');
+                
+                if (!query) {
+                    throw new Error("Não foi possível extrair termos de busca da frase.");
+                }
+
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title,authors,year,url`;
+                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+
+                if (!response.ok) throw new Error(`API do Semantic Scholar retornou status ${response.status}`);
+                
+                const data = await response.json();
+                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
+
+                if (papers.length === 0) {
+                    throw new Error("Nenhuma referência encontrada para os termos.");
+                }
+
+                const paper = papers[0];
+                const reference = {
+                    id: paper.paperId,
+                    title: paper.title,
+                    authors: paper.authors.map(a => a.name),
+                    year: paper.year,
+                    url: paper.url
+                };
+
+                if (!finalReferences.some(ref => ref.id === reference.id)) {
+                    finalReferences.push(reference);
+                }
+                
+                return reference;
+
+            } catch (error) {
+                console.error('Erro ao buscar referência real:', error);
+                log(`⚠️ Falha na busca por referência: ${error.message}`, 'warning');
+                return null;
+            }
+        }
+
         // Busca manual de referências com análise de tema e assuntos
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
@@ -1046,49 +1129,240 @@
                     <em>"${originalText}"</em><br>
                     <strong>Tema Principal:</strong> ${mainTheme}<br>
                     <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
-                    <small>Buscando referências no Semantic Scholar...</small>
+                    <small>Gerando termos de busca otimizados...</small>
                 `;
                 
-                // Busca no Semantic Scholar
-                const query = `${mainTheme} ${topics.filter(t => t).join(' ')}`.substring(0, 100);
-                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+                // Gera estratégias de busca com base no tema e assuntos
+                const strategiesPrompt = `
+                Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
+                gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
                 
-                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+                PRIORIDADE ALTA (línguas latinas + principais):
+                PORTUGUÊS (4 termos):
+                ESPANHOL (4 termos):
+                INGLÊS (4 termos):
+                FRANCÊS (3 termos):
+                ITALIANO (3 termos):
                 
-                if (!response.ok) {
-                    throw new Error(`API do Semantic Scholar retornou status ${response.status}`);
+                PRIORIDADE MÉDIA (se necessário):
+                ALEMÃO (2 termos):
+                RUSSO (2 termos):
+                
+                PRIORIDADE BAIXA (só se não encontrar 10 referências):
+                CHINÊS SIMPLIFICADO (2 termos):
+                JAPONÊS (1 termo):
+                ÁRABE (1 termo):
+                
+                REGRAS:
+                1. Use termos técnicos e acadêmicos baseados no tema e assuntos.
+                2. Varie entre termos específicos e gerais.
+                3. Cada termo deve ter 2-6 palavras.
+                4. Foque no tema principal e nos assuntos fornecidos.
+                
+                FORMATO DE RESPOSTA:
+                PORTUGUÊS:
+                termo1
+                termo2
+                ...
+                ESPANHOL:
+                term1
+                term2
+                ...
+                (continue para cada idioma)
+                `;
+                
+                const response = await callPuterAI(strategiesPrompt);
+                
+                // Processa a resposta para extrair termos por idioma
+                const searchTerms = [];
+                const lines = response.split('\n');
+                let currentSection = '';
+                
+                for (const line of lines) {
+                    const cleanLine = line.trim();
+                    if (cleanLine.match(/^(PORTUGUÊS|ESPANHOL|INGLÊS|FRANCÊS|ITALIANO|ALEMÃO|RUSSO|CHINÊS SIMPLIFICADO|JAPONÊS|ÁRABE):/)) {
+                        currentSection = cleanLine.replace(':', '');
+                    } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
+                        searchTerms.push({
+                            term: cleanLine,
+                            language: currentSection
+                        });
+                    }
                 }
                 
-                const data = await response.json();
-                const papers = (data.data || []).filter(p => 
-                    p.title && 
-                    p.authors && 
-                    p.authors.length > 0 && 
-                    p.year &&
-                    p.year >= 2000
-                );
+                // Organiza termos por prioridade
+                const priorityOrder = {
+                    'PORTUGUÊS': 1,
+                    'ESPANHOL': 2, 
+                    'INGLÊS': 3,
+                    'FRANCÊS': 4,
+                    'ITALIANO': 5,
+                    'ALEMÃO': 6,
+                    'RUSSO': 7,
+                    'CHINÊS SIMPLIFICADO': 8,
+                    'JAPONÊS': 9,
+                    'ÁRABE': 10
+                };
                 
-                if (papers.length > 0) {
-                    log(`✅ ${papers.length} referências encontradas para "${mainTheme}"!`, 'success');
+                searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
+                
+                // Fallback se não houver termos estruturados
+                if (searchTerms.length === 0) {
+                    const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
+                    const fallbackResponse = await callPuterAI(fallbackPrompt);
+                    const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
+                    const languages = ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO', 'ALEMÃO'];
+                    terms.forEach((term, index) => {
+                        searchTerms.push({
+                            term: term.trim(),
+                            language: languages[index % languages.length]
+                        });
+                    });
+                }
+                
+                let allPapers = [];
+                let foundPapers = new Set();
+                
+                elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
+                
+                // Testa cada estratégia de busca
+                for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
+                    const { term, language } = searchTerms[i];
+                    
+                    if (allPapers.length >= 10) break;
+                    
+                    const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
+                    const priorityText = isLatinLanguage ? '🏃‍♂️ RÁPIDA' : '🌍 GLOBAL';
+                    
+                    try {
+                        const languageFlag = {
+                            'PORTUGUÊS': '🇧🇷',
+                            'ESPANHOL': '🇪🇸',
+                            'INGLÊS': '🇺🇸',
+                            'FRANCÊS': '🇫🇷',
+                            'ITALIANO': '🇮🇹',
+                            'ALEMÃO': '🇩🇪',
+                            'RUSSO': '🇷🇺',
+                            'CHINÊS SIMPLIFICADO': '🇨🇳',
+                            'JAPONÊS': '🇯🇵',
+                            'ÁRABE': '🇸🇦'
+                        }[language] || '🌍';
+                        
+                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} ${priorityText} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
+                        
+                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
+                        const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const papers = (data.data || []).filter(p => 
+                                p.title && 
+                                p.authors && 
+                                p.authors.length > 0 && 
+                                p.year &&
+                                p.year >= 2000 &&
+                                !foundPapers.has(p.paperId)
+                            );
+                            
+                            for (const paper of papers) {
+                                if (allPapers.length >= 10) break;
+                                
+                                foundPapers.add(paper.paperId);
+                                
+                                let processedPaper = {
+                                    id: paper.paperId,
+                                    title: paper.title,
+                                    authors: paper.authors.map(a => a.name),
+                                    year: paper.year,
+                                    abstract: paper.abstract || '',
+                                    url: paper.url,
+                                    searchTerm: term,
+                                    language: language,
+                                    originalTitle: paper.title
+                                };
+                                
+                                if (language !== 'PORTUGUÊS') {
+                                    try {
+                                        const translationTimeout = isLatinLanguage ? 3000 : 4000;
+                                        
+                                        const titleTranslationPrompt = `Traduza APENAS o seguinte título acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações ou aspas:
+
+"${paper.title}"`;
+                                        
+                                        const translatedTitle = await Promise.race([
+                                            callPuterAI(titleTranslationPrompt),
+                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                        ]);
+                                        
+                                        processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
+                                        
+                                        if (allPapers.length < 5 && paper.abstract && paper.abstract.length > 20) {
+                                            const abstractTranslationPrompt = `Traduza APENAS o seguinte resumo acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações:
+
+"${paper.abstract}"`;
+                                            
+                                            const translatedAbstract = await Promise.race([
+                                                callPuterAI(abstractTranslationPrompt),
+                                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                            ]);
+                                            
+                                            processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
+                                        }
+                                        
+                                    } catch (translationError) {
+                                        console.warn('Erro na tradução, mantendo original:', translationError);
+                                    }
+                                }
+                                
+                                allPapers.push(processedPaper);
+                            }
+                        }
+                        
+                        const pauseTime = isLatinLanguage ? 400 : 600;
+                        await new Promise(resolve => setTimeout(resolve, pauseTime));
+                        
+                    } catch (error) {
+                        console.warn(`Erro na busca ${i+1} (${language}):`, error);
+                        continue;
+                    }
+                    
+                    if (allPapers.length >= 10 && ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO'].includes(language)) {
+                        elements.searchInfoDiv.innerHTML = `<strong>⚡ Busca Rápida Concluída!</strong><br>✅ ${allPapers.length} referências encontradas rapidamente`;
+                        break;
+                    }
+                }
+                
+                if (allPapers.length > 0) {
+                    log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
+                    
+                    const languageCounts = {};
+                    const translationCounts = { portuguese: 0, translated: 0 };
+                    
+                    allPapers.forEach(paper => {
+                        languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
+                        if (paper.language === 'PORTUGUÊS') {
+                            translationCounts.portuguese++;
+                        } else {
+                            translationCounts.translated++;
+                        }
+                    });
+                    
+                    const languageStats = Object.entries(languageCounts)
+                        .map(([lang, count]) => `${lang}: ${count}`)
+                        .join(' | ');
+                    
                     elements.searchInfoDiv.innerHTML = `
-                        <strong>🚀 Busca Concluída!</strong><br>
-                        ✅ ${papers.length} referências encontradas para "${mainTheme}"<br>
+                        <strong>🚀 Busca Otimizada Concluída!</strong><br>
+                        ✅ ${allPapers.length} referências encontradas para "${mainTheme}"<br>
+                        <small>${languageStats}</small><br>
+                        <em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>
                     `;
                 } else {
                     log('⚠️ Nenhuma referência encontrada para o tema.', 'warning');
-                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Tema pesquisado: "${mainTheme}".`;
+                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos baseados em "${mainTheme}".`;
                 }
                 
-                return papers.map(paper => ({
-                    id: paper.paperId,
-                    title: paper.title,
-                    originalTitle: paper.title,
-                    authors: paper.authors.map(a => a.name),
-                    year: paper.year,
-                    abstract: paper.abstract || '',
-                    url: paper.url,
-                    language: 'INGLÊS'
-                }));
+                return allPapers;
                 
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
@@ -1111,14 +1385,40 @@
                 elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
                 elements.referenceList.innerHTML = references.map((ref, index) => {
                     const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    const languageFlag = {
+                        'CHINÊS SIMPLIFICADO': '🇨🇳',
+                        'INGLÊS': '🇺🇸',
+                        'PORTUGUÊS': '🇧🇷',
+                        'ESPANHOL': '🇪🇸',
+                        'HINDI': '🇮🇳',
+                        'ÁRABE': '🇸🇦',
+                        'BENGALI': '🇧🇩',
+                        'RUSSO': '🇷🇺',
+                        'JAPONÊS': '🇯🇵',
+                        'FRANCÊS': '🇫🇷',
+                        'ALEMÃO': '🇩🇪',
+                        'COREANO': '🇰🇷',
+                        'ITALIANO': '🇮🇹',
+                        'TURCO': '🇹🇷',
+                        'VIETNAMITA': '🇻🇳',
+                        'PERSA': '🇮🇷'
+                    }[ref.language] || '🌍';
+                    
+                    const translationStatus = ref.language === 'PORTUGUÊS' ? 
+                        '<span style="color:#28a745;">🇧🇷 Original</span>' : 
+                        '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
+                    
+                    let displayTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
+                    let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
                     
                     return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
                                 <input type="checkbox" id="ref-${index}" value="${index}">
                                 <label for="ref-${index}">
-                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> 🇺🇸
+                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${languageFlag}
                                     ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                    <br><em>${ref.title}</em>
-                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                    <br><em>${displayTitle}</em> ${translationStatus}
+                                    ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
+                                    <br><small style="color:#666;">${displayAbstract ? displayAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
                                 </label>
                             </li>`;
                 }).join('');
@@ -1146,6 +1446,7 @@
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
 
+        // --- FUNÇÃO CORRIGIDA ---
         function formatarReferenciasABNT() {
             const sortedReferences = [...finalReferences].sort((a, b) => 
                 a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
@@ -1158,7 +1459,9 @@
                     return `${lastName}, ${names.join(' ')}`;
                 });
                 const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
-                const titleFormatted = `<strong>${ref.originalTitle || ref.title}</strong>`;
+                
+                // Para a lista de referências final, usa-se sempre o título original.
+                const titleFormatted = `<strong>${ref.originalTitle}</strong>`;
                 
                 return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
@@ -1211,32 +1514,11 @@
                 content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
             }
             
-            if (userInputs.email && userInputs.universidade && userInputs.curso && multiAI.currentProvider) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado com Sistema Multi-IA.</div>`;
+            if (userInputs.email && userInputs.universidade && userInputs.curso) {
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             } else if (userInputs.email && userInputs.universidade) {
-                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}. Sistema Multi-IA.</div>`;
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}.</div>`;
             }
-            
-            if (!multiAI.getNextAvailableProvider()) {
-                content = `
-                    <p style="text-align:center; color: #777; padding-top: 0;">
-                        📄 <strong>Sistema Multi-IA:</strong><br><br>
-                        <strong>1. Login Individual:</strong> Cada usuário faz login em cada IA com sua conta pessoal.<br>
-                        <strong>2. Cota Individual:</strong> Cada login tem sua própria cota de uso.<br>
-                        <strong>3. Sistema Automático:</strong> Quando uma IA acaba, outra assume automaticamente.<br><br>
-                        ---<br><br>
-                        🤖 <strong>IAs Disponíveis:</strong><br>
-                        • Puter AI (principal)<br>
-                        • Poe.com (Claude, GPT-4)<br>
-                        • You.com (GPT-4 gratuito)<br>
-                        • Perplexity AI (pesquisa)<br>
-                        • Character.AI (ilimitado)<br>
-                        • Hugging Face (open source)<br><br>
-                        <strong>👤 Faça login em pelo menos uma IA para começar!</strong>
-                    </p>
-                `;
-            }
-            
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
             
@@ -1246,19 +1528,14 @@
         // --- EVENTOS E CONTROLE DO FLUXO PRINCIPAL ---
         async function proceedWithArticleGeneration() {
             document.getElementById('initial-form').style.display = 'none';
-            elements.interactiveControls.style.display = 'block';
+            document.getElementById('interactive-controls').style.display = 'block';
             elements.currentSectionNameSpan.textContent = 'Introdução';
             sessionActive = false;
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
         }
 
-        // === EVENT LISTENERS ===
         elements.startBtn.addEventListener('click', async () => {
-            if (!multiAI.getNextAvailableProvider()) {
-                log('❌ Nenhuma IA disponível! Faça login em pelo menos uma IA.', 'error');
-                return;
-            }
-
+            // Formata os campos antes de capturar os valores
             const formattedFields = formatABNTFields();
 
             userInputs = {
@@ -1277,8 +1554,6 @@
                 populateAndShowTopicModal(topicData, userInputs.titulo);
             } catch (error) {
                 await proceedWithArticleGeneration();
-            } finally {
-                elements.startBtn.disabled = false;
             }
         });
 
@@ -1292,10 +1567,6 @@
         });
         
         async function rewriteLastParagraph() {
-            if (!multiAI.getNextAvailableProvider()) {
-                log('❌ Nenhuma IA disponível!', 'error');
-                return;
-            }
             if (lastParagraphIndex === -1) { alert('Nenhum parágrafo para reescrever.'); return; }
             elements.rewriteBtn.disabled = true;
             
@@ -1323,10 +1594,6 @@
         elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
         
         elements.generateParagraphBtn.addEventListener('click', async () => {
-            if (!multiAI.getNextAvailableProvider()) {
-                log('❌ Nenhuma IA disponível!', 'error');
-                return;
-            }
             if (!selectedParagraphStart) return;
             elements.paragraphStartModal.style.display = 'none';
             const allButtons = [elements.inicioBtn, elements.meioBtn, elements.fimBtn, elements.rewriteBtn];
@@ -1398,7 +1665,6 @@
         elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
         elements.savePdfBtn.addEventListener('click', () => { window.print(); });
 
-        // === EVENT LISTENERS DO SISTEMA DE REFERÊNCIAS ===
         elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
         elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
         elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
@@ -1413,31 +1679,10 @@
             }
         });
 
-        // === INICIALIZAÇÃO ===
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Inicializa o sistema Multi-IA
-            multiAI = new MultiAISystem();
-            
-            // Verifica se o Puter está disponível
-            try {
-                const user = await puter.auth.getUser();
-                if (user && user.username) {
-                    currentUser = user;
-                    const puterProvider = multiAI.providers.find(p => p.key === 'puter');
-                    puterProvider.status = { loggedIn: true, quota: 80, maxQuota: 100, available: true };
-                    multiAI.updateProvidersDisplay();
-                    log(`✅ Puter já logado: ${user.username}!`, 'success');
-                }
-            } catch (error) {
-                // Puter não está logado, tudo bem
-            }
-            
-            elements.meioBtn.disabled = true;
-            elements.fimBtn.disabled = true;
-            displayABNTDocument();
-            
-            log('🤖 Sistema Multi-IA inicializado! Faça login em pelo menos uma IA para começar.', 'info');
-        });
+        // --- INICIALIZAÇÃO ---
+        elements.meioBtn.disabled = true;
+        elements.fimBtn.disabled = true;
+        log('🤖 Sistema Multi-IA inicializado - Faça login em pelo menos uma IA', 'info');
     </script>
 </body>
 </html>
