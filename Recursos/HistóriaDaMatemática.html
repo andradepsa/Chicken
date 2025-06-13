@@ -393,7 +393,6 @@
             biographyContainer.style.display = 'none';
 
             try {
-                // Lembre-se de estar logado no puter.com para evitar erros de autenticação!
                 const prompt = `
                 Você é um biógrafo e historiador especialista, com um profundo conhecimento em história da ciência e das artes. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada e analítica sobre a seguinte pessoa: "${personName}".
 
@@ -457,8 +456,6 @@
                 }
                 
                 let jsonString = content.substring(jsonStart, jsonEnd);
-
-                // Limpeza robusta da string JSON antes de fazer o parse
                 jsonString = jsonString.replace(/[\n\r\t]/g, '');
                 jsonString = jsonString.replace(/,\s*(?=[\]\}])/g, '');
 
@@ -514,65 +511,96 @@
             loadPersonPhoto(data.name, photoId);
         }
 
-        // === FUNÇÃO MELHORADA PARA CARREGAR FOTOS ===
+        // === NOVA FUNÇÃO DE BUSCA DE FOTOS (MELHORADA) ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
             if (!photoElement) return;
-            const imageSources = [() => tryWikipediaAPI(personName), () => tryWikipediaDirectSearch(personName), () => tryWikimediaCommons(personName)];
+
+            // Nova lista de fontes, da mais precisa para a mais ampla
+            const imageSources = [
+                { name: 'Wikidata', func: () => tryWikidata(personName) },
+                { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
+                { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') },
+                { name: 'Wikimedia Commons', func: () => tryWikimediaCommons(personName) }
+            ];
+
             let photoLoaded = false;
-            let attemptCount = 0;
-            for (const sourceFunction of imageSources) {
+            for (const source of imageSources) {
                 if (photoLoaded) break;
-                attemptCount++;
-                updatePhotoStatus(photoElement, `Tentativa ${attemptCount}/3...`);
+                updatePhotoStatus(photoElement, `Buscando em ${source.name}...`);
                 try {
-                    const imageUrl = await sourceFunction();
+                    const imageUrl = await source.func();
                     if (imageUrl) {
                         const success = await loadImageWithFallback(imageUrl, personName, photoElement);
-                        if (success) photoLoaded = true;
+                        if (success) {
+                            console.log(`Foto carregada com sucesso de ${source.name}: ${imageUrl}`);
+                            photoLoaded = true;
+                        }
                     }
-                } catch (error) { console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message); }
-                if (!photoLoaded && attemptCount < imageSources.length) await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (error) {
+                    console.warn(`Erro na busca em ${source.name}:`, error.message);
+                }
             }
-            if (!photoLoaded) showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
+
+            if (!photoLoaded) {
+                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
+            }
         }
 
-        // === MÉTODOS DE BUSCA DE IMAGENS ===
-        async function tryWikipediaAPI(personName) {
-            const nameVariations = [personName, personName.replace(/\s+/g, '_')];
-            for (const name of nameVariations) {
-                try {
-                    const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
-                    const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
-                    if (!response.ok) throw new Error(`Status ${response.status}`);
-                    const data = await response.json();
-                    if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
-                } catch (error) { console.warn(`Erro com variação "${name}":`, error.message); }
+        // === NOVOS MÉTODOS DE BUSCA DE IMAGENS ===
+
+        // 1. Busca na Wikidata (a fonte mais confiável)
+        async function tryWikidata(personName) {
+            // Passo 1: Encontrar o ID da entidade (ex: Q935 para Isaac Newton)
+            const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
+            const searchResponse = await fetch(searchUrl);
+            if (!searchResponse.ok) return null;
+            const searchData = await searchResponse.json();
+            if (!searchData.search || searchData.search.length === 0) return null;
+            const entityId = searchData.search[0].id;
+
+            // Passo 2: Usar o ID para obter os dados da entidade, incluindo a imagem (propriedade P18)
+            const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
+            const entityResponse = await fetch(entityUrl);
+            if (!entityResponse.ok) return null;
+            const entityData = await entityResponse.json();
+            
+            const claims = entityData.entities[entityId].claims;
+            if (!claims || !claims.P18) return null; // P18 é a propriedade "imagem"
+
+            const imageName = claims.P18[0].mainsnak.datavalue.value;
+            if (!imageName) return null;
+
+            // Passo 3: Construir a URL final da imagem
+            return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
+        }
+
+        // 2. Busca na Wikipedia (agora multilíngue)
+        async function tryWikipediaAPI(personName, lang) {
+            const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`;
+            const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
+            if (!response.ok) throw new Error(`Status ${response.status}`);
+            const data = await response.json();
+            if (data.thumbnail && data.thumbnail.source) {
+                return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
             }
             return null;
         }
-        async function tryWikipediaDirectSearch(personName) {
-            try {
-                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&format=json&origin=*`;
-                const searchResponse = await fetch(searchUrl);
-                if (!searchResponse.ok) throw new Error('Falha na busca');
-                const searchData = await searchResponse.json();
-                if (searchData.query?.search?.length > 0) return await tryWikipediaAPI(searchData.query.search[0].title);
-            } catch (error) { console.warn('Erro na busca direta:', error.message); }
-            return null;
-        }
+
+        // 3. Busca no Wikimedia Commons (fallback)
         async function tryWikimediaCommons(personName) {
-            try {
-                const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
-                const response = await fetch(searchUrl);
-                if (!response.ok) throw new Error('Falha no Wikimedia Commons');
-                const data = await response.json();
-                if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`;
-            } catch (error) { console.warn('Erro no Wikimedia Commons:', error.message); }
+            const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
+            const response = await fetch(searchUrl);
+            if (!response.ok) throw new Error('Falha no Wikimedia Commons');
+            const data = await response.json();
+            if (data.query?.search?.length > 0) {
+                const fileName = data.query.search[0].title;
+                return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
+            }
             return null;
         }
 
-        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK ===
+        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK (sem alterações, já está robusta) ===
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -584,7 +612,7 @@
             });
         }
 
-        // === FUNÇÕES AUXILIARES ===
+        // === FUNÇÕES AUXILIARES (sem alterações) ===
         function updatePhotoStatus(photoElement, message) { photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`; }
         function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
         function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
