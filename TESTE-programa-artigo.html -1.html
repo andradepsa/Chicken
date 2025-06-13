@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Gerador de Artigo Científico com Multi-IA</title>
     <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Arial&display=swap');
         body { background-color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px; }
@@ -358,10 +359,14 @@
                 updateAIStatus('puter', 'Ativo');
                 log(`✅ Bem-vindo(a), ${user.username}! Agora você pode criar artigos.`, 'success');
             } catch (error) {
-                console.error('Erro no login:', error);
+                console.error('Erro no login com Puter AI:', error);
+                let errorMessage = '❌ Erro no login com Puter AI. Tente novamente.';
+                if (error.code === 4001 && error.message.includes('wallet must has at least one account')) {
+                    errorMessage = '❌ Configure uma conta na sua carteira Puter AI antes de fazer login.';
+                }
                 updateLoginStatus(false);
                 updateAIStatus('puter', 'Offline');
-                log('❌ Erro no login com Puter AI. Tente novamente.', 'error');
+                log(errorMessage, 'error');
             } finally {
                 elements.loginPuterBtn.disabled = false;
                 elements.loginPuterBtn.innerHTML = '🚀 Login Puter AI';
@@ -932,7 +937,7 @@
                     const translationCounts = { portuguese: 0, translated: 0 };
                     allPapers.forEach(paper => {
                         languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
-                        if (paper. === 'PORTUGUÊS') translationCounts.portuguese++;
+                        if (paper.language === 'PORTUGUÊS') translationCounts.portuguese++;
                         else translationCounts.translated++;
                     });
                     const languageStats = Object.entries(languageCounts).map(([lang, count]) => `${lang}: ${count}`).join(' | ');
@@ -963,11 +968,10 @@
                 const references = await fetchParagraphReferences(paragraphText, articleTitle);
                 currentModalReferences = references;
                 if (references.length === 0) {
-                    elements.referenceList.innerHTML = `<div class="no-results"><strong>NoNão foi encontrado nenhuma referência</strong></div>`;
+                    elements.referenceList.innerHTML = `<div class="no-results"><strong>Nenhuma referência encontrada</strong></div>`;
                 } else {
                     elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-                    elements.duplicateWarningDiv.innerHTML = `Alguma referência já foi usada.`;
-                    var references = [];
+                    elements.duplicateWarningDiv.innerHTML = `Algumas referências já foram usadas.`;
                     elements.referenceList.innerHTML = references.map((ref, index) => {
                         const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
                         const languageFlag = {
@@ -990,10 +994,10 @@
                         </li>`;
                     }).join('');
                     elements.addReferencesBtn.disabled = false;
-                } catch (error) {
-                    console.error('Erro ao carregar referências:', error);
-                    elements.referenceList.innerHTML = `<p>❌ Erro ao buscar referências. Tente novamente.</p>`;
                 }
+            } catch (error) {
+                console.error('Erro ao carregar referências:', error);
+                elements.referenceList.innerHTML = `<p>❌ Erro ao buscar referências. Tente novamente.</p>`;
             }
         }
 
@@ -1005,7 +1009,7 @@
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`);
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
             }).join('; ');
             const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.\s*$/g, '').trim();
             paragraphElement.textContent = `${cleanText} (${citations}).`;
@@ -1076,16 +1080,15 @@
             } else if (userInputs.email && userInputs.universidade && currentUser) {
                 content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado por: ${currentUser.username}.</div>`;
             }
-           
+            elements.outputDiv.innerHTML = content;
+            elements.footerDiv.textContent = `${userInputs.universidade || 'Universidade'} | ${userInputs.titulo || 'Título do Artigo'} | ${new Date().toLocaleDateString('pt-BR')}`;
+            updatePageCount();
+            document.querySelectorAll('.abnt-content p[data-id]').forEach(p => {
+                p.addEventListener('click', () => {
             
-          elements.outputDiv.innerHTML = content;
-elements.footerDiv.textContent = `${userInputs.universidade || 'Universidade'} | ${userInputs.titulo || 'Título do Artigo'} | ${new Date().toLocaleDateString('pt-BR')}`;
-updatePageCount();
-document.querySelectorAll('.abnt-content p[data-id]').forEach(p => {
-    p.addEventListener('click', () => {
-        const [section, index] = p.dataset.id.split('-');
-        openReferenceModal(p.dataset.id, articleContent[section][parseInt(index)], userInputs.titulo);
-    });
+                    
+                    const [section, index] = p.dataset.id.split('-');
+openReferenceModal(p.dataset.id, articleContent[section][parseInt(index)], userInputs.titulo);
 });
 }
 
@@ -1249,3 +1252,5 @@ displayABNTDocument();
 </script>
 </body>
 </html>
+            if (!selectedParagraphStart) {
+                log('Selec
