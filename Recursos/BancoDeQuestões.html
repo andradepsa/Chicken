@@ -2,7 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões - IA Simples</title>
+    <title>Banco de Questões - IA Puter</title>
+    <script src="https://js.puter.com/v2/"></script>
     
     <style>
         * {
@@ -15,114 +16,230 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding: 40px 20px;
+            padding: 20px;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .header h1 {
-            color: white;
-            font-size: 42px;
-            font-weight: 700;
-            margin-bottom: 12px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .header .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 18px;
-            font-weight: 400;
-        }
-        
-        .input-container {
-            width: 100%;
-            max-width: 600px;
-            position: relative;
-            margin-bottom: 40px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        
-        .main-input {
-            width: 100%;
-            padding: 24px 28px;
-            font-size: 18px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .input-area {
+            margin-bottom: 20px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            min-height: 100px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            resize: vertical;
+        }
+        
+        textarea:focus {
+            border-color: #667eea;
             outline: none;
         }
         
-        .main-input:focus {
-            border-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .main-input::placeholder {
-            color: #9ca3af;
-            font-style: italic;
-        }
-        
         .generate-btn {
+            display: block;
             width: 100%;
-            padding: 20px 28px;
+            padding: 18px;
             font-size: 18px;
-            font-weight: 700;
-            color: white;
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(45deg, #667eea, #764ba2);
             border: none;
-            border-radius: 16px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            margin-top: 15px;
+            transition: transform 0.2s;
         }
         
         .generate-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4);
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-        }
-        
-        .generate-btn:active {
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
         
         .generate-btn:disabled {
-            opacity: 0.6;
+            background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
         
-        .loading {
-            display: none;
+        .status {
             text-align: center;
-            color: white;
-            font-size: 16px;
-            font-weight: 500;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 10px;
+            display: none;
+            font-weight: bold;
         }
         
-        .spinner {
-            width: 24px;
-            height: 24px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-info { background: #cce5ff; color: #004085; }
+        
+        .questions-container {
+            margin-top: 30px;
+        }
+        
+        .question-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .question-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .question-number {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            position: absolute;
+            top: -10px;
+            left: 15px;
+        }
+        
+        .question-text {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 15px 0 10px 0;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .question-options {
+            margin: 10px 0;
+        }
+        
+        .question-options ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .question-options li {
+            background: #f8f9fa;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 15px;
+        }
+        
+        .question-answer {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #dee2e6;
+            font-size: 14px;
+        }
+        
+        .answer-label {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .explanation-label {
+            font-weight: bold;
+            color: #6c757d;
+            margin: 8px 0 5px 0;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .remove-btn:hover {
+            background: #c82333;
+        }
+        
+        .actions-container {
+            display: none;
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .action-button {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
+            margin-right: 8px;
         }
         
         @keyframes spin {
@@ -130,431 +247,232 @@
             100% { transform: rotate(360deg); }
         }
         
-        .results-container {
-            width: 100%;
-            max-width: 800px;
-        }
-        
-        .question-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 28px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            opacity: 0;
-            animation: fadeInUp 0.6s ease forwards;
-        }
-        
-        .question-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .question-meta {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        
-        .meta-tag {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .meta-tag.difficulty-facil {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .meta-tag.difficulty-medio {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-        
-        .meta-tag.difficulty-dificil {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-        
-        .question-text {
-            font-size: 18px;
-            line-height: 1.7;
-            margin-bottom: 20px;
-            color: #1f2937;
-            font-weight: 500;
-        }
-        
-        .question-options {
-            margin-bottom: 20px;
-        }
-        
-        .option {
-            padding: 14px 18px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            font-size: 15px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        
-        .option:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-        }
-        
-        .option.correct {
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-            border-color: #16a34a;
-            color: #15803d;
-            font-weight: 600;
-        }
-        
-        .answer-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            padding: 18px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-        
-        .answer-section strong {
-            color: #374151;
-        }
-        
-        .helper-text {
+        .empty-state {
             text-align: center;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 16px;
-            margin-top: 20px;
-            font-style: italic;
+            padding: 40px 20px;
+            color: #6c757d;
         }
         
         @media (max-width: 768px) {
-            .header h1 {
-                font-size: 32px;
-            }
-            
-            .header .subtitle {
-                font-size: 16px;
-            }
-            
-            .main-input {
-                padding: 20px 24px;
-                font-size: 16px;
-            }
-            
-            .generate-btn {
-                padding: 18px 24px;
-                font-size: 16px;
-            }
-            
-            .question-card {
+            .container {
+                margin: 10px;
                 padding: 20px;
             }
             
-            .question-text {
-                font-size: 16px;
+            h1 {
+                font-size: 2em;
             }
             
-            .meta-tag {
-                font-size: 11px;
-                padding: 5px 12px;
+            .action-button {
+                min-width: unset;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎯 Gerador de Questões</h1>
-        <div class="subtitle">IA Educacional</div>
-    </div>
-    
-    <div class="input-container">
-        <input 
-            type="text" 
-            id="topic-input" 
-            class="main-input" 
-            placeholder="Digite qualquer assunto... (ex: matemática, história, português)"
-            autocomplete="off"
-        />
-        <button id="generate-btn" class="generate-btn">
-            🚀 Gerar Questões
-        </button>
-    </div>
-    
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        Gerando questões inteligentes...
-    </div>
-    
-    <div class="results-container" id="results-container">
-    </div>
-    
-    <div class="helper-text" id="helper-text">
-        💡 Digite um assunto e clique no botão para gerar questões automaticamente
+    <div class="container">
+        <h1>🎯 Banco de Questões</h1>
+        <p class="subtitle">Powered by Puter AI</p>
+
+        <div class="input-area">
+            <textarea id="prompt" placeholder="Digite seu pedido: Ex: 'Crie 5 questões sobre frações', 'Questões de matemática básica', 'História do Brasil'..."></textarea>
+            <button id="generate-btn" class="generate-btn">🚀 Gerar Questões</button>
+        </div>
+
+        <div id="status" class="status"></div>
+        
+        <div id="actions-container" class="actions-container">
+            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar Tudo</button>
+        </div>
+
+        <div id="questions-container" class="questions-container">
+            <div class="empty-state">
+                <h3>📝 Questões geradas aparecerão aqui</h3>
+                <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
+            </div>
+        </div>
     </div>
 
     <script>
-        // === ELEMENTOS DOM ===
-        const topicInput = document.getElementById('topic-input');
+        let questionsDatabase = [];
+        
         const generateBtn = document.getElementById('generate-btn');
-        const loading = document.getElementById('loading');
-        const resultsContainer = document.getElementById('results-container');
-        const helperText = document.getElementById('helper-text');
+        const promptInput = document.getElementById('prompt');
+        const statusDiv = document.getElementById('status');
+        const questionsContainer = document.getElementById('questions-container');
+        const actionsContainer = document.getElementById('actions-container');
 
-        // === BANCO DE TEMPLATES DE QUESTÕES ===
-        const questionTemplates = {
-            matematica: [
-                {
-                    text: "Qual é o resultado da operação 15 + 8 × 3?",
-                    options: ["A) 69", "B) 39", "C) 45", "D) 33"],
-                    correct: "B",
-                    explanation: "Primeiro multiplicamos 8 × 3 = 24, depois somamos 15 + 24 = 39. A ordem das operações é fundamental!"
-                },
-                {
-                    text: "Em um triângulo retângulo, se um cateto mede 3 cm e outro 4 cm, qual é a hipotenusa?",
-                    options: ["A) 7 cm", "B) 5 cm", "C) 6 cm", "D) 4 cm"],
-                    correct: "B",
-                    explanation: "Pelo teorema de Pitágoras: h² = 3² + 4² = 9 + 16 = 25, então h = 5 cm."
-                }
-            ],
-            historia: [
-                {
-                    text: "Em que ano foi proclamada a Independência do Brasil?",
-                    options: ["A) 1820", "B) 1822", "C) 1824", "D) 1825"],
-                    correct: "B",
-                    explanation: "A Independência do Brasil foi proclamada por D. Pedro I em 7 de setembro de 1822."
-                },
-                {
-                    text: "A Revolução Francesa ocorreu principalmente no século:",
-                    options: ["A) XVII", "B) XVIII", "C) XIX", "D) XVI"],
-                    correct: "B",
-                    explanation: "A Revolução Francesa iniciou em 1789 e se estendeu até o final do século XVIII."
-                }
-            ],
-            portugues: [
-                {
-                    text: "Qual é a figura de linguagem presente na frase 'O vento sussurrava segredos'?",
-                    options: ["A) Metáfora", "B) Personificação", "C) Hipérbole", "D) Ironia"],
-                    correct: "B",
-                    explanation: "Personificação atribui características humanas (sussurrar) a elementos da natureza (vento)."
-                },
-                {
-                    text: "Na oração 'Os alunos estudaram muito', qual é o núcleo do sujeito?",
-                    options: ["A) Os", "B) alunos", "C) estudaram", "D) muito"],
-                    correct: "B",
-                    explanation: "O núcleo do sujeito é a palavra principal, 'alunos', que é o substantivo que define quem pratica a ação."
-                }
-            ],
-            ciencias: [
-                {
-                    text: "Qual é o processo pelo qual as plantas produzem seu próprio alimento?",
-                    options: ["A) Respiração", "B) Fotossíntese", "C) Digestão", "D) Transpiração"],
-                    correct: "B",
-                    explanation: "A fotossíntese é o processo onde as plantas usam luz solar, água e CO₂ para produzir glicose e oxigênio."
-                },
-                {
-                    text: "Quantos ossos tem aproximadamente o corpo humano adulto?",
-                    options: ["A) 150", "B) 206", "C) 300", "D) 250"],
-                    correct: "B",
-                    explanation: "O esqueleto humano adulto possui aproximadamente 206 ossos, resultado da fusão de ossos durante o crescimento."
-                }
-            ],
-            geografia: [
-                {
-                    text: "Qual é o maior país da América do Sul?",
-                    options: ["A) Argentina", "B) Peru", "C) Brasil", "D) Colômbia"],
-                    correct: "C",
-                    explanation: "O Brasil ocupa cerca de 47% do território sul-americano, sendo o maior país do continente."
-                },
-                {
-                    text: "A linha do Equador divide a Terra em:",
-                    options: ["A) Leste e Oeste", "B) Norte e Sul", "C) Trópicos", "D) Fusos horários"],
-                    correct: "B",
-                    explanation: "A linha do Equador é o paralelo 0° que divide o planeta em hemisférios Norte e Sul."
-                }
-            ]
-        };
-
-        // === FUNÇÃO DE GERAÇÃO DE QUESTÕES ===
         async function generateQuestions() {
-            const topic = topicInput.value.trim().toLowerCase();
-            
-            if (!topic) {
-                showError('Por favor, digite um assunto.');
+            const userPrompt = promptInput.value.trim();
+            if (!userPrompt) {
+                showStatus('Digite sua solicitação primeiro.', 'error');
                 return;
             }
-            
-            // Mostrar loading
-            loading.style.display = 'block';
-            helperText.style.display = 'none';
-            resultsContainer.innerHTML = '';
-            topicInput.disabled = true;
+
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="spinner"></div> Gerando...';
-            
+            generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
+
             try {
-                // Simular tempo de processamento
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                const questionCountMatch = userPrompt.match(/\d+/);
+                const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
+
+                const enhancedPrompt = `
+                    Crie EXATAMENTE ${numberOfQuestions} questões de múltipla escolha sobre: "${userPrompt}"
+
+                    REGRAS:
+                    - Questões bem estruturadas e educativas
+                    - 4 alternativas por questão (A, B, C, D)
+                    - Explicações claras e detalhadas
+                    - Dificuldades variadas (fácil, médio, difícil)
+                    
+                    FORMATO OBRIGATÓRIO (JSON):
+                    {
+                      "questions": [
+                        {
+                          "text": "Texto da questão...",
+                          "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
+                          "correct_answer": "A resposta correta completa",
+                          "explanation": "Explicação detalhada da resposta"
+                        }
+                      ]
+                    }
+                `;
+
+                const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
                 
-                const questions = createQuestionsForTopic(topic);
-                
-                if (questions && questions.length > 0) {
-                    displayQuestions(questions);
-                } else {
-                    showError('Não foi possível gerar questões para este assunto. Tente tópicos como: matemática, história, português, ciências, geografia.');
+                if (!response?.message?.content) {
+                    throw new Error('A IA não retornou uma resposta válida.');
                 }
+
+                const jsonStart = response.message.content.indexOf('{');
+                const jsonEnd = response.message.content.lastIndexOf('}') + 1;
                 
+                if (jsonStart === -1 || jsonEnd === 0) {
+                    throw new Error("A resposta da IA não continha um formato JSON válido.");
+                }
+
+                const jsonString = response.message.content.substring(jsonStart, jsonEnd);
+                const parsed = JSON.parse(jsonString);
+
+                const newQuestions = parsed.questions.map(q => ({
+                    ...q,
+                    id: generateId(),
+                    createdAt: new Date().toISOString()
+                }));
+
+                if (newQuestions.length > 0) {
+                    questionsDatabase.unshift(...newQuestions);
+                    saveToStorage();
+                    renderQuestions();
+                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
+                } else {
+                    showStatus('A IA respondeu, mas não gerou nenhuma questão. Tente novamente.', 'info');
+                }
+
             } catch (error) {
-                console.error('Erro na geração:', error);
-                showError('Erro ao gerar questões. Tente novamente.');
+                console.error('Erro detalhado:', error);
+                if (error.code === 4001 || (error.message && error.message.includes('wallet'))) {
+                    showStatus(`❌ Erro de Autenticação: Faça login no Puter.com para usar a IA.`, 'error');
+                } else {
+                    showStatus(`❌ Erro ao gerar questões: ${error.message}`, 'error');
+                }
             } finally {
-                loading.style.display = 'none';
-                topicInput.disabled = false;
                 generateBtn.disabled = false;
-                generateBtn.innerHTML = '🚀 Gerar Questões';
-                topicInput.focus();
+                generateBtn.textContent = '🚀 Gerar Questões';
             }
         }
-        
-        function createQuestionsForTopic(topic) {
-            // Mapear tópicos para templates
-            let selectedTemplates = [];
-            
-            if (topic.includes('mat') || topic.includes('álgebra') || topic.includes('geometria') || topic.includes('cálculo')) {
-                selectedTemplates = questionTemplates.matematica;
-            } else if (topic.includes('hist') || topic.includes('brasil') || topic.includes('guerra') || topic.includes('revolução')) {
-                selectedTemplates = questionTemplates.historia;
-            } else if (topic.includes('port') || topic.includes('gram') || topic.includes('texto') || topic.includes('literatura')) {
-                selectedTemplates = questionTemplates.portugues;
-            } else if (topic.includes('ciênc') || topic.includes('bio') || topic.includes('física') || topic.includes('química')) {
-                selectedTemplates = questionTemplates.ciencias;
-            } else if (topic.includes('geo') || topic.includes('país') || topic.includes('continente') || topic.includes('clima')) {
-                selectedTemplates = questionTemplates.geografia;
-            } else {
-                // Misturar questões de várias disciplinas
-                selectedTemplates = [
-                    ...questionTemplates.matematica,
-                    ...questionTemplates.historia,
-                    ...questionTemplates.portugues,
-                    ...questionTemplates.ciencias,
-                    ...questionTemplates.geografia
-                ];
-            }
-            
-            // Embaralhar e selecionar até 5 questões
-            const shuffled = selectedTemplates.sort(() => Math.random() - 0.5);
-            const selected = shuffled.slice(0, 5);
-            
-            // Adicionar metadados
-            return selected.map((template, index) => ({
-                text: template.text,
-                type: 'multipla-escolha',
-                difficulty: ['facil', 'medio', 'dificil'][index % 3],
-                subject: topic,
-                correctAnswer: template.correct,
-                explanation: template.explanation,
-                options: template.options
-            }));
+
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
         }
-        
-        function displayQuestions(questions) {
-            helperText.style.display = 'none';
-            
-            const html = questions.map((question, index) => {
-                const difficultyClass = `difficulty-${question.difficulty}`;
-                const typeIcon = '☑️';
-                const difficultyIcon = getDifficultyIcon(question.difficulty);
-                
-                const optionsHTML = `
-                    <div class="question-options">
-                        ${question.options.map(option => {
-                            const isCorrect = option.charAt(0) === question.correctAnswer;
-                            return `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
-                        }).join('')}
+
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        function renderQuestions() {
+            if (questionsDatabase.length === 0) {
+                questionsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Questões geradas aparecerão aqui</h3>
+                        <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
                     </div>
                 `;
+                actionsContainer.style.display = 'none';
+                return;
+            }
+
+            actionsContainer.style.display = 'flex';
+            questionsContainer.innerHTML = '';
+
+            questionsDatabase.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
                 
-                return `
-                    <div class="question-card" style="animation-delay: ${index * 0.1}s">
-                        <div class="question-meta">
-                            <span class="meta-tag">${typeIcon} Múltipla Escolha</span>
-                            <span class="meta-tag ${difficultyClass}">${difficultyIcon} ${formatDifficulty(question.difficulty)}</span>
-                        </div>
-                        
-                        <div class="question-text">${question.text}</div>
-                        
-                        ${optionsHTML}
-                        
-                        <div class="answer-section">
-                            <strong>💡 Resposta:</strong> ${question.correctAnswer}<br><br>
-                            <strong>📝 Explicação:</strong> ${question.explanation}
+                const optionsHTML = q.options ? `<ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul>` : '';
+
+                card.innerHTML = `
+                    <div class="question-number">${questionsDatabase.length - index}</div>
+                    <button class="remove-btn" onclick="removeQuestion('${q.id}')">×</button>
+                    <div class="question-text">${q.text}</div>
+                    <div class="question-options">${optionsHTML}</div>
+                    <div class="question-answer">
+                        <div class="answer-label">✅ Resposta:</div>
+                        ${q.correct_answer}
+                        <div class="explanation-label">💡 Explicação:</div>
+                        ${q.explanation || 'Não fornecida.'}
+                        <div style="font-size:10px; color:#888; margin-top:5px;">
+                            📅 ${new Date(q.createdAt).toLocaleString()}
                         </div>
                     </div>
                 `;
-            }).join('');
-            
-            resultsContainer.innerHTML = html;
+                questionsContainer.appendChild(card);
+            });
         }
-        
-        function showError(message) {
-            helperText.innerHTML = `❌ ${message}`;
-            helperText.style.display = 'block';
-            helperText.style.color = '#fca5a5';
+
+        function removeQuestion(id) {
+            questionsDatabase = questionsDatabase.filter(q => q.id !== id);
+            saveToStorage();
+            renderQuestions();
+            showStatus('Questão removida.', 'info');
         }
-        
-        function getDifficultyIcon(difficulty) {
-            const icons = {
-                'facil': '🟢',
-                'medio': '🟡', 
-                'dificil': '🔴'
-            };
-            return icons[difficulty] || '⚪';
-        }
-        
-        function formatDifficulty(difficulty) {
-            const formats = {
-                'facil': 'Fácil',
-                'medio': 'Médio',
-                'dificil': 'Difícil'
-            };
-            return formats[difficulty] || difficulty;
-        }
-        
-        // === EVENT LISTENERS ===
-        generateBtn.addEventListener('click', generateQuestions);
-        
-        topicInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && this.value.trim()) {
-                generateQuestions();
+
+        function clearAll() {
+            if (confirm('Tem certeza que deseja apagar TODAS as questões geradas?')) {
+                questionsDatabase = [];
+                saveToStorage();
+                renderQuestions();
+                showStatus('Lista de questões foi limpa.', 'info');
             }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('questionsDB', JSON.stringify(questionsDatabase));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('questionsDB');
+            if (saved) {
+                questionsDatabase = JSON.parse(saved);
+                renderQuestions();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromStorage();
+            generateBtn.addEventListener('click', generateQuestions);
+            document.getElementById('clear-btn').addEventListener('click', clearAll);
+            promptInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateQuestions();
+                }
+            });
         });
-        
-        // Auto-focus no input quando a página carrega
-        window.addEventListener('load', function() {
-            topicInput.focus();
-        });
+
+        window.removeQuestion = removeQuestion;
     </script>
 </body>
 </html>
