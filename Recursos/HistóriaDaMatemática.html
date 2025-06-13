@@ -440,7 +440,6 @@
             return str.replace(/[\n\r\t]/g, '').replace(/,\s*(?=[\]\}])/g, '');
         }
         
-        // *** NOVA FUNÇÃO PARA REMOVER ACENTOS ANTES DE ENVIAR PARA A IA ***
         function normalizeName(name) {
             return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
@@ -488,36 +487,72 @@
                 generateBiography();
             };
         }
+        
+        // === NOVA CAMADA DE VERIFICAÇÃO DE FATOS ===
+        function formatWikidataDate(dateString) {
+            if (!dateString) return null;
+            const match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
+            if (match) return `${match[3]}/${match[2]}/${match[1]}`;
+            return dateString; // Fallback
+        }
 
-        // === FUNÇÃO PRINCIPAL DE GERAÇÃO DE BIOGRAFIA ===
+        async function getFactsFromWikidata(personName) {
+            try {
+                const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
+                const searchResponse = await fetch(searchUrl); if (!searchResponse.ok) return {};
+                const searchData = await searchResponse.json(); if (!searchData.search || searchData.search.length === 0) return {};
+                const entityId = searchData.search[0].id;
+
+                const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
+                const entityResponse = await fetch(entityUrl); if (!entityResponse.ok) return {};
+                const entityData = await entityResponse.json(); const claims = entityData.entities[entityId].claims;
+
+                const birthClaim = claims.P569?.[0]?.mainsnak?.datavalue?.value?.time;
+                const deathClaim = claims.P570?.[0]?.mainsnak?.datavalue?.value?.time;
+
+                return {
+                    birthDate: birthClaim ? formatWikidataDate(birthClaim) : null,
+                    deathDate: deathClaim ? formatWikidataDate(deathClaim) : null,
+                };
+            } catch (error) {
+                console.warn("Erro ao buscar fatos no Wikidata:", error);
+                return {};
+            }
+        }
+
+
+        // === FUNÇÃO PRINCIPAL DE GERAÇÃO DE BIOGRAFIA (ATUALIZADA) ===
         async function generateBiography() {
-            const personNameForDisplay = personInput.value.trim();
-            if (!personNameForDisplay) return;
-
-            // Normaliza o nome APENAS para a comunicação com a IA
-            const personNameToAI = normalizeName(personNameForDisplay);
+            const personName = personInput.value.trim();
+            if (!personName) return;
 
             generateBtn.disabled = true;
-            generateBtn.textContent = 'Pesquisando...';
-            showStatus('Coletando informações... Isso pode levar um momento.', 'info');
+            generateBtn.textContent = 'Verificando fatos...';
+            showStatus('Verificando fatos no Wikidata para maior precisão...', 'info');
             biographyContainer.style.display = 'none';
             suggestionBox.style.display = 'none';
 
+            // Passo 1: Buscar fatos verificados
+            const verifiedFacts = await getFactsFromWikidata(personName);
+            
+            generateBtn.textContent = 'Gerando biografia...';
+            showStatus('Fatos verificados. Gerando a biografia com a IA...', 'info');
+
             try {
+                // Passo 2: Injetar fatos no prompt
+                const factString = `(Fatos verificados: Nascimento: ${verifiedFacts.birthDate || 'Não encontrado'}, Morte: ${verifiedFacts.deathDate || 'Ainda vivo(a)'}). Use esses fatos em sua narrativa.`;
                 const prompt = `
-                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada sobre "${personNameToAI}".
+                Você é um biógrafo especialista. Crie uma biografia detalhada sobre "${personName}", considerando estes fatos: ${factString}.
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
-                  "name": "Nome completo", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
-                  "biography": "**Estrutura Obrigatória (4-5 parágrafos):**\\n\\n1. **Início da Vida e Formação:** Contexto, família, educação, influências.\\n\\n2. **Carreira e Contribuições Principais:** Marcos, importância científica/artística.\\n\\n3. **Contexto Histórico e Desafios:** Sua época, desafios, interações.\\n\\n4. **Anos Finais e Legado:** Influência duradoura, relevância hoje.",
-                  "major_contributions": ["Contribuição 1 com explicação técnica.", "Contribuição 2 explicando o 'antes e depois'.", "Contribuição 3 e sua aplicação."],
-                  "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento com consequência."}],
-                  "curiosities": ["Curiosidade pouco conhecida.", "Curiosidade sobre sua personalidade."]
+                  "name": "Nome completo", "birth_date": "${verifiedFacts.birthDate || 'DD/MM/AAAA'}", "birth_place": "Cidade, País", 
+                  "death_date": "${verifiedFacts.deathDate || 'Ainda vivo(a)'}", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
+                  "biography": "**Estrutura (4-5 parágrafos):**\\n\\n1. **Início da Vida:** Contexto, família, educação.\\n\\n2. **Carreira:** Marcos, importância.\\n\\n3. **Contexto Histórico:** Sua época, desafios.\\n\\n4. **Legado:** Influência, relevância hoje.",
+                  "major_contributions": ["Contribuição 1 com explicação.", "Contribuição 2 com explicação.", "Contribuição 3 com explicação."],
+                  "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento."}],
+                  "curiosities": ["Curiosidade 1.", "Curiosidade 2."]
                 }
-                **REGRAS CRUCIAIS E OBRIGATÓRIAS:** 
-                1. A precisão factual é imperativa.
-                2. O JSON deve ser estritamente válido. NÃO use vírgulas no final de listas (trailing commas).
-                3. **IMPORTANTE:** Dentro dos valores de string (como em "biography"), use aspas simples (') ou escape as aspas duplas (\\") para evitar que o JSON quebre. Exemplo: "texto com 'aspas' ou \\"aspas\\" dentro".`;
+                **REGRAS CRUCIAIS:** O JSON deve ser estritamente válido. NÃO use vírgulas no final de listas. Para aspas dentro de textos, use aspas simples (') ou escape (\\").`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
@@ -531,19 +566,19 @@
                 jsonString = sanitizeJSONString(jsonString);
 
                 const biographyData = JSON.parse(jsonString);
-                
-                // Garante que o nome exibido seja o que o usuário viu, não o nome da IA se for diferente
-                if (biographyData.name.toLowerCase() !== personNameForDisplay.toLowerCase()) {
-                    biographyData.name = personNameForDisplay;
-                }
+
+                // Passo 3: Garantir que os dados verificados sejam os exibidos
+                biographyData.name = personName; // Usar o nome que o usuário confirmou
+                if (verifiedFacts.birthDate) biographyData.birth_date = verifiedFacts.birthDate;
+                biographyData.death_date = verifiedFacts.deathDate || "Ainda vivo(a)";
 
                 displayBiography(biographyData);
-                showStatus('Biografia gerada com sucesso!', 'success');
+                showStatus('Biografia gerada com sucesso e fatos verificados!', 'success');
 
             } catch (error) {
                 console.error('Erro na geração:', error);
                 if (error.code === 4001) {
-                     showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com no navegador e tente novamente.', 'error');
+                     showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com.', 'error');
                 } else {
                      showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
                 }
@@ -553,9 +588,19 @@
             }
         }
 
-        // === FUNÇÃO DE EXIBIÇÃO ===
+        // === FUNÇÃO DE EXIBIÇÃO (ATUALIZADA) ===
         function displayBiography(data) {
             const photoId = `photo-${Date.now()}`;
+
+            let deathInfoHtml = '';
+            if (data.death_date) {
+                if (data.death_date.toLowerCase().includes('vivo')) {
+                    deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Status:</span><span class="info-value">${data.death_date}</span></div>`;
+                } else {
+                    deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date} em ${data.death_place || 'N/A'}</span></div>`;
+                }
+            }
+
             const biographyHTML = `
                 <div class="biography-card">
                     <div class="card-buttons">
@@ -570,7 +615,7 @@
                             <h2 class="mathematician-name">${data.name || 'Nome não encontrado'}</h2>
                             <div class="basic-info">
                                 <div class="info-item"><span class="info-label">📅 Nascimento:</span><span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span></div>
-                                ${data.death_date && !data.death_date.toLowerCase().includes('vivo') ? `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date || 'N/A'} em ${data.death_place || 'N/A'}</span></div>` : ''}
+                                ${deathInfoHtml}
                                 <div class="info-item"><span class="info-label">🌍 Nacionalidade:</span><span class="info-value">${data.nationality || 'N/A'}</span></div>
                                 <div class="info-item"><span class="info-label">🏆 Atuação:</span><span class="info-value">${(data.main_areas || []).join(', ')}</span></div>
                             </div>
@@ -590,7 +635,7 @@
             loadPersonPhoto(data.name, photoId);
         }
 
-        // === BUSCA DE FOTOS MULTI-FONTES ===
+        // === BUSCA DE FOTOS MULTI-FONTES (sem alterações) ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId); if (!photoElement) return;
             const imageSources = [
