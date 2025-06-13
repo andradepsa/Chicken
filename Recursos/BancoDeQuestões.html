@@ -415,7 +415,7 @@
             </div>
             <div class="data-source" id="source-b3">
                 <h4>📉 B3/Bovespa</h4>
-                <div class="api-info">API: Yahoo Finance + B3</div>
+                <div class="api-info">API: Brapi.dev</div>
                 <div class="status">Aguardando consulta...</div>
                 <div class="last-update"></div>
             </div>
@@ -465,8 +465,8 @@
         const OFFICIAL_APIS = {
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
             ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last',
-            BRAPI: 'https://brapi.dev/api/quote/BOVA11?range=1d&interval=1d',
-            CORS_PROXY: 'https://api.allorigins.win/get?url='
+            // <<== CORREÇÃO: URL da BRAPI simplificada para chamada direta
+            BRAPI_BOVESPA: 'https://brapi.dev/api/quote/BOVA11?range=1d&interval=1d',
         };
 
         const SERIES_CODES = {
@@ -594,24 +594,29 @@
             }
         }
 
+        // <<== CORREÇÃO APLICADA AQUI
         async function fetchBovespaData() {
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
             try {
-                const url = `${OFFICIAL_APIS.CORS_PROXY}${encodeURIComponent(OFFICIAL_APIS.BRAPI)}`;
+                // Usando a URL direta e mais confiável da Brapi, sem proxy CORS
+                const url = OFFICIAL_APIS.BRAPI_BOVESPA;
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro ${response.status}`);
-                const rawData = await response.json();
-                const data = JSON.parse(rawData.contents);
+                if (!response.ok) throw new Error(`Erro na API da B3: ${response.status}`);
+                
+                const data = await response.json();
 
+                // A estrutura da resposta da Brapi é { results: [ { ... } ] }
                 if (data.results && data.results[0] && data.results[0].regularMarketPrice) {
-                    const bovespaValue = data.results[0].regularMarketPrice * 1000;
+                    // Usamos o ETF BOVA11 como base e multiplicamos por ~1000 para uma aproximação do índice Ibovespa
+                    const bovespaValue = data.results[0].regularMarketPrice * 1000; 
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
-                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi API)', series: 'BOVESPA', description: `Índice Bovespa` };
+                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi.dev)', series: 'BOVESPA', description: `Índice Bovespa` };
                 } else {
-                    throw new Error('Dados B3 não encontrados');
+                    throw new Error('Estrutura de dados da B3 inesperada.');
                 }
             } catch (error) {
-                const bovespaValue = 120760;
+                console.error("Erro ao buscar dados da B3:", error);
+                const bovespaValue = 120760; // Nosso plano B, o fallback, continua aqui como segurança máxima.
                 updateSourceStatus('source-b3', 'success', `⚠️ ${bovespaValue.toLocaleString()} pts (fallback)`);
                 return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (fallback estático)', series: 'BOVESPA', description: `Índice Bovespa (fallback)` };
             }
@@ -626,7 +631,8 @@
                 const tesouroRate = selicRate;
                 updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ~${tesouroRate.toFixed(2)}% a.a.`);
                 return { value: tesouroRate, baseRate: selicRate, source: 'Tesouro Nacional (calculado sobre SELIC)', series: 'TESOURO_SELIC', description: `Rentabilidade Tesouro Selic` };
-            } catch (error) {
+            } catch (error)
+                {
                 updateSourceStatus('source-tesouro', 'error', `❌ ${error.message}`);
                 return null;
             }
@@ -686,13 +692,11 @@
             let officialData;
 
             try {
-                // <<== MUDANÇA CRUCIAL: Etapa 1 - Apenas buscar dados e atualizar a UI
                 const detection = detectLanguageAndTopics(userPrompt);
                 officialData = await fetchAllOfficialData(detection);
                 
                 generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
                 
-                // <<== MUDANÇA CRUCIAL: Etapa 2 - Chamar a IA, agora separadamente
                 const questionCountMatch = userPrompt.match(/\d+/);
                 const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
 
@@ -968,8 +972,8 @@
 
         window.removeQuestion = removeQuestion;
 
-        console.log('✅ Sistema pronto. APIs configuradas para máxima estabilidade.');
-        console.log('📊 Fontes ativas: Banco Central (SGS), Economia API (Câmbio), Brapi (B3).');
+        console.log('✅ Sistema pronto. API da B3 corrigida para chamada direta e mais estável.');
+        console.log('📊 Fontes ativas: Banco Central (SGS), Economia API (Câmbio), Brapi.dev (B3).');
         console.log('🛠️ Fontes estabilizadas: IBGE e IPEA usam dados estáticos realistas para garantir o funcionamento.');
         
     </script>
