@@ -415,7 +415,7 @@
             </div>
             <div class="data-source" id="source-b3">
                 <h4>📉 B3/Bovespa</h4>
-                <div class="api-info">API: B3 Data (Oficial)</div>
+                <div class="api-info">API: Brapi.dev</div>
                 <div class="status">Aguardando consulta...</div>
                 <div class="last-update"></div>
             </div>
@@ -465,7 +465,8 @@
         const OFFICIAL_APIS = {
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
             ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last/USD-BRL',
-            B3_API: 'https://cors.eu.org/https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/cotacoes/?indice=IBOV'
+            // <<== CORREÇÃO: Voltando para a API Brapi.dev, que é mais estável.
+            BRAPI_API: 'https://brapi.dev/api/quote/^BVSP'
         };
 
         const SERIES_CODES = {
@@ -579,26 +580,27 @@
             }
         }
         
+        // <<== CORREÇÃO FINAL E DEFINITIVA PARA A B3, USANDO A BRAPI.DEV
         async function fetchBovespaData() {
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
             try {
-                const url = OFFICIAL_APIS.B3_API;
-                const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (!response.ok) throw new Error(`Erro na API da B3: ${response.statusText}`);
+                const url = OFFICIAL_APIS.BRAPI_API;
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Erro na API Brapi: ${response.statusText}`);
                 const data = await response.json();
                 
-                if (data && data.value) {
-                    const bovespaValue = parseFloat(data.value.replace(/\./g, '').replace(',', '.'));
+                if (data && data.results && data.results[0] && data.results[0].regularMarketPrice) {
+                    const bovespaValue = data.results[0].regularMarketPrice;
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
                     return { 
                         value: bovespaValue, 
                         date: new Date().toLocaleDateString(), 
-                        source: 'B3 Data (Oficial)', 
+                        source: 'Brapi.dev', 
                         series: 'BOVESPA', 
                         description: `Índice Bovespa` 
                     };
                 } else {
-                    throw new Error('Estrutura de dados da B3 inesperada.');
+                    throw new Error('Estrutura de dados da Brapi inesperada.');
                 }
             } catch (error) {
                 console.error("Erro ao buscar dados da B3:", error);
@@ -613,6 +615,7 @@
                 };
             }
         }
+
 
         async function fetchTesouroData() {
             updateSourceStatus('source-tesouro', 'loading', 'Calculando Tesouro...');
@@ -964,7 +967,7 @@
         window.removeQuestion = removeQuestion;
 
         console.log('✅ Sistema pronto para uso coletivo. API da B3 corrigida e estável.');
-        console.log('📊 Fontes ativas: Banco Central (SGS), Economia AwesomeAPI (Câmbio) e B3 Data (Bovespa).');
+        console.log('📊 Fontes ativas: Banco Central (SGS), Economia AwesomeAPI (Câmbio) e Brapi.dev (Bovespa).');
         console.log('🛠️ Fontes estabilizadas: IBGE e IPEA.');
         
     </script>
