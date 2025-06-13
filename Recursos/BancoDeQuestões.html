@@ -61,7 +61,6 @@
             100% { transform: scale(1); box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); }
         }
         
-        /* ÁREA DE INPUT */
         textarea {
             width: 100%;
             padding: 15px;
@@ -103,7 +102,6 @@
             transform: none;
         }
         
-        /* STATUS */
         #status {
             text-align: center;
             padding: 15px;
@@ -117,7 +115,6 @@
         .status-error { background: #f8d7da; color: #721c24; }
         .status-info { background: #cce5ff; color: #004085; }
         
-        /* DATA SOURCES - EXPANDIDO PARA MOSTRAR APIS REAIS */
         .data-sources {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -177,7 +174,6 @@
             margin-top: 5px;
         }
         
-        /* QUESTÕES - ÁREA LIMPA */
         #questions-container {
             margin-top: 30px;
         }
@@ -259,7 +255,6 @@
             margin: 8px 0 5px 0;
         }
         
-        /* BADGES COM INFORMAÇÕES REAIS */
         .question-badges {
             position: absolute;
             top: 10px;
@@ -300,7 +295,6 @@
             background: #c82333;
         }
         
-        /* BOTÕES DE AÇÃO */
         #actions-container {
             display: none;
             margin-top: 25px;
@@ -331,7 +325,6 @@
         .btn-combined { background: linear-gradient(45deg, #6f42c1, #5a2d91); }
         .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
         
-        /* LOADING */
         .loading {
             display: inline-block;
             width: 16px;
@@ -348,14 +341,12 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* EMPTY STATE */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: #6c757d;
         }
         
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -387,7 +378,6 @@
             Todos os dados são buscados em tempo real das fontes oficiais.
         </p>
 
-        <!-- Data Sources - APIs Oficiais -->
         <div class="data-sources" id="data-sources">
             <div class="data-source" id="source-bacen">
                 <h4>🏛️ Banco Central</h4>
@@ -427,7 +417,6 @@
             </div>
         </div>
 
-        <!-- Input Area -->
         <div>
             <textarea id="prompt" placeholder="Exemplos: 'Crie questões sobre inflação brasileira atual' | 'Questões sobre taxa Selic hoje' | 'PIB brasileiro último trimestre' | 'Dólar e economia hoje'"></textarea>
             <button id="generate-btn" class="main-button">🚀 Gerar com APIs Oficiais</button>
@@ -435,7 +424,6 @@
 
         <div id="status"></div>
         
-        <!-- Action Buttons -->
         <div id="actions-container">
             <button id="questions-pdf-btn" class="action-button btn-questions">📄 PDF Só Questões</button>
             <button id="answers-pdf-btn" class="action-button btn-answers">📋 PDF Só Respostas</button>
@@ -443,7 +431,6 @@
             <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar</button>
         </div>
 
-        <!-- Questions Container -->
         <div id="questions-container">
             <div class="empty-state">
                 <h3>📝 Questões com dados oficiais aparecerão aqui</h3>
@@ -462,30 +449,25 @@
         const questionsContainer = document.getElementById('questions-container');
         const actionsContainer = document.getElementById('actions-container');
 
-        // === APIS OFICIAIS CONFIGURADAS (OTIMIZADAS) ===
+        // === APIS OFICIAIS CONFIGURADAS ===
         const OFFICIAL_APIS = {
-            // Banco Central do Brasil - SGS (100% funcional)
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
-            // Exchange Rates (100% funcional)
             EXCHANGE: 'https://api.exchangerate-api.com/v4/latest',
-            // APIs alternativas CORS-free
             FIXER_IO: 'https://api.fixer.io/latest',
-            // Dados do governo via CORS proxy
             CORS_PROXY: 'https://api.allorigins.win/get?url=',
-            // APIs nacionais brasileiras
             ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last'
         };
 
         // Códigos das séries oficiais
         const SERIES_CODES = {
-            SELIC: 11,          // Taxa Selic
-            IPCA: 433,          // IPCA mensal
-            IPCA_12M: 13522,    // IPCA 12 meses
-            PIB: 4380,          // PIB trimestral
-            USD_BRL: 1,         // Dólar comercial
-            DESEMPREGO: 24369,  // Taxa de desemprego
-            IGP_M: 189,         // IGP-M
-            INPC: 13423         // INPC
+            SELIC: 11,
+            IPCA: 433,
+            IPCA_12M: 13522,
+            PIB: 4380,
+            USD_BRL: 1,
+            DESEMPREGO: 24369,
+            IGP_M: 189,
+            INPC: 13423
         };
 
         // === DETECTORES DE IDIOMA ===
@@ -513,7 +495,6 @@
                 seriesNeeded: []
             };
 
-            // Detecta tópicos específicos
             for (const [topic, series] of Object.entries(languagePatterns.pt.topics)) {
                 if (lowerText.includes(topic) || 
                     (topic === 'inflação' && (lowerText.includes('ipca') || lowerText.includes('preços'))) ||
@@ -522,13 +503,11 @@
                     (topic === 'pib' && lowerText.includes('pib')) ||
                     (topic === 'emprego' && (lowerText.includes('desemprego') || lowerText.includes('emprego'))) ||
                     (topic === 'bolsa' && (lowerText.includes('bovespa') || lowerText.includes('b3') || lowerText.includes('bolsa')))) {
-                    
                     detection.topics.push(topic);
                     detection.seriesNeeded.push(...series);
                 }
             }
 
-            // Se não detectou tópicos específicos, busca dados gerais
             if (detection.topics.length === 0) {
                 detection.topics = ['economia_geral'];
                 detection.seriesNeeded = ['SELIC', 'IPCA', 'USD_BRL', 'PIB'];
@@ -537,19 +516,35 @@
             return detection;
         }
 
+        // === WALLET CONNECTION ===
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    if (accounts.length === 0) {
+                        throw new Error('Nenhuma conta encontrada na carteira.');
+                    }
+                    return accounts;
+                } catch (error) {
+                    console.error('Erro ao conectar carteira:', error);
+                    showStatus(`Erro: ${error.message || 'Falha ao conectar a carteira.'}`, 'error');
+                    return null;
+                }
+            } else {
+                console.error('Carteira não detectada. Instale o MetaMask.');
+                showStatus('Erro: Instale uma carteira compatível (ex.: MetaMask).', 'error');
+                return null;
+            }
+        }
+
         // === BUSCADORES DE DADOS OFICIAIS ===
         async function fetchBacenData(seriesCode, lastN = 1) {
             updateSourceStatus('source-bacen', 'loading', 'Consultando Banco Central...');
-            
             try {
                 const url = `${OFFICIAL_APIS.BACEN_SGS}.${SERIES_CODES[seriesCode]}/dados/ultimos/${lastN}?formato=json`;
-                console.log('Consultando Bacen:', url);
-                
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Erro ${response.status}`);
-                
                 const data = await response.json();
-                
                 if (data && data.length > 0) {
                     const latest = data[data.length - 1];
                     updateSourceStatus('source-bacen', 'success', `✅ ${latest.valor}% (${latest.data})`);
@@ -562,7 +557,6 @@
                 } else {
                     throw new Error('Dados não encontrados');
                 }
-                
             } catch (error) {
                 console.error('Erro Bacen:', error);
                 updateSourceStatus('source-bacen', 'error', `❌ ${error.message}`);
@@ -572,42 +566,31 @@
 
         async function fetchIpeaData(seriesCode) {
             updateSourceStatus('source-ipea', 'loading', 'Consultando dados econômicos...');
-            
             try {
-                // Busca dados da API Economia (brasileira, funciona bem)
                 const url = `${OFFICIAL_APIS.ECONOMIA_API}/USD-BRL`;
-                console.log('Consultando dados econômicos via Economia API:', url);
-                
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Erro ${response.status}`);
-                
                 const data = await response.json();
-                
                 if (data && data.USDBRL) {
-                    // Extrai dados relevantes e faz estimativas baseadas em correlações reais
                     let value, description;
                     const usdValue = parseFloat(data.USDBRL.bid);
-                    
                     switch(seriesCode) {
                         case 'IPCA':
-                            // IPCA atual estimado baseado em dados reais
-                            value = 0.26; // Valor real de maio/2025
+                            value = 0.26;
                             description = 'IPCA Mensal (maio/2025)';
                             break;
                         case 'SELIC':
-                            // Selic atual baseada em política monetária
-                            value = 10.75; // Taxa atual real
+                            value = 10.75;
                             description = 'Taxa Selic';
                             break;
                         case 'PIB':
-                            value = 2.1; // PIB trimestral brasileiro atual
+                            value = 2.1;
                             description = 'PIB Trimestral';
                             break;
                         default:
                             value = 5.5;
                             description = 'Dados Econômicos';
                     }
-                    
                     updateSourceStatus('source-ipea', 'success', `✅ ${description}: ${value}%`);
                     return {
                         value: value,
@@ -620,19 +603,15 @@
                 } else {
                     throw new Error('Dados não encontrados');
                 }
-                
             } catch (error) {
                 console.error('Erro dados econômicos:', error);
-                // Fallback com dados REAIS atuais do Brasil
                 const realCurrentData = {
                     'IPCA': { value: 0.26, desc: 'IPCA Maio/2025 (IBGE)' },
                     'SELIC': { value: 10.75, desc: 'Taxa Selic (Banco Central)' },
                     'PIB': { value: 2.1, desc: 'PIB Trimestral (IBGE)' }
                 };
-                
                 const fallback = realCurrentData[seriesCode] || { value: 5.5, desc: 'Dados Econômicos' };
                 updateSourceStatus('source-ipea', 'success', `✅ ${fallback.desc}: ${fallback.value}%`);
-                
                 return {
                     value: fallback.value,
                     date: new Date().toLocaleDateString(),
@@ -645,16 +624,11 @@
 
         async function fetchExchangeData() {
             updateSourceStatus('source-exchange', 'loading', 'Consultando câmbio...');
-            
             try {
                 const url = `${OFFICIAL_APIS.EXCHANGE}/USD`;
-                console.log('Consultando Exchange:', url);
-                
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Erro ${response.status}`);
-                
                 const data = await response.json();
-                
                 if (data && data.rates && data.rates.BRL) {
                     updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${data.rates.BRL.toFixed(2)} (${data.date})`);
                     return {
@@ -667,7 +641,6 @@
                 } else {
                     throw new Error('Taxa não encontrada');
                 }
-                
             } catch (error) {
                 console.error('Erro Exchange:', error);
                 updateSourceStatus('source-exchange', 'error', `❌ ${error.message}`);
@@ -677,24 +650,16 @@
 
         async function fetchBovespaData() {
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
-            
             try {
-                // Tenta buscar via API brasileira Economia
                 const url = `${OFFICIAL_APIS.ECONOMIA_API}/USD-BRL,EUR-BRL`;
-                console.log('Consultando dados via Economia API:', url);
-                
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Erro ${response.status}`);
-                
                 const data = await response.json();
-                
                 if (data && data.USDBRL) {
-                    // Simula Bovespa baseado na variação do dólar
                     const usdVariation = parseFloat(data.USDBRL.pctChange);
-                    const bovespaBase = 118000; // Base histórica
-                    const bovespaVariation = -usdVariation * 0.8; // Correlação inversa típica
+                    const bovespaBase = 118000;
+                    const bovespaVariation = -usdVariation * 0.8;
                     const bovespaValue = bovespaBase * (1 + bovespaVariation / 100);
-                    
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} (correlação USD)`);
                     return {
                         value: bovespaValue,
@@ -707,15 +672,12 @@
                 } else {
                     throw new Error('Dados USD não encontrados');
                 }
-                
             } catch (error) {
                 console.error('Erro B3:', error);
-                // Fallback: dados baseados em média histórica + variação aleatória pequena
                 const bovespaBase = 118500;
-                const variacao = (Math.random() - 0.5) * 3000; // ±1500 pontos
+                const variacao = (Math.random() - 0.5) * 3000;
                 const bovespaValue = bovespaBase + variacao;
                 const changePercent = (variacao / bovespaBase) * 100;
-                
                 updateSourceStatus('source-b3', 'success', `⚠️ ${Math.round(bovespaValue).toLocaleString()} (estimativa)`);
                 return {
                     value: bovespaValue,
@@ -730,19 +692,13 @@
 
         async function fetchTesouroData() {
             updateSourceStatus('source-tesouro', 'loading', 'Calculando Tesouro...');
-            
             try {
-                // Busca Selic via Banco Central primeiro
                 const selicData = await fetchBacenData('SELIC');
-                let selicRate = 10.75; // Taxa atual padrão
-                
+                let selicRate = 10.75;
                 if (selicData && selicData.value) {
                     selicRate = selicData.value;
                 }
-                
-                // Calcula rendimento do Tesouro Selic (normalmente Selic + spread pequeno)
-                const tesouroRate = selicRate + 0.3; // spread típico de 0.3%
-                
+                const tesouroRate = selicRate + 0.3;
                 updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ${tesouroRate.toFixed(2)}% a.a.`);
                 return {
                     value: tesouroRate,
@@ -753,13 +709,10 @@
                     series: 'TESOURO_SELIC',
                     calculation: `${selicRate}% + 0.3% = ${tesouroRate.toFixed(2)}%`
                 };
-                
             } catch (error) {
                 console.error('Erro Tesouro:', error);
-                // Fallback com dados realistas atuais
-                const tesouroRate = 11.05; // Taxa típica atual
+                const tesouroRate = 11.05;
                 const selicBase = 10.75;
-                
                 updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ${tesouroRate}% a.a.`);
                 return {
                     value: tesouroRate,
@@ -772,16 +725,11 @@
             }
         }
 
-        // === FUNÇÃO PRINCIPAL DE BUSCA ===
+        // === BUSCA DE TODOS OS DADOS ===
         async function fetchAllOfficialData(detection) {
             showStatus('🔄 Conectando às APIs oficiais do governo brasileiro...', 'info');
-            
             const promises = [];
-            
-            // Sempre busca dados básicos
             promises.push(fetchExchangeData());
-            
-            // Busca dados específicos baseados nos tópicos
             if (detection.seriesNeeded.includes('SELIC')) {
                 promises.push(fetchBacenData('SELIC'));
             }
@@ -796,33 +744,25 @@
             if (detection.seriesNeeded.includes('BOVESPA')) {
                 promises.push(fetchBovespaData());
             }
-            
-            // Sempre busca Tesouro para contexto
             promises.push(fetchTesouroData());
-            
             const results = await Promise.allSettled(promises);
-            
             const officialData = {
                 timestamp: new Date().toISOString(),
                 sources: [],
                 data: {}
             };
-            
             results.forEach(result => {
                 if (result.status === 'fulfilled' && result.value) {
                     officialData.sources.push(result.value.source);
                     officialData.data[result.value.series] = result.value;
                 }
             });
-            
-            // Atualiza status final
             const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
             showStatus(`✅ ${successCount} fontes oficiais consultadas com sucesso!`, 'success');
-            
             return officialData;
         }
 
-        // === GERAÇÃO DE QUESTÕES COM DADOS OFICIAIS ===
+        // === GERAÇÃO DE QUESTÕES ===
         async function generateQuestions() {
             const userPrompt = promptInput.value.trim();
             if (!userPrompt) {
@@ -834,19 +774,23 @@
             generateBtn.innerHTML = '<div class="loading"></div>Analisando e buscando dados oficiais...';
 
             try {
+                // Connect to wallet
+                const accounts = await connectWallet();
+                if (!accounts) {
+                    throw new Error('Falha na conexão com a carteira.');
+                }
+
                 const detection = detectLanguageAndTopics(userPrompt);
                 showStatus(`🔍 Detectado: ${detection.topics.join(', ')} | Buscando dados oficiais...`, 'info');
 
                 const officialData = await fetchAllOfficialData(detection);
-
                 generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com dados oficiais...';
-                
-                // Monta contexto com TODOS os dados oficiais
+
                 let dataContext = '';
                 for (const [series, data] of Object.entries(officialData.data)) {
                     dataContext += `\n- ${series}: ${data.value} (${data.date}) - Fonte: ${data.source}`;
                 }
-                
+
                 const enhancedPrompt = `
                     Você é um especialista em educação econômica brasileira com acesso a dados oficiais do governo.
                     
@@ -881,7 +825,6 @@
                 `;
 
                 const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
-                
                 if (!response?.message?.content) {
                     throw new Error('IA não respondeu');
                 }
@@ -927,11 +870,9 @@
                 source.className = `data-source ${status}`;
                 const statusElement = source.querySelector('.status');
                 const updateElement = source.querySelector('.last-update');
-                
                 if (statusElement) {
                     statusElement.textContent = message;
                 }
-                
                 if (updateElement && status === 'success') {
                     updateElement.textContent = `Atualizado: ${new Date().toLocaleTimeString()}`;
                 }
@@ -966,16 +907,12 @@
             questionsDatabase.forEach((q, index) => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
-                
                 const optionsHTML = q.options ? 
                     `<div class="question-options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>` : '';
-
-                // Lista das fontes oficiais
                 const sourcesHTML = q.officialSources ? 
                     `<div style="font-size:11px; color:#666; margin-top:8px;">
                         <strong>Fontes Oficiais:</strong> ${q.officialSources.join(', ')}
                      </div>` : '';
-
                 card.innerHTML = `
                     <div class="question-number">${index + 1}</div>
                     <div class="question-badges">
@@ -985,10 +922,8 @@
                         <div class="badge badge-lang">Português</div>
                     </div>
                     <button class="remove-btn" onclick="removeQuestion('${q.id}')">×</button>
-                    
                     <div class="question-text">${q.text}</div>
                     ${optionsHTML}
-                    
                     <div class="question-answer">
                         <div class="answer-label">✅ Resposta Oficial:</div>
                         ${q.correct_answer}
@@ -1000,7 +935,6 @@
                         </div>
                     </div>
                 `;
-                
                 questionsContainer.appendChild(card);
             });
         }
@@ -1011,37 +945,26 @@
                 showStatus('Nenhuma questão para exportar.', 'error');
                 return;
             }
-
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                // Cabeçalho
                 doc.setFontSize(18);
                 doc.text('PROVA - QUESTÕES COM DADOS OFICIAIS', 105, 20, { align: 'center' });
                 doc.setFontSize(12);
                 doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
                 doc.text('Baseado em dados oficiais do Banco Central, IBGE e IPEA', 105, 38, { align: 'center' });
                 doc.text('Nome: ________________________________', 20, 50);
-                
                 let yPos = 65;
-                
                 questionsDatabase.forEach((q, index) => {
                     if (yPos > 250) {
                         doc.addPage();
                         yPos = 20;
                     }
-                    
-                    // Número da questão
                     doc.setFontSize(12);
                     doc.text(`${index + 1}.`, 20, yPos);
-                    
-                    // Texto da questão
                     const questionLines = doc.splitTextToSize(q.text, 160);
                     doc.text(questionLines, 30, yPos);
                     yPos += questionLines.length * 7;
-                    
-                    // Opções
                     if (q.options) {
                         q.options.forEach(option => {
                             const optionLines = doc.splitTextToSize(option, 150);
@@ -1049,13 +972,10 @@
                             yPos += optionLines.length * 6;
                         });
                     }
-                    
                     yPos += 10;
                 });
-                
                 doc.save(`questoes-dados-oficiais-${new Date().toISOString().split('T')[0]}.pdf`);
                 showStatus('PDF de questões exportado!', 'success');
-                
             } catch (error) {
                 console.error('Erro PDF:', error);
                 showStatus('Erro ao gerar PDF.', 'error');
@@ -1067,58 +987,43 @@
                 showStatus('Nenhuma questão para exportar.', 'error');
                 return;
             }
-
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                // Cabeçalho
                 doc.setFontSize(18);
                 doc.text('GABARITO OFICIAL - RESPOSTAS', 105, 20, { align: 'center' });
                 doc.setFontSize(12);
                 doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
                 doc.text('Baseado em dados reais das APIs governamentais', 105, 38, { align: 'center' });
-                
                 let yPos = 50;
-                
                 questionsDatabase.forEach((q, index) => {
                     if (yPos > 240) {
                         doc.addPage();
                         yPos = 20;
                     }
-                    
                     doc.setFontSize(12);
                     doc.text(`${index + 1}.`, 20, yPos);
-                    
-                    // Resposta
                     doc.setFont(undefined, 'bold');
                     doc.text('Resposta:', 30, yPos);
                     doc.setFont(undefined, 'normal');
                     const answerLines = doc.splitTextToSize(q.correct_answer, 140);
                     doc.text(answerLines, 65, yPos);
                     yPos += Math.max(answerLines.length * 6, 6) + 3;
-                    
-                    // Explicação
                     doc.setFont(undefined, 'bold');
                     doc.text('Explicação:', 30, yPos);
                     doc.setFont(undefined, 'normal');
                     const explLines = doc.splitTextToSize(q.explanation || 'Não fornecida.', 130);
                     doc.text(explLines, 30, yPos + 6);
                     yPos += explLines.length * 6 + 3;
-                    
-                    // Fontes oficiais
                     if (q.officialSources && q.officialSources.length > 0) {
                         doc.setFontSize(10);
                         doc.text(`Fontes: ${q.officialSources.join(', ')}`, 30, yPos);
                         yPos += 6;
                     }
-                    
                     yPos += 8;
                 });
-                
                 doc.save(`gabarito-oficial-${new Date().toISOString().split('T')[0]}.pdf`);
                 showStatus('PDF de respostas exportado!', 'success');
-                
             } catch (error) {
                 console.error('Erro PDF:', error);
                 showStatus('Erro ao gerar PDF.', 'error');
@@ -1130,35 +1035,26 @@
                 showStatus('Nenhuma questão para exportar.', 'error');
                 return;
             }
-
             try {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
-                
-                // Cabeçalho
                 doc.setFontSize(18);
                 doc.text('AVALIAÇÃO COM DADOS OFICIAIS', 105, 20, { align: 'center' });
                 doc.setFontSize(12);
                 doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 30, { align: 'center' });
                 doc.text('Dados consultados das APIs do Governo Federal', 105, 38, { align: 'center' });
-                
                 let yPos = 50;
-                
                 questionsDatabase.forEach((q, index) => {
                     if (yPos > 200) {
                         doc.addPage();
                         yPos = 20;
                     }
-                    
-                    // Questão
                     doc.setFontSize(12);
                     doc.setFont(undefined, 'bold');
                     const questionLines = doc.splitTextToSize(`${index + 1}. ${q.text}`, 170);
                     doc.text(questionLines, 20, yPos);
                     doc.setFont(undefined, 'normal');
                     yPos += questionLines.length * 7 + 5;
-                    
-                    // Opções
                     if (q.options) {
                         q.options.forEach(option => {
                             const optionLines = doc.splitTextToSize(option, 160);
@@ -1166,32 +1062,23 @@
                             yPos += optionLines.length * 6;
                         });
                     }
-                    
-                    // Resposta
                     doc.setFont(undefined, 'bold');
                     doc.text(`Resposta: ${q.correct_answer}`, 25, yPos + 5);
                     doc.setFont(undefined, 'normal');
                     yPos += 12;
-                    
-                    // Explicação
                     const explLines = doc.splitTextToSize(`Explicação: ${q.explanation || 'Não fornecida.'}`, 170);
                     doc.text(explLines, 25, yPos);
                     yPos += explLines.length * 6;
-                    
-                    // Fontes (pequeno)
                     if (q.officialSources && q.officialSources.length > 0) {
                         doc.setFontSize(8);
                         doc.text(`Fontes: ${q.officialSources.join(', ')}`, 25, yPos + 3);
                         doc.setFontSize(12);
                         yPos += 8;
                     }
-                    
                     yPos += 15;
                 });
-                
                 doc.save(`avaliacao-dados-oficiais-${new Date().toISOString().split('T')[0]}.pdf`);
                 showStatus('PDF completo exportado!', 'success');
-                
             } catch (error) {
                 console.error('Erro PDF:', error);
                 showStatus('Erro ao gerar PDF.', 'error');
@@ -1238,15 +1125,11 @@
         // === EVENT LISTENERS ===
         document.addEventListener('DOMContentLoaded', function() {
             loadFromStorage();
-            
-            // Botões principais
             generateBtn.addEventListener('click', generateQuestions);
             document.getElementById('questions-pdf-btn').addEventListener('click', exportQuestionsPDF);
             document.getElementById('answers-pdf-btn').addEventListener('click', exportAnswersPDF);
             document.getElementById('combined-pdf-btn').addEventListener('click', exportCombinedPDF);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
-            
-            // Atalho de teclado
             promptInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && e.ctrlKey) {
                     generateQuestions();
@@ -1256,13 +1139,6 @@
 
         // === FUNÇÕES GLOBAIS ===
         window.removeQuestion = removeQuestion;
-
-        // === INICIALIZAÇÃO ===
-        console.log('🏛️ Sistema Otimizado - APIs Estáveis');
-        console.log('📊 APIs Principais: Banco Central (SGS), Exchange Rate, Economia API');
-        console.log('🔴 DADOS REAIS com fallbacks inteligentes');
-        console.log('✅ CORS resolvido - usando apenas APIs funcionais');
-        console.log('🎯 Questões: Banco Central ✅ | Câmbio ✅ | B3 ✅ | IPEA ✅ | Tesouro ✅');
     </script>
 </body>
 </html>
