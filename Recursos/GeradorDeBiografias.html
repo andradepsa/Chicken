@@ -488,11 +488,51 @@
         }
         
         // === NOVA CAMADA DE VERIFICAÇÃO DE FATOS ===
+        
+        /**
+         * **FUNÇÃO CORRIGIDA**
+         * Formata uma data do Wikidata, lidando com diferentes níveis de precisão (ano, mês, dia)
+         * e datas Antes de Cristo (a.C.).
+         * @param {string} dateString - A string de data do Wikidata (ex: "+1950-10-02T00:00:00Z" ou "-0550-00-00T00:00:00Z").
+         * @returns {string|null} - A data formatada ou nulo.
+         */
         function formatWikidataDate(dateString) {
             if (!dateString) return null;
-            const match = dateString.match(/(\d{4})-(\d{2})-(\d{2})/);
-            if (match) return `${match[3]}/${match[2]}/${match[1]}`;
-            return dateString; // Fallback
+
+            // Regex para capturar o sinal (+/-), ano, mês e dia.
+            const match = dateString.match(/([+-])(\d{4,})-(\d{2})-(\d{2})/);
+
+            if (match) {
+                const sign = match[1];
+                // Usa parseInt para remover zeros à esquerda (ex: '0550' -> 550)
+                const year = parseInt(match[2], 10);
+                const month = match[3];
+                const day = match[4];
+
+                let formattedDate = '';
+
+                // Constrói a data com base na precisão disponível
+                if (day !== '00' && month !== '00') {
+                    // Data completa: DD/MM/AAAA
+                    formattedDate = `${day}/${month}/${year}`;
+                } else if (month !== '00') {
+                    // Mês e ano: MM/AAAA
+                    formattedDate = `${month}/${year}`;
+                } else {
+                    // Apenas ano: AAAA
+                    formattedDate = `${year}`;
+                }
+
+                // Adiciona "a.C." para datas com sinal negativo (Antes de Cristo)
+                if (sign === '-') {
+                    formattedDate += ' a.C.';
+                }
+
+                return formattedDate;
+            }
+            
+            // Fallback para formatos inesperados, retorna a data sem a hora.
+            return dateString.split('T')[0]; 
         }
 
         async function getFactsFromWikidata(personName) {
@@ -593,7 +633,7 @@
 
             let deathInfoHtml = '';
             if (data.death_date) {
-                if (data.death_date.toLowerCase().includes('vivo')) {
+                if (String(data.death_date).toLowerCase().includes('vivo')) {
                     deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Status:</span><span class="info-value">${data.death_date}</span></div>`;
                 } else {
                     deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date} em ${data.death_place || 'N/A'}</span></div>`;
