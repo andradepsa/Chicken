@@ -488,27 +488,40 @@
         }
         
         // === CAMADA DE VERIFICAÇÃO DE FATOS (WIKIDATA) ===
+        
+        /**
+         * **FUNÇÃO CORRIGIDA**
+         * Formata datas de Wikidata com uma regra rígida para datas "a.C.".
+         * - Se a data for a.C., mostra *apenas* o ano.
+         * - Se for d.C., mostra a precisão disponível.
+         */
         function formatWikidataDate(dateString) {
             if (!dateString) return null;
             const match = dateString.match(/([+-])(\d{4,})-(\d{2})-(\d{2})/);
+
             if (match) {
                 const sign = match[1];
                 const year = parseInt(match[2], 10);
                 const month = match[3];
                 const day = match[4];
                 let formattedDate = '';
-                if (day !== '00' && month !== '00') {
-                    formattedDate = `${day}/${month}/${year}`;
-                } else if (month !== '00') {
-                    formattedDate = `${month}/${year}`;
-                } else {
-                    formattedDate = `${year}`;
-                }
+
+                // **MODIFICAÇÃO PRINCIPAL AQUI**
+                // Aplica a regra rígida para datas "Antes de Cristo".
                 if (sign === '-') {
-                    formattedDate += ' a.C.';
-                } else if (sign === '+') {
-                    // Apenas adiciona d.C. para anos antes de 1000 para evitar redundância (ex: 1990 d.C.)
-                    if (year < 1000) {
+                    // Para qualquer data a.C., exibe apenas o ano para garantir precisão.
+                    formattedDate = `${year} a.C.`;
+                } else {
+                    // Para datas d.C., usa a lógica de precisão anterior.
+                    if (day !== '00' && month !== '00') {
+                        formattedDate = `${day}/${month}/${year}`;
+                    } else if (month !== '00') {
+                        formattedDate = `${month}/${year}`;
+                    } else {
+                        formattedDate = `${year}`;
+                    }
+
+                    if (sign === '+' && year < 1000) {
                         formattedDate += ' d.C.';
                     }
                 }
@@ -553,22 +566,16 @@
             biographyContainer.style.display = 'none';
             suggestionBox.style.display = 'none';
 
-            // Passo 1: Buscar fatos verificados. Esta é a nossa fonte da verdade.
             const verifiedFacts = await getFactsFromWikidata(personName);
             
             generateBtn.textContent = 'Gerando biografia...';
             showStatus('Fatos verificados. Gerando a biografia com a IA...', 'info');
 
             try {
-                /**
-                 * **CORREÇÃO APLICADA AQUI (PROMPT)**
-                 * A instrução para a IA foi reforçada para usar *exatamente* os fatos fornecidos,
-                 * evitando que ela invente detalhes como dia/mês quando apenas o ano é conhecido.
-                 */
                 const factString = `(Fatos verificados: Nascimento: ${verifiedFacts.birthDate || 'Não encontrado'}, Morte: ${verifiedFacts.deathDate || 'Ainda vivo(a)'}).`;
                 const prompt = `
                 Você é um biógrafo especialista. Crie uma biografia detalhada sobre "${personName}".
-                **REGRA MAIS IMPORTANTE:** Você DEVE usar os fatos verificados fornecidos. Se uma data de nascimento é apenas um ano (ex: '69 a.C.'), você DEVE usar apenas '69 a.C.' no campo 'birth_date'. NÃO invente mês ou dia.
+                **REGRA MAIS IMPORTANTE:** Você DEVE usar os fatos verificados fornecidos. Se uma data é apenas um ano (ex: '69 a.C.'), você DEVE usar apenas esse formato. NÃO invente detalhes extras.
                 Use estes fatos: ${factString}.
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
@@ -593,14 +600,9 @@
                 jsonString = sanitizeJSONString(jsonString);
 
                 const biographyData = JSON.parse(jsonString);
-
-                /**
-                 * **CORREÇÃO APLICADA AQUI (LÓGICA)**
-                 * Esta é a trava de segurança. Independentemente do que a IA respondeu,
-                 * nós forçamos os dados verificados do Wikidata no objeto final.
-                 * Isso garante que a informação exibida seja a mais precisa possível.
-                 */
-                biographyData.name = personName; // Usa o nome que o usuário pesquisou/confirmou.
+                
+                // Trava de segurança final: garante que os dados verificados sejam sempre os exibidos.
+                biographyData.name = personName;
                 if (verifiedFacts.birthDate) {
                     biographyData.birth_date = verifiedFacts.birthDate;
                 }
@@ -609,7 +611,6 @@
                 } else if (!biographyData.death_date || biographyData.death_place?.toLowerCase() === 'n/a') {
                      biographyData.death_date = "Ainda vivo(a)";
                 }
-
 
                 displayBiography(biographyData);
                 showStatus('Biografia gerada com sucesso e fatos verificados!', 'success');
