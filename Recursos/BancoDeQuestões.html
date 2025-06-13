@@ -497,34 +497,26 @@
                 lang: 'pt', 
                 name: 'Português', 
                 topics: [],
-                seriesNeeded: new Set() // Usar Set para evitar duplicatas
+                seriesNeeded: new Set()
             };
 
             const addSeries = (seriesArray) => {
                 seriesArray.forEach(s => detection.seriesNeeded.add(s));
             };
 
-            // <<== CORREÇÃO 1: Adiciona detecção explícita por fonte (IBGE, BACEN)
             if (lowerText.includes('ibge')) addSeries(['IPCA', 'PIB']);
-            if (lowerText.includes('bacen') || lowerText.includes('banco central')) addSeries(['SELIC_META']);
-            if (lowerText.includes('b3') || lowerText.includes('bovespa')) addSeries(['BOVESPA']);
+            if (lowerText.includes('bacen') || lowerText.includes('banco central') || lowerText.includes('selic')) addSeries(['SELIC_META']);
+            if (lowerText.includes('b3') || lowerText.includes('bovespa') || lowerText.includes('bolsa')) addSeries(['BOVESPA']);
             if (lowerText.includes('câmbio') || lowerText.includes('dolar')) addSeries(['USD_BRL']);
+            if (lowerText.includes('pib')) addSeries(['PIB']);
+            if (lowerText.includes('inflação') || lowerText.includes('ipca')) addSeries(['IPCA']);
             
-            // Detecção por tópico (inflação, juros, etc.)
-            for (const [topic, series] of Object.entries(languagePatterns.pt.topics)) {
-                if (lowerText.includes(topic)) {
-                    detection.topics.push(topic);
-                    addSeries(series);
-                }
-            }
-            
-            // Se nenhuma série específica foi detectada, busca todas como padrão
             if (detection.seriesNeeded.size === 0) {
                 detection.topics = ['economia_geral'];
                 addSeries(['SELIC_META', 'IPCA', 'USD_BRL', 'PIB', 'BOVESPA']);
             }
             
-            detection.seriesNeeded = Array.from(detection.seriesNeeded); // Converte Set para Array
+            detection.seriesNeeded = Array.from(detection.seriesNeeded);
             return detection;
         }
 
@@ -540,7 +532,7 @@
                     const latest = data[data.length - 1];
                     const value = parseFloat(latest.valor);
                     updateSourceStatus('source-bacen', 'success', `✅ ${seriesCode}: ${value.toFixed(2)}% (${latest.data})`);
-                    return { value, date: latest.data, source: 'Banco Central do Brasil - SGS', series: seriesCode };
+                    return { value, date: latest.data, source: 'Banco Central do Brasil - SGS', series: seriesCode, description: `Taxa SELIC Meta` };
                 } else {
                     throw new Error('Dados não encontrados');
                 }
@@ -558,7 +550,7 @@
             };
             
             try {
-                await new Promise(resolve => setTimeout(resolve, 300)); // Simula latência
+                await new Promise(resolve => setTimeout(resolve, 300));
                 const data = realStaticData[seriesCode];
                 if (!data) throw new Error(`Série IBGE '${seriesCode}' não configurada`);
                 updateSourceStatus('source-ibge', 'success', `✅ ${data.desc}: ${data.value}%`);
@@ -592,7 +584,7 @@
                     const value = parseFloat(rate.bid);
                     const date = new Date(parseInt(rate.timestamp) * 1000).toLocaleDateString();
                     updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${value.toFixed(2)}`);
-                    return { value, date, source: 'Economia Awesome API', series: 'USD_BRL' };
+                    return { value, date, source: 'Economia Awesome API', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` };
                 } else {
                     throw new Error('Taxa não encontrada');
                 }
@@ -614,14 +606,14 @@
                 if (data.results && data.results[0] && data.results[0].regularMarketPrice) {
                     const bovespaValue = data.results[0].regularMarketPrice * 1000;
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
-                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi API)', series: 'BOVESPA' };
+                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi API)', series: 'BOVESPA', description: `Índice Bovespa` };
                 } else {
                     throw new Error('Dados B3 não encontrados');
                 }
             } catch (error) {
                 const bovespaValue = 120760;
                 updateSourceStatus('source-b3', 'success', `⚠️ ${bovespaValue.toLocaleString()} pts (fallback)`);
-                return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (fallback estático)', series: 'BOVESPA' };
+                return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (fallback estático)', series: 'BOVESPA', description: `Índice Bovespa (fallback)` };
             }
         }
 
@@ -633,7 +625,7 @@
                 if (selicData && selicData.value) selicRate = selicData.value;
                 const tesouroRate = selicRate;
                 updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ~${tesouroRate.toFixed(2)}% a.a.`);
-                return { value: tesouroRate, baseRate: selicRate, source: 'Tesouro Nacional (calculado sobre SELIC)', series: 'TESOURO_SELIC' };
+                return { value: tesouroRate, baseRate: selicRate, source: 'Tesouro Nacional (calculado sobre SELIC)', series: 'TESOURO_SELIC', description: `Rentabilidade Tesouro Selic` };
             } catch (error) {
                 updateSourceStatus('source-tesouro', 'error', `❌ ${error.message}`);
                 return null;
@@ -691,32 +683,29 @@
             generateBtn.disabled = true;
             generateBtn.innerHTML = '<div class="loading"></div>Analisando e buscando dados oficiais...';
 
-            try {
-                const detection = detectLanguageAndTopics(userPrompt);
-                const officialData = await fetchAllOfficialData(detection);
-                
-                // Extrai o número de questões do prompt do usuário
-                const questionCountMatch = userPrompt.match(/\d+/);
-                const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5; // Padrão de 5 questões
+            let officialData;
 
-                generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com dados oficiais...';
+            try {
+                // <<== MUDANÇA CRUCIAL: Etapa 1 - Apenas buscar dados e atualizar a UI
+                const detection = detectLanguageAndTopics(userPrompt);
+                officialData = await fetchAllOfficialData(detection);
                 
+                generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
+                
+                // <<== MUDANÇA CRUCIAL: Etapa 2 - Chamar a IA, agora separadamente
+                const questionCountMatch = userPrompt.match(/\d+/);
+                const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
+
                 let dataContext = '';
                 for (const [series, data] of Object.entries(officialData.data)) {
                     dataContext += `\n- ${data.description || series}: ${data.value.toFixed(2)} (Fonte: ${data.source})`;
                 }
                 
-                // <<== CORREÇÃO 2: Prompt da IA aprimorado para ser mais direto e pedir o número correto de questões
                 const enhancedPrompt = `
                     Você é um especialista em economia e professor de matemática financeira. Sua tarefa é criar EXATAMENTE ${numberOfQuestions} questões de múltipla escolha (A, B, C, D) usando os dados econômicos REAIS e ATUAIS do Brasil, fornecidos abaixo. As questões devem ser práticas, realistas e diversificadas.
 
                     DADOS OFICIAIS ATUAIS DISPONÍVEIS:
                     ${dataContext}
-                    
-                    REGRAS DE CÁLCULO (MUITO IMPORTANTE):
-                    1.  PRECISÃO: Verifique cada cálculo duas vezes. Use os dados fornecidos exatamente como estão.
-                    2.  Crie questões usando os dados do IBGE (IPCA e PIB) se eles estiverem na lista acima.
-                    3.  DISTRAÇÕES: Crie opções falsas que sejam plausíveis, resultantes de erros comuns.
                     
                     INSTRUÇÕES:
                     - Gere um total de ${numberOfQuestions} questões.
@@ -767,14 +756,13 @@
                     renderQuestions();
                     showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com dados 100% oficiais!`, 'success');
                 } else {
-                    throw new Error('Nenhuma questão foi gerada pela IA.');
+                    showStatus('A IA respondeu, mas não gerou nenhuma questão. Tente novamente.', 'info');
                 }
 
             } catch (error) {
                 console.error('Erro detalhado:', error);
-                // <<== CORREÇÃO 3: Tratamento de erro específico para a autenticação do Puter
                 if (error.code === 4001 || (error.message && error.message.includes('wallet must has at least one account'))) {
-                     showStatus(`❌ Erro de Autenticação (Puter.js): Por favor, verifique se você está logado no Puter.com para usar a IA.`, 'error');
+                     showStatus(`❌ Erro de Autenticação: Por favor, faça login no Puter.com para gerar questões. Os dados acima foram atualizados.`, 'error');
                 } else {
                      showStatus(`❌ Erro ao gerar questões: ${error.message}`, 'error');
                 }
@@ -790,7 +778,7 @@
                 source.className = `data-source ${status}`;
                 source.querySelector('.status').textContent = message;
                 const updateElement = source.querySelector('.last-update');
-                if (updateElement && (status === 'success' || status === 'loading' || status.includes('⚠️'))) {
+                if (updateElement && (status === 'success' || status.includes('⚠️'))) {
                     updateElement.textContent = `Atualizado: ${new Date().toLocaleTimeString()}`;
                 }
             }
