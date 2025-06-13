@@ -22,6 +22,15 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
         h1 {
             text-align: center;
             color: #333;
@@ -30,6 +39,32 @@
             text-align: center;
             color: #666;
             margin-bottom: 25px;
+        }
+        .user-info {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .user-info h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
         select, input[type="number"] {
             width: 100%;
@@ -40,7 +75,7 @@
             margin-bottom: 10px;
             box-sizing: border-box;
         }
-        .main-button {
+        .main-button, .login-button {
             display: block;
             width: 100%;
             padding: 14px;
@@ -56,6 +91,11 @@
         .main-button:disabled {
             background-color: #999;
             cursor: not-allowed;
+        }
+        .login-button {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            font-size: 18px;
+            padding: 16px;
         }
         #status {
             text-align: center;
@@ -92,7 +132,7 @@
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px dashed #ccc;
-            display: none; /* Escondido até verificar no quiz */
+            display: none;
         }
         .remove-btn, .check-btn {
             background-color: #dc3545;
@@ -127,10 +167,36 @@
         }
         .pdf-button { background-color: #28a745; }
         .clear-button { background-color: #6c757d; }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Tela de Loading -->
+    <div id="loading-screen" class="loading">
+        <h2>Carregando...</h2>
+        <p>Verificando autenticação do usuário...</p>
+    </div>
+
+    <!-- Tela de Login -->
+    <div id="login-screen" class="login-container" style="display: none;">
+        <h1>🔐 Login Necessário</h1>
+        <p>Para usar o Gerador de Questões e Quiz Matemático, você precisa estar logado no Puter.</p>
+        <button id="login-btn" class="login-button">🚀 Fazer Login no Puter</button>
+    </div>
+
+    <!-- Aplicação Principal -->
+    <div id="main-app" class="container" style="display: none;">
+        <!-- Informações do Usuário -->
+        <div id="user-info" class="user-info">
+            <h3>👋 Bem-vindo, <span id="username"></span>!</h3>
+            <button id="logout-btn" class="logout-btn">🚪 Sair</button>
+        </div>
+
         <h1>Gerador de Questões e Quiz Matemático</h1>
         <p class="subtitle">Escolha um tópico, tipo (perguntas ou quiz) e a quantidade de questões.</p>
 
@@ -492,6 +558,7 @@
 
         // === VARIÁVEIS GLOBAIS ===
         let questionsDatabase = [];
+        let currentUser = null;
         const topicSelect = document.getElementById('topic');
         const subtopicSelect = document.getElementById('subtopic');
         const typeSelect = document.getElementById('type');
@@ -502,6 +569,152 @@
         const actionsContainer = document.getElementById('actions-container');
         const pdfBtn = document.getElementById('pdf-btn');
         const clearBtn = document.getElementById('clear-btn');
+
+        // === ELEMENTOS DA INTERFACE ===
+        const loadingScreen = document.getElementById('loading-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const mainApp = document.getElementById('main-app');
+        const loginBtn = document.getElementById('login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameSpan = document.getElementById('username');
+
+        // === FUNÇÕES DE AUTENTICAÇÃO ===
+        
+        // Verifica se o usuário está autenticado
+        async function checkAuthentication() {
+            try {
+                const user = await puter.auth.getUser();
+                if (user && user.username) {
+                    currentUser = user;
+                    showMainApp();
+                    return true;
+                } else {
+                    showLoginScreen();
+                    return false;
+                }
+            } catch (error) {
+                console.log('Usuário não autenticado:', error);
+                showLoginScreen();
+                return false;
+            }
+        }
+
+        // Faz o login do usuário
+        async function loginUser() {
+            try {
+                loginBtn.textContent = 'Fazendo login...';
+                loginBtn.disabled = true;
+                
+                const user = await puter.auth.signIn();
+                if (user && user.username) {
+                    currentUser = user;
+                    showMainApp();
+                    showStatus('Login realizado com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showStatus('Erro ao fazer login. Tente novamente.', 'error');
+            } finally {
+                loginBtn.textContent = '🚀 Fazer Login no Puter';
+                loginBtn.disabled = false;
+            }
+        }
+
+        // Faz o logout do usuário
+        async function logoutUser() {
+            try {
+                await puter.auth.signOut();
+                currentUser = null;
+                questionsDatabase = [];
+                showLoginScreen();
+                showStatus('Logout realizado com sucesso!', 'info');
+            } catch (error) {
+                console.error('Erro no logout:', error);
+                showStatus('Erro ao fazer logout.', 'error');
+            }
+        }
+
+        // === FUNÇÕES DE INTERFACE ===
+        
+        function showLoadingScreen() {
+            loadingScreen.style.display = 'block';
+            loginScreen.style.display = 'none';
+            mainApp.style.display = 'none';
+        }
+
+        function showLoginScreen() {
+            loadingScreen.style.display = 'none';
+            loginScreen.style.display = 'block';
+            mainApp.style.display = 'none';
+        }
+
+        function showMainApp() {
+            loadingScreen.style.display = 'none';
+            loginScreen.style.display = 'none';
+            mainApp.style.display = 'block';
+            
+            if (currentUser) {
+                usernameSpan.textContent = currentUser.username;
+                loadUserData();
+            }
+        }
+
+        // === FUNÇÕES DE ARMAZENAMENTO POR USUÁRIO ===
+        
+        // Salva os dados do usuário no Puter
+        async function saveUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const dataToSave = {
+                    questions: questionsDatabase,
+                    lastUpdated: new Date().toISOString()
+                };
+                
+                await puter.fs.write(
+                    `math-quiz-${currentUser.username}.json`,
+                    JSON.stringify(dataToSave),
+                    { overwrite: true }
+                );
+            } catch (error) {
+                console.error('Erro ao salvar dados do usuário:', error);
+                // Fallback para localStorage se falhar
+                const storageKey = `math-quiz-${currentUser.username}`;
+                localStorage.setItem(storageKey, JSON.stringify(questionsDatabase));
+            }
+        }
+
+        // Carrega os dados do usuário do Puter
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            try {
+                const fileContent = await puter.fs.read(`math-quiz-${currentUser.username}.json`);
+                const userData = JSON.parse(fileContent);
+                
+                if (userData && userData.questions) {
+                    questionsDatabase = userData.questions;
+                    renderQuestions();
+                }
+            } catch (error) {
+                console.log('Arquivo de dados não encontrado, criando novo...');
+                // Fallback para localStorage se o arquivo não existir
+                try {
+                    const storageKey = `math-quiz-${currentUser.username}`;
+                    const saved = localStorage.getItem(storageKey);
+                    if (saved) {
+                        questionsDatabase = JSON.parse(saved);
+                        renderQuestions();
+                        // Migra para o Puter
+                        await saveUserData();
+                        localStorage.removeItem(storageKey);
+                    }
+                } catch (fallbackError) {
+                    console.log('Iniciando com dados vazios');
+                    questionsDatabase = [];
+                }
+            }
+        }
 
         // === FUNÇÕES DE LÓGICA ===
 
@@ -595,7 +808,7 @@
 
                 if (newQuestions.length > 0) {
                     questionsDatabase.unshift(...newQuestions);
-                    saveToLocalStorage();
+                    await saveUserData();
                     renderQuestions();
                     showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
@@ -674,34 +887,24 @@
         }
 
         // Remove uma questão da lista
-        function removeQuestion(questionId) {
+        async function removeQuestion(questionId) {
             questionsDatabase = questionsDatabase.filter(q => q.id !== questionId);
-            saveToLocalStorage();
+            await saveUserData();
             renderQuestions();
             showStatus('Questão removida.', 'info');
         }
 
         // Limpa todas as questões da lista
-        function clearAllQuestions() {
+        async function clearAllQuestions() {
             if (confirm('Tem certeza que deseja apagar TODAS as questões?')) {
                 questionsDatabase = [];
-                saveToLocalStorage();
+                await saveUserData();
                 renderQuestions();
                 showStatus('Lista limpa.', 'info');
             }
         }
 
-        // === FUNÇÕES DE ARMAZENAMENTO E PDF ===
-        function saveToLocalStorage() {
-            localStorage.setItem('simpleQuestionsDB', JSON.stringify(questionsDatabase));
-        }
-
-        function loadFromLocalStorage() {
-            const saved = localStorage.getItem('simpleQuestionsDB');
-            if (saved) {
-                questionsDatabase = JSON.parse(saved);
-            }
-        }
+        // === FUNÇÕES DE PDF ===
 
         // Gera o HTML para o arquivo PDF
         function generatePrintHTML() {
@@ -732,10 +935,11 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Lista de Questões</title>
+                    <title>Lista de Questões - ${currentUser ? currentUser.username : 'Usuário'}</title>
                     <style>
                         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                         .page-title { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px; }
+                        .user-info { text-align: center; margin-bottom: 20px; color: #666; }
                         .section-title { font-size: 1.5em; margin-top: 40px; }
                         .item { margin-bottom: 25px; }
                         .answers-section { page-break-before: always; }
@@ -744,6 +948,7 @@
                 </head>
                 <body>
                     <h1 class="page-title">Avaliação / Lista de Exercícios</h1>
+                    <p class="user-info">Usuário: ${currentUser ? currentUser.username : 'N/A'} | Data: ${new Date().toLocaleDateString('pt-BR')}</p>
                     <h2 class="section-title">📝 Questões</h2>
                     ${questionsSection}
                     <div class="answers-section">
@@ -772,18 +977,31 @@
         }
 
         // === INICIALIZAÇÃO ===
-        function initializeApp() {
-            populateTopics();
+        async function initializeApp() {
+            // Mostra tela de loading
+            showLoadingScreen();
+            
+            // Configura eventos
+            loginBtn.addEventListener('click', loginUser);
+            logoutBtn.addEventListener('click', logoutUser);
             generateBtn.addEventListener('click', generateQuestions);
             pdfBtn.addEventListener('click', exportToPDF);
             clearBtn.addEventListener('click', clearAllQuestions);
+            
+            // Torna as funções globais
             window.removeQuestion = removeQuestion;
             window.checkAnswer = checkAnswer;
-            loadFromLocalStorage();
-            renderQuestions();
+            window.updateSubtopics = updateSubtopics;
+            
+            // Preenche os tópicos
+            populateTopics();
+            
+            // Verifica autenticação
+            await checkAuthentication();
         }
         
-        initializeApp();
+        // Inicia a aplicação quando a página carregar
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
