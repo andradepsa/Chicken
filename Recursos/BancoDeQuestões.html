@@ -732,29 +732,29 @@
             updatePlaceholderByLanguage(browserLang);
         }
 
-        // === FUNÇÃO PARA ADAPTAR PLACEHOLDER ===
-        function updatePlaceholderByLanguage(lang) {
-            const placeholders = {
-                'pt': 'Exemplo: Crie 5 questões sobre economia brasileira atual | Questões de história do Brasil | Matemática para 8º ano',
-                'en': 'Example: Create 5 questions about current US economy | World history questions | Math for 8th grade',
-                'es': 'Ejemplo: Crear 5 preguntas sobre economía española actual | Historia mundial | Matemáticas para 8º grado',  
-                'fr': 'Exemple: Créer 5 questions sur l\'économie française actuelle | Histoire mondiale | Mathématiques 8e année',
-                'de': 'Beispiel: 5 Fragen zur aktuellen deutschen Wirtschaft | Weltgeschichte | Mathematik 8. Klasse',
-                'it': 'Esempio: Creare 5 domande sull\'economia italiana attuale | Storia mondiale | Matematica 8ª classe',
-                'zh': '示例：创建5个关于中国当前经济的问题 | 世界历史问题 | 8年级数学',
-                'ja': '例：現在の日本経済に関する5つの質問を作成 | 世界史の質問 | 8年生の数学',
-                'ru': 'Пример: Создать 5 вопросов о текущей экономике России | Вопросы всемирной истории | Математика 8 класс',
-                'ar': 'مثال: إنشاء 5 أسئلة حول الاقتصاد الحالي | أسئلة التاريخ العالمي | رياضيات الصف الثامن',
-                'hi': 'उदाहरण: वर्तमान भारतीय अर्थव्यवस्था पर 5 प्रश्न बनाएं | विश्व इतिहास प्रश्न | 8वीं कक्षा गणित'
-            };
-
-            promptInput.placeholder = placeholders[lang] || placeholders['en'];
-        }
+     
 
         // === FUNÇÕES AUXILIARES PARA DADOS GLOBAIS ===
         
-        // Simula API de dados econômicos em tempo real
-        async function fetchRealTimeEconomicData(country) {
+      // === FUNÇÃO PARA ADAPTAR PLACEHOLDER ===
+function updatePlaceholderByLanguage(lang) {
+    const placeholders = {
+        'pt': 'Exemplo: Crie 5 questões sobre matemática envolvendo atualidades | Economia brasileira atual | História do Brasil',
+        'en': 'Example: Create 5 questions about mathematics involving current events | Current US economy | World history questions',
+        'es': 'Ejemplo: Crear 5 preguntas sobre matemáticas relacionadas con eventos actuales | Economía española actual | Historia mundial',
+        'fr': 'Exemple: Créer 5 questions sur les mathématiques en lien avec l\'actualité | Économie française actuelle | Histoire mondiale',
+        'de': 'Beispiel: 5 Fragen zu Mathematik mit aktuellem Bezug | Aktuelle deutsche Wirtschaft | Weltgeschichte',
+        'it': 'Esempio: Crea 5 domande di matematica legate all\'attualità | Economia italiana attuale | Storia mondiale',
+        'zh': '示例：创建5个与当前事件相关的数学问题 | 中国当前经济 | 世界历史问题',
+        'ja': '例：時事問題に関連する数学の質問を5つ作成 | 現在の日本経済 | 世界史の質問',
+        'ru': 'Пример: Составьте 5 математических вопросов, связанных с текущими событиями | Экономика России | Всемирная история',
+        'ar': 'مثال: أنشئ 5 أسئلة رياضية تتعلق بالأحداث الجارية | الاقتصاد الحالي | أسئلة في التاريخ العالمي',
+        'hi': 'उदाहरण: वर्तमान घटनाओं से संबंधित गणित के 5 प्रश्न बनाएं | भारतीय अर्थव्यवस्था | विश्व इतिहास'
+    };
+
+    promptInput.placeholder = placeholders[lang] || placeholders['en'];
+}
+
             // Em produção, conectaria com APIs reais como:
             // - World Bank API
             // - IMF API  
