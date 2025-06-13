@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Biografias</title>
+    <title>Gerador de Biografias Avançado</title>
     <!-- Script essencial para a IA funcionar -->
     <script src="https://js.puter.com/v2/"></script>
     
@@ -35,17 +35,23 @@
         .mathematician-info { flex: 1; }
         .mathematician-name { font-size: 2.2rem; font-weight: bold; color: #333; margin-bottom: 15px; }
         .basic-info { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .current-info { background: #e8f5e8; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745; }
         .info-item { display: flex; margin-bottom: 10px; }
         .info-label { font-weight: bold; color: #667eea; min-width: 140px; }
         .info-value { color: #333; }
         .biography-content { line-height: 1.8; color: #444; }
         .biography-section { margin-bottom: 25px; }
         .section-title { font-size: 1.4rem; font-weight: bold; color: #667eea; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
+        .current-section-title { font-size: 1.4rem; font-weight: bold; color: #28a745; margin-bottom: 15px; border-bottom: 2px solid #28a745; padding-bottom: 5px; }
         .contributions-list { list-style: none; padding: 0; }
         .contributions-list li { background: rgba(102, 126, 234, 0.1); padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border-left: 3px solid #667eea; }
+        .current-list li { background: rgba(40, 167, 69, 0.1); border-left: 3px solid #28a745; }
         .timeline-item { padding: 15px; border-left: 3px solid #667eea; margin-bottom: 15px; background: rgba(102, 126, 234, 0.05); border-radius: 0 8px 8px 0; }
         .timeline-year { font-weight: bold; color: #667eea; font-size: 1.1rem; }
         .timeline-event { margin-top: 5px; color: #444; }
+        .news-item { padding: 12px; border-left: 3px solid #28a745; margin-bottom: 10px; background: rgba(40, 167, 69, 0.05); border-radius: 0 8px 8px 0; }
+        .news-title { font-weight: bold; color: #28a745; margin-bottom: 5px; }
+        .news-date { font-size: 0.9rem; color: #666; }
         .card-buttons { float: right; margin-top: 10px; display: flex; gap: 10px; }
         .clear-button, .print-button { color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .clear-button { background: #6c757d; } .clear-button:hover { background: #5a6268; }
@@ -56,6 +62,13 @@
         .example-query:hover { background: #f8f9fa; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
         .photo-retry-btn { background: #28a745; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 11px; margin-top: 5px; }
         .photo-retry-btn:hover { background: #218838; }
+        .progress-bar { width: 100%; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); transition: width 0.3s ease; }
+        .api-status { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .api-indicator { padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .api-success { background: #d4edda; color: #155724; }
+        .api-error { background: #f8d7da; color: #721c24; }
+        .api-loading { background: #cce5ff; color: #004085; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @media (max-width: 768px) { .mathematician-header { flex-direction: column; align-items: center; text-align: center; } .mathematician-photo { width: 150px; height: 190px; } .example-queries { grid-template-columns: 1fr; } }
         @media print { body { background: none; color: black; } body > .container > *:not(.biography-container) { display: none; } .container { box-shadow: none; padding: 0; margin: 0; max-width: 100%; } .biography-container, .biography-card { display: block !important; box-shadow: none; border: none; margin: 0; padding: 0; } .card-buttons { display: none; } .mathematician-photo { box-shadow: none; border: 1px solid #ccc; } .section-title { color: #333; border-bottom-color: #333; } a { text-decoration: none; color: black; } }
@@ -63,182 +76,431 @@
 </head>
 <body>
     <div class="container">
-        <h1>📚 Gerador de Biografias</h1>
-        <p class="subtitle">Descubra a vida e a obra de personalidades notáveis da história. Digite o nome de qualquer pessoa e obtenha uma biografia completa e detalhada.</p>
+        <h1>📚 Gerador de Biografias Avançado</h1>
+        <p class="subtitle">Descubra a vida e obra de personalidades históricas e atuais. Nosso sistema integra múltiplas fontes para trazer informações completas e atualizadas.</p>
+        
         <div class="examples-section">
             <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
             <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
             <div class="example-queries">
-                <div class="example-query" onclick="fillExample('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
+                <div class="example-query" onclick="fillExample('Elon Musk')">🚀 Elon Musk</div>
+                <div class="example-query" onclick="fillExample('Taylor Swift')">🎵 Taylor Swift</div>
+                <div class="example-query" onclick="fillExample('Leonardo DiCaprio')">🎬 Leonardo DiCaprio</div>
                 <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
-                <div class="example-query" onclick="fillExample('Isaac Newton')">🍎 Isaac Newton</div>
-                <div class="example-query" onclick="fillExample('William Bonner')">📰 William Bonner</div>
+                <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
+                <div class="example-query" onclick="fillExample('William Bonner')">📺 William Bonner</div>
             </div>
         </div>
+
         <div class="search-section">
-            <input type="text" id="person-input" class="search-input" placeholder="Digite o nome de uma pessoa (ex: Albert Einstein, Cleópatra...)" autocomplete="off">
+            <input type="text" id="person-input" class="search-input" placeholder="Digite o nome de uma pessoa (ex: Cristiano Ronaldo, Oprah Winfrey...)" autocomplete="off">
             <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
+            <div class="progress-bar" id="progress-bar" style="display: none;">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="api-status" id="api-status"></div>
         </div>
+
         <div id="suggestion-box" class="suggestion-box" style="display: none;"></div>
         <div id="status"></div>
         <div class="biography-container" id="biography-container"></div>
     </div>
 
     <script>
+        // Variáveis globais
         const generateBtn = document.getElementById('generate-btn');
         const personInput = document.getElementById('person-input');
         const statusDiv = document.getElementById('status');
         const biographyContainer = document.getElementById('biography-container');
         const suggestionBox = document.getElementById('suggestion-box');
+        const progressBar = document.getElementById('progress-bar');
+        const progressFill = document.getElementById('progress-fill');
+        const apiStatus = document.getElementById('api-status');
 
-        function showStatus(message, type = 'info') { statusDiv.textContent = message; statusDiv.className = `status-${type}`; statusDiv.style.display = 'block'; }
-        function fillExample(name) { personInput.value = name; handleSearchRequest(); }
-        function formatBiographyText(text) { if (!text) return ''; let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/); return paragraphs.map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`).join(''); }
-        function printBiography() { window.print(); }
-        function sanitizeJSONString(str) { return str.replace(/[\n\r\t]/g, '').replace(/,\s*(?=[\]\}])/g, ''); }
-
-        async function handleSearchRequest() {
-            const originalName = personInput.value.trim();
-            if (!originalName) { showStatus('Por favor, digite o nome de uma pessoa.', 'error'); return; }
-            suggestionBox.style.display = 'none';
-            generateBtn.disabled = true;
-            generateBtn.textContent = 'Verificando nome...';
-            showStatus('Verificando o nome digitado...', 'info');
-            const correctedName = await getCorrectedName(originalName);
-            if (correctedName.toLowerCase() === originalName.toLowerCase()) {
-                generateBiography();
-            } else {
-                showCorrectionSuggestion(originalName, correctedName);
-                generateBtn.disabled = false;
-                generateBtn.textContent = '🔍 Gerar Biografia Completa';
-                statusDiv.style.display = 'none';
-            }
-        }
-
-        /**
-         * **FUNÇÃO CORRIGIDA E MAIS ROBUSTA**
-         * Usa a API da Wikipedia para encontrar a grafia correta de um nome.
-         */
-        async function getCorrectedName(name) {
-            try {
-                const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
-                const response = await fetch(url);
-                if (!response.ok) return name;
-                const data = await response.json();
-
-                // 1. Prioridade máxima: a sugestão direta da API ("Você quis dizer?")
-                // Esta é a melhor forma de corrigir erros de digitação.
-                if (data.query.searchinfo && data.query.searchinfo.suggestion) {
-                    return data.query.searchinfo.suggestion;
-                }
-
-                // 2. Segunda opção: o título do primeiro resultado da busca, caso não haja sugestão.
-                if (data.query.search && data.query.search.length > 0) {
-                    return data.query.search[0].title;
-                }
-                
-                // 3. Se nada for encontrado, retorna o nome original.
-                return name;
-            } catch (error) {
-                console.warn("Erro ao verificar o nome na Wikipedia:", error);
-                return name;
-            }
-        }
-
-        function showCorrectionSuggestion(originalName, correctedName) {
-            suggestionBox.innerHTML = `Você quis dizer: <strong>${correctedName}</strong>?
-                <button id="confirm-correction" class="suggestion-btn">Sim, Pesquisar</button>
-                <button id="reject-correction" class="suggestion-btn reject">Não, pesquisar "${originalName}"</button>`;
-            suggestionBox.style.display = 'block';
-            document.getElementById('confirm-correction').onclick = () => { personInput.value = correctedName; suggestionBox.style.display = 'none'; generateBiography(); };
-            document.getElementById('reject-correction').onclick = () => { suggestionBox.style.display = 'none'; generateBiography(); };
+        // Cache para evitar requisições desnecessárias
+        const cache = new Map();
+        
+        // Funções utilitárias
+        function showStatus(message, type = 'info') { 
+            statusDiv.textContent = message; 
+            statusDiv.className = `status-${type}`; 
+            statusDiv.style.display = 'block'; 
         }
         
+        function updateProgress(percentage) {
+            progressFill.style.width = `${percentage}%`;
+        }
+        
+        function showApiStatus(apiName, status) {
+            const indicator = document.createElement('div');
+            indicator.className = `api-indicator api-${status}`;
+            indicator.textContent = `${apiName}: ${status === 'success' ? '✓' : status === 'error' ? '✗' : '⏳'}`;
+            indicator.id = `api-${apiName.toLowerCase().replace(/\s+/g, '-')}`;
+            
+            // Remove indicador anterior se existir
+            const existing = document.getElementById(indicator.id);
+            if (existing) existing.remove();
+            
+            apiStatus.appendChild(indicator);
+        }
+        
+        function fillExample(name) { 
+            personInput.value = name; 
+            handleSearchRequest(); 
+        }
+        
+        function formatBiographyText(text) { 
+            if (!text) return ''; 
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+            const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/); 
+            return paragraphs.map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`).join(''); 
+        }
+        
+        function sanitizeJSONString(str) { 
+            return str.replace(/[\n\r\t]/g, '').replace(/,\s*(?=[\]\}])/g, ''); 
+        }
+
+        // ==================== FUNÇÕES DE VERIFICAÇÃO DE NOME ====================
+        async function getCorrectedName(name) {
+            const cacheKey = `corrected_${name}`;
+            if (cache.has(cacheKey)) return cache.get(cacheKey);
+            
+            try {
+                showApiStatus('Wikipedia', 'loading');
+                const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    showApiStatus('Wikipedia', 'error');
+                    return name;
+                }
+                
+                const data = await response.json();
+                showApiStatus('Wikipedia', 'success');
+
+                let result = name;
+                if (data.query.searchinfo && data.query.searchinfo.suggestion) {
+                    result = data.query.searchinfo.suggestion;
+                } else if (data.query.search && data.query.search.length > 0) {
+                    result = data.query.search[0].title;
+                }
+                
+                cache.set(cacheKey, result);
+                return result;
+            } catch (error) {
+                console.warn("Erro ao verificar nome:", error);
+                showApiStatus('Wikipedia', 'error');
+                return name;
+            }
+        }
+
+        // ==================== FUNÇÕES DE DADOS ATUAIS ====================
+        async function getCurrentInfo(personName) {
+            const currentInfo = {
+                recentNews: [],
+                socialMedia: {},
+                professionalInfo: {},
+                recentWorks: [],
+                currentAge: null,
+                isAlive: false
+            };
+
+            // Executa buscas em paralelo para melhor performance
+            const promises = [
+                getRecentNews(personName),
+                getProfessionalInfo(personName),
+                getRecentWorks(personName)
+            ];
+
+            try {
+                const [news, professional, works] = await Promise.allSettled(promises);
+                
+                if (news.status === 'fulfilled') currentInfo.recentNews = news.value;
+                if (professional.status === 'fulfilled') currentInfo.professionalInfo = professional.value;
+                if (works.status === 'fulfilled') currentInfo.recentWorks = works.value;
+                
+            } catch (error) {
+                console.warn("Erro ao buscar informações atuais:", error);
+            }
+
+            return currentInfo;
+        }
+
+        // Busca notícias recentes
+        async function getRecentNews(personName) {
+            const cacheKey = `news_${personName}`;
+            if (cache.has(cacheKey)) return cache.get(cacheKey);
+            
+            try {
+                showApiStatus('Google News', 'loading');
+                
+                // Usa RSS2JSON para converter feed do Google News
+                const rssUrl = `https://news.google.com/rss/search?q="${encodeURIComponent(personName)}"&hl=pt-BR&num=10`;
+                const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+                
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error('Falha na API de notícias');
+                
+                const data = await response.json();
+                showApiStatus('Google News', 'success');
+                
+                if (data.status === 'ok' && data.items) {
+                    const recentNews = data.items.slice(0, 5).map(item => ({
+                        title: item.title.replace(` - ${item.source || ''}`, ''),
+                        description: item.description || '',
+                        date: new Date(item.pubDate).toLocaleDateString('pt-BR'),
+                        link: item.link
+                    }));
+                    
+                    cache.set(cacheKey, recentNews);
+                    return recentNews;
+                }
+                return [];
+            } catch (error) {
+                console.warn("Erro ao buscar notícias:", error);
+                showApiStatus('Google News', 'error');
+                return [];
+            }
+        }
+
+        // Busca informações profissionais atuais
+        async function getProfessionalInfo(personName) {
+            try {
+                showApiStatus('Wikidata Pro', 'loading');
+                const wikidataInfo = await getWikidataCurrentInfo(personName);
+                showApiStatus('Wikidata Pro', 'success');
+                return wikidataInfo;
+            } catch (error) {
+                console.warn("Erro ao buscar info profissional:", error);
+                showApiStatus('Wikidata Pro', 'error');
+                return {};
+            }
+        }
+
+        // Busca trabalhos recentes
+        async function getRecentWorks(personName) {
+            const works = [];
+            
+            try {
+                // Busca livros recentes
+                showApiStatus('Google Books', 'loading');
+                const books = await getRecentBooks(personName);
+                works.push(...books);
+                showApiStatus('Google Books', books.length > 0 ? 'success' : 'error');
+                
+                // Busca trabalhos acadêmicos
+                showApiStatus('CrossRef', 'loading');
+                const academic = await getRecentAcademicWorks(personName);
+                works.push(...academic);
+                showApiStatus('CrossRef', academic.length > 0 ? 'success' : 'error');
+                
+            } catch (error) {
+                console.warn("Erro ao buscar trabalhos recentes:", error);
+            }
+            
+            return works;
+        }
+
+        // ==================== WIKIDATA AVANÇADO ====================
+        async function getWikidataCurrentInfo(personName) {
+            try {
+                // Busca entidade
+                const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
+                const searchResponse = await fetch(searchUrl);
+                const searchData = await searchResponse.json();
+                
+                if (!searchData.search || searchData.search.length === 0) return {};
+                
+                const entityId = searchData.search[0].id;
+                
+                // Busca propriedades da entidade
+                const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
+                const entityResponse = await fetch(entityUrl);
+                const entityData = await entityResponse.json();
+                
+                const claims = entityData.entities[entityId].claims;
+                
+                const info = {};
+                
+                // Ocupação atual (P106)
+                if (claims.P106) {
+                    info.occupation = await getWikidataLabel(claims.P106[0].mainsnak.datavalue?.value?.id);
+                }
+                
+                // Empregador atual (P108)
+                if (claims.P108) {
+                    info.employer = await getWikidataLabel(claims.P108[0].mainsnak.datavalue?.value?.id);
+                }
+                
+                // Prêmios recebidos (P166)
+                if (claims.P166) {
+                    info.awards = claims.P166.length;
+                }
+                
+                // Educação (P69)
+                if (claims.P69) {
+                    info.education = await getWikidataLabel(claims.P69[0].mainsnak.datavalue?.value?.id);
+                }
+                
+                return info;
+            } catch (error) {
+                console.warn("Erro no Wikidata avançado:", error);
+                return {};
+            }
+        }
+
+        // ==================== GOOGLE BOOKS ====================
+        async function getRecentBooks(personName) {
+            try {
+                const currentYear = new Date().getFullYear();
+                const twoYearsAgo = currentYear - 2;
+                
+                const booksUrl = `https://www.googleapis.com/books/v1/volumes?q=inauthor:"${encodeURIComponent(personName)}"&orderBy=newest&maxResults=10`;
+                
+                const response = await fetch(booksUrl);
+                if (!response.ok) return [];
+                
+                const data = await response.json();
+                
+                if (data.items) {
+                    return data.items
+                        .filter(item => {
+                            const pubDate = item.volumeInfo.publishedDate;
+                            if (!pubDate) return false;
+                            const year = parseInt(pubDate.split('-')[0]);
+                            return year >= twoYearsAgo;
+                        })
+                        .map(item => ({
+                            title: item.volumeInfo.title,
+                            publishedDate: item.volumeInfo.publishedDate,
+                            type: 'Livro',
+                            description: item.volumeInfo.description?.substring(0, 200) + '...' || ''
+                        }))
+                        .slice(0, 3);
+                }
+                return [];
+            } catch (error) {
+                console.warn("Erro ao buscar livros:", error);
+                return [];
+            }
+        }
+
+        // ==================== CROSSREF (TRABALHOS ACADÊMICOS) ====================
+        async function getRecentAcademicWorks(personName) {
+            try {
+                const currentYear = new Date().getFullYear();
+                const crossrefUrl = `https://api.crossref.org/works?query.author=${encodeURIComponent(personName)}&filter=from-pub-date:${currentYear-2}&rows=5&sort=published&order=desc`;
+                
+                const response = await fetch(crossrefUrl);
+                if (!response.ok) return [];
+                
+                const data = await response.json();
+                
+                if (data.message && data.message.items) {
+                    return data.message.items.map(item => ({
+                        title: Array.isArray(item.title) ? item.title[0] : item.title,
+                        publishedDate: item.published ? item.published['date-parts'][0].join('-') : 'N/A',
+                        journal: item['container-title'] ? (Array.isArray(item['container-title']) ? item['container-title'][0] : item['container-title']) : 'N/A',
+                        type: 'Artigo Acadêmico'
+                    })).slice(0, 3);
+                }
+                return [];
+            } catch (error) {
+                console.warn("Erro ao buscar trabalhos acadêmicos:", error);
+                return [];
+            }
+        }
+
+        // ==================== WIKIDATA BÁSICO ====================
+        async function getFactsFromWikidata(personName) {
+            const cacheKey = `facts_${personName}`;
+            if (cache.has(cacheKey)) return cache.get(cacheKey);
+            
+            try {
+                showApiStatus('Wikidata', 'loading');
+                
+                const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
+                const searchResponse = await fetch(searchUrl);
+                
+                if (!searchResponse.ok) {
+                    showApiStatus('Wikidata', 'error');
+                    return {};
+                }
+                
+                const searchData = await searchResponse.json();
+                if (!searchData.search || searchData.search.length === 0) {
+                    showApiStatus('Wikidata', 'error');
+                    return {};
+                }
+                
+                const entityId = searchData.search[0].id;
+                const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
+                const entityResponse = await fetch(entityUrl);
+                
+                if (!entityResponse.ok) {
+                    showApiStatus('Wikidata', 'error');
+                    return {};
+                }
+                
+                const entityData = await entityResponse.json();
+                const claims = entityData.entities[entityId].claims;
+                
+                const birthClaim = claims.P569?.[0]?.mainsnak?.datavalue?.value?.time;
+                const deathClaim = claims.P570?.[0]?.mainsnak?.datavalue?.value?.time;
+                
+                const facts = {
+                    birthDate: birthClaim ? formatWikidataDate(birthClaim) : null,
+                    deathDate: deathClaim ? formatWikidataDate(deathClaim) : null,
+                    isAlive: !deathClaim
+                };
+                
+                showApiStatus('Wikidata', 'success');
+                cache.set(cacheKey, facts);
+                return facts;
+            } catch (error) {
+                console.warn("Erro ao buscar fatos no Wikidata:", error);
+                showApiStatus('Wikidata', 'error');
+                return {};
+            }
+        }
+
+        // ==================== FUNÇÕES AUXILIARES ====================
         function formatWikidataDate(dateString) {
             if (!dateString) return null;
             const match = dateString.match(/([+-])(\d{4,})-(\d{2})-(\d{2})/);
             if (match) {
-                const sign = match[1]; const year = parseInt(match[2], 10); const month = match[3]; const day = match[4];
+                const [, sign, yearStr, month, day] = match;
+                const year = parseInt(yearStr, 10);
+                
                 let formattedDate = '';
-                if (sign === '-') { formattedDate = `${year} a.C.`; } else {
-                    if (day !== '00' && month !== '00') { formattedDate = `${day}/${month}/${year}`; } else if (month !== '00') { formattedDate = `${month}/${year}`; } else { formattedDate = `${year}`; }
-                    if (sign === '+' && year < 1000) { formattedDate += ' d.C.'; }
+                if (sign === '-') {
+                    formattedDate = `${year} a.C.`;
+                } else {
+                    if (day !== '00' && month !== '00') {
+                        formattedDate = `${day}/${month}/${year}`;
+                    } else if (month !== '00') {
+                        formattedDate = `${month}/${year}`;
+                    } else {
+                        formattedDate = `${year}`;
+                    }
+                    if (sign === '+' && year < 1000) {
+                        formattedDate += ' d.C.';
+                    }
                 }
                 return formattedDate;
             }
             return dateString.split('T')[0];
         }
 
-        async function getFactsFromWikidata(personName) {
+        function calculateCurrentAge(birthDate) {
+            if (!birthDate || birthDate.toLowerCase().includes('a.c.')) return null;
+            
             try {
-                const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
-                const searchResponse = await fetch(searchUrl); if (!searchResponse.ok) return {};
-                const searchData = await searchResponse.json(); if (!searchData.search || searchData.search.length === 0) return {};
-                const entityId = searchData.search[0].id;
-                const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
-                const entityResponse = await fetch(entityUrl); if (!entityResponse.ok) return {};
-                const entityData = await entityResponse.json(); const claims = entityData.entities[entityId].claims;
-                const birthClaim = claims.P569?.[0]?.mainsnak?.datavalue?.value?.time;
-                const deathClaim = claims.P570?.[0]?.mainsnak?.datavalue?.value?.time;
-                return { birthDate: birthClaim ? formatWikidataDate(birthClaim) : null, deathDate: deathClaim ? formatWikidataDate(deathClaim) : null, };
-            } catch (error) { console.warn("Erro ao buscar fatos no Wikidata:", error); return {}; }
-        }
-
-        async function generateBiography() {
-            const personName = personInput.value.trim(); if (!personName) return;
-            generateBtn.disabled = true; generateBtn.textContent = 'Verificando fatos...';
-            showStatus('Verificando fatos no Wikidata para maior precisão...', 'info');
-            biographyContainer.style.display = 'none'; suggestionBox.style.display = 'none';
-            const verifiedFacts = await getFactsFromWikidata(personName);
-            generateBtn.textContent = 'Gerando biografia...'; showStatus('Fatos verificados. Gerando a biografia com a IA...', 'info');
-            try {
-                const factString = `(Fatos verificados: Nascimento: ${verifiedFacts.birthDate || 'Não encontrado'}, Morte: ${verifiedFacts.deathDate || 'Ainda vivo(a)'}).`;
-                const prompt = `Você é um biógrafo especialista. Crie uma biografia detalhada sobre "${personName}". **REGRA MAIS IMPORTANTE:** Você DEVE usar os fatos verificados fornecidos. Se uma data é apenas um ano (ex: '69 a.C.'), você DEVE usar apenas esse formato. NÃO invente detalhes extras. Use estes fatos: ${factString}. Responda **EXCLUSIVAMENTE** com um objeto JSON válido. {"name": "Nome completo", "birth_date": "${verifiedFacts.birthDate || 'Não disponível'}", "birth_place": "Cidade, País", "death_date": "${verifiedFacts.deathDate || 'Ainda vivo(a)'}", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"], "biography": "**Estrutura (4-5 parágrafos):**\\n\\n1. **Início da Vida:** Contexto, família, educação.\\n\\n2. **Carreira:** Marcos, importância.\\n\\n3. **Contexto Histórico:** Sua época, desafios.\\n\\n4. **Legado:** Influência, relevância hoje.", "major_contributions": ["Contribuição 1.", "Contribuição 2."], "timeline": [{"year": "AAAA", "event": "Evento."}], "curiosities": ["Curiosidade 1.", "Curiosidade 2."]}`;
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
-                let content = response.message.content; const jsonStart = content.indexOf('{'); const jsonEnd = content.lastIndexOf('}') + 1;
-                if (jsonStart === -1 || jsonEnd === 0) throw new Error('A resposta da IA não continha um JSON válido.');
-                let jsonString = sanitizeJSONString(content.substring(jsonStart, jsonEnd));
-                const biographyData = JSON.parse(jsonString);
-                biographyData.name = personName;
-                if (verifiedFacts.birthDate) { biographyData.birth_date = verifiedFacts.birthDate; }
-                if (verifiedFacts.deathDate) { biographyData.death_date = verifiedFacts.deathDate; } else if (!biographyData.death_date || biographyData.death_place?.toLowerCase() === 'n/a') { biographyData.death_date = "Ainda vivo(a)"; }
-                displayBiography(biographyData); showStatus('Biografia gerada com sucesso e fatos verificados!', 'success');
-            } catch (error) { console.error('Erro na geração:', error); if (error.code === 4001) { showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com.', 'error'); } else { showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error'); } } finally { generateBtn.disabled = false; generateBtn.textContent = '🔍 Gerar Biografia Completa'; }
-        }
-
-        function displayBiography(data) {
-            const photoId = `photo-${Date.now()}`; let deathInfoHtml = '';
-            if (data.death_date) { if (String(data.death_date).toLowerCase().includes('vivo')) { deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Status:</span><span class="info-value">${data.death_date}</span></div>`; } else { deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date} em ${data.death_place || 'N/A'}</span></div>`; } }
-            const biographyHTML = `<div class="biography-card"><div class="card-buttons"><button class="print-button" onclick="printBiography()">🖨️ Imprimir</button><button class="clear-button" onclick="clearBiography()">Limpar</button></div><div class="mathematician-header"><div class="mathematician-photo" id="${photoId}"><div class="photo-placeholder"><div class="loading-photo"></div><div>Procurando foto...</div></div></div><div class="mathematician-info"><h2 class="mathematician-name">${data.name || 'Nome não encontrado'}</h2><div class="basic-info"><div class="info-item"><span class="info-label">📅 Nascimento:</span><span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span></div>${deathInfoHtml}<div class="info-item"><span class="info-label">🌍 Nacionalidade:</span><span class="info-value">${data.nationality || 'N/A'}</span></div><div class="info-item"><span class="info-label">🏆 Atuação:</span><span class="info-value">${(data.main_areas || []).join(', ')}</span></div></div></div></div><div class="biography-content">${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div>${formatBiographyText(data.biography)}</div>` : ''}${data.major_contributions && data.major_contributions.length > 0 ? `<div class="biography-section"><div class="section-title">🏆 Principais Feitos</div><ul class="contributions-list">${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}</ul></div>` : ''}${data.timeline && data.timeline.length > 0 ? `<div class="biography-section"><div class="section-title">📅 Linha do Tempo</div>${data.timeline.map(item => `<div class="timeline-item"><div class="timeline-year">${item.year}</div><div class="timeline-event">${item.event}</div></div>`).join('')}</div>` : ''}${data.curiosities && data.curiosities.length > 0 ? `<div class="biography-section"><div class="section-title">🔍 Curiosidades</div><ul class="contributions-list">${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}</ul></div>` : ''}</div></div>`;
-            biographyContainer.innerHTML = biographyHTML; biographyContainer.style.display = 'block'; window.scrollTo({ top: biographyContainer.offsetTop - 20, behavior: 'smooth' }); loadPersonPhoto(data.name, photoId);
-        }
-
-        async function loadPersonPhoto(personName, photoElementId) {
-            const photoElement = document.getElementById(photoElementId); if (!photoElement) return;
-            const imageSources = [{ name: 'Wikidata', func: () => tryWikidata(personName) }, { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') }, { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') }, { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) }];
-            let photoLoaded = false;
-            for (const source of imageSources) {
-                if (photoLoaded) break;
-                updatePhotoStatus(photoElement, `Buscando em ${source.name}...`);
-                try { const imageUrl = await source.func(); if (imageUrl) { const success = await loadImageWithFallback(imageUrl, personName, photoElement); if (success) { console.log(`Foto de ${source.name}: ${imageUrl}`); photoLoaded = true; } } } catch (error) { console.warn(`Erro em ${source.name}:`, error.message); }
-            }
-            if (!photoLoaded) showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
-        }
-        async function tryWikidata(personName) { const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`; const searchResponse = await fetch(searchUrl); if (!searchResponse.ok) return null; const searchData = await searchResponse.json(); if (!searchData.search || searchData.search.length === 0) return null; const entityId = searchData.search[0].id; const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`; const entityResponse = await fetch(entityUrl); if (!entityResponse.ok) return null; const entityData = await entityResponse.json(); const claims = entityData.entities[entityId].claims; if (!claims || !claims.P18) return null; const imageName = claims.P18[0].mainsnak.datavalue.value; if (!imageName) return null; return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`; }
-        async function tryWikipediaAPI(personName, lang) { const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`; const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } }); if (!response.ok) return null; const data = await response.json(); if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-'); return null; }
-        async function tryDuckDuckGo(personName) { const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(personName)}&format=json&pretty=1&no_html=1&skip_disambig=1`; const response = await fetch(url); if (!response.ok) return null; const data = await response.json(); if (data.Image && data.Image.length > 0) return new URL(data.Image, 'https://duckduckgo.com').href; return null; }
-        async function loadImageWithFallback(imageUrl, personName, photoElement) { return new Promise((resolve) => { const img = new Image(); let timeoutId = null; img.onload = () => { clearTimeout(timeoutId); photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`; resolve(true); }; img.onerror = () => { clearTimeout(timeoutId); resolve(false); }; timeoutId = setTimeout(() => { resolve(false); }, 10000); img.src = imageUrl; }); }
-        function updatePhotoStatus(photoElement, message) { photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`; }
-        function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
-        function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') { const photoElement = document.getElementById(elementId); if (!photoElement) return; const initials = getInitials(name); const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a']; const color = colors[name.length % colors.length]; photoElement.innerHTML = `<div class="photo-placeholder" style="background: ${color};"><div style="font-size: 48px; font-weight: bold;">${initials}</div><div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div><button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button></div>`; }
-        function retryPhotoLoad(personName, photoElementId) { loadPersonPhoto(personName, photoElementId); }
-        function clearBiography() { biographyContainer.style.display = 'none'; biographyContainer.innerHTML = ''; personInput.value = ''; statusDiv.style.display = 'none'; suggestionBox.style.display = 'none'; personInput.focus(); }
-        
-        generateBtn.addEventListener('click', handleSearchRequest);
-        personInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearchRequest(); });
-        window.fillExample = fillExample; window.clearBiography = clearBiography; window.retryPhotoLoad = retryPhotoLoad; window.printBiography = printBiography;
-        personInput.focus();
-    </script>
-</body>
-</html>
+                let date;
+                if (birthDate.includes('/')) {
+                    const parts = birthDate.split('/');
+                    if (parts.length === 3) {
+                        date = new Date(parts[2], parts[1] - 1, parts[0]);
+                    }
+                } else if (birthDate.match(/^\d{4}$/)) {
+                    date = new Date(birthDate, 0,
