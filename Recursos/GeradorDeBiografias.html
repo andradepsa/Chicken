@@ -487,28 +487,16 @@
             };
         }
         
-        // === NOVA CAMADA DE VERIFICAÇÃO DE FATOS ===
-        
-        /**
-         * **FUNÇÃO CORRIGIDA**
-         * Formata uma data do Wikidata, diferenciando a.C. e d.C. e lidando com diferentes
-         * níveis de precisão (ano, mês, dia).
-         * @param {string} dateString - A string de data do Wikidata (ex: "+0100-00-00T00:00:00Z").
-         * @returns {string|null} - A data formatada ou nulo.
-         */
+        // === CAMADA DE VERIFICAÇÃO DE FATOS (WIKIDATA) ===
         function formatWikidataDate(dateString) {
             if (!dateString) return null;
-
             const match = dateString.match(/([+-])(\d{4,})-(\d{2})-(\d{2})/);
-
             if (match) {
                 const sign = match[1];
                 const year = parseInt(match[2], 10);
                 const month = match[3];
                 const day = match[4];
-
                 let formattedDate = '';
-
                 if (day !== '00' && month !== '00') {
                     formattedDate = `${day}/${month}/${year}`;
                 } else if (month !== '00') {
@@ -516,19 +504,17 @@
                 } else {
                     formattedDate = `${year}`;
                 }
-
-                // **MODIFICAÇÃO PRINCIPAL AQUI**
-                // Adiciona "a.C." para datas negativas e "d.C." para datas positivas.
                 if (sign === '-') {
                     formattedDate += ' a.C.';
                 } else if (sign === '+') {
-                    formattedDate += ' d.C.';
+                    // Apenas adiciona d.C. para anos antes de 1000 para evitar redundância (ex: 1990 d.C.)
+                    if (year < 1000) {
+                        formattedDate += ' d.C.';
+                    }
                 }
-
                 return formattedDate;
             }
-            
-            return dateString.split('T')[0]; 
+            return dateString.split('T')[0];
         }
 
         async function getFactsFromWikidata(personName) {
@@ -567,15 +553,23 @@
             biographyContainer.style.display = 'none';
             suggestionBox.style.display = 'none';
 
+            // Passo 1: Buscar fatos verificados. Esta é a nossa fonte da verdade.
             const verifiedFacts = await getFactsFromWikidata(personName);
             
             generateBtn.textContent = 'Gerando biografia...';
             showStatus('Fatos verificados. Gerando a biografia com a IA...', 'info');
 
             try {
-                const factString = `(Fatos verificados: Nascimento: ${verifiedFacts.birthDate || 'Não encontrado'}, Morte: ${verifiedFacts.deathDate || 'Ainda vivo(a)'}). Use esses fatos em sua narrativa.`;
+                /**
+                 * **CORREÇÃO APLICADA AQUI (PROMPT)**
+                 * A instrução para a IA foi reforçada para usar *exatamente* os fatos fornecidos,
+                 * evitando que ela invente detalhes como dia/mês quando apenas o ano é conhecido.
+                 */
+                const factString = `(Fatos verificados: Nascimento: ${verifiedFacts.birthDate || 'Não encontrado'}, Morte: ${verifiedFacts.deathDate || 'Ainda vivo(a)'}).`;
                 const prompt = `
-                Você é um biógrafo especialista. Crie uma biografia detalhada sobre "${personName}", considerando estes fatos: ${factString}.
+                Você é um biógrafo especialista. Crie uma biografia detalhada sobre "${personName}".
+                **REGRA MAIS IMPORTANTE:** Você DEVE usar os fatos verificados fornecidos. Se uma data de nascimento é apenas um ano (ex: '69 a.C.'), você DEVE usar apenas '69 a.C.' no campo 'birth_date'. NÃO invente mês ou dia.
+                Use estes fatos: ${factString}.
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
                   "name": "Nome completo", "birth_date": "${verifiedFacts.birthDate || 'Não disponível'}", "birth_place": "Cidade, País", 
@@ -585,7 +579,7 @@
                   "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento."}],
                   "curiosities": ["Curiosidade 1.", "Curiosidade 2."]
                 }
-                **REGRAS CRUCIAIS:** O JSON deve ser estritamente válido. NÃO use vírgulas no final de listas. Para aspas dentro de textos, use aspas simples (') ou escape (\\").`;
+                **REGRAS FINAIS:** O JSON deve ser estritamente válido. NÃO use vírgulas no final de listas. Para aspas dentro de textos, use aspas simples (') ou escape (\\").`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
@@ -600,10 +594,22 @@
 
                 const biographyData = JSON.parse(jsonString);
 
-                biographyData.name = personName;
-                if (verifiedFacts.birthDate) biographyData.birth_date = verifiedFacts.birthDate;
-                if (verifiedFacts.deathDate) biographyData.death_date = verifiedFacts.deathDate;
-                else if (biographyData.death_place?.toLowerCase() === 'n/a') biographyData.death_date = "Ainda vivo(a)";
+                /**
+                 * **CORREÇÃO APLICADA AQUI (LÓGICA)**
+                 * Esta é a trava de segurança. Independentemente do que a IA respondeu,
+                 * nós forçamos os dados verificados do Wikidata no objeto final.
+                 * Isso garante que a informação exibida seja a mais precisa possível.
+                 */
+                biographyData.name = personName; // Usa o nome que o usuário pesquisou/confirmou.
+                if (verifiedFacts.birthDate) {
+                    biographyData.birth_date = verifiedFacts.birthDate;
+                }
+                if (verifiedFacts.deathDate) {
+                    biographyData.death_date = verifiedFacts.deathDate;
+                } else if (!biographyData.death_date || biographyData.death_place?.toLowerCase() === 'n/a') {
+                     biographyData.death_date = "Ainda vivo(a)";
+                }
+
 
                 displayBiography(biographyData);
                 showStatus('Biografia gerada com sucesso e fatos verificados!', 'success');
