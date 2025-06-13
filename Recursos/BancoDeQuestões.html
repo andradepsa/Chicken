@@ -329,7 +329,8 @@
             try {
                 // Verifica se já está autenticado
                 const user = await puter.auth.getUser();
-                if (user) {
+                if (user && user.username) {
+                    console.log('Usuário já autenticado:', user.username);
                     return true;
                 }
             } catch (error) {
@@ -339,11 +340,21 @@
             
             try {
                 // Tenta fazer login
-                await puter.auth.signIn();
+                console.log('Iniciando processo de login...');
+                const result = await puter.auth.signIn();
+                console.log('Login realizado:', result);
                 return true;
             } catch (error) {
                 console.error('Erro na autenticação:', error);
-                const errorMessage = error?.message || error?.toString() || 'Erro de autenticação';
+                
+                // Extrair mensagem de erro
+                let errorMessage = 'Erro de autenticação';
+                if (error && error.message) {
+                    errorMessage = error.message;
+                } else if (error && error.toString) {
+                    errorMessage = error.toString();
+                }
+                
                 throw new Error(`É necessário fazer login no Puter para usar a IA. ${errorMessage}`);
             }
         }
@@ -363,13 +374,24 @@
             } catch (error) {
                 console.error('Erro na IA do Puter:', error);
                 
-                // Converter error para string se necessário
-                const errorMessage = error?.message || error?.toString() || 'Erro desconhecido';
-                const errorCode = error?.code || null;
+                // Extrair mensagem de erro de forma mais robusta
+                let errorMessage = 'Erro desconhecido';
+                let errorCode = null;
+                
+                if (error && typeof error === 'object') {
+                    errorCode = error.code;
+                    if (error.message && typeof error.message === 'string') {
+                        errorMessage = error.message;
+                    } else if (error.toString && typeof error.toString === 'function') {
+                        errorMessage = error.toString();
+                    }
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
                 
                 // Tratamento específico para erros de autenticação
                 if (errorCode === 4001 || errorMessage.includes('wallet') || errorMessage.includes('account')) {
-                    throw new Error('🔐 É necessário fazer login no Puter. Uma janela de login será aberta automaticamente.');
+                    throw new Error('🔐 Você precisa fazer login no Puter primeiro. Clique no botão novamente e faça login quando solicitado.');
                 } else if (errorMessage.includes('user cancelled') || errorMessage.includes('cancelled')) {
                     throw new Error('⚠️ Login cancelado. É necessário fazer login para usar a IA.');
                 } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
@@ -530,9 +552,9 @@ Gere as 5 questões agora:`;
             helperText.style.display = 'block';
             helperText.style.color = '#fca5a5';
             
-            // Se for erro de autenticação, mostrar instruções
+            // Se for erro de autenticação, mostrar instruções específicas
             if (message.includes('login') || message.includes('🔐')) {
-                helperText.innerHTML += '<br><br>💡 <strong>Instruções:</strong><br>1. Uma janela de login do Puter será aberta<br>2. Faça login com sua conta<br>3. Volte aqui e tente gerar questões novamente';
+                helperText.innerHTML += '<br><br>💡 <strong>Passos para resolver:</strong><br>1. Visite <a href="https://puter.com" target="_blank" style="color: #60a5fa;">puter.com</a> e crie uma conta gratuita<br>2. Volte aqui e clique em "Gerar Questões"<br>3. Faça login quando solicitado<br>4. Aproveite as questões geradas!';
             }
         }
         
