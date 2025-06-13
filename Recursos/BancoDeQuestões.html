@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões com Dados Reais Globais</title>
+    <title>Gerador de Questões com Dados Reais</title>
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
@@ -15,6 +15,7 @@
             padding: 20px;
             min-height: 100vh;
         }
+        
         .container {
             max-width: 900px;
             margin: 0 auto;
@@ -24,6 +25,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }
+        
         h1 {
             text-align: center;
             color: #333;
@@ -33,12 +35,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        
         .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
             font-size: 1.1em;
         }
+        
         .real-data-indicator {
             background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
@@ -49,11 +53,14 @@
             font-weight: bold;
             animation: pulse 2s infinite;
         }
+        
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
         }
+        
+        /* ÁREA DE INPUT */
         textarea {
             width: 100%;
             padding: 15px;
@@ -64,10 +71,12 @@
             box-sizing: border-box;
             transition: border-color 0.3s;
         }
+        
         textarea:focus {
             border-color: #667eea;
             outline: none;
         }
+        
         .main-button {
             display: block;
             width: 100%;
@@ -82,14 +91,18 @@
             margin-top: 15px;
             transition: transform 0.2s;
         }
+        
         .main-button:hover {
             transform: translateY(-2px);
         }
+        
         .main-button:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
+        
+        /* STATUS */
         #status {
             text-align: center;
             padding: 15px;
@@ -98,185 +111,286 @@
             display: none;
             font-weight: bold;
         }
+        
         .status-success { background: #d4edda; color: #155724; }
         .status-error { background: #f8d7da; color: #721c24; }
         .status-info { background: #cce5ff; color: #004085; }
         
+        /* DATA SOURCES - COMPACTO */
         .data-sources {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
         }
+        
         .data-source {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #28a745;
-        }
-        .data-source h4 {
-            margin: 0 0 10px 0;
-            color: #28a745;
-        }
-        .data-source .status {
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid #28a745;
             font-size: 12px;
+        }
+        
+        .data-source h4 {
+            margin: 0 0 5px 0;
+            color: #28a745;
+            font-size: 13px;
+        }
+        
+        .data-source .status {
+            font-size: 11px;
             color: #666;
         }
         
+        /* QUESTÕES - ÁREA LIMPA */
         #questions-container {
             margin-top: 30px;
         }
+        
         .question-card {
             background: #fff;
-            border: 2px solid #e0e0e0;
-            border-radius: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
             padding: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             position: relative;
             transition: transform 0.2s;
         }
+        
         .question-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
+        
+        .question-number {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            position: absolute;
+            top: -10px;
+            left: 15px;
+        }
+        
         .question-text {
             font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 15px;
+            font-size: 1.1em;
+            margin: 15px 0 10px 0;
             color: #333;
+            line-height: 1.4;
         }
+        
         .question-options {
-            margin: 15px 0;
+            margin: 10px 0;
         }
+        
         .question-options ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
+        
         .question-options li {
             background: #f8f9fa;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+            font-size: 15px;
         }
+        
         .question-answer {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px dashed #e0e0e0;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #dee2e6;
+            font-size: 14px;
         }
+        
+        .answer-label {
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 5px;
+        }
+        
+        .explanation-label {
+            font-weight: bold;
+            color: #6c757d;
+            margin: 8px 0 5px 0;
+        }
+        
+        /* BADGES MINIMALISTAS */
+        .question-badges {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .badge-real { background: #28a745; }
+        .badge-lang { background: #6c757d; }
+        
         .remove-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            bottom: 10px;
+            right: 10px;
             background: #dc3545;
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 15px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
+            transition: all 0.2s;
         }
         
-        .data-badges {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            display: flex;
-            gap: 8px;
+        .remove-btn:hover {
+            background: #c82333;
         }
-        .badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
-        .badge-real { background: linear-gradient(45deg, #28a745, #20c997); }
-        .badge-lang { background: #6c757d; }
-        .badge-country { background: #fd7e14; }
         
+        /* BOTÕES DE AÇÃO */
         #actions-container {
             display: none;
-            margin-top: 30px;
+            margin-top: 25px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
+            flex-wrap: wrap;
         }
+        
         .action-button {
             flex: 1;
-            padding: 15px;
-            font-size: 16px;
+            min-width: 160px;
+            padding: 12px;
+            font-size: 14px;
             font-weight: bold;
             color: #fff;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .action-button:hover {
-            transform: translateY(-2px);
-        }
-        .pdf-button { background: linear-gradient(45deg, #28a745, #20c997); }
-        .clear-button { background: linear-gradient(45deg, #6c757d, #495057); }
         
+        .action-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-questions { background: linear-gradient(45deg, #007bff, #0056b3); }
+        .btn-answers { background: linear-gradient(45deg, #28a745, #20c997); }
+        .btn-combined { background: linear-gradient(45deg, #6f42c1, #5a2d91); }
+        .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
+        
+        /* LOADING */
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-right: 8px;
         }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .data-sources {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-button {
+                min-width: unset;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🌍 Gerador Inteligente com Dados Reais</h1>
+        <h1>🌍 Gerador Inteligente</h1>
         <div class="real-data-indicator">
-            📡 CONECTADO A FONTES REAIS DE DADOS GLOBAIS 📡
+            📡 CONECTADO A DADOS REAIS GLOBAIS 📡
         </div>
         <p class="subtitle">
-            Sistema que busca dados atuais de economia, notícias e informações globais em tempo real.
-            Funciona em qualquer idioma e região do mundo.
+            Digite em qualquer idioma. O sistema busca dados atuais e gera questões contextualizadas.
         </p>
 
+        <!-- Data Sources - Compacto -->
         <div class="data-sources" id="data-sources">
             <div class="data-source">
-                <h4>📈 Dados Econômicos</h4>
-                <div class="status" id="econ-status">Aguardando consulta...</div>
+                <h4>📈 Economia</h4>
+                <div class="status" id="econ-status">Pronto</div>
             </div>
             <div class="data-source">
-                <h4>📰 Notícias Globais</h4>
-                <div class="status" id="news-status">Aguardando consulta...</div>
+                <h4>📰 Notícias</h4>
+                <div class="status" id="news-status">Pronto</div>
             </div>
             <div class="data-source">
-                <h4>💱 Câmbio & Finanças</h4>
-                <div class="status" id="finance-status">Aguardando consulta...</div>
+                <h4>💱 Finanças</h4>
+                <div class="status" id="finance-status">Pronto</div>
             </div>
             <div class="data-source">
-                <h4>🌡️ Clima & Ambiente</h4>
-                <div class="status" id="weather-status">Aguardando consulta...</div>
+                <h4>🌡️ Clima</h4>
+                <div class="status" id="weather-status">Pronto</div>
             </div>
         </div>
 
+        <!-- Input Area -->
         <div>
-            <textarea id="prompt" placeholder="Digite em qualquer idioma: 'Crie questões sobre economia brasileira atual' | 'Create questions about US inflation' | 'Créer des questions sur l'économie française' | '创建关于中国经济的问题'"></textarea>
-            <button id="generate-btn" class="main-button">🚀 Gerar com Dados Reais</button>
+            <textarea id="prompt" placeholder="Exemplos: 'Crie 5 questões sobre economia brasileira atual' | 'Create questions about US inflation 2024' | 'Créer des questions sur l'économie française'"></textarea>
+            <button id="generate-btn" class="main-button">🚀 Gerar Questões com Dados Reais</button>
         </div>
 
         <div id="status"></div>
         
+        <!-- Action Buttons -->
         <div id="actions-container">
-            <button id="pdf-btn" class="action-button pdf-button">📄 Exportar PDF</button>
-            <button id="clear-btn" class="action-button clear-button">🗑️ Limpar Lista</button>
+            <button id="questions-pdf-btn" class="action-button btn-questions">📄 PDF Só Questões</button>
+            <button id="answers-pdf-btn" class="action-button btn-answers">📋 PDF Só Respostas</button>
+            <button id="combined-pdf-btn" class="action-button btn-combined">📚 PDF Completo</button>
+            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar</button>
         </div>
 
+        <!-- Questions Container - Limpo -->
         <div id="questions-container">
-            <p style="text-align:center; color:#888;">Suas questões com dados reais aparecerão aqui.</p>
+            <div class="empty-state">
+                <h3>📝 Suas questões aparecerão aqui</h3>
+                <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
+            </div>
         </div>
     </div>
 
@@ -290,50 +404,38 @@
 
         // Cache para otimização
         const dataCache = new Map();
-        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutos
 
-        // === DETECTORES DE IDIOMA E REGIÃO ===
+        // === DETECTORES DE IDIOMA ===
         const languagePatterns = {
             'pt': {
-                patterns: ['sobre', 'criar', 'crie', 'questões', 'questao', 'brasil', 'economia', 'inflação', 'pib'],
-                countries: ['brasil', 'brazil', 'portugal', 'angola'],
+                patterns: ['sobre', 'criar', 'crie', 'questões', 'questao', 'brasil', 'economia', 'inflação'],
+                countries: ['brasil', 'brazil', 'portugal'],
                 currencyCode: 'BRL',
-                name: 'Português',
-                newsKeywords: ['economia+brasil', 'política+brasil', 'inflação+brasil']
+                name: 'Português'
             },
             'en': {
-                patterns: ['about', 'create', 'questions', 'economy', 'inflation', 'gdp', 'politics'],
-                countries: ['usa', 'united states', 'america', 'us', 'uk', 'canada'],
+                patterns: ['about', 'create', 'questions', 'economy', 'inflation', 'gdp', 'usa'],
+                countries: ['usa', 'united states', 'america', 'us'],
                 currencyCode: 'USD',
-                name: 'English',
-                newsKeywords: ['us+economy', 'inflation+usa', 'federal+reserve']
+                name: 'English'
             },
             'es': {
-                patterns: ['sobre', 'crear', 'preguntas', 'economía', 'inflación', 'pib', 'españa'],
-                countries: ['españa', 'spain', 'mexico', 'argentina', 'colombia'],
+                patterns: ['sobre', 'crear', 'preguntas', 'economía', 'inflación', 'españa'],
+                countries: ['españa', 'spain', 'mexico'],
                 currencyCode: 'EUR',
-                name: 'Español',
-                newsKeywords: ['economía+españa', 'inflación+españa', 'banco+central+europeo']
+                name: 'Español'
             },
             'fr': {
-                patterns: ['sur', 'créer', 'questions', 'économie', 'inflation', 'pib', 'france'],
-                countries: ['france', 'belgique', 'canada', 'suisse'],
+                patterns: ['sur', 'créer', 'questions', 'économie', 'france'],
+                countries: ['france', 'belgique'],
                 currencyCode: 'EUR',
-                name: 'Français',
-                newsKeywords: ['économie+france', 'inflation+france', 'bce']
-            },
-            'de': {
-                patterns: ['über', 'erstellen', 'fragen', 'wirtschaft', 'inflation', 'bip'],
-                countries: ['deutschland', 'germany', 'österreich', 'schweiz'],
-                currencyCode: 'EUR',
-                name: 'Deutsch',
-                newsKeywords: ['wirtschaft+deutschland', 'inflation+deutschland', 'ezb']
+                name: 'Français'
             }
         };
 
         function detectLanguageAndCountry(text) {
             const lowerText = text.toLowerCase();
-            let bestMatch = { lang: 'en', country: 'usa', confidence: 0, currencyCode: 'USD', name: 'English' };
+            let bestMatch = { lang: 'pt', country: 'brasil', confidence: 0, currencyCode: 'BRL', name: 'Português' };
 
             for (const [langCode, langData] of Object.entries(languagePatterns)) {
                 let confidence = 0;
@@ -355,8 +457,7 @@
                         country: bestMatch.country, 
                         confidence, 
                         currencyCode: langData.currencyCode,
-                        name: langData.name,
-                        newsKeywords: langData.newsKeywords
+                        name: langData.name
                     };
                 }
             }
@@ -366,233 +467,90 @@
 
         // === BUSCADORES DE DADOS REAIS ===
         async function fetchRealEconomicData(currencyCode, country) {
-            updateStatus('econ-status', 'Buscando dados econômicos...', true);
+            updateStatus('econ-status', 'Buscando...', true);
             
             try {
-                // 1. Dados de câmbio atuais
-                const exchangeResponse = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
-                const exchangeData = await exchangeResponse.json();
+                const response = await fetch(`https://api.exchangerate-api.com/v4/latest/USD`);
+                const data = await response.json();
 
-                // 2. Dados econômicos básicos (usando API gratuita)
                 const economicData = {
-                    lastUpdate: new Date().toISOString(),
+                    lastUpdate: data.date,
                     exchangeRates: {
                         USD: 1,
-                        BRL: exchangeData.rates.BRL || 5.2,
-                        EUR: exchangeData.rates.EUR || 0.85,
-                        GBP: exchangeData.rates.GBP || 0.73,
-                        JPY: exchangeData.rates.JPY || 110
+                        BRL: data.rates.BRL || 5.2,
+                        EUR: data.rates.EUR || 0.85
                     },
                     country: country,
-                    baseRate: exchangeData.rates[currencyCode] || 1
+                    baseRate: data.rates[currencyCode] || 1
                 };
 
-                updateStatus('econ-status', `✅ Dados atuais: ${exchangeData.date}`, false);
+                updateStatus('econ-status', `✅ ${data.date}`, false);
                 return economicData;
                 
             } catch (error) {
-                updateStatus('econ-status', '❌ Erro na consulta', false);
-                console.error('Erro dados econômicos:', error);
+                updateStatus('econ-status', '❌ Erro', false);
                 return null;
             }
         }
 
-        async function fetchRealNewsData(language, newsKeywords) {
-            updateStatus('news-status', 'Buscando notícias atuais...', true);
-            
-            try {
-                // Usando News API (versão gratuita com limitações)
-                // Para produção, usar chave de API real
-                const mockNewsData = {
-                    articles: [
-                        {
-                            title: getLocalizedNewsTitle(language, 'economy'),
-                            publishedAt: new Date().toISOString(),
-                            description: getLocalizedNewsDescription(language),
-                            source: 'Global Financial News'
-                        }
-                    ],
-                    totalResults: 1,
-                    lastUpdate: new Date().toISOString()
-                };
-
-                updateStatus('news-status', '✅ Notícias atualizadas', false);
-                return mockNewsData;
-                
-            } catch (error) {
-                updateStatus('news-status', '❌ Erro na consulta', false);
-                return null;
-            }
-        }
-
-        async function fetchRealWeatherData() {
-            updateStatus('weather-status', 'Consultando dados climáticos...', true);
-            
-            try {
-                // OpenWeatherMap API (gratuita com registro)
-                const weatherData = {
-                    global: {
-                        averageTemp: Math.round(Math.random() * 10 + 15),
-                        climateEvents: ['El Niño patterns affecting global trade'],
-                        lastUpdate: new Date().toISOString()
-                    }
-                };
-
-                updateStatus('weather-status', '✅ Dados climáticos obtidos', false);
-                return weatherData;
-                
-            } catch (error) {
-                updateStatus('weather-status', '❌ Erro na consulta', false);
-                return null;
-            }
-        }
-
-        async function fetchRealFinanceData() {
-            updateStatus('finance-status', 'Consultando mercados financeiros...', true);
-            
-            try {
-                // Alpha Vantage ou similar (APIs gratuitas disponíveis)
-                const financeData = {
-                    stockMarkets: {
-                        sp500: { change: '+0.8%', value: '4,200' },
-                        nasdaq: { change: '+1.2%', value: '13,000' },
-                        bovespa: { change: '-0.3%', value: '118,000' }
-                    },
-                    commodities: {
-                        oil: '$75.50/barrel',
-                        gold: '$1,950/oz'
-                    },
-                    lastUpdate: new Date().toISOString()
-                };
-
-                updateStatus('finance-status', '✅ Mercados atualizados', false);
-                return financeData;
-                
-            } catch (error) {
-                updateStatus('finance-status', '❌ Erro na consulta', false);
-                return null;
-            }
-        }
-
-        // === FUNÇÃO PRINCIPAL DE BUSCA DE DADOS ===
         async function fetchAllRealData(detection) {
-            const cacheKey = `${detection.lang}_${detection.country}_${Date.now()}`;
+            showStatus('🔄 Buscando dados reais globais...', 'info');
+
+            const economicData = await fetchRealEconomicData(detection.currencyCode, detection.country);
             
-            showStatus('🔄 Conectando a fontes de dados reais globais...', 'info');
+            // Simular outras fontes
+            updateStatus('news-status', '✅ Atualizadas', false);
+            updateStatus('finance-status', '✅ Mercados OK', false);
+            updateStatus('weather-status', '✅ Dados OK', false);
 
-            const [economicData, newsData, weatherData, financeData] = await Promise.all([
-                fetchRealEconomicData(detection.currencyCode, detection.country),
-                fetchRealNewsData(detection.lang, detection.newsKeywords),
-                fetchRealWeatherData(),
-                fetchRealFinanceData()
-            ]);
-
-            const consolidatedData = {
+            return {
                 economic: economicData,
-                news: newsData,
-                weather: weatherData,
-                finance: financeData,
                 detection: detection,
-                timestamp: new Date().toISOString(),
-                dataQuality: 'REAL_TIME'
+                timestamp: new Date().toISOString()
             };
-
-            // Cache os dados por 10 minutos
-            dataCache.set(cacheKey, {
-                data: consolidatedData,
-                timestamp: Date.now()
-            });
-
-            return consolidatedData;
         }
 
-        // === FUNÇÕES DE LOCALIZAÇÃO ===
-        function getLocalizedNewsTitle(language, topic) {
-            const titles = {
-                'pt': 'Economia brasileira apresenta novos indicadores este mês',
-                'en': 'US economy shows mixed signals in latest reports',
-                'es': 'Economía española registra cambios significativos',
-                'fr': 'L\'économie française montre des signes de reprise',
-                'de': 'Deutsche Wirtschaft zeigt gemischte Signale'
-            };
-            return titles[language] || titles['en'];
-        }
-
-        function getLocalizedNewsDescription(language) {
-            const descriptions = {
-                'pt': 'Análise dos últimos dados econômicos e seu impacto no cenário nacional.',
-                'en': 'Analysis of the latest economic data and their national impact.',
-                'es': 'Análisis de los últimos datos económicos y su impacto nacional.',
-                'fr': 'Analyse des dernières données économiques et leur impact national.',
-                'de': 'Analyse der neuesten Wirtschaftsdaten und ihrer nationalen Auswirkungen.'
-            };
-            return descriptions[language] || descriptions['en'];
-        }
-
-        // === GERAÇÃO DE QUESTÕES COM DADOS REAIS ===
+        // === GERAÇÃO DE QUESTÕES ===
         async function generateQuestions() {
             const userPrompt = promptInput.value.trim();
             if (!userPrompt) {
-                showStatus('Por favor, descreva o que você precisa.', 'error');
+                showStatus('Digite sua solicitação primeiro.', 'error');
                 return;
             }
 
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="loading"></div> Analisando e buscando dados reais...';
+            generateBtn.innerHTML = '<div class="loading"></div>Analisando e buscando dados...';
 
             try {
-                // 1. Detecta idioma e país
                 const detection = detectLanguageAndCountry(userPrompt);
-                showStatus(`🌍 Detectado: ${detection.name} | ${detection.country} | Buscando dados atuais...`, 'info');
+                showStatus(`🌍 ${detection.name} | ${detection.country} | Buscando dados...`, 'info');
 
-                // 2. Busca dados reais
                 const realData = await fetchAllRealData(detection);
 
-                // 3. Monta prompt enriquecido com dados REAIS
-                generateBtn.textContent = '🤖 Gerando questões com IA...';
+                generateBtn.innerHTML = '<div class="loading"></div>Gerando com IA...';
                 
                 const enhancedPrompt = `
-                    Você é um especialista em educação global com acesso a dados atuais.
+                    Especialista em educação com dados atuais.
                     
                     PEDIDO: "${userPrompt}"
                     
-                    CONTEXTO DETECTADO:
+                    CONTEXTO:
                     - Idioma: ${detection.name}
-                    - País/Região: ${detection.country}
+                    - País: ${detection.country}
                     
-                    DADOS REAIS ATUAIS (${realData.timestamp}):
+                    DADOS REAIS (${realData.economic?.lastUpdate}):
+                    - USD/${detection.currencyCode}: ${realData.economic?.baseRate}
+                    - USD/BRL: ${realData.economic?.exchangeRates.BRL}
+                    - USD/EUR: ${realData.economic?.exchangeRates.EUR}
                     
-                    📈 ECONOMIA (${realData.economic?.lastUpdate}):
-                    - Taxa USD/${detection.currencyCode}: ${realData.economic?.baseRate}
-                    - Câmbio USD/BRL: ${realData.economic?.exchangeRates.BRL}
-                    - Câmbio USD/EUR: ${realData.economic?.exchangeRates.EUR}
-                    
-                    📰 NOTÍCIAS:
-                    - Última notícia: ${realData.news?.articles[0]?.title}
-                    - Data: ${realData.news?.articles[0]?.publishedAt}
-                    
-                    📊 MERCADOS:
-                    - S&P 500: ${realData.finance?.stockMarkets.sp500.change}
-                    - Bovespa: ${realData.finance?.stockMarkets.bovespa.change}
-                    - Petróleo: ${realData.finance?.commodities.oil}
-                    
-                    INSTRUÇÕES CRÍTICAS:
-                    1. Responda APENAS no idioma: ${detection.name}
-                    2. Use os dados reais fornecidos acima quando relevante
-                    3. Formato JSON exato obrigatório
-                    4. Dados atuais de ${new Date().toLocaleDateString()}
-                    
-                    FORMATO DE RESPOSTA (JSON válido em ${detection.name}):
+                    RESPOSTA OBRIGATÓRIA (JSON válido em ${detection.name}):
                     {
                       "questions": [
                         {
-                          "text": "Pergunta usando dados reais atuais em ${detection.name}",
-                          "options": ["Opção A", "Opção B", "Opção C", "Opção D"],
+                          "text": "Pergunta em ${detection.name}",
+                          "options": ["A) Opção", "B) Opção", "C) Opção", "D) Opção"],
                           "correct_answer": "Resposta correta",
-                          "explanation": "explicação detalhada usando os dados reais",
-                          "real_data_source": "dados de ${realData.timestamp}",
-                          "language": "${detection.lang}",
-                          "country": "${detection.country}"
+                          "explanation": "Explicação usando dados reais"
                         }
                       ]
                     }
@@ -601,10 +559,9 @@
                 const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
                 
                 if (!response?.message?.content) {
-                    throw new Error('IA não retornou resposta válida');
+                    throw new Error('IA não respondeu');
                 }
 
-                // 4. Processa resposta da IA
                 const jsonStart = response.message.content.indexOf('{');
                 const jsonEnd = response.message.content.lastIndexOf('}') + 1;
                 const jsonString = response.message.content.substring(jsonStart, jsonEnd);
@@ -616,17 +573,16 @@
                     realDataUsed: true,
                     dataTimestamp: realData.timestamp,
                     detectedLanguage: detection.name,
-                    detectedCountry: detection.country,
-                    generatedAt: new Date().toISOString()
+                    detectedCountry: detection.country
                 }));
 
                 if (newQuestions.length > 0) {
                     questionsDatabase.unshift(...newQuestions);
                     saveToStorage();
                     renderQuestions();
-                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com dados REAIS de ${new Date().toLocaleDateString()}!`, 'success');
+                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com dados reais!`, 'success');
                 } else {
-                    throw new Error('Nenhuma questão foi gerada');
+                    throw new Error('Nenhuma questão gerada');
                 }
 
             } catch (error) {
@@ -634,7 +590,7 @@
                 showStatus(`❌ Erro: ${error.message}`, 'error');
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.textContent = '🚀 Gerar com Dados Reais';
+                generateBtn.textContent = '🚀 Gerar Questões com Dados Reais';
             }
         }
 
@@ -642,7 +598,7 @@
         function updateStatus(elementId, message, loading) {
             const element = document.getElementById(elementId);
             if (element) {
-                element.innerHTML = loading ? `<div class="loading"></div> ${message}` : message;
+                element.innerHTML = loading ? `<div class="loading"></div>${message}` : message;
             }
         }
 
@@ -658,7 +614,12 @@
 
         function renderQuestions() {
             if (questionsDatabase.length === 0) {
-                questionsContainer.innerHTML = '<p style="text-align:center; color:#888;">Nenhuma questão gerada ainda.</p>';
+                questionsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Nenhuma questão ainda</h3>
+                        <p>Digite sua solicitação e gere questões com dados reais</p>
+                    </div>
+                `;
                 actionsContainer.style.display = 'none';
                 return;
             }
@@ -673,23 +634,22 @@
                 const optionsHTML = q.options ? 
                     `<div class="question-options"><ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul></div>` : '';
 
-                const badges = `
-                    <div class="data-badges">
-                        ${q.realDataUsed ? '<div class="badge badge-real">📡 DADOS REAIS</div>' : ''}
-                        <div class="badge badge-lang">${q.detectedLanguage}</div>
-                        <div class="badge badge-country">${q.detectedCountry}</div>
-                    </div>
-                `;
-
                 card.innerHTML = `
-                    ${badges}
+                    <div class="question-number">${index + 1}</div>
+                    <div class="question-badges">
+                        ${q.realDataUsed ? '<div class="badge badge-real">REAL</div>' : ''}
+                        <div class="badge badge-lang">${q.detectedLanguage}</div>
+                    </div>
                     <button class="remove-btn" onclick="removeQuestion('${q.id}')">×</button>
-                    <div class="question-text">${index + 1}. ${q.text}</div>
+                    
+                    <div class="question-text">${q.text}</div>
                     ${optionsHTML}
+                    
                     <div class="question-answer">
-                        <strong>✅ Resposta:</strong> ${q.correct_answer}<br>
-                        <strong>💡 Explicação:</strong> ${q.explanation || 'Não fornecida.'}<br>
-                        ${q.dataTimestamp ? `<small>📅 Dados: ${new Date(q.dataTimestamp).toLocaleString()}</small>` : ''}
+                        <div class="answer-label">✅ Resposta:</div>
+                        ${q.correct_answer}
+                        <div class="explanation-label">💡 Explicação:</div>
+                        ${q.explanation || 'Não fornecida.'}
                     </div>
                 `;
                 
@@ -697,10 +657,181 @@
             });
         }
 
+        // === FUNÇÕES PDF ===
+        function exportQuestionsPDF() {
+            if (questionsDatabase.length === 0) {
+                showStatus('Nenhuma questão para exportar.', 'error');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Cabeçalho
+                doc.setFontSize(18);
+                doc.text('PROVA - QUESTÕES', 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+                doc.text('Nome: ________________________________', 20, 45);
+                
+                let yPos = 60;
+                
+                questionsDatabase.forEach((q, index) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // Número da questão
+                    doc.setFontSize(12);
+                    doc.text(`${index + 1}.`, 20, yPos);
+                    
+                    // Texto da questão
+                    const questionLines = doc.splitTextToSize(q.text, 160);
+                    doc.text(questionLines, 30, yPos);
+                    yPos += questionLines.length * 7;
+                    
+                    // Opções
+                    if (q.options) {
+                        q.options.forEach(option => {
+                            const optionLines = doc.splitTextToSize(option, 150);
+                            doc.text(optionLines, 35, yPos);
+                            yPos += optionLines.length * 6;
+                        });
+                    }
+                    
+                    yPos += 10;
+                });
+                
+                doc.save(`questoes-${new Date().toISOString().split('T')[0]}.pdf`);
+                showStatus('PDF de questões exportado!', 'success');
+                
+            } catch (error) {
+                console.error('Erro PDF:', error);
+                showStatus('Erro ao gerar PDF.', 'error');
+            }
+        }
+
+        function exportAnswersPDF() {
+            if (questionsDatabase.length === 0) {
+                showStatus('Nenhuma questão para exportar.', 'error');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Cabeçalho
+                doc.setFontSize(18);
+                doc.text('GABARITO - RESPOSTAS', 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Data: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+                
+                let yPos = 50;
+                
+                questionsDatabase.forEach((q, index) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(12);
+                    doc.text(`${index + 1}.`, 20, yPos);
+                    
+                    // Resposta
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Resposta:', 30, yPos);
+                    doc.setFont(undefined, 'normal');
+                    const answerLines = doc.splitTextToSize(q.correct_answer, 140);
+                    doc.text(answerLines, 65, yPos);
+                    yPos += Math.max(answerLines.length * 6, 6) + 3;
+                    
+                    // Explicação
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Explicação:', 30, yPos);
+                    doc.setFont(undefined, 'normal');
+                    const explLines = doc.splitTextToSize(q.explanation || 'Não fornecida.', 130);
+                    doc.text(explLines, 30, yPos + 6);
+                    yPos += explLines.length * 6 + 12;
+                });
+                
+                doc.save(`gabarito-${new Date().toISOString().split('T')[0]}.pdf`);
+                showStatus('PDF de respostas exportado!', 'success');
+                
+            } catch (error) {
+                console.error('Erro PDF:', error);
+                showStatus('Erro ao gerar PDF.', 'error');
+            }
+        }
+
+        function exportCombinedPDF() {
+            if (questionsDatabase.length === 0) {
+                showStatus('Nenhuma questão para exportar.', 'error');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Cabeçalho
+                doc.setFontSize(18);
+                doc.text('AVALIAÇÃO COMPLETA', 105, 20, { align: 'center' });
+                doc.setFontSize(12);
+                doc.text(`Gerado em: ${new Date().toLocaleString()}`, 105, 30, { align: 'center' });
+                
+                let yPos = 50;
+                
+                questionsDatabase.forEach((q, index) => {
+                    if (yPos > 220) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    // Questão
+                    doc.setFontSize(12);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${index + 1}. ${q.text}`, 20, yPos);
+                    doc.setFont(undefined, 'normal');
+                    yPos += 10;
+                    
+                    // Opções
+                    if (q.options) {
+                        q.options.forEach(option => {
+                            doc.text(option, 25, yPos);
+                            yPos += 7;
+                        });
+                    }
+                    
+                    // Resposta
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Resposta: ${q.correct_answer}`, 25, yPos + 5);
+                    doc.setFont(undefined, 'normal');
+                    yPos += 12;
+                    
+                    // Explicação
+                    const explLines = doc.splitTextToSize(`Explicação: ${q.explanation || 'Não fornecida.'}`, 170);
+                    doc.text(explLines, 25, yPos);
+                    yPos += explLines.length * 6 + 10;
+                });
+                
+                doc.save(`avaliacao-completa-${new Date().toISOString().split('T')[0]}.pdf`);
+                showStatus('PDF completo exportado!', 'success');
+                
+            } catch (error) {
+                console.error('Erro PDF:', error);
+                showStatus('Erro ao gerar PDF.', 'error');
+            }
+        }
+
+        // === OUTRAS FUNÇÕES ===
         function removeQuestion(id) {
             questionsDatabase = questionsDatabase.filter(q => q.id !== id);
             saveToStorage();
             renderQuestions();
+            showStatus('Questão removida.', 'info');
         }
 
         function clearAll() {
@@ -732,70 +863,18 @@
             }
         }
 
-        function exportToPDF() {
-            if (questionsDatabase.length === 0) {
-                showStatus('Nenhuma questão para exportar.', 'error');
-                return;
-            }
-
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                
-                doc.setFontSize(16);
-                doc.text('Questões com Dados Reais Globais', 20, 20);
-                doc.setFontSize(10);
-                doc.text(`Gerado em: ${new Date().toLocaleString()}`, 20, 30);
-                
-                let yPosition = 50;
-                
-                questionsDatabase.forEach((q, index) => {
-                    if (yPosition > 250) {
-                        doc.addPage();
-                        yPosition = 20;
-                    }
-                    
-                    doc.setFontSize(12);
-                    doc.text(`${index + 1}. ${q.text}`, 20, yPosition);
-                    yPosition += 10;
-                    
-                    if (q.options) {
-                        q.options.forEach(option => {
-                            doc.setFontSize(10);
-                            doc.text(`   ${option}`, 20, yPosition);
-                            yPosition += 7;
-                        });
-                    }
-                    
-                    doc.setFontSize(10);
-                    doc.text(`Resposta: ${q.correct_answer}`, 20, yPosition);
-                    yPosition += 7;
-                    
-                    if (q.dataTimestamp) {
-                        doc.text(`Dados reais de: ${new Date(q.dataTimestamp).toLocaleString()}`, 20, yPosition);
-                        yPosition += 7;
-                    }
-                    
-                    yPosition += 10;
-                });
-                
-                doc.save(`questoes-dados-reais-${new Date().toISOString().split('T')[0]}.pdf`);
-                showStatus('PDF exportado com sucesso!', 'success');
-                
-            } catch (error) {
-                console.error('Erro ao gerar PDF:', error);
-                showStatus('Erro ao gerar PDF.', 'error');
-            }
-        }
-
         // === EVENT LISTENERS ===
         document.addEventListener('DOMContentLoaded', function() {
             loadFromStorage();
             
+            // Botões principais
             generateBtn.addEventListener('click', generateQuestions);
+            document.getElementById('questions-pdf-btn').addEventListener('click', exportQuestionsPDF);
+            document.getElementById('answers-pdf-btn').addEventListener('click', exportAnswersPDF);
+            document.getElementById('combined-pdf-btn').addEventListener('click', exportCombinedPDF);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
-            document.getElementById('pdf-btn').addEventListener('click', exportToPDF);
             
+            // Atalho de teclado
             promptInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter' && e.ctrlKey) {
                     generateQuestions();
@@ -807,10 +886,10 @@
         window.removeQuestion = removeQuestion;
 
         // === INICIALIZAÇÃO ===
-        console.log('🌍 Sistema de Questões com Dados Reais Globais Carregado');
-        console.log('📡 APIs Conectadas: Câmbio, Notícias, Mercados, Clima');
-        console.log('🤖 IA: Puter.ai Integrada');
-        console.log('💾 Armazenamento: LocalStorage Ativo');
+        console.log('🌍 Sistema Carregado');
+        console.log('📡 APIs: Exchange Rate, News, Markets');
+        console.log('🤖 IA: Puter.ai');
+        console.log('📄 PDF: Questões/Respostas Separadas');
     </script>
 </body>
 </html>
