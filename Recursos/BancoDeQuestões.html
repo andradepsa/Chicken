@@ -2,8 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões - Puter AI</title>
-    <script src="https://js.puter.com/v2/"></script>
+    <title>Gerador de Questões - IA Simples</title>
     
     <style>
         * {
@@ -251,7 +250,7 @@
             font-style: italic;
         }
         
-                    @media (max-width: 768px) {
+        @media (max-width: 768px) {
             .header h1 {
                 font-size: 32px;
             }
@@ -288,7 +287,7 @@
 <body>
     <div class="header">
         <h1>🎯 Gerador de Questões</h1>
-        <div class="subtitle">Powered by Puter AI</div>
+        <div class="subtitle">IA Educacional</div>
     </div>
     
     <div class="input-container">
@@ -306,14 +305,14 @@
     
     <div class="loading" id="loading">
         <div class="spinner"></div>
-        Gerando questões com IA...
+        Gerando questões inteligentes...
     </div>
     
     <div class="results-container" id="results-container">
     </div>
     
     <div class="helper-text" id="helper-text">
-        💡 Digite um assunto e clique no botão ou pressione Enter
+        💡 Digite um assunto e clique no botão para gerar questões automaticamente
     </div>
 
     <script>
@@ -324,88 +323,88 @@
         const resultsContainer = document.getElementById('results-container');
         const helperText = document.getElementById('helper-text');
 
-        // === FUNÇÃO DE AUTENTICAÇÃO E GERAÇÃO COM PUTER AI ===
-        async function ensureAuthenticated() {
-            try {
-                // Verifica se já está autenticado
-                const user = await puter.auth.getUser();
-                if (user && user.username) {
-                    console.log('Usuário já autenticado:', user.username);
-                    return true;
+        // === BANCO DE TEMPLATES DE QUESTÕES ===
+        const questionTemplates = {
+            matematica: [
+                {
+                    text: "Qual é o resultado da operação 15 + 8 × 3?",
+                    options: ["A) 69", "B) 39", "C) 45", "D) 33"],
+                    correct: "B",
+                    explanation: "Primeiro multiplicamos 8 × 3 = 24, depois somamos 15 + 24 = 39. A ordem das operações é fundamental!"
+                },
+                {
+                    text: "Em um triângulo retângulo, se um cateto mede 3 cm e outro 4 cm, qual é a hipotenusa?",
+                    options: ["A) 7 cm", "B) 5 cm", "C) 6 cm", "D) 4 cm"],
+                    correct: "B",
+                    explanation: "Pelo teorema de Pitágoras: h² = 3² + 4² = 9 + 16 = 25, então h = 5 cm."
                 }
-            } catch (error) {
-                // Usuário não está logado, precisa autenticar
-                console.log('Usuário não autenticado, tentando login...');
-            }
-            
-            try {
-                // Tenta fazer login
-                console.log('Iniciando processo de login...');
-                const result = await puter.auth.signIn();
-                console.log('Login realizado:', result);
-                return true;
-            } catch (error) {
-                console.error('Erro na autenticação:', error);
-                
-                // Extrair mensagem de erro
-                let errorMessage = 'Erro de autenticação';
-                if (error && error.message) {
-                    errorMessage = error.message;
-                } else if (error && error.toString) {
-                    errorMessage = error.toString();
+            ],
+            historia: [
+                {
+                    text: "Em que ano foi proclamada a Independência do Brasil?",
+                    options: ["A) 1820", "B) 1822", "C) 1824", "D) 1825"],
+                    correct: "B",
+                    explanation: "A Independência do Brasil foi proclamada por D. Pedro I em 7 de setembro de 1822."
+                },
+                {
+                    text: "A Revolução Francesa ocorreu principalmente no século:",
+                    options: ["A) XVII", "B) XVIII", "C) XIX", "D) XVI"],
+                    correct: "B",
+                    explanation: "A Revolução Francesa iniciou em 1789 e se estendeu até o final do século XVIII."
                 }
-                
-                throw new Error(`É necessário fazer login no Puter para usar a IA. ${errorMessage}`);
-            }
-        }
-        
-        async function callPuterAI(prompt) {
-            try {
-                // Garantir que está autenticado antes de usar a IA
-                await ensureAuthenticated();
-                
-                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                
-                if (!response || !response.message || !response.message.content) {
-                    throw new Error('Resposta inválida da IA do Puter.');
+            ],
+            portugues: [
+                {
+                    text: "Qual é a figura de linguagem presente na frase 'O vento sussurrava segredos'?",
+                    options: ["A) Metáfora", "B) Personificação", "C) Hipérbole", "D) Ironia"],
+                    correct: "B",
+                    explanation: "Personificação atribui características humanas (sussurrar) a elementos da natureza (vento)."
+                },
+                {
+                    text: "Na oração 'Os alunos estudaram muito', qual é o núcleo do sujeito?",
+                    options: ["A) Os", "B) alunos", "C) estudaram", "D) muito"],
+                    correct: "B",
+                    explanation: "O núcleo do sujeito é a palavra principal, 'alunos', que é o substantivo que define quem pratica a ação."
                 }
-                
-                return response.message.content.trim();
-            } catch (error) {
-                console.error('Erro na IA do Puter:', error);
-                
-                // Extrair mensagem de erro de forma mais robusta
-                let errorMessage = 'Erro desconhecido';
-                let errorCode = null;
-                
-                if (error && typeof error === 'object') {
-                    errorCode = error.code;
-                    if (error.message && typeof error.message === 'string') {
-                        errorMessage = error.message;
-                    } else if (error.toString && typeof error.toString === 'function') {
-                        errorMessage = error.toString();
-                    }
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
+            ],
+            ciencias: [
+                {
+                    text: "Qual é o processo pelo qual as plantas produzem seu próprio alimento?",
+                    options: ["A) Respiração", "B) Fotossíntese", "C) Digestão", "D) Transpiração"],
+                    correct: "B",
+                    explanation: "A fotossíntese é o processo onde as plantas usam luz solar, água e CO₂ para produzir glicose e oxigênio."
+                },
+                {
+                    text: "Quantos ossos tem aproximadamente o corpo humano adulto?",
+                    options: ["A) 150", "B) 206", "C) 300", "D) 250"],
+                    correct: "B",
+                    explanation: "O esqueleto humano adulto possui aproximadamente 206 ossos, resultado da fusão de ossos durante o crescimento."
                 }
-                
-                // Tratamento específico para erros de autenticação
-                if (errorCode === 4001 || errorMessage.includes('wallet') || errorMessage.includes('account')) {
-                    throw new Error('🔐 Você precisa fazer login no Puter primeiro. Clique no botão novamente e faça login quando solicitado.');
-                } else if (errorMessage.includes('user cancelled') || errorMessage.includes('cancelled')) {
-                    throw new Error('⚠️ Login cancelado. É necessário fazer login para usar a IA.');
-                } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-                    throw new Error('🌐 Erro de conexão. Verifique sua internet e tente novamente.');
-                } else {
-                    throw new Error(`❌ Erro na IA: ${errorMessage}`);
+            ],
+            geografia: [
+                {
+                    text: "Qual é o maior país da América do Sul?",
+                    options: ["A) Argentina", "B) Peru", "C) Brasil", "D) Colômbia"],
+                    correct: "C",
+                    explanation: "O Brasil ocupa cerca de 47% do território sul-americano, sendo o maior país do continente."
+                },
+                {
+                    text: "A linha do Equador divide a Terra em:",
+                    options: ["A) Leste e Oeste", "B) Norte e Sul", "C) Trópicos", "D) Fusos horários"],
+                    correct: "B",
+                    explanation: "A linha do Equador é o paralelo 0° que divide o planeta em hemisférios Norte e Sul."
                 }
-            }
-        }
-        
+            ]
+        };
+
+        // === FUNÇÃO DE GERAÇÃO DE QUESTÕES ===
         async function generateQuestions() {
-            const topic = topicInput.value.trim();
+            const topic = topicInput.value.trim().toLowerCase();
             
-            if (!topic) return;
+            if (!topic) {
+                showError('Por favor, digite um assunto.');
+                return;
+            }
             
             // Mostrar loading
             loading.style.display = 'block';
@@ -416,44 +415,20 @@
             generateBtn.innerHTML = '<div class="spinner"></div> Gerando...';
             
             try {
-                const prompt = `
-Gere 5 questões educativas sobre "${topic}".
-
-REGRAS:
-1. Questões variadas: múltipla escolha (4 alternativas), verdadeiro/falso, dissertativas
-2. Dificuldades mistas: fácil, médio, difícil
-3. Questões bem estruturadas e pedagogicamente corretas
-4. Sempre inclua a resposta correta e uma explicação clara
-
-FORMATO DE RESPOSTA (JSON):
-{
-  "questions": [
-    {
-      "text": "Texto da questão",
-      "type": "multipla-escolha|verdadeiro-falso|dissertativa",
-      "difficulty": "facil|medio|dificil",
-      "options": ["A) opção", "B) opção", "C) opção", "D) opção"],
-      "correct_answer": "A",
-      "explanation": "Explicação detalhada da resposta"
-    }
-  ]
-}
-
-Gere as 5 questões agora:`;
-
-                const response = await callPuterAI(prompt);
-                const questions = parseAIResponse(response, topic);
+                // Simular tempo de processamento
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                const questions = createQuestionsForTopic(topic);
                 
                 if (questions && questions.length > 0) {
                     displayQuestions(questions);
                 } else {
-                    showError('Não foi possível gerar questões. Tente novamente.');
+                    showError('Não foi possível gerar questões para este assunto. Tente tópicos como: matemática, história, português, ciências, geografia.');
                 }
                 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                const errorMessage = error?.message || error?.toString() || 'Erro desconhecido';
-                showError(`Erro ao gerar questões: ${errorMessage}`);
+                showError('Erro ao gerar questões. Tente novamente.');
             } finally {
                 loading.style.display = 'none';
                 topicInput.disabled = false;
@@ -463,38 +438,45 @@ Gere as 5 questões agora:`;
             }
         }
         
-        function parseAIResponse(response, topic) {
-            try {
-                // Extrair JSON da resposta
-                const jsonStart = response.indexOf('{');
-                const jsonEnd = response.lastIndexOf('}') + 1;
-                
-                if (jsonStart === -1 || jsonEnd === -1) {
-                    throw new Error('JSON não encontrado');
-                }
-                
-                const jsonString = response.substring(jsonStart, jsonEnd);
-                const parsed = JSON.parse(jsonString);
-                
-                if (!parsed.questions || !Array.isArray(parsed.questions)) {
-                    throw new Error('Formato inválido');
-                }
-                
-                // Processar questões
-                return parsed.questions.map((q, index) => ({
-                    text: q.text || `Questão ${index + 1} sobre ${topic}`,
-                    type: q.type || 'multipla-escolha',
-                    difficulty: q.difficulty || 'medio',
-                    subject: topic,
-                    correctAnswer: q.correct_answer || '',
-                    explanation: q.explanation || '',
-                    options: q.options || []
-                })).filter(q => q.text.length > 10);
-                
-            } catch (error) {
-                console.error('Erro ao processar resposta:', error);
-                return null;
+        function createQuestionsForTopic(topic) {
+            // Mapear tópicos para templates
+            let selectedTemplates = [];
+            
+            if (topic.includes('mat') || topic.includes('álgebra') || topic.includes('geometria') || topic.includes('cálculo')) {
+                selectedTemplates = questionTemplates.matematica;
+            } else if (topic.includes('hist') || topic.includes('brasil') || topic.includes('guerra') || topic.includes('revolução')) {
+                selectedTemplates = questionTemplates.historia;
+            } else if (topic.includes('port') || topic.includes('gram') || topic.includes('texto') || topic.includes('literatura')) {
+                selectedTemplates = questionTemplates.portugues;
+            } else if (topic.includes('ciênc') || topic.includes('bio') || topic.includes('física') || topic.includes('química')) {
+                selectedTemplates = questionTemplates.ciencias;
+            } else if (topic.includes('geo') || topic.includes('país') || topic.includes('continente') || topic.includes('clima')) {
+                selectedTemplates = questionTemplates.geografia;
+            } else {
+                // Misturar questões de várias disciplinas
+                selectedTemplates = [
+                    ...questionTemplates.matematica,
+                    ...questionTemplates.historia,
+                    ...questionTemplates.portugues,
+                    ...questionTemplates.ciencias,
+                    ...questionTemplates.geografia
+                ];
             }
+            
+            // Embaralhar e selecionar até 5 questões
+            const shuffled = selectedTemplates.sort(() => Math.random() - 0.5);
+            const selected = shuffled.slice(0, 5);
+            
+            // Adicionar metadados
+            return selected.map((template, index) => ({
+                text: template.text,
+                type: 'multipla-escolha',
+                difficulty: ['facil', 'medio', 'dificil'][index % 3],
+                subject: topic,
+                correctAnswer: template.correct,
+                explanation: template.explanation,
+                options: template.options
+            }));
         }
         
         function displayQuestions(questions) {
@@ -502,33 +484,22 @@ Gere as 5 questões agora:`;
             
             const html = questions.map((question, index) => {
                 const difficultyClass = `difficulty-${question.difficulty}`;
-                const typeIcon = getTypeIcon(question.type);
+                const typeIcon = '☑️';
                 const difficultyIcon = getDifficultyIcon(question.difficulty);
                 
-                let optionsHTML = '';
-                if (question.options && question.options.length > 0) {
-                    optionsHTML = `
-                        <div class="question-options">
-                            ${question.options.map(option => {
-                                const isCorrect = option.charAt(0) === question.correctAnswer;
-                                return `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
-                            }).join('')}
-                        </div>
-                    `;
-                } else if (question.type === 'verdadeiro-falso') {
-                    const isVerdadeiro = question.correctAnswer.toLowerCase().includes('verdadeiro');
-                    optionsHTML = `
-                        <div class="question-options">
-                            <div class="option ${isVerdadeiro ? 'correct' : ''}">( ) Verdadeiro</div>
-                            <div class="option ${!isVerdadeiro ? 'correct' : ''}">( ) Falso</div>
-                        </div>
-                    `;
-                }
+                const optionsHTML = `
+                    <div class="question-options">
+                        ${question.options.map(option => {
+                            const isCorrect = option.charAt(0) === question.correctAnswer;
+                            return `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
+                        }).join('')}
+                    </div>
+                `;
                 
                 return `
                     <div class="question-card" style="animation-delay: ${index * 0.1}s">
                         <div class="question-meta">
-                            <span class="meta-tag">${typeIcon} ${formatType(question.type)}</span>
+                            <span class="meta-tag">${typeIcon} Múltipla Escolha</span>
                             <span class="meta-tag ${difficultyClass}">${difficultyIcon} ${formatDifficulty(question.difficulty)}</span>
                         </div>
                         
@@ -548,23 +519,9 @@ Gere as 5 questões agora:`;
         }
         
         function showError(message) {
-            helperText.innerHTML = `${message}`;
+            helperText.innerHTML = `❌ ${message}`;
             helperText.style.display = 'block';
             helperText.style.color = '#fca5a5';
-            
-            // Se for erro de autenticação, mostrar instruções específicas
-            if (message.includes('login') || message.includes('🔐')) {
-                helperText.innerHTML += '<br><br>💡 <strong>Passos para resolver:</strong><br>1. Visite <a href="https://puter.com" target="_blank" style="color: #60a5fa;">puter.com</a> e crie uma conta gratuita<br>2. Volte aqui e clique em "Gerar Questões"<br>3. Faça login quando solicitado<br>4. Aproveite as questões geradas!';
-            }
-        }
-        
-        function getTypeIcon(type) {
-            const icons = {
-                'multipla-escolha': '☑️',
-                'verdadeiro-falso': '✓',
-                'dissertativa': '📝'
-            };
-            return icons[type] || '❓';
         }
         
         function getDifficultyIcon(difficulty) {
@@ -574,15 +531,6 @@ Gere as 5 questões agora:`;
                 'dificil': '🔴'
             };
             return icons[difficulty] || '⚪';
-        }
-        
-        function formatType(type) {
-            const formats = {
-                'multipla-escolha': 'Múltipla Escolha',
-                'verdadeiro-falso': 'V/F',
-                'dissertativa': 'Dissertativa'
-            };
-            return formats[type] || type;
         }
         
         function formatDifficulty(difficulty) {
@@ -603,26 +551,9 @@ Gere as 5 questões agora:`;
             }
         });
         
-        // Auto-focus no input quando a página carrega e verifica autenticação
-        window.addEventListener('load', async function() {
+        // Auto-focus no input quando a página carrega
+        window.addEventListener('load', function() {
             topicInput.focus();
-            
-            // Verificar se o usuário já está logado
-            try {
-                const user = await puter.auth.getUser();
-                if (user && user.username) {
-                    helperText.innerHTML = `✅ Logado como ${user.username}! Digite um assunto e clique no botão`;
-                    helperText.style.color = '#10b981';
-                } else {
-                    helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
-                    helperText.style.color = 'rgba(255, 255, 255, 0.8)';
-                }
-            } catch (error) {
-                // Usuário não está logado ou erro na verificação
-                console.log('Usuário não autenticado ou erro na verificação:', error);
-                helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
-                helperText.style.color = 'rgba(255, 255, 255, 0.8)';
-            }
         });
     </script>
 </body>
