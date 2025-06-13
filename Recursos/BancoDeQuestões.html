@@ -2,22 +2,25 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões - Dados 100% Reais</title>
+    <title>Banco de Questões - IA Puter</title>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1c1e21;
+        * {
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 20px;
         }
         
         .container {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -43,25 +46,10 @@
             font-size: 1.1em;
         }
         
-        .real-data-indicator {
-            background: linear-gradient(45deg, #dc3545, #c82333);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
+        .input-area {
             margin-bottom: 20px;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
         }
         
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); }
-            50% { transform: scale(1.02); box-shadow: 0 8px 25px rgba(220, 53, 69, 0.5); }
-            100% { transform: scale(1); box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3); }
-        }
-        
-        /* ÁREA DE INPUT */
         textarea {
             width: 100%;
             padding: 15px;
@@ -71,6 +59,7 @@
             min-height: 100px;
             box-sizing: border-box;
             transition: border-color 0.3s;
+            resize: vertical;
         }
         
         textarea:focus {
@@ -78,7 +67,7 @@
             outline: none;
         }
         
-        .main-button {
+        .generate-btn {
             display: block;
             width: 100%;
             padding: 18px;
@@ -93,18 +82,17 @@
             transition: transform 0.2s;
         }
         
-        .main-button:hover {
+        .generate-btn:hover {
             transform: translateY(-2px);
         }
         
-        .main-button:disabled {
+        .generate-btn:disabled {
             background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
         
-        /* STATUS */
-        #status {
+        .status {
             text-align: center;
             padding: 15px;
             margin-top: 20px;
@@ -117,68 +105,7 @@
         .status-error { background: #f8d7da; color: #721c24; }
         .status-info { background: #cce5ff; color: #004085; }
         
-        /* DATA SOURCES - EXPANDIDO PARA MOSTRAR APIS REAIS */
-        .data-sources {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .data-source {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #28a745;
-            transition: all 0.3s;
-        }
-        
-        .data-source:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        .data-source.loading {
-            border-left-color: #ffc107;
-        }
-        
-        .data-source.success {
-            border-left-color: #28a745;
-        }
-        
-        .data-source.error {
-            border-left-color: #dc3545;
-        }
-        
-        .data-source h4 {
-            margin: 0 0 8px 0;
-            color: #28a745;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .data-source .api-info {
-            font-size: 10px;
-            color: #6c757d;
-            margin-bottom: 5px;
-        }
-        
-        .data-source .status {
-            font-size: 12px;
-            color: #333;
-            font-weight: bold;
-        }
-        
-        .data-source .last-update {
-            font-size: 10px;
-            color: #888;
-            margin-top: 5px;
-        }
-        
-        /* QUESTÕES - ÁREA LIMPA */
-        #questions-container {
+        .questions-container {
             margin-top: 30px;
         }
         
@@ -259,29 +186,6 @@
             margin: 8px 0 5px 0;
         }
         
-        /* BADGES COM INFORMAÇÕES REAIS */
-        .question-badges {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-        
-        .badge {
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .badge-real { background: #dc3545; }
-        .badge-api { background: #28a745; }
-        .badge-lang { background: #6c757d; }
-        .badge-verified { background: #17a2b8; }
-        
         .remove-btn {
             position: absolute;
             bottom: 10px;
@@ -300,8 +204,7 @@
             background: #c82333;
         }
         
-        /* BOTÕES DE AÇÃO */
-        #actions-container {
+        .actions-container {
             display: none;
             margin-top: 25px;
             display: flex;
@@ -311,7 +214,7 @@
         
         .action-button {
             flex: 1;
-            min-width: 160px;
+            min-width: 120px;
             padding: 12px;
             font-size: 14px;
             font-weight: bold;
@@ -326,12 +229,8 @@
             transform: translateY(-1px);
         }
         
-        .btn-questions { background: linear-gradient(45deg, #007bff, #0056b3); }
-        .btn-answers { background: linear-gradient(45deg, #28a745, #20c997); }
-        .btn-combined { background: linear-gradient(45deg, #6f42c1, #5a2d91); }
         .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
         
-        /* LOADING */
         .loading {
             display: inline-block;
             width: 16px;
@@ -348,14 +247,12 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* EMPTY STATE */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: #6c757d;
         }
         
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -366,10 +263,6 @@
                 font-size: 2em;
             }
             
-            .data-sources {
-                grid-template-columns: 1fr;
-            }
-            
             .action-button {
                 min-width: unset;
             }
@@ -378,306 +271,36 @@
 </head>
 <body>
     <div class="container">
-        <h1>Gerador de Questões - Dados 100% Reais</h1>
-        <div class="real-data-indicator">
-            🔴 CONECTADO A FONTES OFICIAIS GOVERNAMENTAIS - DADOS 100% REAIS 🔴
-        </div>
-        <p class="subtitle">
-            Sistema conectado diretamente às APIs oficiais do Banco Central, IBGE, IPEA e outras fontes governamentais.
-            Todos os dados são buscados em tempo real das fontes oficiais.
-        </p>
+        <h1>🎯 Banco de Questões</h1>
+        <p class="subtitle">Powered by Puter AI</p>
 
-        <!-- Data Sources - APIs Oficiais -->
-        <div class="data-sources" id="data-sources">
-            <div class="data-source" id="source-bacen">
-                <h4>🏛️ Banco Central</h4>
-                <div class="api-info">API: SGS - Sistema Gerenciador de Séries</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
-            <div class="data-source" id="source-ibge">
-                <h4>📊 IBGE</h4>
-                <div class="api-info">API: Dados Agregados + SIDRA</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
-            <div class="data-source" id="source-ipea">
-                <h4>📈 IPEA</h4>
-                <div class="api-info">API: IpeaData - Séries Macroeconômicas</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
-            <div class="data-source" id="source-exchange">
-                <h4>💱 Câmbio</h4>
-                <div class="api-info">API: Exchange Rates</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
-            <div class="data-source" id="source-b3">
-                <h4>📉 B3/Bovespa</h4>
-                <div class="api-info">API: Brapi.dev</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
-            <div class="data-source" id="source-tesouro">
-                <h4>💰 Tesouro</h4>
-                <div class="api-info">API: Tesouro Direto</div>
-                <div class="status">Aguardando consulta...</div>
-                <div class="last-update"></div>
-            </div>
+        <div class="input-area">
+            <textarea id="prompt" placeholder="Digite seu pedido: Ex: 'Crie 5 questões sobre frações', 'Questões de matemática básica', 'História do Brasil'..."></textarea>
+            <button id="generate-btn" class="generate-btn">🚀 Gerar Questões</button>
         </div>
 
-        <!-- Input Area -->
-        <div>
-            <textarea id="prompt" placeholder="Exemplos: 'Crie 10 questões sobre inflação, selic e pib' | 'Questões sobre câmbio e Bovespa hoje' | '5 questões sobre dados do IBGE e BACEN'"></textarea>
-            <button id="generate-btn" class="main-button">🚀 Gerar com APIs Oficiais</button>
-        </div>
-
-        <div id="status"></div>
+        <div id="status" class="status"></div>
         
-        <!-- Action Buttons -->
-        <div id="actions-container">
-            <button id="questions-pdf-btn" class="action-button btn-questions">📄 PDF Só Questões</button>
-            <button id="answers-pdf-btn" class="action-button btn-answers">📋 PDF Só Respostas</button>
-            <button id="combined-pdf-btn" class="action-button btn-combined">📚 PDF Completo</button>
-            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar</button>
+        <div id="actions-container" class="actions-container">
+            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar Tudo</button>
         </div>
 
-        <!-- Questions Container -->
-        <div id="questions-container">
+        <div id="questions-container" class="questions-container">
             <div class="empty-state">
-                <h3>📝 Questões com dados oficiais aparecerão aqui</h3>
-                <p>Digite sua solicitação e o sistema buscará dados reais das APIs governamentais</p>
+                <h3>📝 Questões geradas aparecerão aqui</h3>
+                <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
             </div>
         </div>
     </div>
 
     <script>
         let questionsDatabase = [];
-        let realDataCache = {};
         
         const generateBtn = document.getElementById('generate-btn');
         const promptInput = document.getElementById('prompt');
         const statusDiv = document.getElementById('status');
         const questionsContainer = document.getElementById('questions-container');
         const actionsContainer = document.getElementById('actions-container');
-
-        const OFFICIAL_APIS = {
-            BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
-            ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last',
-            // <<== CORREÇÃO: URL da BRAPI simplificada para chamada direta
-            BRAPI_BOVESPA: 'https://brapi.dev/api/quote/BOVA11?range=1d&interval=1d',
-        };
-
-        const SERIES_CODES = {
-            SELIC_META: 432,
-            IPCA: 433,
-            PIB: 4380,
-            USD_BRL: 1,
-            BOVESPA: 'BOVA11'
-        };
-
-        const languagePatterns = {
-            'pt': {
-                patterns: ['sobre', 'criar', 'crie', 'questões', 'questao', 'brasil', 'economia', 'inflação', 'selic', 'pib', 'dólar', 'bovespa', 'ibge', 'bacen', 'ipea'],
-                name: 'Português',
-                topics: {
-                    'inflação': ['IPCA'],
-                    'juros': ['SELIC_META'],
-                    'câmbio': ['USD_BRL'],
-                    'pib': ['PIB'],
-                    'bolsa': ['BOVESPA']
-                }
-            }
-        };
-
-        function detectLanguageAndTopics(text) {
-            const lowerText = text.toLowerCase();
-            let detection = { 
-                lang: 'pt', 
-                name: 'Português', 
-                topics: [],
-                seriesNeeded: new Set()
-            };
-
-            const addSeries = (seriesArray) => {
-                seriesArray.forEach(s => detection.seriesNeeded.add(s));
-            };
-
-            if (lowerText.includes('ibge')) addSeries(['IPCA', 'PIB']);
-            if (lowerText.includes('bacen') || lowerText.includes('banco central') || lowerText.includes('selic')) addSeries(['SELIC_META']);
-            if (lowerText.includes('b3') || lowerText.includes('bovespa') || lowerText.includes('bolsa')) addSeries(['BOVESPA']);
-            if (lowerText.includes('câmbio') || lowerText.includes('dolar')) addSeries(['USD_BRL']);
-            if (lowerText.includes('pib')) addSeries(['PIB']);
-            if (lowerText.includes('inflação') || lowerText.includes('ipca')) addSeries(['IPCA']);
-            
-            if (detection.seriesNeeded.size === 0) {
-                detection.topics = ['economia_geral'];
-                addSeries(['SELIC_META', 'IPCA', 'USD_BRL', 'PIB', 'BOVESPA']);
-            }
-            
-            detection.seriesNeeded = Array.from(detection.seriesNeeded);
-            return detection;
-        }
-
-        async function fetchBacenData(seriesCode, lastN = 1) {
-            updateSourceStatus('source-bacen', 'loading', 'Consultando Banco Central...');
-            try {
-                const url = `${OFFICIAL_APIS.BACEN_SGS}.${SERIES_CODES[seriesCode]}/dados/ultimos/${lastN}?formato=json`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro ${response.status}`);
-                const data = await response.json();
-                
-                if (data && data.length > 0) {
-                    const latest = data[data.length - 1];
-                    const value = parseFloat(latest.valor);
-                    updateSourceStatus('source-bacen', 'success', `✅ ${seriesCode}: ${value.toFixed(2)}% (${latest.data})`);
-                    return { value, date: latest.data, source: 'Banco Central do Brasil - SGS', series: seriesCode, description: `Taxa SELIC Meta` };
-                } else {
-                    throw new Error('Dados não encontrados');
-                }
-            } catch (error) {
-                updateSourceStatus('source-bacen', 'error', `❌ ${error.message}`);
-                return null;
-            }
-        }
-
-        async function fetchIbgeData(seriesCode) {
-            updateSourceStatus('source-ibge', 'loading', 'Consultando dados IBGE...');
-            const realStaticData = {
-                'IPCA': { value: 0.46, desc: 'IPCA Mensal (Mai/24)' },
-                'PIB': { value: 0.8, desc: 'PIB Trimestral (1ºTri/24)' }
-            };
-            
-            try {
-                await new Promise(resolve => setTimeout(resolve, 300));
-                const data = realStaticData[seriesCode];
-                if (!data) throw new Error(`Série IBGE '${seriesCode}' não configurada`);
-                updateSourceStatus('source-ibge', 'success', `✅ ${data.desc}: ${data.value}%`);
-                return {
-                    value: data.value,
-                    date: new Date().toLocaleDateString(),
-                    source: 'IBGE (dado estático para robustez)',
-                    series: seriesCode,
-                    description: data.desc
-                };
-            } catch (error) {
-                updateSourceStatus('source-ibge', 'error', `❌ Erro ao consultar IBGE: ${error.message}`);
-                return null;
-            }
-        }
-
-        function fetchIpeaData() {
-            updateSourceStatus('source-ipea', 'success', '✅ Dados integrados em outras fontes');
-        }
-
-        async function fetchExchangeData() {
-            updateSourceStatus('source-exchange', 'loading', 'Consultando câmbio...');
-            try {
-                const url = `${OFFICIAL_APIS.ECONOMIA_API}/USD-BRL`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro ${response.status}`);
-                const data = await response.json();
-                const rate = data[0] || data.USDBRL;
-
-                if (rate && rate.bid) {
-                    const value = parseFloat(rate.bid);
-                    const date = new Date(parseInt(rate.timestamp) * 1000).toLocaleDateString();
-                    updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${value.toFixed(2)}`);
-                    return { value, date, source: 'Economia Awesome API', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` };
-                } else {
-                    throw new Error('Taxa não encontrada');
-                }
-            } catch (error) {
-                updateSourceStatus('source-exchange', 'error', `❌ ${error.message}`);
-                return null;
-            }
-        }
-
-        // <<== CORREÇÃO APLICADA AQUI
-        async function fetchBovespaData() {
-            updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
-            try {
-                // Usando a URL direta e mais confiável da Brapi, sem proxy CORS
-                const url = OFFICIAL_APIS.BRAPI_BOVESPA;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro na API da B3: ${response.status}`);
-                
-                const data = await response.json();
-
-                // A estrutura da resposta da Brapi é { results: [ { ... } ] }
-                if (data.results && data.results[0] && data.results[0].regularMarketPrice) {
-                    // Usamos o ETF BOVA11 como base e multiplicamos por ~1000 para uma aproximação do índice Ibovespa
-                    const bovespaValue = data.results[0].regularMarketPrice * 1000; 
-                    updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
-                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi.dev)', series: 'BOVESPA', description: `Índice Bovespa` };
-                } else {
-                    throw new Error('Estrutura de dados da B3 inesperada.');
-                }
-            } catch (error) {
-                console.error("Erro ao buscar dados da B3:", error);
-                const bovespaValue = 120760; // Nosso plano B, o fallback, continua aqui como segurança máxima.
-                updateSourceStatus('source-b3', 'success', `⚠️ ${bovespaValue.toLocaleString()} pts (fallback)`);
-                return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (fallback estático)', series: 'BOVESPA', description: `Índice Bovespa (fallback)` };
-            }
-        }
-
-        async function fetchTesouroData() {
-            updateSourceStatus('source-tesouro', 'loading', 'Calculando Tesouro...');
-            try {
-                const selicData = realDataCache['SELIC_META'] || await fetchBacenData('SELIC_META');
-                let selicRate = 10.50;
-                if (selicData && selicData.value) selicRate = selicData.value;
-                const tesouroRate = selicRate;
-                updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ~${tesouroRate.toFixed(2)}% a.a.`);
-                return { value: tesouroRate, baseRate: selicRate, source: 'Tesouro Nacional (calculado sobre SELIC)', series: 'TESOURO_SELIC', description: `Rentabilidade Tesouro Selic` };
-            } catch (error)
-                {
-                updateSourceStatus('source-tesouro', 'error', `❌ ${error.message}`);
-                return null;
-            }
-        }
-
-        async function fetchAllOfficialData(detection) {
-            showStatus('🔄 Conectando às APIs oficiais...', 'info');
-            realDataCache = {};
-            fetchIpeaData();
-
-            const promises = [];
-            
-            if (detection.seriesNeeded.includes('SELIC_META')) promises.push(fetchBacenData('SELIC_META'));
-            if (detection.seriesNeeded.includes('IPCA')) promises.push(fetchIbgeData('IPCA'));
-            if (detection.seriesNeeded.includes('PIB')) promises.push(fetchIbgeData('PIB'));
-            if (detection.seriesNeeded.includes('USD_BRL')) promises.push(fetchExchangeData());
-            if (detection.seriesNeeded.includes('BOVESPA')) promises.push(fetchBovespaData());
-            
-            const mainResults = await Promise.allSettled(promises);
-            
-            const officialData = {
-                timestamp: new Date().toISOString(),
-                sources: [],
-                data: {}
-            };
-            
-            mainResults.forEach(result => {
-                if (result.status === 'fulfilled' && result.value) {
-                    officialData.sources.push(result.value.source);
-                    officialData.data[result.value.series] = result.value;
-                    realDataCache[result.value.series] = result.value;
-                }
-            });
-
-            const tesouroResult = await fetchTesouroData();
-            if (tesouroResult) {
-                officialData.sources.push(tesouroResult.source);
-                officialData.data[tesouroResult.series] = tesouroResult;
-            }
-            
-            const successCount = Object.keys(officialData.data).length;
-            showStatus(`✅ ${successCount} indicadores oficiais consultados com sucesso!`, 'success');
-            
-            return officialData;
-        }
 
         async function generateQuestions() {
             const userPrompt = promptInput.value.trim();
@@ -687,35 +310,20 @@
             }
 
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="loading"></div>Analisando e buscando dados oficiais...';
-
-            let officialData;
+            generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
 
             try {
-                const detection = detectLanguageAndTopics(userPrompt);
-                officialData = await fetchAllOfficialData(detection);
-                
-                generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
-                
                 const questionCountMatch = userPrompt.match(/\d+/);
                 const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
 
-                let dataContext = '';
-                for (const [series, data] of Object.entries(officialData.data)) {
-                    dataContext += `\n- ${data.description || series}: ${data.value.toFixed(2)} (Fonte: ${data.source})`;
-                }
-                
                 const enhancedPrompt = `
-                    Você é um especialista em economia e professor de matemática financeira. Sua tarefa é criar EXATAMENTE ${numberOfQuestions} questões de múltipla escolha (A, B, C, D) usando os dados econômicos REAIS e ATUAIS do Brasil, fornecidos abaixo. As questões devem ser práticas, realistas e diversificadas.
+                    Crie EXATAMENTE ${numberOfQuestions} questões de múltipla escolha sobre: "${userPrompt}"
 
-                    DADOS OFICIAIS ATUAIS DISPONÍVEIS:
-                    ${dataContext}
-                    
-                    INSTRUÇÕES:
-                    - Gere um total de ${numberOfQuestions} questões.
-                    - Baseie CADA questão em pelo menos um dos dados reais fornecidos.
-                    - As explicações devem ser claras, citar a fonte do dado usado e mostrar o cálculo passo a passo.
-                    - Siga o formato JSON obrigatório abaixo. NÃO adicione texto antes ou depois do objeto JSON.
+                    REGRAS:
+                    - Questões bem estruturadas e educativas
+                    - 4 alternativas por questão (A, B, C, D)
+                    - Explicações claras e detalhadas
+                    - Dificuldades variadas (fácil, médio, difícil)
                     
                     FORMATO OBRIGATÓRIO (JSON):
                     {
@@ -723,10 +331,8 @@
                         {
                           "text": "Texto da questão...",
                           "options": ["A) Opção 1", "B) Opção 2", "C) Opção 3", "D) Opção 4"],
-                          "correct_answer": "A resposta correta completa.",
-                          "explanation": "Explicação detalhada mostrando o cálculo e citando a fonte do dado usado.",
-                          "official_sources": ["Fonte 1", "Fonte 2"],
-                          "data_date": "${new Date().toLocaleDateString()}"
+                          "correct_answer": "A resposta correta completa",
+                          "explanation": "Explicação detalhada da resposta"
                         }
                       ]
                     }
@@ -734,7 +340,9 @@
 
                 const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
                 
-                if (!response?.message?.content) throw new Error('A IA não retornou uma resposta válida.');
+                if (!response?.message?.content) {
+                    throw new Error('A IA não retornou uma resposta válida.');
+                }
 
                 const jsonStart = response.message.content.indexOf('{');
                 const jsonEnd = response.message.content.lastIndexOf('}') + 1;
@@ -749,48 +357,33 @@
                 const newQuestions = parsed.questions.map(q => ({
                     ...q,
                     id: generateId(),
-                    officialDataUsed: true,
-                    dataTimestamp: officialData.timestamp,
-                    verified: true
+                    createdAt: new Date().toISOString()
                 }));
 
                 if (newQuestions.length > 0) {
                     questionsDatabase.unshift(...newQuestions);
-                    saveToStorage();
                     renderQuestions();
-                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com dados 100% oficiais!`, 'success');
+                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
                 } else {
                     showStatus('A IA respondeu, mas não gerou nenhuma questão. Tente novamente.', 'info');
                 }
 
             } catch (error) {
                 console.error('Erro detalhado:', error);
-                if (error.code === 4001 || (error.message && error.message.includes('wallet must has at least one account'))) {
-                     showStatus(`❌ Erro de Autenticação: Por favor, faça login no Puter.com para gerar questões. Os dados acima foram atualizados.`, 'error');
+                if (error.code === 4001 || (error.message && error.message.includes('wallet'))) {
+                    showStatus(`❌ Erro de Autenticação: Faça login no Puter.com para usar a IA.`, 'error');
                 } else {
-                     showStatus(`❌ Erro ao gerar questões: ${error.message}`, 'error');
+                    showStatus(`❌ Erro ao gerar questões: ${error.message}`, 'error');
                 }
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.textContent = '🚀 Gerar com APIs Oficiais';
-            }
-        }
-        
-        function updateSourceStatus(sourceId, status, message) {
-            const source = document.getElementById(sourceId);
-            if (source) {
-                source.className = `data-source ${status}`;
-                source.querySelector('.status').textContent = message;
-                const updateElement = source.querySelector('.last-update');
-                if (updateElement && (status === 'success' || status.includes('⚠️'))) {
-                    updateElement.textContent = `Atualizado: ${new Date().toLocaleTimeString()}`;
-                }
+                generateBtn.textContent = '🚀 Gerar Questões';
             }
         }
 
         function showStatus(message, type = 'info') {
             statusDiv.textContent = message;
-            statusDiv.className = `status-${type}`;
+            statusDiv.className = `status status-${type}`;
             statusDiv.style.display = 'block';
         }
 
@@ -800,7 +393,12 @@
 
         function renderQuestions() {
             if (questionsDatabase.length === 0) {
-                questionsContainer.innerHTML = `<div class="empty-state"><h3>📝 Nenhuma questão ainda</h3><p>Digite sua solicitação para gerar questões com dados oficiais</p></div>`;
+                questionsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Questões geradas aparecerão aqui</h3>
+                        <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
+                    </div>
+                `;
                 actionsContainer.style.display = 'none';
                 return;
             }
@@ -813,128 +411,28 @@
                 card.className = 'question-card';
                 
                 const optionsHTML = q.options ? `<ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul>` : '';
-                const sourcesHTML = q.official_sources ? `<div style="font-size:11px; color:#666; margin-top:8px;"><strong>Fontes:</strong> ${q.official_sources.join(', ')}</div>` : '';
 
                 card.innerHTML = `
                     <div class="question-number">${questionsDatabase.length - index}</div>
-                    <div class="question-badges">
-                        <div class="badge badge-real">100% REAL</div>
-                        <div class="badge badge-verified">VERIFICADO</div>
-                        <div class="badge badge-api">API OFICIAL</div>
-                        <div class="badge badge-lang">Português</div>
-                    </div>
                     <button class="remove-btn" onclick="removeQuestion('${q.id}')">×</button>
                     <div class="question-text">${q.text}</div>
                     <div class="question-options">${optionsHTML}</div>
                     <div class="question-answer">
-                        <div class="answer-label">✅ Resposta Oficial:</div>${q.correct_answer}
-                        <div class="explanation-label">💡 Explicação com Dados Oficiais:</div>${q.explanation || 'Não fornecida.'}
-                        ${sourcesHTML}
-                        <div style="font-size:10px; color:#888; margin-top:5px;">📅 Dados de ${new Date(q.dataTimestamp).toLocaleDateString()}</div>
+                        <div class="answer-label">✅ Resposta:</div>
+                        ${q.correct_answer}
+                        <div class="explanation-label">💡 Explicação:</div>
+                        ${q.explanation || 'Não fornecida.'}
+                        <div style="font-size:10px; color:#888; margin-top:5px;">
+                            📅 ${new Date(q.createdAt).toLocaleString()}
+                        </div>
                     </div>
                 `;
                 questionsContainer.appendChild(card);
             });
         }
-        
-        function createPdf(contentGenerator) {
-             if (questionsDatabase.length === 0) {
-                showStatus('Nenhuma questão para exportar.', 'error');
-                return;
-            }
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                contentGenerator(doc);
-                return doc;
-            } catch (error) {
-                 console.error('Erro ao criar PDF:', error);
-                 showStatus('Erro ao gerar PDF. Verifique o console para mais detalhes.', 'error');
-                 return null;
-            }
-        }
-
-        function exportQuestionsPDF() {
-            const doc = createPdf(d => {
-                d.setFontSize(18).text('PROVA - QUESTÕES COM DADOS OFICIAIS', 105, 20, { align: 'center' });
-                d.setFontSize(10).text(`Gerado em: ${new Date().toLocaleString()}`, 105, 28, { align: 'center' });
-                let y = 45;
-                const reversedDb = [...questionsDatabase].reverse();
-                reversedDb.forEach((q, i) => {
-                    if (y > 250) { d.addPage(); y = 20; }
-                    d.setFont(undefined, 'bold');
-                    const questionLines = d.splitTextToSize(`${i + 1}. ${q.text}`, 180);
-                    d.text(questionLines, 15, y);
-                    y += questionLines.length * 5 + 2;
-                    d.setFont(undefined, 'normal');
-                    if (q.options) {
-                        q.options.forEach(opt => {
-                            if (y > 260) { d.addPage(); y = 20; }
-                            const optLines = d.splitTextToSize(opt, 170);
-                            d.text(optLines, 20, y);
-                            y += optLines.length * 5;
-                        });
-                    }
-                    y += 10;
-                });
-            });
-            if(doc) doc.save('questoes-oficiais.pdf');
-        }
-
-        function exportAnswersPDF() {
-            const doc = createPdf(d => {
-                d.setFontSize(18).text('GABARITO OFICIAL - RESPOSTAS', 105, 20, { align: 'center' });
-                d.setFontSize(10).text(`Gerado em: ${new Date().toLocaleString()}`, 105, 28, { align: 'center' });
-                let y = 45;
-                const reversedDb = [...questionsDatabase].reverse();
-                reversedDb.forEach((q, i) => {
-                    if (y > 260) { d.addPage(); y = 20; }
-                    d.setFont(undefined, 'bold').text(`${i + 1}. Resposta Correta:`, 15, y);
-                    d.setFont(undefined, 'normal');
-                    const answerLines = d.splitTextToSize(q.correct_answer, 160);
-                    d.text(answerLines, 20, y + 5);
-                    y += answerLines.length * 5 + 8;
-                });
-            });
-            if(doc) doc.save('gabarito-oficial.pdf');
-        }
-
-        function exportCombinedPDF() {
-            const doc = createPdf(d => {
-                d.setFontSize(18).text('AVALIAÇÃO COMPLETA - DADOS OFICIAIS', 105, 20, { align: 'center' });
-                d.setFontSize(10).text(`Gerado em: ${new Date().toLocaleString()}`, 105, 28, { align: 'center' });
-                let y = 45;
-                const reversedDb = [...questionsDatabase].reverse();
-                 reversedDb.forEach((q, i) => {
-                    if (y > 200) { d.addPage(); y = 20; }
-                    d.setFont(undefined, 'bold');
-                    const qLines = d.splitTextToSize(`${i + 1}. ${q.text}`, 180);
-                    d.text(qLines, 15, y);
-                    y += qLines.length * 5 + 2;
-                    d.setFont(undefined, 'normal');
-                    if (q.options) q.options.forEach(opt => { if (y > 260) { d.addPage(); y = 20; }; y += 5; d.text(d.splitTextToSize(opt, 170), 20, y); });
-                    y += 8;
-                    d.setDrawColor(200, 200, 200);
-                    d.line(15, y, 195, y);
-                    y += 6;
-                    d.setFont(undefined, 'bold').setTextColor(40, 167, 69).text('Resposta:', 20, y);
-                    d.setFont(undefined, 'normal').setTextColor(0, 0, 0);
-                    const ansLines = d.splitTextToSize(q.correct_answer, 150);
-                    d.text(ansLines, 45, y);
-                    y += ansLines.length * 5 + 2;
-                    d.setFont(undefined, 'bold').setTextColor(108, 117, 125).text('Explicação:', 20, y);
-                    d.setFont(undefined, 'normal').setTextColor(0, 0, 0);
-                    const expLines = d.splitTextToSize(q.explanation, 165);
-                    d.text(expLines, 25, y+5);
-                    y += expLines.length * 5 + 10;
-                 });
-            });
-            if(doc) doc.save('avaliacao-completa-oficial.pdf');
-        }
 
         function removeQuestion(id) {
             questionsDatabase = questionsDatabase.filter(q => q.id !== id);
-            saveToStorage();
             renderQuestions();
             showStatus('Questão removida.', 'info');
         }
@@ -942,40 +440,34 @@
         function clearAll() {
             if (confirm('Tem certeza que deseja apagar TODAS as questões geradas?')) {
                 questionsDatabase = [];
-                saveToStorage();
                 renderQuestions();
                 showStatus('Lista de questões foi limpa.', 'info');
             }
         }
 
         function saveToStorage() {
-            localStorage.setItem('officialQuestionsDB', JSON.stringify(questionsDatabase));
+            // Removido localStorage devido a restrições de sandbox
+            // As questões ficam apenas na sessão atual
         }
 
         function loadFromStorage() {
-            const saved = localStorage.getItem('officialQuestionsDB');
-            if (saved) {
-                questionsDatabase = JSON.parse(saved);
-                renderQuestions();
-            }
+            // Removido localStorage devido a restrições de sandbox
+            // Sempre inicia com banco vazio
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadFromStorage();
+            // Removido loadFromStorage() devido a restrições de sandbox
             generateBtn.addEventListener('click', generateQuestions);
-            document.getElementById('questions-pdf-btn').addEventListener('click', exportQuestionsPDF);
-            document.getElementById('answers-pdf-btn').addEventListener('click', exportAnswersPDF);
-            document.getElementById('combined-pdf-btn').addEventListener('click', exportCombinedPDF);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
-            promptInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generateQuestions(); } });
+            promptInput.addEventListener('keypress', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateQuestions();
+                }
+            });
         });
 
         window.removeQuestion = removeQuestion;
-
-        console.log('✅ Sistema pronto. API da B3 corrigida para chamada direta e mais estável.');
-        console.log('📊 Fontes ativas: Banco Central (SGS), Economia API (Câmbio), Brapi.dev (B3).');
-        console.log('🛠️ Fontes estabilizadas: IBGE e IPEA usam dados estáticos realistas para garantir o funcionamento.');
-        
     </script>
 </body>
 </html>
