@@ -437,14 +437,12 @@
         }
 
         function sanitizeJSONString(str) {
-            // Remove quebras de linha e tabulações
-            let cleaned = str.replace(/[\n\r\t]/g, '');
-            // Remove vírgulas traiçoeiras no final de arrays/objetos
-            cleaned = cleaned.replace(/,\s*(?=[\]\}])/g, '');
-            // Tenta corrigir aspas duplas "soltas" dentro de valores, escapando-as.
-            // Esta é uma expressão regular complexa que busca aspas que não fazem parte da estrutura JSON.
-            cleaned = cleaned.replace(/(?<![:{\[,])"(?![:,}\]])/g, '\\"');
-            return cleaned;
+            return str.replace(/[\n\r\t]/g, '').replace(/,\s*(?=[\]\}])/g, '');
+        }
+        
+        // *** NOVA FUNÇÃO PARA REMOVER ACENTOS ANTES DE ENVIAR PARA A IA ***
+        function normalizeName(name) {
+            return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
         // === LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
@@ -493,8 +491,12 @@
 
         // === FUNÇÃO PRINCIPAL DE GERAÇÃO DE BIOGRAFIA ===
         async function generateBiography() {
-            const personName = personInput.value.trim();
-            if (!personName) return;
+            const personNameForDisplay = personInput.value.trim();
+            if (!personNameForDisplay) return;
+
+            // Normaliza o nome APENAS para a comunicação com a IA
+            const personNameToAI = normalizeName(personNameForDisplay);
+
             generateBtn.disabled = true;
             generateBtn.textContent = 'Pesquisando...';
             showStatus('Coletando informações... Isso pode levar um momento.', 'info');
@@ -503,7 +505,7 @@
 
             try {
                 const prompt = `
-                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada sobre "${personName}".
+                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada sobre "${personNameToAI}".
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
                   "name": "Nome completo", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
@@ -526,10 +528,14 @@
                 if (jsonStart === -1 || jsonEnd === 0) throw new Error('A resposta da IA não continha um JSON válido.');
                 
                 let jsonString = content.substring(jsonStart, jsonEnd);
-                // Usando a nova função de limpeza robusta
                 jsonString = sanitizeJSONString(jsonString);
 
                 const biographyData = JSON.parse(jsonString);
+                
+                // Garante que o nome exibido seja o que o usuário viu, não o nome da IA se for diferente
+                if (biographyData.name.toLowerCase() !== personNameForDisplay.toLowerCase()) {
+                    biographyData.name = personNameForDisplay;
+                }
 
                 displayBiography(biographyData);
                 showStatus('Biografia gerada com sucesso!', 'success');
