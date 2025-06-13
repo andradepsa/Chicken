@@ -340,7 +340,8 @@
 
         <div class="examples-section">
             <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
-            <p>Clique em um exemplo ou digite o nome de qualquer pessoa que desejar:</p>
+            <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
+            <!-- CORREÇÃO 2: Adicionados mais dois exemplos, totalizando 8 -->
             <div class="example-queries">
                 <div class="example-query" onclick="fillExample('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
                 <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
@@ -348,6 +349,8 @@
                 <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
                 <div class="example-query" onclick="fillExample('Clarice Lispector')">✍️ Clarice Lispector</div>
                 <div class="example-query" onclick="fillExample('Nelson Mandela')">🕊️ Nelson Mandela</div>
+                <div class="example-query" onclick="fillExample('Isaac Newton')">🍎 Isaac Newton</div>
+                <div class="example-query" onclick="fillExample('Zumbi dos Palmares')">✊ Zumbi dos Palmares</div>
             </div>
         </div>
 
@@ -378,9 +381,10 @@
             statusDiv.style.display = 'block';
         }
         
+        // CORREÇÃO 1: Função modificada para preencher o campo E iniciar a pesquisa automaticamente
         function fillExample(name) {
             personInput.value = name;
-            personInput.focus();
+            generateBiography(); // Inicia a busca imediatamente
         }
 
         // === FUNÇÃO PRINCIPAL ===
@@ -554,7 +558,6 @@
 
             console.log(`Tentando carregar foto para: ${personName}`);
             
-            // Array de diferentes fontes de imagem para tentar
             const imageSources = [
                 () => tryWikipediaAPI(personName),
                 () => tryWikipediaDirectSearch(personName),
@@ -583,7 +586,6 @@
                     console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message);
                 }
                 
-                // Pequena pausa entre tentativas
                 if (!photoLoaded && attemptCount < imageSources.length) {
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
@@ -599,7 +601,6 @@
         async function tryWikipediaAPI(personName) {
             console.log('Tentando Wikipedia API...');
             
-            // Tenta múltiplas variações do nome
             const nameVariations = [
                 personName,
                 personName.replace(/\s+/g, '_'),
@@ -705,7 +706,6 @@
                     resolve(false);
                 };
                 
-                // Timeout de 10 segundos
                 setTimeout(() => {
                     console.warn('Timeout ao carregar imagem:', imageUrl);
                     resolve(false);
