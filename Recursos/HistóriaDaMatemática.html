@@ -103,12 +103,11 @@
         .status-error { background-color: #f8d7da; color: #721c24; }
         .status-info { background-color: #cce5ff; color: #004085; }
 
-        /* Estilos para a caixa de sugestão */
         .suggestion-box {
             background-color: #e9ecef;
             border: 1px solid #ced4da;
             padding: 15px;
-            margin-top: -15px; /* Puxa para cima, abaixo da seção de busca */
+            margin-top: -15px;
             margin-bottom: 20px;
             border-radius: 8px;
             text-align: center;
@@ -125,15 +124,9 @@
             font-weight: bold;
             transition: background-color 0.2s;
         }
-        .suggestion-btn:hover {
-            background-color: #218838;
-        }
-        .suggestion-btn.reject {
-            background-color: #6c757d;
-        }
-        .suggestion-btn.reject:hover {
-            background-color: #5a6268;
-        }
+        .suggestion-btn:hover { background-color: #218838; }
+        .suggestion-btn.reject { background-color: #6c757d; }
+        .suggestion-btn.reject:hover { background-color: #5a6268; }
         
         .biography-container {
             margin-top: 30px;
@@ -385,7 +378,6 @@
             <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
         </div>
 
-        <!-- Nova caixa para sugestão de correção ortográfica -->
         <div id="suggestion-box" class="suggestion-box" style="display: none;"></div>
         
         <div id="status"></div>
@@ -415,84 +407,83 @@
             handleSearchRequest();
         }
 
-        // === NOVA LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
+        // *** NOVA FUNÇÃO PARA FORMATAR A BIOGRAFIA EM PARÁGRAFOS ***
+        function formatBiographyText(text) {
+            if (!text) return '';
 
-        // Função principal que orquestra a busca
+            // 1. Converte marcadores de negrito (**) para tags <strong>
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // 2. Divide o texto em parágrafos. A IA geralmente usa quebras de linha duplas (`\n\n`) entre parágrafos.
+            // A expressão regular `(\r\n|\n|\r){2,}` captura duas ou mais quebras de linha, independentemente do sistema operacional.
+            const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/);
+
+            // 3. Mapeia cada trecho para uma tag <p>, limpando espaços e removendo parágrafos vazios.
+            return paragraphs
+                .map(p => p.trim())
+                .filter(p => p.length > 0)
+                .map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`) // Remove quebras de linha simples restantes dentro do parágrafo
+                .join('');
+        }
+
+        // === LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
         async function handleSearchRequest() {
             const originalName = personInput.value.trim();
             if (!originalName) {
                 showStatus('Por favor, digite o nome de uma pessoa.', 'error');
                 return;
             }
-
             suggestionBox.style.display = 'none';
             generateBtn.disabled = true;
             generateBtn.textContent = 'Verificando nome...';
-            
             const correctedName = await getCorrectedName(originalName);
-
-            // Compara os nomes (ignorando maiúsculas/minúsculas)
             if (correctedName.toLowerCase() === originalName.toLowerCase()) {
-                generateBiography(); // O nome está correto, busca direto
+                generateBiography();
             } else {
                 showCorrectionSuggestion(originalName, correctedName);
-                generateBtn.disabled = false; // Reabilita o botão para o usuário ver a sugestão
+                generateBtn.disabled = false;
                 generateBtn.textContent = '🔍 Gerar Biografia Completa';
             }
         }
-
-        // Busca o nome mais provável na Wikipedia
         async function getCorrectedName(name) {
             try {
-                // Usamos a Wikipedia em português para melhores resultados com nomes lusófonos
                 const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
                 const response = await fetch(url);
-                if (!response.ok) return name; // Se falhar, retorna o nome original
+                if (!response.ok) return name;
                 const data = await response.json();
-                if (data.query.search.length > 0) {
-                    return data.query.search[0].title; // Retorna o título do primeiro resultado
-                }
-                return name; // Se não encontrar nada, retorna o nome original
+                if (data.query.search.length > 0) return data.query.search[0].title;
+                return name;
             } catch (error) {
                 console.warn("Erro ao verificar o nome:", error);
-                return name; // Em caso de erro, não bloqueia e retorna o original
+                return name;
             }
         }
-
-        // Mostra a caixa de sugestão para o usuário
         function showCorrectionSuggestion(originalName, correctedName) {
-            suggestionBox.innerHTML = `
-                Você quis dizer: <strong>${correctedName}</strong>?
+            suggestionBox.innerHTML = `Você quis dizer: <strong>${correctedName}</strong>?
                 <button id="confirm-correction" class="suggestion-btn">Sim, Pesquisar</button>
-                <button id="reject-correction" class="suggestion-btn reject">Não, pesquisar "${originalName}"</button>
-            `;
+                <button id="reject-correction" class="suggestion-btn reject">Não, pesquisar "${originalName}"</button>`;
             suggestionBox.style.display = 'block';
-
             document.getElementById('confirm-correction').onclick = () => {
-                personInput.value = correctedName; // Atualiza o campo com o nome correto
+                personInput.value = correctedName;
                 suggestionBox.style.display = 'none';
                 generateBiography();
             };
             document.getElementById('reject-correction').onclick = () => {
                 suggestionBox.style.display = 'none';
-                generateBiography(); // Usa o nome original que o usuário digitou
+                generateBiography();
             };
         }
 
-
         // === FUNÇÃO PRINCIPAL DE GERAÇÃO DE BIOGRAFIA ===
         async function generateBiography() {
-            const personName = personInput.value.trim(); // Pega o valor atual do input
-            if (!personName) {
-                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
-                return;
-            }
+            const personName = personInput.value.trim();
+            if (!personName) return;
 
             generateBtn.disabled = true;
             generateBtn.textContent = 'Pesquisando...';
             showStatus('Coletando informações... Isso pode levar um momento.', 'info');
             biographyContainer.style.display = 'none';
-            suggestionBox.style.display = 'none'; // Esconde a caixa de sugestão
+            suggestionBox.style.display = 'none';
 
             try {
                 const prompt = `
@@ -500,7 +491,7 @@
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido, sem explicações.
                 {
                   "name": "Nome completo", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
-                  "biography": "**Estrutura Obrigatória (4-5 parágrafos):** 1. **Início da Vida e Formação:** Contexto, família, educação, influências. 2. **Carreira e Contribuições Principais:** Marcos, importância científica/artística. 3. **Contexto Histórico e Desafios:** Sua época, desafios, interações. 4. **Anos Finais e Legado:** Influência duradoura, relevância hoje.",
+                  "biography": "**Estrutura Obrigatória (4-5 parágrafos):**\\n\\n1. **Início da Vida e Formação:** Contexto, família, educação, influências.\\n\\n2. **Carreira e Contribuições Principais:** Marcos, importância científica/artística.\\n\\n3. **Contexto Histórico e Desafios:** Sua época, desafios, interações.\\n\\n4. **Anos Finais e Legado:** Influência duradoura, relevância hoje.",
                   "major_contributions": ["Contribuição 1 com explicação técnica.", "Contribuição 2 explicando o 'antes e depois'.", "Contribuição 3 e sua aplicação."],
                   "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento com consequência."}],
                   "curiosities": ["Curiosidade pouco conhecida.", "Curiosidade sobre sua personalidade."]
@@ -508,7 +499,6 @@
                 **REGRAS:** Precisão factual é imperativa. O JSON deve ser estritamente válido, SEM vírgulas no final de listas (trailing commas).`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
-                
                 if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
                 
                 let content = response.message.content;
@@ -528,7 +518,7 @@
             } catch (error) {
                 console.error('Erro na geração:', error);
                 if (error.code === 4001) {
-                     showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com e tente novamente.', 'error');
+                     showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com.', 'error');
                 } else {
                      showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
                 }
@@ -538,7 +528,7 @@
             }
         }
 
-        // === FUNÇÃO DE EXIBIÇÃO (sem alterações) ===
+        // === FUNÇÃO DE EXIBIÇÃO ===
         function displayBiography(data) {
             const photoId = `photo-${Date.now()}`;
             const biographyHTML = `
@@ -559,7 +549,7 @@
                         </div>
                     </div>
                     <div class="biography-content">
-                        ${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div><p>${data.biography.replace(/\\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p></div>` : ''}
+                        ${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div>${formatBiographyText(data.biography)}</div>` : ''}
                         ${data.major_contributions && data.major_contributions.length > 0 ? `<div class="biography-section"><div class="section-title">🏆 Principais Feitos</div><ul class="contributions-list">${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}</ul></div>` : ''}
                         ${data.timeline && data.timeline.length > 0 ? `<div class="biography-section"><div class="section-title">📅 Linha do Tempo</div>${data.timeline.map(item => `<div class="timeline-item"><div class="timeline-year">${item.year}</div><div class="timeline-event">${item.event}</div></div>`).join('')}</div>` : ''}
                         ${data.curiosities && data.curiosities.length > 0 ? `<div class="biography-section"><div class="section-title">🔍 Curiosidades</div><ul class="contributions-list">${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}</ul></div>` : ''}
@@ -576,7 +566,6 @@
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
             if (!photoElement) return;
-
             const imageSources = [
                 { name: 'Wikidata', func: () => tryWikidata(personName) },
                 { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
@@ -586,7 +575,6 @@
                 { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) },
                 { name: 'Wikimedia Commons', func: () => tryWikimediaCommons(personName) }
             ];
-
             let photoLoaded = false;
             for (const source of imageSources) {
                 if (photoLoaded) break;
@@ -604,75 +592,48 @@
                     console.warn(`Erro na busca em ${source.name}:`, error.message);
                 }
             }
-
-            if (!photoLoaded) {
-                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
-            }
+            if (!photoLoaded) showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
         }
         async function tryWikidata(personName) {
             const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
-            const searchResponse = await fetch(searchUrl);
-            if (!searchResponse.ok) return null;
-            const searchData = await searchResponse.json();
-            if (!searchData.search || searchData.search.length === 0) return null;
+            const searchResponse = await fetch(searchUrl); if (!searchResponse.ok) return null;
+            const searchData = await searchResponse.json(); if (!searchData.search || searchData.search.length === 0) return null;
             const entityId = searchData.search[0].id;
             const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
-            const entityResponse = await fetch(entityUrl);
-            if (!entityResponse.ok) return null;
-            const entityData = await entityResponse.json();
-            const claims = entityData.entities[entityId].claims;
-            if (!claims || !claims.P18) return null;
-            const imageName = claims.P18[0].mainsnak.datavalue.value;
-            if (!imageName) return null;
-            return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
+            const entityResponse = await fetch(entityUrl); if (!entityResponse.ok) return null;
+            const entityData = await entityResponse.json(); const claims = entityData.entities[entityId].claims;
+            if (!claims || !claims.P18) return null; const imageName = claims.P18[0].mainsnak.datavalue.value;
+            if (!imageName) return null; return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
         }
         async function tryWikipediaAPI(personName, lang) {
             const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`;
-            const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
-            return null;
+            const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } }); if (!response.ok) return null;
+            const data = await response.json(); if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-'); return null;
         }
         async function tryLibraryOfCongress(personName) {
             const url = `https://www.loc.gov/photos/?q=${encodeURIComponent(personName)}&fo=json`;
-            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-            if (!response.ok) return null;
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } }); if (!response.ok) return null;
             const data = await response.json();
-            if (data.results && data.results.length > 0) {
-                const imageUrl = data.results[0].image_urls?.medium;
-                if(imageUrl) return imageUrl;
-            }
-            return null;
+            if (data.results && data.results.length > 0) { const imageUrl = data.results[0].image_urls?.medium; if (imageUrl) return imageUrl; } return null;
         }
         async function tryOpenverse(personName) {
             const url = `https://api.openverse.engineering/v1/images/?q=${encodeURIComponent(personName)}&license_type=publicdomain,by,by-sa&category=photograph`;
-            const response = await fetch(url);
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (data.results && data.results.length > 0) return data.results[0].url;
-            return null;
+            const response = await fetch(url); if (!response.ok) return null;
+            const data = await response.json(); if (data.results && data.results.length > 0) return data.results[0].url; return null;
         }
         async function tryDuckDuckGo(personName) {
             const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(personName)}&format=json&pretty=1&no_html=1&skip_disambig=1`;
-            const response = await fetch(url);
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (data.Image && data.Image.length > 0) return new URL(data.Image, 'https://duckduckgo.com').href;
-            return null;
+            const response = await fetch(url); if (!response.ok) return null;
+            const data = await response.json(); if (data.Image && data.Image.length > 0) return new URL(data.Image, 'https://duckduckgo.com').href; return null;
         }
         async function tryWikimediaCommons(personName) {
             const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
-            const response = await fetch(searchUrl);
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`;
-            return null;
+            const response = await fetch(searchUrl); if (!response.ok) return null;
+            const data = await response.json(); if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`; return null;
         }
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
-                const img = new Image();
-                let timeoutId = null;
+                const img = new Image(); let timeoutId = null;
                 img.onload = () => { clearTimeout(timeoutId); photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`; resolve(true); };
                 img.onerror = (error) => { clearTimeout(timeoutId); console.warn('Erro ao carregar imagem:', imageUrl, error); resolve(false); };
                 timeoutId = setTimeout(() => { console.warn('Timeout ao carregar imagem:', imageUrl); resolve(false); }, 10000);
@@ -682,10 +643,8 @@
         function updatePhotoStatus(photoElement, message) { photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`; }
         function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
         function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
-            const photoElement = document.getElementById(elementId);
-            if (!photoElement) return;
-            const initials = getInitials(name);
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
+            const photoElement = document.getElementById(elementId); if (!photoElement) return;
+            const initials = getInitials(name); const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
             const color = colors[name.length % colors.length];
             photoElement.innerHTML = `<div class="photo-placeholder" style="background: ${color};"><div style="font-size: 48px; font-weight: bold;">${initials}</div><div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div><button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button></div>`;
         }
