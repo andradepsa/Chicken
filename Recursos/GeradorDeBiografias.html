@@ -514,4 +514,337 @@
                 
                 const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
                 
-                if
+                if (!response || !response.message || !response.message.content) {
+                    throw new Error('A IA não retornou uma resposta válida.');
+                }
+                
+                let content = response.message.content;
+                const jsonStart = content.indexOf('{');
+                const jsonEnd = content.lastIndexOf('}') + 1;
+                
+                if (jsonStart === -1 || jsonEnd === 0) {
+                    throw new Error('A resposta da IA não continha um JSON válido.');
+                }
+                
+                let jsonString = sanitizeJSONString(content.substring(jsonStart, jsonEnd));
+                const biographyData = JSON.parse(jsonString);
+                
+                // Enriquece dados com informações atuais
+                biographyData.name = personName;
+                biographyData.currentInfo = currentInfo;
+                
+                if (verifiedFacts.birthDate) {
+                    biographyData.birth_date = verifiedFacts.birthDate;
+                }
+                
+                if (verifiedFacts.deathDate) {
+                    biographyData.death_date = verifiedFacts.deathDate;
+                } else if (!biographyData.death_date || biographyData.death_place?.toLowerCase() === 'n/a') {
+                    biographyData.death_date = "Ainda vivo(a)";
+                }
+                
+                displayBiography(biographyData);
+                showStatus('Biografia gerada com sucesso!', 'success');
+                
+            } catch (error) {
+                console.error('Erro na geração:', error);
+                if (error.code === 4001) {
+                    showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com.', 'error');
+                } else {
+                    showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
+                }
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🔍 Gerar Biografia Completa';
+            }
+        }
+
+        function displayBiography(data) {
+            const photoId = `photo-${Date.now()}`;
+            let deathInfoHtml = '';
+            
+            if (data.death_date) {
+                if (String(data.death_date).toLowerCase().includes('vivo')) {
+                    deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Status:</span><span class="info-value">${data.death_date}</span></div>`;
+                } else {
+                    deathInfoHtml = `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date} em ${data.death_place || 'N/A'}</span></div>`;
+                }
+            }
+            
+            // Seção de informações atuais
+            let currentInfoHtml = '';
+            if (data.currentInfo && (data.current_age || data.currentInfo.recentNews.length > 0 || data.currentInfo.recentWorks.length > 0)) {
+                currentInfoHtml = `
+                    <div class="current-info">
+                        <h4 style="margin-top: 0; color: #28a745;">📍 Informações Atuais</h4>
+                        ${data.current_age ? `<div class="info-item"><span class="info-label">👤 Idade Atual:</span><span class="info-value">${data.current_age} anos</span></div>` : ''}
+                        ${data.currentInfo.recentWorks.length > 0 ? `<div class="info-item"><span class="info-label">📚 Trabalhos Recentes:</span><span class="info-value">${data.currentInfo.recentWorks.length} encontrados</span></div>` : ''}
+                        ${data.currentInfo.recentNews.length > 0 ? `<div class="info-item"><span class="info-label">📰 Notícias Recentes:</span><span class="info-value">${data.currentInfo.recentNews.length} encontradas</span></div>` : ''}
+                    </div>
+                `;
+            }
+            
+            const biographyHTML = `
+                <div class="biography-card">
+                    <div class="card-buttons">
+                        <button class="print-button" onclick="printBiography()">🖨️ Imprimir</button>
+                        <button class="clear-button" onclick="clearBiography()">Limpar</button>
+                    </div>
+                    
+                    <div class="mathematician-header">
+                        <div class="mathematician-photo" id="${photoId}">
+                            <div class="photo-placeholder">
+                                <div class="loading-photo"></div>
+                                <div>Procurando foto...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mathematician-info">
+                            <h2 class="mathematician-name">${data.name || 'Nome não encontrado'}</h2>
+                            
+                            <div class="basic-info">
+                                <div class="info-item">
+                                    <span class="info-label">📅 Nascimento:</span>
+                                    <span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span>
+                                </div>
+                                ${deathInfoHtml}
+                                <div class="info-item">
+                                    <span class="info-label">🌍 Nacionalidade:</span>
+                                    <span class="info-value">${data.nationality || 'N/A'}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">🏆 Atuação:</span>
+                                    <span class="info-value">${(data.main_areas || []).join(', ')}</span>
+                                </div>
+                            </div>
+                            
+                            ${currentInfoHtml}
+                        </div>
+                    </div>
+                    
+                    <div class="biography-content">
+                        ${data.biography ? `
+                            <div class="biography-section">
+                                <div class="section-title">📖 Biografia</div>
+                                ${formatBiographyText(data.biography)}
+                            </div>
+                        ` : ''}
+                        
+                        ${data.major_contributions && data.major_contributions.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="section-title">🏆 Principais Feitos</div>
+                                <ul class="contributions-list">
+                                    ${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.recent_activities && data.recent_activities.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="current-section-title">🔥 Atividades Atuais</div>
+                                <ul class="contributions-list current-list">
+                                    ${data.recent_activities.map(activity => `<li>${activity}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.currentInfo && data.currentInfo.recentWorks.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="current-section-title">📚 Trabalhos Recentes</div>
+                                <ul class="contributions-list current-list">
+                                    ${data.currentInfo.recentWorks.map(work => `<li><strong>${work.title}</strong> (${work.publishedDate}) - ${work.type}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.currentInfo && data.currentInfo.recentNews.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="current-section-title">📰 Notícias Recentes</div>
+                                ${data.currentInfo.recentNews.map(news => `
+                                    <div class="news-item">
+                                        <div class="news-title">${news.title}</div>
+                                        <div class="news-date">${news.date}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${data.timeline && data.timeline.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="section-title">📅 Linha do Tempo</div>
+                                ${data.timeline.map(item => `
+                                    <div class="timeline-item">
+                                        <div class="timeline-year">${item.year}</div>
+                                        <div class="timeline-event">${item.event}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        ${data.curiosities && data.curiosities.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="section-title">🔍 Curiosidades</div>
+                                <ul class="contributions-list">
+                                    ${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            biographyContainer.innerHTML = biographyHTML;
+            biographyContainer.style.display = 'block';
+            window.scrollTo({ top: biographyContainer.offsetTop - 20, behavior: 'smooth' });
+            
+            // Carrega foto
+            loadPersonPhoto(data.name, photoId);
+        }
+
+        // ==================== CARREGAMENTO DE FOTOS ====================
+        async function loadPersonPhoto(personName, photoElementId) {
+            const photoElement = document.getElementById(photoElementId);
+            if (!photoElement) return;
+            
+            const imageSources = [
+                { name: 'Wikidata', func: () => tryWikidata(personName) },
+                { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
+                { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') }
+            ];
+            
+            let photoLoaded = false;
+            
+            for (const source of imageSources) {
+                if (photoLoaded) break;
+                
+                updatePhotoStatus(photoElement, `Buscando em ${source.name}...`);
+                
+                try {
+                    const imageUrl = await source.func();
+                    if (imageUrl) {
+                        const success = await loadImageWithFallback(imageUrl, personName, photoElement);
+                        if (success) {
+                            console.log(`Foto de ${source.name}: ${imageUrl}`);
+                            photoLoaded = true;
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Erro em ${source.name}:`, error.message);
+                }
+            }
+            
+            if (!photoLoaded) {
+                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
+            }
+        }
+
+        async function tryWikidata(personName) {
+            const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
+            const searchResponse = await fetch(searchUrl);
+            if (!searchResponse.ok) return null;
+            
+            const searchData = await searchResponse.json();
+            if (!searchData.search || searchData.search.length === 0) return null;
+            
+            const entityId = searchData.search[0].id;
+            const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
+            const entityResponse = await fetch(entityUrl);
+            if (!entityResponse.ok) return null;
+            
+            const entityData = await entityResponse.json();
+            const claims = entityData.entities[entityId].claims;
+            
+            if (!claims || !claims.P18) return null;
+            
+            const imageName = claims.P18[0].mainsnak.datavalue.value;
+            if (!imageName) return null;
+            
+            return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
+        }
+
+        async function tryWikipediaAPI(personName, lang) {
+            const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`;
+            const response = await fetch(url, {
+                headers: { 'User-Agent': 'BiographyGenerator/1.0' }
+            });
+            
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            if (data.thumbnail && data.thumbnail.source) {
+                return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
+            }
+            
+            return null;
+        }
+
+        async function loadImageWithFallback(imageUrl, personName, photoElement) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                let timeoutId = null;
+                
+                img.onload = () => {
+                    clearTimeout(timeoutId);
+                    photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
+                    resolve(true);
+                };
+                
+                img.onerror = () => {
+                    clearTimeout(timeoutId);
+                    resolve(false);
+                };
+                
+                timeoutId = setTimeout(() => {
+                    resolve(false);
+                }, 10000);
+                
+                img.src = imageUrl;
+            });
+        }
+
+        function updatePhotoStatus(photoElement, message) {
+            photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`;
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
+            const photoElement = document.getElementById(elementId);
+            if (!photoElement) return;
+            
+            const initials = getInitials(name);
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
+            const color = colors[name.length % colors.length];
+            
+            photoElement.innerHTML = `
+                <div class="photo-placeholder" style="background: ${color};">
+                    <div style="font-size: 48px; font-weight: bold;">${initials}</div>
+                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div>
+                    <button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button>
+                </div>
+            `;
+        }
+
+        function retryPhotoLoad(personName, photoElementId) {
+            loadPersonPhoto(personName, photoElementId);
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        generateBtn.addEventListener('click', handleSearchRequest);
+        personInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearchRequest();
+        });
+
+        // Tornar funções globais
+        window.fillExample = fillExample;
+        window.clearBiography = clearBiography;
+        window.retryPhotoLoad = retryPhotoLoad;
+        window.printBiography = printBiography;
+
+        // Foca no input ao carregar
+        personInput.focus();
+    </script>
+</body>
+</html>
