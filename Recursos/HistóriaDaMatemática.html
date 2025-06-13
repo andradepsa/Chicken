@@ -395,7 +395,7 @@
             try {
                 // Lembre-se de estar logado no puter.com para evitar erros de autenticação!
                 const prompt = `
-                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia detalhada e factualmente precisa sobre a seguinte pessoa: "${personName}".
+                Você é um biógrafo e historiador especialista, com um profundo conhecimento em história da ciência e das artes. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada e analítica sobre a seguinte pessoa: "${personName}".
 
                 Responda **EXCLUSIVAMENTE** com um objeto JSON válido no seguinte formato. Não inclua texto ou explicações antes ou depois do JSON.
 
@@ -407,27 +407,39 @@
                   "death_place": "Local da morte ou 'N/A' se vivo(a)",
                   "nationality": "Nacionalidade(s)",
                   "main_areas": ["Área 1 de atuação", "Área 2 de atuação"],
-                  "biography": "Uma biografia rica e detalhada (mínimo de 3 parágrafos) cobrindo sua vida, carreira, realizações importantes e legado. O texto deve ser bem escrito e envolvente.",
+                  
+                  "biography": "Aqui você vai escrever a biografia, seguindo as diretrizes abaixo. Seja profundo, detalhado e use um tom acadêmico, mas acessível.
+
+                    **Estrutura Obrigatória da Biografia (mínimo de 4-5 parágrafos longos):**
+
+                    1.  **Introdução, Início da Vida e Formação:** Comece com uma introdução impactante. Descreva o contexto de seu nascimento, sua família, sua educação inicial e as principais influências (mentores, livros, eventos) que despertaram seu interesse e moldaram seu futuro intelectual e profissional.
+                    
+                    2.  **Carreira, Descobertas e Contribuições Principais:** Este é o núcleo da biografia. Detalhe os marcos de sua carreira e suas descobertas ou obras mais significativas. Para cada contribuição, explique a importância CIENTÍFICA ou ARTÍSTICA. Qual problema ela resolveu? Que novo campo ela abriu? Como ela se diferenciava do conhecimento da época?
+                    
+                    3.  **Contexto Histórico, Desafios e Interações:** Situe a pessoa em seu contexto histórico, cultural e científico. Mencione os desafios que enfrentou (sociais, financeiros, científicos), os contemporâneos com quem interagiu (colaboradores, rivais) e como o 'espírito da época' (zeitgeist) influenciou seu trabalho e foi por ele influenciado.
+                    
+                    4.  **Anos Finais, Legado e Influência Posterior:** Descreva os anos finais de sua vida. Analise seu legado duradouro de forma crítica. Como seu trabalho influenciou as gerações seguintes de cientistas, artistas ou pensadores? Qual é sua relevância hoje? Conclua com uma reflexão sobre seu impacto na história humana.
+                  ",
+
                   "major_contributions": [
-                    "Primeira contribuição ou feito principal, com uma breve explicação.",
-                    "Segundo feito principal, com uma breve explicação.",
-                    "Terceiro feito principal, com uma breve explicação."
+                    "Primeira contribuição ou feito principal, com uma explicação detalhada sobre seu significado técnico/científico.",
+                    "Segundo feito principal, explicando o 'antes' e 'depois' dessa contribuição para a área.",
+                    "Terceiro feito principal, detalhando sua aplicação ou a teoria que ela fundamentou."
                   ],
                   "timeline": [
-                    {"year": "AAAA", "event": "Um evento marcante na vida ou carreira."},
-                    {"year": "AAAA", "event": "Outro evento importante."},
-                    {"year": "AAAA", "event": "Mais um evento cronológico."}
+                    {"year": "AAAA", "event": "Um evento marcante na vida ou carreira, com contexto."},
+                    {"year": "AAAA", "event": "Outro evento importante, explicando sua consequência."},
+                    {"year": "AAAA", "event": "Mais um evento cronológico crucial."}
                   ],
                   "curiosities": [
-                    "Uma curiosidade ou fato interessante sobre a pessoa.",
-                    "Outra curiosidade."
+                    "Uma curiosidade ou fato interessante e pouco conhecido sobre a pessoa.",
+                    "Outra curiosidade que revele algo sobre sua personalidade ou método de trabalho."
                   ]
                 }
 
-                Instruções Importantes:
-                - Verifique as informações para garantir precisão. Se uma informação não estiver disponível, use "Informação não disponível".
-                - A biografia deve ter um tom educativo e ser acessível a um público geral.
-                - **CRUCIAL**: O JSON deve ser estritamente válido. NÃO inclua vírgulas no final de listas ou objetos (trailing commas).
+                Instruções Finais Cruciais:
+                - A precisão factual é imperativa. Use 'Informação não disponível' apenas se for estritamente necessário.
+                - O JSON deve ser estritamente válido. NÃO inclua vírgulas no final de listas ou objetos (trailing commas).
                 `;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
@@ -447,12 +459,7 @@
                 let jsonString = content.substring(jsonStart, jsonEnd);
 
                 // Limpeza robusta da string JSON antes de fazer o parse
-                // 1. Remove caracteres de controle (como quebras de linha) que podem quebrar o JSON.
                 jsonString = jsonString.replace(/[\n\r\t]/g, '');
-                
-                // 2. *** CORREÇÃO PRINCIPAL ***
-                // Remove vírgulas traiçoeiras (trailing commas) de arrays e objetos.
-                // Exemplo: ["item1", "item2",] -> ["item1", "item2"]
                 jsonString = jsonString.replace(/,\s*(?=[\]\}])/g, '');
 
                 const biographyData = JSON.parse(jsonString);
@@ -472,8 +479,6 @@
                 generateBtn.textContent = '🔍 Gerar Biografia Completa';
             }
         }
-
-        // --- As outras funções (displayBiography, loadPersonPhoto, etc.) permanecem exatamente as mesmas ---
 
         // === FUNÇÃO DE EXIBIÇÃO ===
         function displayBiography(data) {
@@ -496,7 +501,7 @@
                         </div>
                     </div>
                     <div class="biography-content">
-                        ${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div><p>${data.biography.replace(/\\n/g, '<br><br>')}</p></div>` : ''}
+                        ${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div><p>${data.biography.replace(/\\n/g, '<br><br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p></div>` : ''}
                         ${data.major_contributions && data.major_contributions.length > 0 ? `<div class="biography-section"><div class="section-title">🏆 Principais Feitos</div><ul class="contributions-list">${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}</ul></div>` : ''}
                         ${data.timeline && data.timeline.length > 0 ? `<div class="biography-section"><div class="section-title">📅 Linha do Tempo</div>${data.timeline.map(item => `<div class="timeline-item"><div class="timeline-year">${item.year}</div><div class="timeline-event">${item.event}</div></div>`).join('')}</div>` : ''}
                         ${data.curiosities && data.curiosities.length > 0 ? `<div class="biography-section"><div class="section-title">🔍 Curiosidades</div><ul class="contributions-list">${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}</ul></div>` : ''}
