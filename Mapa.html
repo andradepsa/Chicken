@@ -591,17 +591,17 @@
                     { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 11 }
                 ]
             },
-         //   chat: {
-        //        title: 'Chat e Servidor',
-          //      items: [
-            //        { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
-                //    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
-              //      { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
-                  //  { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
-                 //   { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
-                 //   { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
-           //     ]     
-           // },
+            chat: {
+                title: 'Chat e Projetos',
+                items: [
+                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
+                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
+                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
+                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                    { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
+                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
+                ]
+            },
             additional: {
                 title: 'Recursos Adicionais',
                 items: [
@@ -618,46 +618,25 @@
         const sitesSubmenuData = {
             title: 'Sites Úteis para Matemática',
             items: [
-             
-              { name: 'Curso Google For Education', icon: '<i class="fas fa-calculator"></i>',  url: 'https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/', point: 24 },
-              { name: 'Programa GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 1 },
-              { name: 'Programa Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 2 },
-              { name: 'Programa Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 3 },
-              { name: 'Programa Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 4 },
-              { name: 'Programa Duolingo', icon: '<i class="fas fa-chart-line"></i>', url: 'https://pt.duolingo.com/', point: 5 },
-              { name: 'Provas OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'http://www.obmep.org.br/provas.htm', point: 6 },
-              { name: 'Provas Canguru Matemática', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 7 },
-              { name: 'Provas OBM', icon: '<i class="fas fa-scroll"></i>', url: 'https://www.obm.org.br/como-se-preparar/provas-e-gabaritos/', point: 8 },     
-              { name: 'Videos Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 9 },
-              { name: 'Videos Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 10 },
-              { name: 'Videos Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 11 },
-              { name: 'Portal Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 12 },
-              { name: 'Portal Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 13 },
-              { name: 'Portal Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 14 },
-              { name: 'Portal MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 15 },
+                { name: 'Curso Google For Education', icon: '<i class="fas fa-calculator"></i>', url: 'https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/', point: 24 },
+                { name: 'Programa GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 1 },
+                { name: 'Programa Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 2 },
+                { name: 'Programa Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 3 },
+                { name: 'Programa Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 4 },
+                { name: 'Programa Duolingo', icon: '<i class="fas fa-chart-line"></i>', url: 'https://pt.duolingo.com/', point: 5 },
+                { name: 'Provas OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'http://www.obmep.org.br/provas.htm', point: 6 },
+                { name: 'Provas Canguru Matemática', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 7 },
+                { name: 'Provas OBM', icon: '<i class="fas fa-scroll"></i>', url: 'https://www.obm.org.br/como-se-preparar/provas-e-gabaritos/', point: 8 },
+                { name: 'Videos Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 9 },
+                { name: 'Videos Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 10 },
+                { name: 'Videos Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 11 },
+                { name: 'Portal Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 12 },
+                { name: 'Portal Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 13 },
+                { name: 'Portal Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 14 },
+                { name: 'Portal MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 15 }
             ]
         };
 
-
-        pedagogic: {
-                title: 'Projetos',
-                items: [
-                 { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 13}
-                ]
-            },
-
-        const sitesSubmenuData = {
-            title: 'projetos',
-            items: [
-             
-                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
-                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
-                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
-                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
-                    { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
-                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
-            ]
-        };
         function createSectorLines() {
             const sectorLinesContainer = document.getElementById('sectorLines');
             const angleStep = 360 / 24;
@@ -999,6 +978,8 @@
             }
         }
 
+        let countdownInterval;
+
         document.addEventListener('DOMContentLoaded', function() {
             createSectorLines();
             createMainMenuItems();
@@ -1082,8 +1063,6 @@
                 rotateBackground();
             }, 100);
         });
-        
-        let countdownInterval;
     </script>
     
     <script>
