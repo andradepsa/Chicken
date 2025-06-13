@@ -591,17 +591,17 @@
                     { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 11 }
                 ]
             },
-            chat: {
-                title: 'Chat e Servidor',
-                items: [
-                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
-                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
-                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
-                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
-                    { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
-                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
-                ]
-            },
+         //   chat: {
+        //        title: 'Chat e Servidor',
+          //      items: [
+            //        { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
+                //    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
+              //      { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
+                  //  { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                 //   { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
+                 //   { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
+           //     ]     
+           // },
             additional: {
                 title: 'Recursos Adicionais',
                 items: [
@@ -638,6 +638,26 @@
             ]
         };
 
+
+        pedagogic: {
+                title: 'Projetos',
+                items: [
+                 { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 13}
+                ]
+            },
+
+        const sitesSubmenuData = {
+            title: 'projetos',
+            items: [
+             
+                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
+                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
+                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
+                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                    { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
+                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
+            ]
+        };
         function createSectorLines() {
             const sectorLinesContainer = document.getElementById('sectorLines');
             const angleStep = 360 / 24;
