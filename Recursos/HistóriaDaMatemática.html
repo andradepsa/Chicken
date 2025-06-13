@@ -102,6 +102,38 @@
         .status-success { background-color: #d4edda; color: #155724; }
         .status-error { background-color: #f8d7da; color: #721c24; }
         .status-info { background-color: #cce5ff; color: #004085; }
+
+        /* Estilos para a caixa de sugestão */
+        .suggestion-box {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            padding: 15px;
+            margin-top: -15px; /* Puxa para cima, abaixo da seção de busca */
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .suggestion-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .suggestion-btn:hover {
+            background-color: #218838;
+        }
+        .suggestion-btn.reject {
+            background-color: #6c757d;
+        }
+        .suggestion-btn.reject:hover {
+            background-color: #5a6268;
+        }
         
         .biography-container {
             margin-top: 30px;
@@ -352,6 +384,9 @@
                    placeholder="Digite o nome de qualquer pessoa (ex: Albert Einstein, Cleópatra...)" autocomplete="off">
             <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
         </div>
+
+        <!-- Nova caixa para sugestão de correção ortográfica -->
+        <div id="suggestion-box" class="suggestion-box" style="display: none;"></div>
         
         <div id="status"></div>
         
@@ -366,6 +401,7 @@
         const personInput = document.getElementById('person-input');
         const statusDiv = document.getElementById('status');
         const biographyContainer = document.getElementById('biography-container');
+        const suggestionBox = document.getElementById('suggestion-box');
 
         // === FUNÇÕES AUXILIARES ===
         function showStatus(message, type = 'info') {
@@ -376,12 +412,77 @@
         
         function fillExample(name) {
             personInput.value = name;
-            generateBiography();
+            handleSearchRequest();
         }
 
-        // === FUNÇÃO PRINCIPAL ===
+        // === NOVA LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
+
+        // Função principal que orquestra a busca
+        async function handleSearchRequest() {
+            const originalName = personInput.value.trim();
+            if (!originalName) {
+                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
+                return;
+            }
+
+            suggestionBox.style.display = 'none';
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Verificando nome...';
+            
+            const correctedName = await getCorrectedName(originalName);
+
+            // Compara os nomes (ignorando maiúsculas/minúsculas)
+            if (correctedName.toLowerCase() === originalName.toLowerCase()) {
+                generateBiography(); // O nome está correto, busca direto
+            } else {
+                showCorrectionSuggestion(originalName, correctedName);
+                generateBtn.disabled = false; // Reabilita o botão para o usuário ver a sugestão
+                generateBtn.textContent = '🔍 Gerar Biografia Completa';
+            }
+        }
+
+        // Busca o nome mais provável na Wikipedia
+        async function getCorrectedName(name) {
+            try {
+                // Usamos a Wikipedia em português para melhores resultados com nomes lusófonos
+                const url = `https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(name)}&format=json&origin=*`;
+                const response = await fetch(url);
+                if (!response.ok) return name; // Se falhar, retorna o nome original
+                const data = await response.json();
+                if (data.query.search.length > 0) {
+                    return data.query.search[0].title; // Retorna o título do primeiro resultado
+                }
+                return name; // Se não encontrar nada, retorna o nome original
+            } catch (error) {
+                console.warn("Erro ao verificar o nome:", error);
+                return name; // Em caso de erro, não bloqueia e retorna o original
+            }
+        }
+
+        // Mostra a caixa de sugestão para o usuário
+        function showCorrectionSuggestion(originalName, correctedName) {
+            suggestionBox.innerHTML = `
+                Você quis dizer: <strong>${correctedName}</strong>?
+                <button id="confirm-correction" class="suggestion-btn">Sim, Pesquisar</button>
+                <button id="reject-correction" class="suggestion-btn reject">Não, pesquisar "${originalName}"</button>
+            `;
+            suggestionBox.style.display = 'block';
+
+            document.getElementById('confirm-correction').onclick = () => {
+                personInput.value = correctedName; // Atualiza o campo com o nome correto
+                suggestionBox.style.display = 'none';
+                generateBiography();
+            };
+            document.getElementById('reject-correction').onclick = () => {
+                suggestionBox.style.display = 'none';
+                generateBiography(); // Usa o nome original que o usuário digitou
+            };
+        }
+
+
+        // === FUNÇÃO PRINCIPAL DE GERAÇÃO DE BIOGRAFIA ===
         async function generateBiography() {
-            const personName = personInput.value.trim();
+            const personName = personInput.value.trim(); // Pega o valor atual do input
             if (!personName) {
                 showStatus('Por favor, digite o nome de uma pessoa.', 'error');
                 return;
@@ -391,19 +492,20 @@
             generateBtn.textContent = 'Pesquisando...';
             showStatus('Coletando informações... Isso pode levar um momento.', 'info');
             biographyContainer.style.display = 'none';
+            suggestionBox.style.display = 'none'; // Esconde a caixa de sugestão
 
             try {
                 const prompt = `
-                Você é um biógrafo e historiador especialista, com um profundo conhecimento em história da ciência e das artes. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada e analítica sobre a seguinte pessoa: "${personName}".
-                Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
+                Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada sobre "${personName}".
+                Responda **EXCLUSIVAMENTE** com um objeto JSON válido, sem explicações.
                 {
-                  "name": "Nome completo e correto", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Ainda vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade(s)", "main_areas": ["Área 1", "Área 2"],
-                  "biography": "Aqui você vai escrever a biografia, seguindo as diretrizes abaixo. Seja profundo, detalhado e use um tom acadêmico, mas acessível. **Estrutura Obrigatória (mínimo de 4-5 parágrafos longos):** 1. **Introdução, Início da Vida e Formação:** Contexto do nascimento, família, educação inicial e influências. 2. **Carreira, Descobertas e Contribuições Principais:** Marcos da carreira, importância CIENTÍFICA/ARTÍSTICA das obras. Qual problema resolveu? Qual campo abriu? 3. **Contexto Histórico, Desafios e Interações:** Situe a pessoa em sua época. Desafios enfrentados, interações com contemporâneos, influência do 'espírito da época' (zeitgeist). 4. **Anos Finais, Legado e Influência Posterior:** Análise crítica do legado. Como seu trabalho influenciou as gerações seguintes? Qual sua relevância hoje?",
-                  "major_contributions": ["Contribuição 1 com explicação técnica detalhada.", "Contribuição 2 explicando o 'antes' e 'depois'.", "Contribuição 3 detalhando sua aplicação."],
+                  "name": "Nome completo", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
+                  "biography": "**Estrutura Obrigatória (4-5 parágrafos):** 1. **Início da Vida e Formação:** Contexto, família, educação, influências. 2. **Carreira e Contribuições Principais:** Marcos, importância científica/artística. 3. **Contexto Histórico e Desafios:** Sua época, desafios, interações. 4. **Anos Finais e Legado:** Influência duradoura, relevância hoje.",
+                  "major_contributions": ["Contribuição 1 com explicação técnica.", "Contribuição 2 explicando o 'antes e depois'.", "Contribuição 3 e sua aplicação."],
                   "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento com consequência."}],
                   "curiosities": ["Curiosidade pouco conhecida.", "Curiosidade sobre sua personalidade."]
                 }
-                **REGRAS CRUCIAIS:** A precisão é imperativa. O JSON deve ser estritamente válido, SEM vírgulas no final de listas ou objetos (trailing commas).`;
+                **REGRAS:** Precisão factual é imperativa. O JSON deve ser estritamente válido, SEM vírgulas no final de listas (trailing commas).`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 
@@ -425,7 +527,7 @@
 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                if (error.code === 4001 || (error.message && error.message.includes("wallet"))) {
+                if (error.code === 4001) {
                      showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com e tente novamente.', 'error');
                 } else {
                      showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
@@ -436,7 +538,7 @@
             }
         }
 
-        // === FUNÇÃO DE EXIBIÇÃO ===
+        // === FUNÇÃO DE EXIBIÇÃO (sem alterações) ===
         function displayBiography(data) {
             const photoId = `photo-${Date.now()}`;
             const biographyHTML = `
@@ -470,7 +572,7 @@
             loadPersonPhoto(data.name, photoId);
         }
 
-        // === NOVA BUSCA DE FOTOS MULTI-FONTES ===
+        // === BUSCA DE FOTOS MULTI-FONTES (sem alterações) ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
             if (!photoElement) return;
@@ -507,10 +609,6 @@
                 showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
             }
         }
-
-        // === NOVOS MÉTODOS DE BUSCA DE IMAGENS ===
-
-        // Fonte 1: Wikidata (Alta Precisão)
         async function tryWikidata(personName) {
             const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
             const searchResponse = await fetch(searchUrl);
@@ -528,8 +626,6 @@
             if (!imageName) return null;
             return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
         }
-
-        // Fonte 2: Wikipedia (Alta Relevância)
         async function tryWikipediaAPI(personName, lang) {
             const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`;
             const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
@@ -538,22 +634,17 @@
             if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
             return null;
         }
-
-        // Fonte 3: Library of Congress (Acervo Histórico de Qualidade)
         async function tryLibraryOfCongress(personName) {
             const url = `https://www.loc.gov/photos/?q=${encodeURIComponent(personName)}&fo=json`;
             const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
             if (!response.ok) return null;
             const data = await response.json();
             if (data.results && data.results.length > 0) {
-                // A API da LoC retorna várias URLs de imagem, pegamos uma de tamanho médio
                 const imageUrl = data.results[0].image_urls?.medium;
                 if(imageUrl) return imageUrl;
             }
             return null;
         }
-        
-        // Fonte 4: Openverse (Ampla Cobertura de Fontes Abertas)
         async function tryOpenverse(personName) {
             const url = `https://api.openverse.engineering/v1/images/?q=${encodeURIComponent(personName)}&license_type=publicdomain,by,by-sa&category=photograph`;
             const response = await fetch(url);
@@ -562,8 +653,6 @@
             if (data.results && data.results.length > 0) return data.results[0].url;
             return null;
         }
-
-        // Fonte 5: DuckDuckGo (Busca Geral na Web)
         async function tryDuckDuckGo(personName) {
             const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(personName)}&format=json&pretty=1&no_html=1&skip_disambig=1`;
             const response = await fetch(url);
@@ -572,8 +661,6 @@
             if (data.Image && data.Image.length > 0) return new URL(data.Image, 'https://duckduckgo.com').href;
             return null;
         }
-
-        // Fonte 6: Wikimedia Commons (Fallback Final)
         async function tryWikimediaCommons(personName) {
             const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
             const response = await fetch(searchUrl);
@@ -582,8 +669,6 @@
             if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`;
             return null;
         }
-
-        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK (sem alterações) ===
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -594,8 +679,6 @@
                 img.src = imageUrl;
             });
         }
-
-        // === FUNÇÕES AUXILIARES (sem alterações) ===
         function updatePhotoStatus(photoElement, message) { photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`; }
         function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
         function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
@@ -607,11 +690,11 @@
             photoElement.innerHTML = `<div class="photo-placeholder" style="background: ${color};"><div style="font-size: 48px; font-weight: bold;">${initials}</div><div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div><button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button></div>`;
         }
         function retryPhotoLoad(personName, photoElementId) { loadPersonPhoto(personName, photoElementId); }
-        function clearBiography() { biographyContainer.style.display = 'none'; biographyContainer.innerHTML = ''; personInput.value = ''; statusDiv.style.display = 'none'; personInput.focus(); }
+        function clearBiography() { biographyContainer.style.display = 'none'; biographyContainer.innerHTML = ''; personInput.value = ''; statusDiv.style.display = 'none'; suggestionBox.style.display = 'none'; personInput.focus(); }
         
         // === INICIALIZAÇÃO ===
-        generateBtn.addEventListener('click', generateBiography);
-        personInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') generateBiography(); });
+        generateBtn.addEventListener('click', handleSearchRequest);
+        personInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleSearchRequest(); });
         window.fillExample = fillExample;
         window.clearBiography = clearBiography;
         window.retryPhotoLoad = retryPhotoLoad;
