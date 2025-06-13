@@ -810,14 +810,30 @@
                     questionsDatabase.unshift(...newQuestions);
                     await saveUserData();
                     renderQuestions();
-                    showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
+                    showStatus(`${newQuestions.length} questão(ões) gerada(s) com sucesso para ${currentUser.username}!`, 'success');
                 } else {
                     throw new Error('Não foi possível extrair questões da resposta da IA.');
                 }
 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                showStatus(`Ocorreu um erro: ${error.message}`, 'error');
+                
+                // === TRATAMENTO ESPECÍFICO DE ERROS DE LIMITE DA IA ===
+                let errorMessage = 'Erro desconhecido';
+                
+                if (error.error && error.error.delegate === 'usage-limited-chat') {
+                    errorMessage = `⚠️ ${currentUser.username}, sua conta Puter atingiu o limite de uso da IA. Aguarde um tempo ou verifique os limites em puter.com`;
+                } else if (error.error && error.error.message && error.error.message.includes('Permission denied')) {
+                    errorMessage = `❌ ${currentUser.username}, permissão negada para usar a IA. Verifique os limites da sua conta.`;
+                } else if (error.error && error.error.code === 'error_400_from_delegate') {
+                    errorMessage = `🚫 ${currentUser.username}, limite de uso atingido. Tente mais tarde.`;
+                } else if (error.code === 4001) {
+                    errorMessage = '🔐 Problema de autenticação. Faça login novamente.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showStatus(errorMessage, 'error');
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '🚀 Gerar';
