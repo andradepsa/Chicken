@@ -288,12 +288,6 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .photo-error {
-            font-size: 12px;
-            color: #dc3545;
-            margin-top: 5px;
-        }
-
         .photo-retry-btn {
             background: #28a745;
             color: white;
@@ -433,6 +427,7 @@
                 Instruções Importantes:
                 - Verifique as informações para garantir precisão. Se uma informação não estiver disponível, use "Informação não disponível".
                 - A biografia deve ter um tom educativo e ser acessível a um público geral.
+                - **CRUCIAL**: O JSON deve ser estritamente válido. NÃO inclua vírgulas no final de listas ou objetos (trailing commas).
                 `;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
@@ -451,9 +446,14 @@
                 
                 let jsonString = content.substring(jsonStart, jsonEnd);
 
-                // CORREÇÃO 1: Limpa a string JSON de caracteres de controle inválidos antes de fazer o parse.
-                // Isso resolve o erro "Bad control character in string literal".
+                // Limpeza robusta da string JSON antes de fazer o parse
+                // 1. Remove caracteres de controle (como quebras de linha) que podem quebrar o JSON.
                 jsonString = jsonString.replace(/[\n\r\t]/g, '');
+                
+                // 2. *** CORREÇÃO PRINCIPAL ***
+                // Remove vírgulas traiçoeiras (trailing commas) de arrays e objetos.
+                // Exemplo: ["item1", "item2",] -> ["item1", "item2"]
+                jsonString = jsonString.replace(/,\s*(?=[\]\}])/g, '');
 
                 const biographyData = JSON.parse(jsonString);
 
@@ -462,7 +462,6 @@
 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                // Verifica se o erro é o de autenticação do Puter para dar uma mensagem mais útil.
                 if (error.code === 4001 || (error.message && error.message.includes("wallet"))) {
                      showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com e tente novamente.', 'error');
                 } else {
@@ -474,89 +473,39 @@
             }
         }
 
+        // --- As outras funções (displayBiography, loadPersonPhoto, etc.) permanecem exatamente as mesmas ---
+
         // === FUNÇÃO DE EXIBIÇÃO ===
         function displayBiography(data) {
             const photoId = `photo-${Date.now()}`;
-            // Na seção de biografia, o .replace(/\n/g, '<br>') ainda é útil caso a IA inclua literais \\n
             const biographyHTML = `
                 <div class="biography-card">
                     <button class="clear-button" onclick="clearBiography()">Limpar Biografia</button>
-                    
                     <div class="mathematician-header">
                         <div class="mathematician-photo" id="${photoId}">
-                            <div class="photo-placeholder">
-                                <div class="loading-photo"></div>
-                                <div>Procurando foto...</div>
-                            </div>
+                            <div class="photo-placeholder"><div class="loading-photo"></div><div>Procurando foto...</div></div>
                         </div>
-                        
                         <div class="mathematician-info">
                             <h2 class="mathematician-name">${data.name || 'Nome não encontrado'}</h2>
-                            
                             <div class="basic-info">
-                                <div class="info-item">
-                                    <span class="info-label">📅 Nascimento:</span>
-                                    <span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span>
-                                </div>
-                                ${data.death_date && !data.death_date.toLowerCase().includes('vivo') ? `
-                                <div class="info-item">
-                                    <span class="info-label">⚰️ Falecimento:</span>
-                                    <span class="info-value">${data.death_date || 'N/A'} em ${data.death_place || 'N/A'}</span>
-                                </div>
-                                ` : ''}
-                                <div class="info-item">
-                                    <span class="info-label">🌍 Nacionalidade:</span>
-                                    <span class="info-value">${data.nationality || 'N/A'}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">🏆 Atuação:</span>
-                                    <span class="info-value">${(data.main_areas || []).join(', ')}</span>
-                                </div>
+                                <div class="info-item"><span class="info-label">📅 Nascimento:</span><span class="info-value">${data.birth_date || 'N/A'} em ${data.birth_place || 'N/A'}</span></div>
+                                ${data.death_date && !data.death_date.toLowerCase().includes('vivo') ? `<div class="info-item"><span class="info-label">⚰️ Falecimento:</span><span class="info-value">${data.death_date || 'N/A'} em ${data.death_place || 'N/A'}</span></div>` : ''}
+                                <div class="info-item"><span class="info-label">🌍 Nacionalidade:</span><span class="info-value">${data.nationality || 'N/A'}</span></div>
+                                <div class="info-item"><span class="info-label">🏆 Atuação:</span><span class="info-value">${(data.main_areas || []).join(', ')}</span></div>
                             </div>
                         </div>
                     </div>
-
                     <div class="biography-content">
-                        ${data.biography ? `
-                        <div class="biography-section">
-                            <div class="section-title">📖 Biografia</div>
-                            <p>${data.biography.replace(/\\n/g, '<br><br>')}</p>
-                        </div>` : ''}
-
-                        ${data.major_contributions && data.major_contributions.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">🏆 Principais Feitos</div>
-                            <ul class="contributions-list">
-                                ${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
-
-                        ${data.timeline && data.timeline.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">📅 Linha do Tempo</div>
-                            ${data.timeline.map(item => `
-                                <div class="timeline-item">
-                                    <div class="timeline-year">${item.year}</div>
-                                    <div class="timeline-event">${item.event}</div>
-                                </div>
-                            `).join('')}
-                        </div>` : ''}
-
-                        ${data.curiosities && data.curiosities.length > 0 ? `
-                        <div class="biography-section">
-                            <div class="section-title">🔍 Curiosidades</div>
-                            <ul class="contributions-list">
-                                ${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}
-                            </ul>
-                        </div>` : ''}
+                        ${data.biography ? `<div class="biography-section"><div class="section-title">📖 Biografia</div><p>${data.biography.replace(/\\n/g, '<br><br>')}</p></div>` : ''}
+                        ${data.major_contributions && data.major_contributions.length > 0 ? `<div class="biography-section"><div class="section-title">🏆 Principais Feitos</div><ul class="contributions-list">${data.major_contributions.map(contrib => `<li>${contrib}</li>`).join('')}</ul></div>` : ''}
+                        ${data.timeline && data.timeline.length > 0 ? `<div class="biography-section"><div class="section-title">📅 Linha do Tempo</div>${data.timeline.map(item => `<div class="timeline-item"><div class="timeline-year">${item.year}</div><div class="timeline-event">${item.event}</div></div>`).join('')}</div>` : ''}
+                        ${data.curiosities && data.curiosities.length > 0 ? `<div class="biography-section"><div class="section-title">🔍 Curiosidades</div><ul class="contributions-list">${data.curiosities.map(curiosity => `<li>${curiosity}</li>`).join('')}</ul></div>` : ''}
                     </div>
                 </div>
             `;
-
             biographyContainer.innerHTML = biographyHTML;
             biographyContainer.style.display = 'block';
             window.scrollTo({ top: biographyContainer.offsetTop - 20, behavior: 'smooth' });
-            
             loadPersonPhoto(data.name, photoId);
         }
 
@@ -564,53 +513,35 @@
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
             if (!photoElement) return;
-
-            const imageSources = [
-                () => tryWikipediaAPI(personName),
-                () => tryWikipediaDirectSearch(personName),
-                () => tryWikimediaCommons(personName)
-            ];
-
+            const imageSources = [() => tryWikipediaAPI(personName), () => tryWikipediaDirectSearch(personName), () => tryWikimediaCommons(personName)];
             let photoLoaded = false;
             let attemptCount = 0;
-
             for (const sourceFunction of imageSources) {
                 if (photoLoaded) break;
                 attemptCount++;
                 updatePhotoStatus(photoElement, `Tentativa ${attemptCount}/3...`);
-                
                 try {
                     const imageUrl = await sourceFunction();
                     if (imageUrl) {
                         const success = await loadImageWithFallback(imageUrl, personName, photoElement);
                         if (success) photoLoaded = true;
                     }
-                } catch (error) {
-                    console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message);
-                }
-                
-                if (!photoLoaded && attemptCount < imageSources.length) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
+                } catch (error) { console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message); }
+                if (!photoLoaded && attemptCount < imageSources.length) await new Promise(resolve => setTimeout(resolve, 500));
             }
-
-            if (!photoLoaded) {
-                showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
-            }
+            if (!photoLoaded) showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
         }
 
-        // === MÉTODOS DE BUSCA DE IMAGENS (sem alterações) ===
+        // === MÉTODOS DE BUSCA DE IMAGENS ===
         async function tryWikipediaAPI(personName) {
-            const nameVariations = [ personName, personName.replace(/\s+/g, '_') ];
+            const nameVariations = [personName, personName.replace(/\s+/g, '_')];
             for (const name of nameVariations) {
                 try {
                     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
                     const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
                     if (!response.ok) throw new Error(`Status ${response.status}`);
                     const data = await response.json();
-                    if (data.thumbnail && data.thumbnail.source) {
-                        return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
-                    }
+                    if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
                 } catch (error) { console.warn(`Erro com variação "${name}":`, error.message); }
             }
             return null;
@@ -621,9 +552,7 @@
                 const searchResponse = await fetch(searchUrl);
                 if (!searchResponse.ok) throw new Error('Falha na busca');
                 const searchData = await searchResponse.json();
-                if (searchData.query?.search?.length > 0) {
-                    return await tryWikipediaAPI(searchData.query.search[0].title);
-                }
+                if (searchData.query?.search?.length > 0) return await tryWikipediaAPI(searchData.query.search[0].title);
             } catch (error) { console.warn('Erro na busca direta:', error.message); }
             return null;
         }
@@ -633,10 +562,7 @@
                 const response = await fetch(searchUrl);
                 if (!response.ok) throw new Error('Falha no Wikimedia Commons');
                 const data = await response.json();
-                if (data.query?.search?.length > 0) {
-                    const fileName = data.query.search[0].title;
-                    return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
-                }
+                if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`;
             } catch (error) { console.warn('Erro no Wikimedia Commons:', error.message); }
             return null;
         }
@@ -645,37 +571,17 @@
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
                 const img = new Image();
-                // CORREÇÃO 2: Garante que o timeout seja cancelado
-                let timeoutId = null; 
-
-                img.onload = () => {
-                    clearTimeout(timeoutId); // Cancela o timeout
-                    photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
-                    resolve(true);
-                };
-                
-                img.onerror = (error) => {
-                    clearTimeout(timeoutId); // Cancela o timeout
-                    console.warn('Erro ao carregar imagem:', imageUrl, error);
-                    resolve(false);
-                };
-                
-                timeoutId = setTimeout(() => {
-                    console.warn('Timeout ao carregar imagem:', imageUrl);
-                    resolve(false);
-                }, 10000);
-                
+                let timeoutId = null;
+                img.onload = () => { clearTimeout(timeoutId); photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`; resolve(true); };
+                img.onerror = (error) => { clearTimeout(timeoutId); console.warn('Erro ao carregar imagem:', imageUrl, error); resolve(false); };
+                timeoutId = setTimeout(() => { console.warn('Timeout ao carregar imagem:', imageUrl); resolve(false); }, 10000);
                 img.src = imageUrl;
             });
         }
 
-        // === FUNÇÕES AUXILIARES (sem alterações) ===
-        function updatePhotoStatus(photoElement, message) {
-            photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`;
-        }
-        function getInitials(name) {
-            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-        }
+        // === FUNÇÕES AUXILIARES ===
+        function updatePhotoStatus(photoElement, message) { photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`; }
+        function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
         function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
             const photoElement = document.getElementById(elementId);
             if (!photoElement) return;
@@ -685,13 +591,7 @@
             photoElement.innerHTML = `<div class="photo-placeholder" style="background: ${color};"><div style="font-size: 48px; font-weight: bold;">${initials}</div><div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div><button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button></div>`;
         }
         function retryPhotoLoad(personName, photoElementId) { loadPersonPhoto(personName, photoElementId); }
-        function clearBiography() {
-            biographyContainer.style.display = 'none';
-            biographyContainer.innerHTML = '';
-            personInput.value = '';
-            statusDiv.style.display = 'none';
-            personInput.focus();
-        }
+        function clearBiography() { biographyContainer.style.display = 'none'; biographyContainer.innerHTML = ''; personInput.value = ''; statusDiv.style.display = 'none'; personInput.focus(); }
         
         // === INICIALIZAÇÃO ===
         generateBtn.addEventListener('click', generateBiography);
