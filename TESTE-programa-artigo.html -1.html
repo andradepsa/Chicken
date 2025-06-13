@@ -374,7 +374,7 @@
                 if (error.code === 4001) {
                     log('❌ Erro no Puter: Sua conta precisa ser configurada. Entre no site do Puter, vá em "Wallet" e crie uma "Account" antes de logar.', 'error');
                 } else {
-                    log(`❌ Erro no login do Puter: ${error.message}`, 'error');
+                    log(`❌ Erro no login do Puter: ${error.message || 'Erro desconhecido.'}`, 'error');
                 }
             } finally {
                 elements.loginPuterBtn.disabled = false;
@@ -514,6 +514,24 @@
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
         }
 
+        function resetUserData() {
+            userInputs = {};
+            articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
+            finalReferences = [];
+            usedPhrases = new Set();
+            lastParagraphIndex = -1;
+            sessionActive = false;
+            currentSection = 'introducao';
+            document.getElementById('initial-form').style.display = 'block';
+            elements.interactiveControls.style.display = 'none';
+            document.getElementById('universidade').value = 'Universidade Federal';
+            document.getElementById('titulo').value = '';
+            document.getElementById('autor').value = '';
+            document.getElementById('email').value = 'seu.email@exemplo.com';
+            document.getElementById('curso').value = '';
+            displayABNTDocument();
+        }
+
         function displayABNTDocument() {
             let creatorInfo = puterUser ? `Artigo criado por: ${puterUser.username}.` : 'Artigo criado com Multi-IA.';
             let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
@@ -534,6 +552,7 @@
             });
 
             if (finalReferences.length > 0) {
+                // A função formatarReferenciasABNT precisa ser definida
                 // content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
             }
             
@@ -543,7 +562,7 @@
             
             elements.outputDiv.innerHTML = content;
             elements.footerDiv.innerHTML = `${userInputs.universidade || 'Instituição'}, ${new Date().toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}`;
-            if(typeof updatePageCount === "function") setTimeout(updatePageCount, 100);
+            setTimeout(updatePageCount, 100);
         }
 
         function updatePageCount() {
@@ -564,8 +583,55 @@
             log('✅ PDF salvo com sucesso!', 'success');
         }
 
-        async function generateParagraphStartOptions(phase) { /* Lógica original aqui */ }
-        async function showParagraphStartModal(phase) { /* Lógica original aqui */ }
+        async function generateParagraphStartOptions(phase) {
+            const allContent = Object.values(articleContent).flat().join(' ');
+            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+            let sectionDescription = '';
+            switch(phase) {
+                case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
+                case 'meio': sectionDescription = 'para a seção de DESENVOLVIMENTO.'; break;
+                case 'fim': sectionDescription = 'para a seção de CONCLUSÃO.'; break;
+            }
+            const prompt = `Para um artigo sobre "${userInputs.titulo}", gere 10 inícios de parágrafo ÚNICOS e CRIATIVOS ${sectionDescription}. Cada início deve ter 10-20 palavras. EVITE ideias já usadas: ${usedConcepts}. FORMATO: Apenas 10 opções numeradas.`;
+            try {
+                const response = await callAI(prompt);
+                return response.split('\n').filter(line => line.trim().match(/^\d+\./)).map(line => line.replace(/^\d+\.\s*/, '').trim()).slice(0, 10);
+            } catch (error) {
+                console.error("Erro ao gerar opções de parágrafo:", error);
+                return ["Ocorreu um erro ao gerar opções. Tente novamente."];
+            }
+        }
+        
+        async function showParagraphStartModal(phase) {
+            currentGenerationPhase = phase;
+            const phaseTitles = {
+                inicio: '🌟 Como Começar a Introdução?',
+                meio: '📝 Como Continuar o Desenvolvimento?',
+                fim: '🎯 Como Finalizar a Seção?'
+            };
+            log(`Gerando opções para ${phase}...`, 'info');
+            elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
+            elements.paragraphStartModal.style.display = 'flex';
+            elements.paragraphStartsList.innerHTML = '<div class="loading" style="margin: 20px auto; display: block;"></div><p style="text-align:center;">Gerando opções criativas...</p>';
+            try {
+                const startOptions = await generateParagraphStartOptions(phase);
+                let html = startOptions.map((option, index) => `
+                    <div style="margin-bottom:10px; padding:10px; border:1px solid #ddd; border-radius:4px;">
+                        <input type="radio" id="start-${index}" name="paragraph-start" value="${option}">
+                        <label for="start-${index}" style="cursor:pointer; margin-left:8px;">${index + 1}. ${option}...</label>
+                    </div>`).join('');
+                elements.paragraphStartsList.innerHTML = html;
+                document.querySelectorAll('input[name="paragraph-start"]').forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        elements.generateParagraphBtn.disabled = false;
+                        selectedParagraphStart = radio.value;
+                    });
+                });
+            } catch (error) {
+                elements.paragraphStartsList.innerHTML = `<p style="color:red; text-align:center;">❌ Erro ao gerar opções. Verifique o console e tente novamente.</p>`;
+            }
+        }
+        
         function triggerParagraphOptions(phase) {
             if (!Object.values(aiStatus).some(s => s.loggedIn)) {
                 log('❌ Faça login em uma IA primeiro!', 'error');
@@ -631,9 +697,66 @@
         elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
         elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
 
-        elements.generateParagraphBtn.addEventListener('click', async () => { /* Adicione a lógica do botão de gerar parágrafo aqui */ });
+        elements.generateParagraphBtn.addEventListener('click', async () => {
+            if (!selectedParagraphStart) return;
+            elements.paragraphStartModal.style.display = 'none';
+            const allButtons = [elements.inicioBtn, elements.meioBtn, elements.fimBtn, elements.rewriteBtn];
+            allButtons.forEach(btn => btn.disabled = true);
+            
+            try {
+                const allContent = Object.values(articleContent).flat().join(' ');
+                const prompt = `Escreva um parágrafo acadêmico para um artigo sobre "${userInputs.titulo}". O parágrafo DEVE começar com a frase: "${selectedParagraphStart}". Desenvolva a ideia com 80-120 palavras. NÃO repita ideias já presentes em: "${allContent.slice(-500)}". NÃO adicione citações.`;
+                const content = await callAI(prompt);
+                
+                articleContent[currentSection].push(content);
+                lastParagraphIndex = articleContent[currentSection].length - 1;
+                displayABNTDocument();
+                elements.rewriteBtn.style.display = 'block';
+                log(`✅ Parágrafo criado! Clique nele para adicionar referências.`, 'success');
+
+                if (currentGenerationPhase === 'inicio') {
+                    sessionActive = true;
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                } else if (currentGenerationPhase === 'fim') {
+                    sessionActive = false;
+                    elements.inicioBtn.disabled = false;
+                    const currentIndex = sectionOrder.indexOf(currentSection);
+                    if (currentIndex < sectionOrder.length - 1) {
+                        currentSection = sectionOrder[currentIndex + 1];
+                        elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1).replace('conclusao', 'Conclusão');
+                        log(`📝 Pronto para iniciar: ${elements.currentSectionNameSpan.textContent}`, 'info');
+                    } else {
+                        // await generateResumoAndAbstract();
+                        userInputs.isFinalized = true;
+                        displayABNTDocument();
+                        log(`🎓 Artigo concluído! Salve como PDF.`, 'success');
+                    }
+                } else {
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                }
+            } catch (error) {
+                log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error');
+                if(sessionActive){
+                    elements.meioBtn.disabled = false;
+                    elements.fimBtn.disabled = false;
+                } else {
+                    elements.inicioBtn.disabled = false;
+                }
+            } finally {
+                selectedParagraphStart = '';
+                elements.generateParagraphBtn.disabled = true;
+                elements.rewriteBtn.disabled = false;
+                allButtons.forEach(btn => { if(btn !== elements.rewriteBtn) btn.disabled = !sessionActive && btn !== elements.inicioBtn; });
+            }
+        });
 
         elements.savePdfBtn.addEventListener('click', saveAsPDF);
+
+        elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
+        elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
+        elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
 
         // === INICIALIZAÇÃO ===
         document.addEventListener('DOMContentLoaded', async () => {
