@@ -2,8 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Biografias Avançado</title>
-    <!-- Script essencial para a IA funcionar -->
+    <title>Gerador de Biografias Avançado - Login Individual</title>
     <script src="https://js.puter.com/v2/"></script>
     
     <style>
@@ -11,11 +10,127 @@
         .container { max-width: 1200px; margin: 20px auto; background-color: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 15px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); }
         h1 { text-align: center; color: #333; font-size: 2.5rem; margin-bottom: 10px; }
         .subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 1.1rem; line-height: 1.6; }
+        
+        /* Seção de Login de Usuário */
+        .user-login-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #dee2e6;
+            text-align: center;
+        }
+        
+        .user-login-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .user-login-section p {
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .login-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+        }
+        
+        .logout-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .logout-btn:hover {
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        /* Status de Login */
+        .login-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .login-status.logged-in {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+        
+        .login-status.not-logged {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 2px solid #ffc107;
+        }
+        
+        .login-status.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        /* Área de Input - Desabilitada quando não logado */
+        .input-area {
+            transition: opacity 0.3s ease;
+        }
+        
+        .input-area.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         .search-section { background: rgba(102, 126, 234, 0.1); padding: 25px; border-radius: 10px; margin-bottom: 30px; border: 1px solid rgba(102, 126, 234, 0.2); }
         .search-input { width: 100%; padding: 15px; font-size: 16px; border-radius: 8px; border: 2px solid #e1e5e9; box-sizing: border-box; outline: none; transition: all 0.3s ease; }
         .search-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
         .main-button { display: block; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; color: #fff; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; transition: all 0.3s ease; }
-        .main-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .main-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
         .main-button:disabled { background: #999; cursor: not-allowed; transform: none; }
         #status { text-align: center; padding: 15px; margin-top: 20px; border-radius: 8px; display: none; }
         .status-success { background-color: #d4edda; color: #155724; }
@@ -68,57 +183,220 @@
         .api-success { background: #d4edda; color: #155724; }
         .api-error { background: #f8d7da; color: #721c24; }
         .api-loading { background: #cce5ff; color: #004085; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .mathematician-header { flex-direction: column; align-items: center; text-align: center; } .mathematician-photo { width: 150px; height: 190px; } .example-queries { grid-template-columns: 1fr; } }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) { 
+            .mathematician-header { flex-direction: column; align-items: center; text-align: center; } 
+            .mathematician-photo { width: 150px; height: 190px; } 
+            .example-queries { grid-template-columns: 1fr; }
+            .user-badge {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+        }
         @media print { body { background: none; color: black; } body > .container > *:not(.biography-container) { display: none; } .container { box-shadow: none; padding: 0; margin: 0; max-width: 100%; } .biography-container, .biography-card { display: block !important; box-shadow: none; border: none; margin: 0; padding: 0; } .card-buttons { display: none; } .mathematician-photo { box-shadow: none; border: 1px solid #ccc; } .section-title { color: #333; border-bottom-color: #333; } a { text-decoration: none; color: black; } }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Gerador de Biografias Avançado</h1>
-        <p class="subtitle">Descubra a vida e obra de personalidades históricas e atuais. Nosso sistema integra múltiplas fontes para trazer informações completas e atualizadas.</p>
-        
-        <div class="examples-section">
-            <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
-            <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
-            <div class="example-queries">
-                <div class="example-query" onclick="fillExample('Elon Musk')">🚀 Elon Musk</div>
-                <div class="example-query" onclick="fillExample('Taylor Swift')">🎵 Taylor Swift</div>
-                <div class="example-query" onclick="fillExample('Leonardo DiCaprio')">🎬 Leonardo DiCaprio</div>
-                <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
-                <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
-                <div class="example-query" onclick="fillExample('William Bonner')">📺 William Bonner</div>
-            </div>
-        </div>
+        <p class="subtitle">Sistema Multi-Usuário - Powered by Puter AI</p>
 
-        <div class="search-section">
-            <input type="text" id="person-input" class="search-input" placeholder="Digite o nome de uma pessoa (ex: Cristiano Ronaldo, Oprah Winfrey...)" autocomplete="off">
-            <button id="generate-btn" class="main-button">🔍 Gerar Biografia Completa</button>
-            <div class="api-status" id="api-status"></div>
+        <!-- Seção de Login Individual -->
+        <div class="user-login-section">
+            <h3>👤 Login Individual do Usuário</h3>
+            <p>Cada usuário deve fazer seu próprio login no Puter para usar a IA com sua cota individual.</p>
+            
+            <div id="login-status" class="login-status not-logged">
+                🔐 Nenhum usuário logado
+            </div>
+            
+            <button id="fresh-login-btn" class="login-btn">
+                🚀 Fazer Login no Puter
+            </button>
+            
+            <button id="logout-btn" class="logout-btn" style="display: none;">
+                🚪 Sair e Permitir Novo Usuário
+            </button>
+        </div>
+        
+        <div class="input-area disabled" id="input-area">
+            <div class="examples-section">
+                <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
+                <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
+                <div class="example-queries">
+                    <div class="example-query" onclick="fillExample('Elon Musk')">🚀 Elon Musk</div>
+                    <div class="example-query" onclick="fillExample('Taylor Swift')">🎵 Taylor Swift</div>
+                    <div class="example-query" onclick="fillExample('Leonardo DiCaprio')">🎬 Leonardo DiCaprio</div>
+                    <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
+                    <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
+                    <div class="example-query" onclick="fillExample('William Bonner')">📺 William Bonner</div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <input type="text" id="person-input" class="search-input" placeholder="Digite o nome de uma pessoa (ex: Cristiano Ronaldo, Oprah Winfrey...)" autocomplete="off">
+                <button id="generate-btn" class="main-button" disabled>🔍 Gerar Biografia Completa</button>
+                <div class="api-status" id="api-status"></div>
+            </div>
         </div>
 
         <div id="suggestion-box" class="suggestion-box" style="display: none;"></div>
         <div id="status"></div>
-        <div class="biography-container" id="biography-container"></div>
+        <div class="biography-container" id="biography-container">
+            <div class="empty-state">
+                <h3>📝 Faça login para começar</h3>
+                <p>Cada usuário deve fazer seu próprio login no Puter para gerar biografias</p>
+            </div>
+        </div>
     </div>
 
     <script>
         // Variáveis globais
+        let currentUser = null;
+        const freshLoginBtn = document.getElementById('fresh-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
         const generateBtn = document.getElementById('generate-btn');
         const personInput = document.getElementById('person-input');
         const statusDiv = document.getElementById('status');
         const biographyContainer = document.getElementById('biography-container');
         const suggestionBox = document.getElementById('suggestion-box');
         const apiStatus = document.getElementById('api-status');
+        const loginStatus = document.getElementById('login-status');
+        const inputArea = document.getElementById('input-area');
 
         // Cache para evitar requisições desnecessárias
         const cache = new Map();
         
-        // Funções utilitárias
+        // Função para mostrar status
         function showStatus(message, type = 'info') { 
             statusDiv.textContent = message; 
             statusDiv.className = `status-${type}`; 
             statusDiv.style.display = 'block'; 
+        }
+
+        // Força logout e login fresco
+        async function doFreshLogin() {
+            freshLoginBtn.disabled = true;
+            freshLoginBtn.innerHTML = '<div class="loading"></div>Preparando login...';
+            
+            try {
+                // Força logout completo primeiro
+                loginStatus.textContent = '🔄 Fazendo logout do usuário anterior...';
+                loginStatus.className = 'login-status not-logged';
+                
+                try {
+                    await puter.auth.signOut();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Aguarda 1s
+                } catch (error) {
+                    console.log('Nenhum usuário para fazer logout ou erro:', error);
+                }
+                
+                // Limpa biografia anterior
+                biographyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Preparando sistema...</h3>
+                        <p>Aguarde o login ser concluído</p>
+                    </div>
+                `;
+                
+                // Agora faz login fresco
+                loginStatus.textContent = '🔐 Abrindo janela de login...';
+                freshLoginBtn.innerHTML = '<div class="loading"></div>Aguardando login...';
+                
+                await puter.auth.signIn();
+                
+                // Verifica novo usuário
+                const user = await puter.auth.getUser();
+                if (user && user.username) {
+                    currentUser = user;
+                    updateLoginStatus(true);
+                    showStatus(`✅ Bem-vindo(a), ${user.username}! Agora você pode gerar biografias.`, 'success');
+                } else {
+                    throw new Error('Login não confirmado');
+                }
+                
+            } catch (error) {
+                console.error('Erro no login:', error);
+                updateLoginStatus(false);
+                showStatus('❌ Erro no login. Tente novamente.', 'error');
+            } finally {
+                freshLoginBtn.disabled = false;
+                freshLoginBtn.innerHTML = '🚀 Fazer Login no Puter';
+            }
+        }
+
+        // Força logout para permitir novo usuário
+        async function forceLogoutForNewUser() {
+            if (confirm('Tem certeza que deseja sair? A biografia atual será perdida.')) {
+                try {
+                    await puter.auth.signOut();
+                    currentUser = null;
+                    updateLoginStatus(false);
+                    biographyContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝 Faça login para começar</h3>
+                            <p>Cada usuário deve fazer seu próprio login no Puter para gerar biografias</p>
+                        </div>
+                    `;
+                    showStatus('👋 Logout realizado. Novo usuário pode fazer login.', 'info');
+                } catch (error) {
+                    console.error('Erro no logout:', error);
+                    showStatus('⚠️ Erro no logout, mas interface foi resetada.', 'info');
+                    currentUser = null;
+                    updateLoginStatus(false);
+                    biographyContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝 Faça login para começar</h3>
+                            <p>Cada usuário deve fazer seu próprio login no Puter para gerar biografias</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function updateLoginStatus(isLoggedIn) {
+            if (isLoggedIn && currentUser) {
+                loginStatus.innerHTML = `
+                    <div class="user-badge">
+                        👤 ${currentUser.username}
+                    </div>
+                    ✅ Usuário logado e pronto para usar a IA
+                `;
+                loginStatus.className = 'login-status logged-in';
+                freshLoginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                inputArea.classList.remove('disabled');
+                generateBtn.disabled = false;
+                
+                // Atualiza biografia container para usuário logado
+                biographyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Biografias de ${currentUser.username} aparecerão aqui</h3>
+                        <p>Digite o nome de uma pessoa e clique em "Gerar Biografia Completa"</p>
+                    </div>
+                `;
+            } else {
+                loginStatus.textContent = '🔐 Nenhum usuário logado';
+                loginStatus.className = 'login-status not-logged';
+                freshLoginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                inputArea.classList.add('disabled');
+                generateBtn.disabled = true;
+                
+                // Atualiza biografia container para não logado
+                biographyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Faça login para começar</h3>
+                        <p>Cada usuário deve fazer seu próprio login no Puter para gerar biografias</p>
+                    </div>
+                `;
+            }
         }
         
         function showApiStatus(apiName, status) {
@@ -134,6 +412,10 @@
         }
         
         function fillExample(name) { 
+            if (!currentUser) {
+                showStatus('❌ Faça login primeiro!', 'error');
+                return;
+            }
             personInput.value = name; 
             handleSearchRequest(); 
         }
@@ -168,8 +450,21 @@
         function printBiography() { window.print(); }
         
         function clearBiography() { 
-            biographyContainer.style.display = 'none'; 
-            biographyContainer.innerHTML = ''; 
+            if (!currentUser) {
+                biographyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Faça login para começar</h3>
+                        <p>Cada usuário deve fazer seu próprio login no Puter para gerar biografias</p>
+                    </div>
+                `;
+            } else {
+                biographyContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝 Biografias de ${currentUser.username} aparecerão aqui</h3>
+                        <p>Digite o nome de uma pessoa e clique em "Gerar Biografia Completa"</p>
+                    </div>
+                `;
+            }
             personInput.value = ''; 
             statusDiv.style.display = 'none'; 
             suggestionBox.style.display = 'none'; 
@@ -428,6 +723,11 @@
 
         // ==================== FUNÇÕES PRINCIPAIS ====================
         async function handleSearchRequest() {
+            if (!currentUser) {
+                showStatus('❌ Faça login primeiro!', 'error');
+                return;
+            }
+
             const originalName = personInput.value.trim();
             if (!originalName) { 
                 showStatus('Por favor, digite o nome de uma pessoa.', 'error'); 
@@ -470,6 +770,11 @@
         }
 
         async function generateBiography() {
+            if (!currentUser) {
+                showStatus('❌ Faça login primeiro!', 'error');
+                return;
+            }
+
             const personName = personInput.value.trim();
             if (!personName) return;
             
@@ -505,6 +810,7 @@
                 
                 **INFORMAÇÕES VERIFICADAS:** ${factString}
                 **INFORMAÇÕES ATUAIS:** ${currentInfoString}
+                **USUÁRIO:** ${currentUser.username}
                 
                 **INSTRUÇÕES ESPECÍFICAS PARA A BIOGRAFIA:**
                 
@@ -607,6 +913,8 @@
                 // Enriquece dados com informações atuais
                 biographyData.name = personName;
                 biographyData.currentInfo = currentInfo;
+                biographyData.createdBy = currentUser.username;
+                biographyData.createdAt = new Date().toISOString();
                 
                 if (verifiedFacts.birthDate) {
                     biographyData.birth_date = verifiedFacts.birthDate;
@@ -619,15 +927,26 @@
                 }
                 
                 displayBiography(biographyData);
-                showStatus('Biografia gerada com sucesso!', 'success');
+                showStatus(`✅ Biografia gerada com sucesso para ${currentUser.username}!`, 'success');
                 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                if (error.code === 4001) {
-                    showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com.', 'error');
-                } else {
-                    showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
+                
+                let errorMessage = 'Erro desconhecido';
+                
+                if (error.error && error.error.delegate === 'usage-limited-chat') {
+                    errorMessage = `⚠️ ${currentUser.username}, sua conta Puter atingiu o limite de uso da IA. Aguarde um tempo ou verifique os limites em puter.com`;
+                } else if (error.error && error.error.message && error.error.message.includes('Permission denied')) {
+                    errorMessage = `❌ ${currentUser.username}, permissão negada para usar a IA. Verifique os limites da sua conta.`;
+                } else if (error.error && error.error.code === 'error_400_from_delegate') {
+                    errorMessage = `🚫 ${currentUser.username}, limite de uso atingido. Tente mais tarde.`;
+                } else if (error.code === 4001) {
+                    errorMessage = '🔐 Problema de autenticação. Faça login novamente.';
+                } else if (error.message) {
+                    errorMessage = error.message;
                 }
+                
+                showStatus(errorMessage, 'error');
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '🔍 Gerar Biografia Completa';
@@ -663,7 +982,11 @@
                 <div class="biography-card">
                     <div class="card-buttons">
                         <button class="print-button" onclick="printBiography()">🖨️ Imprimir</button>
-                        <button class="clear-button" onclick="clearBiography()">Limpar</button>
+                        <button class="clear-button" onclick="clearBiography()">🗑️ Limpar</button>
+                    </div>
+                    
+                    <div style="font-size:10px; color:#888; margin-bottom:10px; text-align:right;">
+                        📅 ${new Date(data.createdAt).toLocaleString()} | 👤 ${data.createdBy}
                     </div>
                     
                     <div class="mathematician-header">
@@ -931,9 +1254,22 @@
         }
 
         // ==================== EVENT LISTENERS ====================
-        generateBtn.addEventListener('click', handleSearchRequest);
-        personInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSearchRequest();
+        document.addEventListener('DOMContentLoaded', () => {
+            freshLoginBtn.addEventListener('click', doFreshLogin);
+            logoutBtn.addEventListener('click', forceLogoutForNewUser);
+            generateBtn.addEventListener('click', handleSearchRequest);
+            
+            personInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !generateBtn.disabled) {
+                    e.preventDefault();
+                    handleSearchRequest();
+                }
+            });
+            
+            // Foca no input ao carregar se logado
+            if (currentUser) {
+                personInput.focus();
+            }
         });
 
         // Tornar funções globais
@@ -941,9 +1277,6 @@
         window.clearBiography = clearBiography;
         window.retryPhotoLoad = retryPhotoLoad;
         window.printBiography = printBiography;
-
-        // Foca no input ao carregar
-        personInput.focus();
     </script>
 </body>
 </html>
