@@ -324,9 +324,33 @@
         const resultsContainer = document.getElementById('results-container');
         const helperText = document.getElementById('helper-text');
 
-        // === FUNÇÃO DE GERAÇÃO COM PUTER AI ===
+        // === FUNÇÃO DE AUTENTICAÇÃO E GERAÇÃO COM PUTER AI ===
+        async function ensureAuthenticated() {
+            try {
+                // Verifica se já está autenticado
+                const user = await puter.auth.getUser();
+                if (user) {
+                    return true;
+                }
+            } catch (error) {
+                // Usuário não está logado, precisa autenticar
+            }
+            
+            try {
+                // Tenta fazer login
+                await puter.auth.signIn();
+                return true;
+            } catch (error) {
+                console.error('Erro na autenticação:', error);
+                throw new Error('É necessário fazer login no Puter para usar a IA. Por favor, tente novamente.');
+            }
+        }
+        
         async function callPuterAI(prompt) {
             try {
+                // Garantir que está autenticado antes de usar a IA
+                await ensureAuthenticated();
+                
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 
                 if (!response || !response.message || !response.message.content) {
@@ -336,7 +360,15 @@
                 return response.message.content.trim();
             } catch (error) {
                 console.error('Erro na IA do Puter:', error);
-                throw error;
+                
+                // Tratamento específico para erros de autenticação
+                if (error.code === 4001 || error.message.includes('wallet') || error.message.includes('account')) {
+                    throw new Error('🔐 É necessário fazer login no Puter. Uma janela de login será aberta automaticamente.');
+                } else if (error.message && error.message.includes('user cancelled')) {
+                    throw new Error('⚠️ Login cancelado. É necessário fazer login para usar a IA.');
+                } else {
+                    throw new Error(`❌ Erro na IA: ${error.message || 'Erro desconhecido'}`);
+                }
             }
         }
         
@@ -485,9 +517,14 @@ Gere as 5 questões agora:`;
         }
         
         function showError(message) {
-            helperText.innerHTML = `❌ ${message}`;
+            helperText.innerHTML = `${message}`;
             helperText.style.display = 'block';
             helperText.style.color = '#fca5a5';
+            
+            // Se for erro de autenticação, mostrar instruções
+            if (message.includes('login') || message.includes('🔐')) {
+                helperText.innerHTML += '<br><br>💡 <strong>Instruções:</strong><br>1. Uma janela de login do Puter será aberta<br>2. Faça login com sua conta<br>3. Volte aqui e tente gerar questões novamente';
+            }
         }
         
         function getTypeIcon(type) {
@@ -535,9 +572,25 @@ Gere as 5 questões agora:`;
             }
         });
         
-        // Auto-focus no input quando a página carrega
-        window.addEventListener('load', function() {
+        // Auto-focus no input quando a página carrega e verifica autenticação
+        window.addEventListener('load', async function() {
             topicInput.focus();
+            
+            // Verificar se o usuário já está logado
+            try {
+                const user = await puter.auth.getUser();
+                if (user) {
+                    helperText.innerHTML = '✅ Logado no Puter! Digite um assunto e clique no botão';
+                    helperText.style.color = '#10b981';
+                } else {
+                    helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
+                    helperText.style.color = 'rgba(255, 255, 255, 0.8)';
+                }
+            } catch (error) {
+                // Usuário não está logado
+                helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
+                helperText.style.color = 'rgba(255, 255, 255, 0.8)';
+            }
         });
     </script>
 </body>
