@@ -55,17 +55,12 @@
             font-weight: 800;
         }
         
-        .header p {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
-            letter-spacing: 2px;
-        }
-        
         .menu-container {
             position: relative;
             width: 800px;
             height: 800px;
             margin: 50px auto;
+            z-index: 10;
         }
         
         .background-circle {
@@ -206,6 +201,7 @@
             z-index: 15;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: translate(-50%, -50%);
+            transition: all 0.3s ease;
         }
         
         .main-menu-item i {
@@ -222,13 +218,11 @@
         
         .main-menu-item.active {
             transform: scale(1.15) translate(-43%, -43%);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4),
-                        0 0 30px currentColor;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4), 0 0 30px currentColor;
         }
         
         .main-menu-item:hover {
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5),
-                      0 0 20px currentColor;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 20px currentColor;
         }
         
         .outer-sector {
@@ -283,30 +277,9 @@
             opacity: 1;
         }
         
-        .submenu-item.social {
-            background: linear-gradient(145deg, #1DA1F2, #0078d7);
-        }
-        
-        .submenu-item.pedagogic {
-            background: linear-gradient(145deg, #8A2BE2, #6A1ACA);
-        }
-        
-        .submenu-item.chat {
-            background: linear-gradient(145deg, #25D366, #128C7E);
-        }
-        
-        .submenu-item.additional {
-            background: linear-gradient(145deg, #FF6347, #E0442E);
-        }
-        
-        .submenu-item.sites {
-            background: linear-gradient(145deg, #FFD700, #FFA500);
-        }
-        
         .submenu-item:hover {
             transform: scale(1.15) !important;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
-                        0 0 15px currentColor;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px currentColor;
         }
         
         .subsubmenu-container {
@@ -346,7 +319,6 @@
             transform-origin: center;
             margin-left: -25px;
             margin-top: -25px;
-            background: linear-gradient(145deg, #FFD700, #FFA500);
         }
         
         .subsubmenu-container.active .subsubmenu-item {
@@ -356,8 +328,7 @@
         
         .subsubmenu-item:hover {
             transform: scale(1.15) !important;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3),
-                        0 0 15px currentColor;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px currentColor;
         }
         
         .tooltip {
@@ -393,105 +364,24 @@
             opacity: 1;
         }
         
-        .responsive-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-            background: transparent;
-        }
+        /* Cores dos menus */
+        .main-menu-item.social { background: linear-gradient(145deg, #1DA1F2, #0078d7); }
+        .main-menu-item.pedagogic { background: linear-gradient(145deg, #8A2BE2, #6A1ACA); }
+        .main-menu-item.projects { background: linear-gradient(145deg, #FFA500, #FF8C00); }
+        .main-menu-item.additional { background: linear-gradient(145deg, #FF6347, #E0442E); }
         
-        .content-wrapper {
-            transform-origin: center center;
-            width: 900px;
-            height: 900px;
-            transition: transform 0.3s ease;
-        }
+        .submenu-item.social { background: linear-gradient(145deg, #1DA1F2, #0078d7); }
+        .submenu-item.pedagogic { background: linear-gradient(145deg, #8A2BE2, #6A1ACA); }
+        .submenu-item.projects { background: linear-gradient(145deg, #FFA500, #FF8C00); }
+        .submenu-item.additional { background: linear-gradient(145deg, #FF6347, #E0442E); }
         
-        .countdown-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(30, 30, 60, 0.8);
-            border-radius: 10px;
-            padding: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            max-width: 300px;
-        }
+        .subsubmenu-item.sites { background: linear-gradient(145deg, #FFD700, #FFA500); }
+        .subsubmenu-item.chat { background: linear-gradient(145deg, #25D366, #128C7E); }
         
-        .countdown-title {
-            font-size: 1rem;
-            color: white;
-            margin-bottom: 5px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .countdown-subtitle {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .countdown {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 5px;
-        }
-        
-        .countdown-item {
-            position: relative;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            background: rgba(255, 255, 255, 0.1);
-            border: 3px solid;
-        }
-        
-        .countdown-item:nth-child(1) { border-color: #FF5252; }
-        .countdown-item:nth-child(2) { border-color: #FF9800; }
-        .countdown-item:nth-child(3) { border-color: #4CAF50; }
-        .countdown-item:nth-child(4) { border-color: #2196F3; }
-        .countdown-item:nth-child(5) { border-color: #9C27B0; }
-        
-        .countdown-item div:first-child {
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-        }
-        
-        .unit {
-            font-size: 8px;
-            margin-top: 2px;
-            color: rgba(255, 255, 255, 0.8);
-            text-transform: uppercase;
-        }
-        
-        .countdown-message {
-            margin-top: 5px;
-            font-size: 0.8rem;
-            color: #FF5252;
-            font-weight: bold;
-            text-align: center;
-            min-height: 15px;
-        }
-        
-        /* Ocultar contador em telas menores que 768px */
         @media (max-width: 768px) {
-            .countdown-container {
-                display: none !important;
+            .menu-container { 
+                width: 600px; 
+                height: 600px; 
             }
         }
     </style>
@@ -499,68 +389,40 @@
 <body>
     <canvas id="particles-canvas"></canvas>
     
-    <div class="countdown-container">
-        <div class="countdown-title">14 de março - Dia Internacional da Matemática</div>
-        <div class="countdown-subtitle">Dia da Matemática e nascimento de Einstein.</div>
-        <div class="countdown-subtitle">É dia do Pi também: 3,14 em homenagem a Arquimedes.</div>
-        <div class="countdown" aria-live="polite" aria-atomic="true">
-            <div class="countdown-item">
-                <div id="months">0</div>
-                <div class="unit">Meses</div>
-            </div>
-            <div class="countdown-item">
-                <div id="days">0</div>
-                <div class="unit">Dia</div>
-            </div>
-            <div class="countdown-item">
-                <div id="hours">0</div>
-                <div class="unit">Hora</div>
-            </div>
-            <div class="countdown-item">
-                <div id="minutes">0</div>
-                <div class="unit">Min</div>
-            </div>
-            <div class="countdown-item">
-                <div id="seconds">0</div>
-                <div class="unit">Seg</div>
-            </div>
-        </div>
-        <div class="countdown-message" id="message"></div>
+    <div class="header">
+        <h1>Matemático 10</h1>
     </div>
     
-    <div class="responsive-container">
-        <div class="content-wrapper">
-            <div class="header">
-                <h1>Matemático 10</h1>
-            </div>
-            
-            <div class="menu-container">
-                <div class="background-circle"></div>
-                <div class="sector-lines" id="sectorLines"></div>
-                <div class="middle-circle"></div>
-                <div class="outer-circle"></div>
-                
-                <a href="index.html" class="home-button">
-                    <i class="fas fa-home"></i>
-                    <span>Home</span>
-                </a>
-                
-                <div class="inner-circle"></div>
-                
-                <div class="outer-sector social">
-                    <div class="submenu-items social"></div>
-                </div>
-                <div class="outer-sector pedagogic">
-                    <div class="submenu-items pedagogic"></div>
-                    <div class="subsubmenu-container sites"></div>
-                </div>
-                <div class="outer-sector chat">
-                    <div class="submenu-items chat"></div>
-                </div>
-                <div class="outer-sector additional">
-                    <div class="submenu-items additional"></div>
-                </div>
-            </div>
+    <div class="menu-container">
+        <div class="background-circle"></div>
+        <div class="sector-lines" id="sectorLines"></div>
+        <div class="middle-circle"></div>
+        <div class="outer-circle"></div>
+        
+        <a href="index.html" class="home-button">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        
+        <div class="inner-circle"></div>
+        
+        <!-- Setores dos menus -->
+        <div class="outer-sector social">
+            <div class="submenu-items social"></div>
+        </div>
+        
+        <div class="outer-sector pedagogic">
+            <div class="submenu-items pedagogic"></div>
+            <div class="subsubmenu-container sites"></div>
+        </div>
+        
+        <div class="outer-sector projects">
+            <div class="submenu-items projects"></div>
+            <div class="subsubmenu-container chat"></div>
+        </div>
+        
+        <div class="outer-sector additional">
+            <div class="submenu-items additional"></div>
         </div>
     </div>
 
@@ -569,13 +431,13 @@
             social: {
                 title: 'Redes Sociais',
                 items: [
-                    { name: 'YouTube', icon: '<i class="fab fa-youtube"></i>', url: 'https://www.youtube.com/@MATEMATICO1O', point: 22 },
-                    { name: 'LinkedIn', icon: '<i class="fab fa-linkedin-in"></i>', url: 'https://www.linkedin.com/in/geral10', point: 3 },
-                    { name: 'Currículo Lattes', icon: '<i class="fas fa-file-alt"></i>', url: 'http://lattes.cnpq.br/7286865766488458', point: 24 },
                     { name: 'linktr', icon: '<i class="fas fa-link"></i>', url: 'https://linktr.ee/matematico10', point: 1 },
                     { name: 'X (Twitter)', icon: '<i class="fab fa-twitter"></i>', url: 'https://x.com/SergioPaul97880', point: 2 },
+                    { name: 'LinkedIn', icon: '<i class="fab fa-linkedin-in"></i>', url: 'https://www.linkedin.com/in/geral10', point: 3 },
+                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 4 },
+                    { name: 'YouTube', icon: '<i class="fab fa-youtube"></i>', url: 'https://www.youtube.com/@MATEMATICO1O', point: 22 },
                     { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 23 },
-                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 4 }
+                    { name: 'Currículo Lattes', icon: '<i class="fas fa-file-alt"></i>', url: 'http://lattes.cnpq.br/7286865766488458', point: 24 }
                 ]
             },
             pedagogic: {
@@ -587,27 +449,25 @@
                     { name: 'Gerador de Biografias', icon: '<i class="fas fa-gamepad"></i>', url: 'recursos/geradordebiografias', point: 6 },
                     { name: 'Minha Videoteca', icon: '<i class="fas fa-video"></i>', url: 'Recursos/VídeosK10.html', point: 8 },
                     { name: 'Banco de Questões', icon: '<i class="fas fa-book"></i>', url: 'Recursos/BancoDeQuestões.html', point: 9 },
-                    { name: 'Gerador de Artigos', icon: '<i class="fas fa-question-circle"></i>', url: 'Recursos/programa-artigo.html', point: 10 },
+                    { name: 'Gerador de Artigos', icon: '<i class="fas fa-edit"></i>', url: 'Recursos/programa-artigo.html', point: 10 },
                     { name: 'Sites', icon: '<i class="fas fa-globe"></i>', hasSubSubmenu: true, subSubmenu: 'sites', point: 11 }
                 ]
             },
-            chat: {
-                title: 'Chat e Projetos',
+            projects: {
+                title: 'Projetos',
                 items: [
-                    { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
-                    { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
-                    { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
-                    { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
-                    { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
-                    { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
+                    { name: 'PiCoin', icon: '<i class="fas fa-coins"></i>', url: 'Recursos/picoin.html', point: 13 },
+                    { name: 'Chat', icon: '<i class="fas fa-comments"></i>', hasSubSubmenu: true, subSubmenu: 'chat', point: 14 },
+                    { name: 'Gerador de Artigos', icon: '<i class="fas fa-coins"></i>', url: 'Recursos/programa-artigo.html', point: 12 }
+
                 ]
             },
             additional: {
                 title: 'Recursos Adicionais',
                 items: [
-                    { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 18 },
-                    { name: 'Caleidoscópio da Matemática', icon: '<i class="fas fa-book-open"></i>', url: 'https://www.amazon.com.br/dp/B0CW179J4P', point: 17 },
                     { name: 'Leviatã da Matemática', icon: '<i class="fas fa-dragon"></i>', url: 'https://www.amazon.com.br/dp/B0CW1G1FPS', point: 16 },
+                    { name: 'Caleidoscópio da Matemática', icon: '<i class="fas fa-book-open"></i>', url: 'https://www.amazon.com.br/dp/B0CW179J4P', point: 17 },
+                    { name: 'Código Matemático', icon: '<i class="fas fa-code"></i>', url: 'https://www.amazon.com.br/dp/B0CXYSW5TK', point: 18 },
                     { name: 'O Mundo da Matemática', icon: '<i class="fas fa-globe"></i>', url: 'https://www.udemy.com/course/mundodamatematica/', point: 20 },
                     { name: 'Músicas', icon: '<i class="fas fa-music"></i>', url: 'https://www.soundon.global/bio/andradepsa', point: 21 },
                     { name: 'Reserva Ink', icon: '<i class="fas fa-pen-fancy"></i>', url: 'https://reserva.ink/545227', point: 22 }
@@ -618,22 +478,34 @@
         const sitesSubmenuData = {
             title: 'Sites Úteis para Matemática',
             items: [
-                { name: 'Curso Google For Education', icon: '<i class="fas fa-calculator"></i>', url: 'https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/', point: 24 },
                 { name: 'Programa GeoGebra', icon: '<i class="fas fa-calculator"></i>', url: 'https://www.geogebra.org/', point: 1 },
                 { name: 'Programa Wolfram Alpha', icon: '<i class="fas fa-brain"></i>', url: 'https://www.wolframalpha.com/', point: 2 },
                 { name: 'Programa Symbolab', icon: '<i class="fas fa-square-root-alt"></i>', url: 'https://www.symbolab.com/', point: 3 },
                 { name: 'Programa Desmos', icon: '<i class="fas fa-chart-line"></i>', url: 'https://www.desmos.com/', point: 4 },
-                { name: 'Programa Duolingo', icon: '<i class="fas fa-chart-line"></i>', url: 'https://pt.duolingo.com/', point: 5 },
+                { name: 'Programa Duolingo', icon: '<i class="fas fa-language"></i>', url: 'https://pt.duolingo.com/', point: 5 },
                 { name: 'Provas OBMEP', icon: '<i class="fas fa-medal"></i>', url: 'http://www.obmep.org.br/provas.htm', point: 6 },
                 { name: 'Provas Canguru Matemática', icon: '<i class="fas fa-flag"></i>', url: 'https://www.mat.uc.pt/canguru/', point: 7 },
                 { name: 'Provas OBM', icon: '<i class="fas fa-scroll"></i>', url: 'https://www.obm.org.br/como-se-preparar/provas-e-gabaritos/', point: 8 },
                 { name: 'Videos Isto é Matemática', icon: '<i class="fas fa-smile"></i>', url: 'https://www.youtube.com/@istoematematica', point: 9 },
-                { name: 'Videos Novo Telecurso', icon: '<i class="fas fa-cube"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 10 },
+                { name: 'Videos Novo Telecurso', icon: '<i class="fas fa-tv"></i>', url: 'https://www.youtube.com/@TelecursoNovo', point: 10 },
                 { name: 'Videos Vestibulandia', icon: '<i class="fas fa-infinity"></i>', url: 'https://www.youtube.com/@nerckie/playlists', point: 11 },
                 { name: 'Portal Khan Academy', icon: '<i class="fas fa-graduation-cap"></i>', url: 'https://pt.khanacademy.org/', point: 12 },
                 { name: 'Portal Project Euler', icon: '<i class="fas fa-code"></i>', url: 'https://projecteuler.net/', point: 13 },
                 { name: 'Portal Matemateca', icon: '<i class="fas fa-shapes"></i>', url: 'https://matemateca.ime.usp.br/', point: 14 },
-                { name: 'Portal MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 15 }
+                { name: 'Portal MacTutor', icon: '<i class="fas fa-university"></i>', url: 'https://mathshistory.st-andrews.ac.uk/', point: 15 },
+                { name: 'Curso Google For Education', icon: '<i class="fab fa-google"></i>', url: 'https://edu.google.com/intl/ALL_br/resources/get-started/professional-development/', point: 24 }
+            ]
+        };
+
+        const chatSubmenuData = {
+            title: 'Chat e Projetos',
+            items: [
+                { name: 'Chat Mobile', icon: '<i class="fas fa-mobile-alt"></i>', url: 'Chat/Chat Mobile.HTML', point: 10 },
+                { name: 'Chat Desktop', icon: '<i class="fas fa-desktop"></i>', url: 'Chat/Chat Desktop.HTML', point: 11 },
+                { name: 'Servidor', icon: '<i class="fas fa-server"></i>', url: 'Chat/ServidorChatK10.html', point: 12 },
+                { name: 'Baixar Chat K10', icon: '<i class="fas fa-download"></i>', url: 'https://paulo-sergio-de-andrade.itch.io/chat-p2p', point: 14 },
+                { name: 'Page Chat', icon: '<i class="fas fa-comments"></i>', url: 'https://matematico10.com.br/chat/chat%20k10', point: 15 },
+                { name: 'GitHub', icon: '<i class="fab fa-github"></i>', url: 'https://github.com/andradepsa', point: 16 }
             ]
         };
 
@@ -686,23 +558,23 @@
 
         function createMainMenuItems() {
             const innerCircle = document.querySelector('.inner-circle');
-            const categories = ['social', 'pedagogic', 'chat', 'additional'];
+            const categories = ['social', 'pedagogic', 'projects', 'additional'];
             const colors = {
                 social: 'linear-gradient(145deg, #1DA1F2, #0078d7)',
                 pedagogic: 'linear-gradient(145deg, #8A2BE2, #6A1ACA)',
-                chat: 'linear-gradient(145deg, #25D366, #128C7E)',
+                projects: 'linear-gradient(145deg, #FFA500, #FF8C00)',
                 additional: 'linear-gradient(145deg, #FF6347, #E0442E)'
             };
             const icons = {
                 social: 'fa-share-alt',
                 pedagogic: 'fa-book',
-                chat: 'fa-comments',
+                projects: 'fa-cogs',
                 additional: 'fa-puzzle-piece'
             };
             const labels = {
                 social: 'Redes',
                 pedagogic: 'Recursos',
-                chat: 'Chat',
+                projects: 'Projetos',
                 additional: 'Extras'
             };
             
@@ -850,6 +722,62 @@
             });
         }
 
+        function createChatSubSubmenuItems() {
+            const subsubmenuContainer = document.querySelector('.subsubmenu-container.chat');
+            const items = chatSubmenuData.items;
+            
+            items.forEach((item, index) => {
+                const pointNumber = item.point;
+                const pointElement = document.querySelector(`.intersection-number[data-number-point="${pointNumber}"]`);
+                
+                if (pointElement) {
+                    const pointRect = pointElement.getBoundingClientRect();
+                    const containerRect = document.querySelector('.menu-container').getBoundingClientRect();
+                    const x = pointRect.left - containerRect.left + (pointRect.width / 2);
+                    const y = pointRect.top - containerRect.top + (pointRect.height / 2);
+                    
+                    const subsubmenuItem = document.createElement('a');
+                    subsubmenuItem.className = 'subsubmenu-item chat';
+                    subsubmenuItem.href = item.url;
+                    subsubmenuItem.innerHTML = item.icon;
+                    subsubmenuItem.style.left = `${x}px`;
+                    subsubmenuItem.style.top = `${y}px`;
+                    subsubmenuItem.style.transitionDelay = `${0.1 + index * 0.05}s`;
+                    
+                    const tooltip = document.createElement('span');
+                    tooltip.className = 'tooltip';
+                    tooltip.textContent = item.name;
+                    
+                    const centerX = containerRect.width / 2;
+                    const centerY = containerRect.height / 2;
+                    const angle = Math.atan2(y - centerY, x - centerX) * (180 / Math.PI);
+                    
+                    if (angle > -45 && angle <= 45) {
+                        tooltip.style.left = '60px';
+                        tooltip.style.top = '50%';
+                        tooltip.style.transform = 'translateY(-50%)';
+                    } else if (angle > 45 && angle <= 135) {
+                        tooltip.style.top = '60px';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                    } else if ((angle > 135 && angle <= 180) || (angle <= -135 && angle >= -180)) {
+                        tooltip.style.right = '60px';
+                        tooltip.style.left = 'auto';
+                        tooltip.style.top = '50%';
+                        tooltip.style.transform = 'translateY(-50%)';
+                    } else {
+                        tooltip.style.bottom = '60px';
+                        tooltip.style.top = 'auto';
+                        tooltip.style.left = '50%';
+                        tooltip.style.transform = 'translateX(-50%)';
+                    }
+                    
+                    subsubmenuItem.appendChild(tooltip);
+                    subsubmenuContainer.appendChild(subsubmenuItem);
+                }
+            });
+        }
+
         function addMenuEvents() {
             const mainMenuItems = document.querySelectorAll('.main-menu-item');
             const submenuItems = document.querySelectorAll('.submenu-item');
@@ -922,64 +850,84 @@
             });
         }
 
-        function adjustZoom() {
-            const container = document.querySelector('.responsive-container');
-            const content = document.querySelector('.content-wrapper');
-            const containerWidth = container.offsetWidth;
-            const containerHeight = container.offsetHeight;
-            const contentWidth = 900;
-            const contentHeight = 900;
-            const scaleX = containerWidth / contentWidth;
-            const scaleY = containerHeight / contentHeight;
-            const scale = Math.min(scaleX, scaleY);
-            content.style.transform = `scale(${scale})`;
+        function initParticles() {
+            const canvas = document.getElementById('particles-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const particleCount = 50;
+            
+            const symbols = [
+                'ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈',
+                '≠', '≡', '≤', '≥', '⊂', '⊃', '⊆', '⊇', '∈', '∉', '∅',
+                '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '→', '←', '↔', '⇐',
+                '⇑', '⇓', '⇕', '⊕', '⊗', '⊥', '∥', '∝', '∴', '∵', '∓',
+                '±', '∑', '∏', '∃', '∀', 'ℝ', 'ℤ', 'ℕ', 'ℚ', 'ℂ', 'ℇ'
+            ];
+            
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = Math.random() * 5 + 1;
+                    this.speedX = Math.random() * 1 - 0.5;
+                    this.speedY = Math.random() * 1 - 0.5;
+                    this.symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                    this.opacity = Math.random() * 0.5 + 0.2;
+                }
+                
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    
+                    if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+                }
+                
+                draw() {
+                    ctx.font = `${this.size * 5}px 'Segoe UI'`;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+                    ctx.fillText(this.symbol, this.x, this.y);
+                }
+            }
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(particle => {
+                    particle.update();
+                    particle.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
         }
 
-        function updateCountdown() {
-            const now = new Date();
-            let targetYear = now.getFullYear();
-            const march14ThisYear = new Date(targetYear, 2, 14);
-            if (now > march14ThisYear) {
-                targetYear++;
+        function rotateBackground() {
+            const circle = document.querySelector('.background-circle');
+            let rotation = 0;
+            
+            function rotate() {
+                rotation += 0.1;
+                circle.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                requestAnimationFrame(rotate);
             }
-            const target = new Date(targetYear, 2, 14);
-
-            let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
-            if (now.getDate() > target.getDate()) {
-                months--;
-            }
-
-            let adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
-
-            if (adjustedDate > target) {
-                months--;
-                adjustedDate = new Date(now.getFullYear(), now.getMonth() + months, now.getDate());
-            }
-
-            const diffMs = target - adjustedDate;
-            const days = Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 2;
-
-            const totalMs = target - now;
-            const hours = Math.floor((totalMs / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((totalMs / (1000 * 60)) % 60);
-            const seconds = Math.floor((totalMs / 1000) % 60);
-
-            document.getElementById('months').textContent = months;
-            document.getElementById('days').textContent = days;
-            document.getElementById('hours').textContent = hours;
-            document.getElementById('minutes').textContent = minutes;
-            document.getElementById('seconds').textContent = seconds;
-
-            if (totalMs <= 0) {
-                document.getElementById('message').textContent = "FELIZ DIA DA MATEMÁTICA!";
-                clearInterval(countdownInterval);
-            } else {
-                document.getElementById('message').textContent = "";
-            }
+            
+            rotate();
         }
 
-        let countdownInterval;
-
+        // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             createSectorLines();
             createMainMenuItems();
@@ -987,197 +935,11 @@
             setTimeout(() => {
                 createSubmenuItems();
                 createSitesSubSubmenuItems();
+                createChatSubSubmenuItems();
                 addMenuEvents();
-                
-                setTimeout(() => {
-                    const firstMenu = document.querySelector('.main-menu-item');
-                    if (firstMenu) {
-                        firstMenu.click();
-                    }
-                }, 500);
-                
-                adjustZoom();
-                window.addEventListener('resize', adjustZoom);
-                
-                // Start countdown
-                updateCountdown();
-                countdownInterval = setInterval(updateCountdown, 1000);
-                const countdownContainer = document.querySelector('.countdown-container');
-                countdownContainer.style.opacity = '0';
-                countdownContainer.style.transform = 'translateY(-20px)';
-                countdownContainer.style.transition = 'all 0.5s ease 0.5s';
-                setTimeout(() => {
-                    countdownContainer.style.opacity = '1';
-                    countdownContainer.style.transform = 'translateY(0)';
-                }, 600);
-                
-                const menuItems = document.querySelectorAll('.main-menu-item, .submenu-item, .subsubmenu-item');
-                menuItems.forEach(item => {
-                    item.addEventListener('mouseenter', () => {
-                        item.style.transition = 'all 0.3s ease';
-                    });
-                    item.addEventListener('mouseleave', () => {
-                        item.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                    });
-                });
-                
-                const today = new Date();
-                if (today.getMonth() === 2 && today.getDate() === 14) {
-                    const message = document.getElementById('message');
-                    if (message) {
-                        message.textContent = "FELIZ DIA DA MATEMÁTICA!";
-                        message.style.animation = 'pulse 1s infinite alternate';
-                        const style = document.createElement('style');
-                        style.textContent = `
-                            @keyframes pulse {
-                                from { transform: scale(1); opacity: 0.8; }
-                                to { transform: scale(1.05); opacity: 1; }
-                            }
-                        `;
-                        document.head.appendChild(style);
-                        document.querySelectorAll('.main-menu-item').forEach(item => {
-                            item.style.animation = 'rainbowBorder 3s infinite linear';
-                        });
-                        const rainbowStyle = document.createElement('style');
-                        rainbowStyle.textContent = `
-                            @keyframes rainbowBorder {
-                                0% { box-shadow: 0 0 10px #FF5252; }
-                                20% { box-shadow: 0 0 10px #FF9800; }
-                                40% { box-shadow: 0 0 10px #4CAF50; }
-                                60% { box-shadow: 0 0 10px #2196F3; }
-                                80% { box-shadow: 0 0 10px #9C27B0; }
-                                100% { box-shadow: 0 0 10px #FF5252; }
-                            }
-                        `;
-                        document.head.appendChild(rainbowStyle);
-                    }
-                }
-                
-                const backgroundCircle = document.querySelector('.background-circle');
-                let rotation = 0;
-                function rotateBackground() {
-                    rotation += 0.1;
-                    backgroundCircle.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
-                    requestAnimationFrame(rotateBackground);
-                }
+                initParticles();
                 rotateBackground();
             }, 100);
-        });
-    </script>
-    
-    <script>
-        const canvas = document.getElementById('particles-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        const particlesArray = [];
-        const numberOfParticles = 50;
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 5 + 1;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-                this.symbol = [
-                    'ℵ', '∞', '∂', '∫', 'Σ', 'Ω', 'π', '√', '∇', '∆', '≈',
-                    '≠', '≡', '≤', '≥', '⊂', '⊃', '⊆', '⊇', '∈', '∉', '∅',
-                    '∪', '∩', '∧', '∨', '¬', '⇒', '⇔', '→', '←', '↔', '⇐',
-                    '⇑', '⇓', '⇕', '⊕', '⊗', '⊥', '∥', '∝', '∴', '∵', '∓',
-                    '±', '∑', '∏', '∃', '∀', 'ℝ', 'ℤ', 'ℕ', 'ℚ', 'ℂ', 'ℇ',
-                    '∶', '∷', '∸', '≅', '≃', '∼', '≪', '≫', '⊤', '⊢',
-                    '⊣', '⊨', '⊩', '∟', '⊾', '⊿', '∠', '∡', '⟂', '≜', '∘',
-                    '∅', '◊', '♭', '♯', '♮', '∓', '⊼', '⊽', '⊻', '⊼', '⊺',
-                    '∗', '⋅', '⋆', '⋄', '⨀', '⨂', '⨁', '⨉', '⨍', '⨌', '⨆',
-                    '⋈', '⪯', '⪰', '⪇', '⪈', '⫅', '⫆', '⊬', '⊭', '≺', '≻',
-                    '≼', '≽', '⊰', '⊱', '∓', 'ℏ', 'ℓ', '𝑓', '𝑔', '𝜕', '𝜋',
-                    '𝜎', '𝜃', '𝜇', '𝜆', '𝜈', '𝜔', '𝛼', '𝛽', '𝛾', '𝛿', '𝜏'
-                ][Math.floor(Math.random() * 121)];
-            }
-            
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.size > 0.2) this.size -= 0.01;
-                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-            }
-            
-            draw() {
-                ctx.font = `${this.size * 5}px 'Segoe UI'`;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.fillText(this.symbol, this.x, this.y);
-            }
-        }
-
-        function init() {
-            for (let i = 0; i < numberOfParticles; i++) {
-                particlesArray.push(new Particle());
-            }
-        }
-
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
-                if (particlesArray[i].size <= 0.2) {
-                    particlesArray.splice(i, 1);
-                    i--;
-                    particlesArray.push(new Particle());
-                }
-            }
-            requestAnimationFrame(animate);
-        }
-
-        init();
-        animate();
-
-        window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
-            particlesArray.forEach(particle => {
-                const dx = mouseX - particle.x;
-                const dy = mouseY - particle.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance < 100) {
-                    const force = (100 - distance) / 50;
-                    particle.x -= dx * force * 0.01;
-                    particle.y -= dy * force * 0.01;
-                }
-            });
-        });
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const interactiveElements = document.querySelectorAll('a, button, [tabindex="0"], .main-menu-item, .submenu-item, .subsubmenu-item');
-            interactiveElements.forEach(element => {
-                element.addEventListener('focus', () => {
-                    element.style.outline = '2px solid #4169E1';
-                    element.style.outlineOffset = '2px';
-                });
-                element.addEventListener('blur', () => {
-                    element.style.outline = 'none';
-                });
-            });
-            
-            const icons = document.querySelectorAll('i[aria-hidden="true"]');
-            icons.forEach(icon => {
-                const parent = icon.parentElement;
-                if (parent && !parent.getAttribute('aria-label')) {
-                    const text = parent.textContent.trim();
-                    if (text) {
-                        parent.setAttribute('aria-label', text);
-                    }
-                }
-            });
         });
     </script>
 </body>
