@@ -10,10 +10,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        function showStatus(message, type = 'info') {
-            statusDiv.textContent = message;
-            statusDiv.className = `status status-${type}`;
-            statusDiv.style.display = 'block';
         }
         
         body {
@@ -438,6 +434,13 @@
         const actionsContainer = document.getElementById('actions-container');
         const loginStatus = document.getElementById('login-status');
         const inputArea = document.getElementById('input-area');
+
+        // Função para mostrar status
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
+        }
 
         // Força logout e login fresco
         async function doFreshLogin() {
