@@ -10,6 +10,10 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status status-${type}`;
+            statusDiv.style.display = 'block';
         }
         
         body {
@@ -319,6 +323,7 @@
         
         .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
         .btn-new-user { background: linear-gradient(45deg, #17a2b8, #138496); }
+        .btn-print { background: linear-gradient(45deg, #28a745, #20c997); }
         
         .loading {
             display: inline-block;
@@ -407,6 +412,7 @@
         <div id="status" class="status"></div>
         
         <div id="actions-container" class="actions-container">
+            <button id="print-complete-btn" class="action-button btn-print">🖨️ Imprimir Prova Completa</button>
             <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar Questões</button>
             <button id="new-user-btn" class="action-button btn-new-user">👤 Trocar Usuário</button>
         </div>
@@ -622,10 +628,260 @@
             }
         }
 
-        function showStatus(message, type = 'info') {
-            statusDiv.textContent = message;
-            statusDiv.className = `status status-${type}`;
-            statusDiv.style.display = 'block';
+        function printCompleteExam() {
+            if (questionsDatabase.length === 0) {
+                showStatus('❌ Nenhuma questão para imprimir.', 'error');
+                return;
+            }
+
+            const printWindow = window.open('', '_blank');
+            const completeHTML = generateCompleteExamHTML();
+            
+            printWindow.document.write(completeHTML);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+            
+            showStatus('🖨️ Abrindo prova completa (questões + gabarito)...', 'success');
+        }
+
+        function generateCompleteExamHTML() {
+            const currentDate = new Date().toLocaleDateString('pt-BR');
+            const currentTime = new Date().toLocaleTimeString('pt-BR');
+            const totalQuestions = questionsDatabase.length;
+            const userName = currentUser ? currentUser.username : 'Usuário';
+            
+            // Ordenar questões do mais antigo para o mais novo (ordem crescente)
+            const sortedQuestions = [...questionsDatabase].reverse();
+            
+            let completeHTML = `
+                <!DOCTYPE html>
+                <html lang="pt-br">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Prova Completa - ${userName}</title>
+                    <style>
+                        @page {
+                            size: A4;
+                            margin: 2cm;
+                        }
+                        
+                        body {
+                            font-family: Arial, sans-serif;
+                            font-size: 12pt;
+                            line-height: 1.6;
+                            color: #000;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        
+                        .page-break {
+                            page-break-before: always;
+                        }
+                        
+                        .header {
+                            text-align: center;
+                            margin-bottom: 30px;
+                            padding-bottom: 20px;
+                            border-bottom: 2px solid #333;
+                        }
+                        
+                        .header h1 {
+                            font-size: 18pt;
+                            margin: 0 0 10px 0;
+                            color: #333;
+                        }
+                        
+                        .header .info {
+                            font-size: 10pt;
+                            color: #666;
+                            margin: 5px 0;
+                        }
+                        
+                        .student-info {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 30px;
+                            padding: 15px;
+                            border: 1px solid #ccc;
+                            background-color: #f9f9f9;
+                        }
+                        
+                        .student-info div {
+                            font-size: 10pt;
+                        }
+                        
+                        /* ESTILOS PARA PÁGINA DE QUESTÕES */
+                        .question {
+                            margin-bottom: 25px;
+                            page-break-inside: avoid;
+                        }
+                        
+                        .question-number {
+                            font-weight: bold;
+                            font-size: 14pt;
+                            color: #333;
+                            margin-bottom: 8px;
+                        }
+                        
+                        .question-text {
+                            font-size: 12pt;
+                            margin-bottom: 15px;
+                            line-height: 1.5;
+                        }
+                        
+                        .options {
+                            margin-left: 20px;
+                        }
+                        
+                        .option {
+                            margin-bottom: 8px;
+                            font-size: 11pt;
+                            line-height: 1.4;
+                        }
+                        
+                        /* ESTILOS PARA PÁGINA DE GABARITO */
+                        .answer-item {
+                            margin-bottom: 20px;
+                            padding: 15px;
+                            border: 1px solid #ddd;
+                            border-radius: 5px;
+                            background-color: #f9f9f9;
+                            page-break-inside: avoid;
+                        }
+                        
+                        .answer-number {
+                            font-weight: bold;
+                            font-size: 14pt;
+                            color: #28a745;
+                            margin-bottom: 8px;
+                        }
+                        
+                        .correct-answer {
+                            font-size: 12pt;
+                            font-weight: bold;
+                            color: #28a745;
+                            margin-bottom: 10px;
+                        }
+                        
+                        .explanation {
+                            font-size: 11pt;
+                            color: #555;
+                            line-height: 1.4;
+                            background-color: white;
+                            padding: 10px;
+                            border-left: 4px solid #28a745;
+                            margin-top: 8px;
+                        }
+                        
+                        .explanation-label {
+                            font-weight: bold;
+                            color: #333;
+                            margin-bottom: 5px;
+                        }
+                        
+                        .footer {
+                            position: fixed;
+                            bottom: 1cm;
+                            left: 0;
+                            right: 0;
+                            text-align: center;
+                            font-size: 9pt;
+                            color: #666;
+                        }
+                        
+                        @media print {
+                            .question, .answer-item {
+                                break-inside: avoid;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <!-- PÁGINA 1: QUESTÕES -->
+                    <div class="header">
+                        <h1>📝 PROVA - QUESTÕES</h1>
+                        <div class="info">Gerado pelo Banco de Questões | ${currentDate} às ${currentTime}</div>
+                        <div class="info">Total de questões: ${totalQuestions}</div>
+                    </div>
+                    
+                    <div class="student-info">
+                        <div>
+                            <strong>Nome:</strong> _________________________________
+                        </div>
+                        <div>
+                            <strong>Turma:</strong> _______________
+                        </div>
+                        <div>
+                            <strong>Data:</strong> _______________
+                        </div>
+                    </div>
+            `;
+            
+            // ADICIONAR TODAS AS QUESTÕES
+            sortedQuestions.forEach((question, index) => {
+                completeHTML += `
+                    <div class="question">
+                        <div class="question-number">${index + 1}.</div>
+                        <div class="question-text">${question.text}</div>
+                `;
+                
+                if (question.options && question.options.length > 0) {
+                    completeHTML += '<div class="options">';
+                    question.options.forEach(option => {
+                        completeHTML += `<div class="option">${option}</div>`;
+                    });
+                    completeHTML += '</div>';
+                } else {
+                    completeHTML += `
+                        <div style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+                            <div style="font-style: italic; color: #666; margin-bottom: 10px;">Resposta:</div>
+                            <div style="border-bottom: 1px solid #ccc; height: 60px;"></div>
+                        </div>
+                    `;
+                }
+                
+                completeHTML += '</div>';
+            });
+            
+            // QUEBRA DE PÁGINA + PÁGINA 2: GABARITO
+            completeHTML += `
+                    <div class="page-break">
+                        <div class="header">
+                            <h1>📋 GABARITO - RESPOSTAS E EXPLICAÇÕES</h1>
+                            <div class="info">Gerado pelo Banco de Questões | ${currentDate} às ${currentTime}</div>
+                            <div class="info">Total de questões: ${totalQuestions}</div>
+                        </div>
+            `;
+            
+            // ADICIONAR TODAS AS RESPOSTAS
+            sortedQuestions.forEach((question, index) => {
+                completeHTML += `
+                    <div class="answer-item">
+                        <div class="answer-number">Questão ${index + 1}</div>
+                        <div class="correct-answer">✅ Resposta: ${question.correct_answer}</div>
+                        <div class="explanation">
+                            <div class="explanation-label">💡 Explicação:</div>
+                            ${question.explanation || 'Explicação não fornecida.'}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            completeHTML += `
+                    </div>
+                    
+                    <div class="footer">
+                        Banco de Questões - ${userName} | Prova Completa
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            return completeHTML;
         }
 
         function generateId() {
@@ -698,6 +954,7 @@
             freshLoginBtn.addEventListener('click', doFreshLogin);
             logoutBtn.addEventListener('click', forceLogoutForNewUser);
             generateBtn.addEventListener('click', generateQuestions);
+            document.getElementById('print-complete-btn').addEventListener('click', printCompleteExam);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
             document.getElementById('new-user-btn').addEventListener('click', forceLogoutForNewUser);
             
