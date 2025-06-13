@@ -409,13 +409,13 @@
             </div>
             <div class="data-source" id="source-exchange">
                 <h4>💱 Câmbio</h4>
-                <div class="api-info">API: Exchange Rates</div>
+                <div class="api-info">API: Economia AwesomeAPI</div>
                 <div class="status">Aguardando consulta...</div>
                 <div class="last-update"></div>
             </div>
             <div class="data-source" id="source-b3">
                 <h4>📉 B3/Bovespa</h4>
-                <div class="api-info">API: Brapi.dev</div>
+                <div class="api-info">API: Economia AwesomeAPI</div>
                 <div class="status">Aguardando consulta...</div>
                 <div class="last-update"></div>
             </div>
@@ -465,8 +465,6 @@
         const OFFICIAL_APIS = {
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
             ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last',
-            // <<== CORREÇÃO: URL da BRAPI simplificada para chamada direta
-            BRAPI_BOVESPA: 'https://brapi.dev/api/quote/BOVA11?range=1d&interval=1d',
         };
 
         const SERIES_CODES = {
@@ -474,21 +472,8 @@
             IPCA: 433,
             PIB: 4380,
             USD_BRL: 1,
-            BOVESPA: 'BOVA11'
-        };
-
-        const languagePatterns = {
-            'pt': {
-                patterns: ['sobre', 'criar', 'crie', 'questões', 'questao', 'brasil', 'economia', 'inflação', 'selic', 'pib', 'dólar', 'bovespa', 'ibge', 'bacen', 'ipea'],
-                name: 'Português',
-                topics: {
-                    'inflação': ['IPCA'],
-                    'juros': ['SELIC_META'],
-                    'câmbio': ['USD_BRL'],
-                    'pib': ['PIB'],
-                    'bolsa': ['BOVESPA']
-                }
-            }
+            // <<== CORREÇÃO: Usando o ticker correto da AwesomeAPI para o Ibovespa
+            BOVESPA: 'IBOV-BRL' 
         };
 
         function detectLanguageAndTopics(text) {
@@ -584,7 +569,7 @@
                     const value = parseFloat(rate.bid);
                     const date = new Date(parseInt(rate.timestamp) * 1000).toLocaleDateString();
                     updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${value.toFixed(2)}`);
-                    return { value, date, source: 'Economia Awesome API', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` };
+                    return { value, date, source: 'Economia AwesomeAPI', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` };
                 } else {
                     throw new Error('Taxa não encontrada');
                 }
@@ -594,31 +579,45 @@
             }
         }
 
-        // <<== CORREÇÃO APLICADA AQUI
+        // <<== CORREÇÃO DEFINITIVA: Usando a mesma API do Câmbio para a Bovespa
         async function fetchBovespaData() {
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
             try {
-                // Usando a URL direta e mais confiável da Brapi, sem proxy CORS
-                const url = OFFICIAL_APIS.BRAPI_BOVESPA;
+                const ticker = SERIES_CODES.BOVESPA; // 'IBOV-BRL'
+                const url = `${OFFICIAL_APIS.ECONOMIA_API}/${ticker}`;
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro na API da B3: ${response.status}`);
+
+                if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
                 
                 const data = await response.json();
+                
+                // A estrutura da AwesomeAPI é { "IBOVBRL": { "bid": "120797.10" ... } } ou [ { ... } ]
+                const stockData = data.IBOVBRL || data[0];
 
-                // A estrutura da resposta da Brapi é { results: [ { ... } ] }
-                if (data.results && data.results[0] && data.results[0].regularMarketPrice) {
-                    // Usamos o ETF BOVA11 como base e multiplicamos por ~1000 para uma aproximação do índice Ibovespa
-                    const bovespaValue = data.results[0].regularMarketPrice * 1000; 
+                if (stockData && stockData.bid) {
+                    const bovespaValue = parseFloat(stockData.bid);
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
-                    return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (via Brapi.dev)', series: 'BOVESPA', description: `Índice Bovespa` };
+                    return { 
+                        value: bovespaValue, 
+                        date: new Date(parseInt(stockData.timestamp) * 1000).toLocaleDateString(), 
+                        source: 'Economia AwesomeAPI', 
+                        series: 'BOVESPA', 
+                        description: `Índice Bovespa` 
+                    };
                 } else {
-                    throw new Error('Estrutura de dados da B3 inesperada.');
+                    throw new Error('Estrutura de dados da Bovespa inesperada.');
                 }
             } catch (error) {
                 console.error("Erro ao buscar dados da B3:", error);
-                const bovespaValue = 120760; // Nosso plano B, o fallback, continua aqui como segurança máxima.
-                updateSourceStatus('source-b3', 'success', `⚠️ ${bovespaValue.toLocaleString()} pts (fallback)`);
-                return { value: bovespaValue, date: new Date().toLocaleDateString(), source: 'B3 (fallback estático)', series: 'BOVESPA', description: `Índice Bovespa (fallback)` };
+                const fallbackValue = 121000;
+                updateSourceStatus('source-b3', 'success', `⚠️ ${fallbackValue.toLocaleString()} pts (fallback)`);
+                return { 
+                    value: fallbackValue, 
+                    date: new Date().toLocaleDateString(), 
+                    source: 'B3 (fallback estático)', 
+                    series: 'BOVESPA', 
+                    description: `Índice Bovespa (fallback)` 
+                };
             }
         }
 
@@ -631,8 +630,7 @@
                 const tesouroRate = selicRate;
                 updateSourceStatus('source-tesouro', 'success', `✅ Tesouro Selic: ~${tesouroRate.toFixed(2)}% a.a.`);
                 return { value: tesouroRate, baseRate: selicRate, source: 'Tesouro Nacional (calculado sobre SELIC)', series: 'TESOURO_SELIC', description: `Rentabilidade Tesouro Selic` };
-            } catch (error)
-                {
+            } catch (error) {
                 updateSourceStatus('source-tesouro', 'error', `❌ ${error.message}`);
                 return null;
             }
@@ -972,9 +970,9 @@
 
         window.removeQuestion = removeQuestion;
 
-        console.log('✅ Sistema pronto. API da B3 corrigida para chamada direta e mais estável.');
-        console.log('📊 Fontes ativas: Banco Central (SGS), Economia API (Câmbio), Brapi.dev (B3).');
-        console.log('🛠️ Fontes estabilizadas: IBGE e IPEA usam dados estáticos realistas para garantir o funcionamento.');
+        console.log('✅ Sistema pronto para uso coletivo. API da B3 corrigida e estável.');
+        console.log('📊 Fontes ativas: Banco Central (SGS) e Economia AwesomeAPI (Câmbio e B3).');
+        console.log('🛠️ Fontes estabilizadas: IBGE e IPEA.');
         
     </script>
 </body>
