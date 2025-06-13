@@ -134,11 +134,11 @@
                 <h3>👤 Login Individual do Usuário</h3>
                 <p>Faça login em cada IA para usar o sistema com sua cota individual.</p>
                 <div id="login-status" class="login-status not-logged">🔐 Nenhum usuário logado</div>
-                <button class="login-btn" onclick="doFreshLogin()">🚀 Login Puter AI</button>
-                <button class="login-btn" onclick="loginPoe()">📝 Login Poe.com</button>
-                <button class="login-btn" onclick="loginYou()">🔍 Login You.com</button>
-                <button class="login-btn" onclick="loginPerplexity()">🔬 Login Perplexity</button>
-                <button class="login-btn" onclick="loginCharacter()">🎭 Login Character.AI</button>
+                <button id="login-puter-btn" class="login-btn">🚀 Login Puter AI</button>
+                <button id="login-poe-btn" class="login-btn">📝 Login Poe.com</button>
+                <button id="login-you-btn" class="login-btn">🔍 Login You.com</button>
+                <button id="login-perplexity-btn" class="login-btn">🔬 Login Perplexity</button>
+                <button id="login-character-btn" class="login-btn">🎭 Login Character.AI</button>
                 <button id="logout-btn" class="logout-btn" style="display: none;">🚪 Sair de Todas</button>
             </div>
             <div id="initial-form" class="form-disabled">
@@ -263,7 +263,11 @@
     <script>
         let currentUser = null;
         const elements = {
-            freshLoginBtn: document.querySelector('.login-btn[onclick="doFreshLogin()"]'),
+            loginPuterBtn: document.getElementById('login-puter-btn'),
+            loginPoeBtn: document.getElementById('login-poe-btn'),
+            loginYouBtn: document.getElementById('login-you-btn'),
+            loginPerplexityBtn: document.getElementById('login-perplexity-btn'),
+            loginCharacterBtn: document.getElementById('login-character-btn'),
             logoutBtn: document.getElementById('logout-btn'),
             loginStatus: document.getElementById('login-status'),
             initialForm: document.getElementById('initial-form'),
@@ -315,22 +319,26 @@
             perplexity: false,
             character: false,
         };
+
         function log(message, type = 'info') {
             elements.statusDiv.className = type;
             elements.statusDiv.innerHTML = `<div>${getStatusIcon(type)} ${message}</div><div style="font-size: 10px; margin-top: 5px; opacity: 0.7;">${new Date().toLocaleTimeString()}</div>`;
         }
+
         function getStatusIcon(type) {
             const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             return icons[type] || 'ℹ️';
         }
+
         function updateAIStatus(ai, status) {
             const statusElement = document.getElementById(`${ai}-status`);
             statusElement.textContent = `${ai.charAt(0).toUpperCase() + ai.slice(1)}: ${status}`;
             statusElement.style.color = status === 'Ativo' ? '#28a745' : status === 'Limitado' ? '#ffc107' : status === 'Esgotado' ? '#dc3545' : '#6c757d';
         }
+
         async function doFreshLogin() {
-            elements.freshLoginBtn.disabled = true;
-            elements.freshLoginBtn.innerHTML = '<div class="loading"></div>Preparando login...';
+            elements.loginPuterBtn.disabled = true;
+            elements.loginPuterBtn.innerHTML = '<div class="loading"></div>Preparando login...';
             try {
                 elements.loginStatus.textContent = '🔄 Fazendo logout do usuário anterior...';
                 elements.loginStatus.className = 'login-status not-logged';
@@ -342,7 +350,7 @@
                 }
                 resetUserData();
                 elements.loginStatus.textContent = '🔐 Abrindo janela de login...';
-                elements.freshLoginBtn.innerHTML = '<div class="loading"></div>Aguardando login...';
+                elements.loginPuterBtn.innerHTML = '<div class="loading"></div>Aguardando login...';
                 const user = await puter.auth.signIn();
                 currentUser = user;
                 aiLoginStatus.puter = true;
@@ -353,36 +361,41 @@
                 console.error('Erro no login:', error);
                 updateLoginStatus(false);
                 updateAIStatus('puter', 'Offline');
-                log('❌ Erro no login. Tente novamente.', 'error');
+                log('❌ Erro no login com Puter AI. Tente novamente.', 'error');
             } finally {
-                elements.freshLoginBtn.disabled = false;
-                elements.freshLoginBtn.innerHTML = '🚀 Login Puter AI';
+                elements.loginPuterBtn.disabled = false;
+                elements.loginPuterBtn.innerHTML = '🚀 Login Puter AI';
             }
         }
+
         function loginPoe() {
             window.open('https://poe.com/login', '_blank');
             aiLoginStatus.poe = true;
             updateAIStatus('poe', 'Ativo');
             log('📝 Abra o popup para logar no Poe.com!', 'info');
         }
+
         function loginYou() {
             window.open('https://you.com/login', '_blank');
             aiLoginStatus.you = true;
             updateAIStatus('you', 'Ativo');
             log('🔍 Abra o popup para logar no You.com!', 'info');
         }
+
         function loginPerplexity() {
             window.open('https://perplexity.ai/login', '_blank');
             aiLoginStatus.perplexity = true;
             updateAIStatus('perplexity', 'Ativo');
             log('🔬 Abra o popup para logar no Perplexity!', 'info');
         }
+
         function loginCharacter() {
             window.open('https://character.ai/login', '_blank');
             aiLoginStatus.character = true;
             updateAIStatus('character', 'Ativo');
             log('🎭 Abra o popup para logar no Character.AI!', 'info');
         }
+
         async function forceLogoutForNewUser() {
             if (confirm('Tem certeza que deseja sair? Todos os dados do artigo serão perdidos.')) {
                 try {
@@ -404,6 +417,7 @@
                 }
             }
         }
+
         function resetUserData() {
             userInputs = {};
             articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
@@ -422,6 +436,7 @@
             document.getElementById('nivel-formacao').value = 'Graduando';
             displayABNTDocument();
         }
+
         function updateLoginStatus(isLoggedIn) {
             if (isLoggedIn && currentUser) {
                 elements.loginStatus.innerHTML = `
@@ -429,23 +444,24 @@
                     ✅ Usuário logado e pronto para criar artigos
                 `;
                 elements.loginStatus.className = 'login-status logged-in';
-                elements.freshLoginBtn.style.display = 'none';
-                elements.logoutBtn.style.display = '🚪 Sair de Todas';
+                elements.loginPuterBtn.style.display = 'none';
+                elements.logoutBtn.style.display = 'inline-block';
                 elements.initialForm.classList.remove('form-disabled');
                 elements.interactiveControls.classList.remove('form-disabled');
                 elements.saveControls.classList.remove('form-disabled');
             } else {
                 elements.loginStatus.textContent = '🔐 Nenhum usuário logado';
                 elements.loginStatus.className = 'login-status not-logged';
-                elements.freshLoginBtn.style.display = 'inline-block';
+                elements.loginPuterBtn.style.display = 'inline-block';
                 elements.logoutBtn.style.display = 'none';
                 elements.initialForm.classList.add('form-disabled');
                 elements.interactiveControls.classList.add('form-disabled');
                 elements.saveControls.classList.add('form-disabled');
             }
         }
+
         async function callAI(prompt) {
-            const aiOrder = ['puter', 'Puter AI'], ['huggingface', 'Hugging Face'], ['poe', 'Poe.com'], ['you', 'You.com'], ['perplexity', 'Perplexity'], ['character', 'Character.AI']];
+            const aiOrder = [['puter', 'Puter AI'], ['huggingface', 'Hugging Face'], ['poe', 'Poe.com'], ['you', 'You.com'], ['perplexity', 'Perplexity'], ['character', 'Character.AI']];
             for (const [ai, aiName] of aiOrder) {
                 if (!aiLoginStatus[ai]) {
                     log(`⚠️ Faça login no ${aiName} primeiro!`, 'error');
@@ -457,7 +473,7 @@
                         case 'puter':
                             const putRes = await puter.ai.chat([{ role: 'user', content: prompt }]);
                             response = putRes[1]?.message.content.trim();
-                            if (!response) throw new Error('Resposta inválida');
+                            if (!response) throw new Error('Resposta inválida do Puter AI');
                             updateAIStatus('puter', 'Ativo');
                             break;
                         case 'huggingface':
@@ -531,6 +547,7 @@
             }
             throw new Error('Nenhuma IA disponível.');
         }
+
         function formatABNTFields() {
             const universidadeInput = document.getElementById('universidade');
             const autorInput = document.getElementById('autor');
@@ -567,6 +584,7 @@
             }
             return { universidade, autor, email, curso };
         }
+
         function extractKeyPhrases(text) {
             const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
             const words = cleanText.split(/\s+/).filter(word => word.length > 3);
@@ -576,10 +594,12 @@
             }
             return phrases;
         }
+
         function addPhrasesToMemory(text) {
             const phrases = extractKeyPhrases(text);
             phrases.forEach(phrase => usedPhrases.add(phrase));
         }
+
         async function extractThemeAndTopics(text, articleTitle) {
             try {
                 const prompt = `
@@ -609,6 +629,7 @@
                 };
             }
         }
+
         async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
             const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
@@ -633,6 +654,7 @@
                 return ["Ocorreu um erro ao gerar opções, tente novamente."];
             }
         }
+
         async function showParagraphStartModal(phase) {
             currentGenerationPhase = phase;
             const phaseTitles = {
@@ -669,6 +691,7 @@
                 elements.paragraphStartsList.innerHTML = '<p>❌ Erro ao gerar opções. Tente novamente.</p>';
             }
         }
+
         function triggerParagraphOptions(phase) {
             if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
                 log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
@@ -684,12 +707,14 @@
             }
             showParagraphStartModal(phase);
         }
+
         function updatePageCount() {
             const contentHeight = elements.outputDiv.scrollHeight;
             const pageHeight = 800;
             const pages = Math.max(1, Math.ceil(contentHeight / pageHeight));
             elements.pageCountSpan.textContent = pages;
         }
+
         async function refineAndSuggestTopics(originalTitle) {
             log('Analisando tema e gerando sugestões...', 'info');
             const prompt = `Analise o tema para um artigo: "${originalTitle}". 1. Corrija-o para ser um título acadêmico claro. 2. Gere 9 temas alternativos. Retorne APENAS no formato JSON: {"corrected_title": "...", "suggestions": ["...", ...]}`;
@@ -702,6 +727,7 @@
                 return { corrected_title: originalTitle, suggestions: [] };
             }
         }
+
         function populateAndShowTopicModal(topicData, originalTitle) {
             let html = `<p style="margin-bottom:15px; background-color:#e8f4f8; padding:10px; border-radius:4px;"><strong>Original:</strong> <em>${originalTitle}</em></p><div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"><div style="margin-bottom:10px;"><input type="radio" id="topic-0" name="topic-choice" value="${topicData.corrected_title}" checked><label for="topic-0" style="font-weight:bold;">${topicData.corrected_title} (Sugestão Corrigida)</label></div>`;
             topicData.suggestions.forEach((suggestion, index) => {
@@ -711,6 +737,7 @@
             elements.topicListDiv.innerHTML = html;
             elements.topicSuggestionModal.style.display = 'flex';
         }
+
         function extractRelevantTerms(text, title = '') {
             const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
             const combinedText = `${title} ${text}`.toLowerCase();
@@ -718,6 +745,7 @@
             const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
             return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
         }
+
         async function fetchSingleRealReference(startPhrase) {
             log('Buscando referência real...', 'info');
             try {
@@ -744,10 +772,11 @@
                 return reference;
             } catch (error) {
                 console.error('Erro ao buscar referência real:', error);
-                log(`⚠️ Falha na busca por referência: ${error.message}`, 'warning');
+                log(`⚠️ Falha na busca por referência: ${error.message}`, 'error');
                 return null;
             }
         }
+
         async function fetchParagraphReferences(paragraphText, articleTitle) {
             log('Buscando referências acadêmicas...', 'info');
             try {
@@ -757,7 +786,7 @@
                     const sentences = paragraphText.split('.');
                     originalText = sentences.slice(0, 2).join('.').trim();
                 }
-                originalText = originalText.replace(/\([^)]*\)/g, '').trim();
+                originalText = originalText.replace(/\([^)]+\)/g, '').trim();
                 elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
                 elements.searchInfoDiv.style.display = 'block';
                 const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
@@ -766,24 +795,24 @@
                     <strong>🔍 Análise do Texto:</strong><br>
                     <em>"${originalText}"</em><br>
                     <strong>Tema Principal:</strong> ${mainTheme}<br>
-                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
+                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0px;padding-left:20px;> ${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
                     <small>Gerando termos de busca otimizados...</small>
                 `;
                 const strategiesPrompt = `
-                Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
+                Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}"
                 gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
                 PRIORIDADE ALTA (línguas latinas + principais):
                 PORTUGUÊS (4 termos):
                 ESPANHOL (4 termos):
                 INGLÊS (4 termos):
-                FRANCÊS (3 termos):
+                FRANCÉS (3 termos):
                 ITALIANO (3 termos):
                 PRIORIDADE MÉDIA (se necessário):
                 ALEMÃO (2 termos):
                 RUSSO (2 termos):
                 PRIORIDADE BAIXA (só se não encontrar 10 referências):
                 CHINÊS SIMPLIFICADO (2 termos):
-                JAPONÊS (1 termo):
+                JAPONÉS (1 termo):
                 ÁRABE (1 termo):
                 REGRAS:
                 1. Use termos técnicos e acadêmicos baseados no tema e assuntos.
@@ -791,7 +820,7 @@
                 3. Cada termo deve ter 2-6 palavras.
                 4. Foque no tema principal e nos assuntos fornecidos.
                 FORMATO DE RESPOSTA:
-                PORTUGUÊS:
+                PORTUGUÉS:
                 termo1
                 termo2
                 ...
@@ -903,63 +932,71 @@
                     const translationCounts = { portuguese: 0, translated: 0 };
                     allPapers.forEach(paper => {
                         languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
-                        if (paper.language === 'PORTUGUÊS') translationCounts.portuguese++;
+                        if (paper. === 'PORTUGUÊS') translationCounts.portuguese++;
                         else translationCounts.translated++;
                     });
                     const languageStats = Object.entries(languageCounts).map(([lang, count]) => `${lang}: ${count}`).join(' | ');
                     elements.searchInfoDiv.innerHTML = `
-                        <strong>🚀 Busca Otimizada Concluída!</strong><br>
-                        ✅ ${allPapers.length} referências encontradas para "${mainTheme}"<br>
+                        <strong>🚖 Busca Otimizada Concluída!</strong><br>
+                        ✅ ${allPapers.length} referências encontradas para "${mainTheme}"</br>
                         <small>${languageStats}</small><br>
                         <em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>
                     `;
                 } else {
-                    log('⚠️ Nenhuma referência encontrada para o tema.', 'warning');
-                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos baseados em "${mainTheme}".`;
+                    log('Não foi possível encontrar referências para o tema.', 'warning');
+                    elements.searchInfoDiv.innerHTML = `<strong>Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos baseados em "${mainTheme}".`;
                 }
                 return allPapers;
             } catch (error) {
                 console.error('Erro ao buscar referências:', error);
-                log('⚠️ Erro na busca de referências.', 'error');
+                log('Ocorreu um erro ao buscar referências.', 'error');
                 return [];
             }
         }
+
         async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
             currentParagraphId = paragraphId;
             elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
             elements.addReferencesBtn.disabled = true;
             elements.referenceModal.style.display = 'flex';
-            const references = await fetchParagraphReferences(paragraphText, articleTitle);
-            currentModalReferences = references;
-            if (references.length === 0) {
-                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
-            } else {
-                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
-                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
-                elements.referenceList.innerHTML = references.map((ref, index) => {
-                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
-                    const languageFlag = {
-                        'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹',
-                        'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'
-                    }[ref.language] || '🌍';
-                    const translationStatus = ref.language === 'PORTUGUÊS' ? '<span style="color:#28a745;">🇧🇷 Original</span>' : 
-                        '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
-                    let displayTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
-                    let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
-                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
-                                <input type="checkbox" id="ref-${index}" value="${index}">
-                                <label for="ref-${index}">
-                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${languageFlag}
-                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
-                                    <br><em>${displayTitle}</em> ${translationStatus}
-                                    ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
-                                    <br><small style="color:#666;">${displayAbstract ? displayAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
-                                </label>
-                            </li>`;
-                }).join('');
-                elements.addReferencesBtn.disabled = false;
+            try {
+                const references = await fetchParagraphReferences(paragraphText, articleTitle);
+                currentModalReferences = references;
+                if (references.length === 0) {
+                    elements.referenceList.innerHTML = `<div class="no-results"><strong>NoNão foi encontrado nenhuma referência</strong></div>`;
+                } else {
+                    elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+                    elements.duplicateWarningDiv.innerHTML = `Alguma referência já foi usada.`;
+                    var references = [];
+                    elements.referenceList.innerHTML = references.map((ref, index) => {
+                        const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                        const languageFlag = {
+                            'PORTUGUÊS': '🇧🇷', 'ESPANHOL': '🇪🇸', 'INGLÊS': '🇺🇸', 'FRANCÊS': '🇫🇷', 'ITALIANO': '🇮🇹',
+                            'ALEMÃO': '🇩🇪', 'RUSSO': '🇷🇺', 'CHINÊS SIMPLIFICADO': '🇨🇳', 'JAPONÊS': '🇯🇵', 'ÁRABE': '🇸🇦'
+                        }[ref.language] || '🌍';
+                        const translationStatus = ref.language === 'PORTUGUÊS' ? '<span style="color:#28a745;">🇧🇷 Original</span>' : 
+                            '<span style="color:#007bff;">🌍→ Traduzido</span>';
+                        let displayTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
+                        let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
+                        return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                            <input type="checkbox" id="ref-${index}" value="${index}">
+                            <label for="ref-${index}">
+                                <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${languageFlag}
+                                ${isUsed?'<span style="color:#6c757d;"> [Já usado]</span>':''}
+                                <br><em>${displayTitle}</em> ${translationStatus}
+                                ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
+                                <br><small style="color:#666;">${displayAbstract ? displayAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                            </label>
+                        </li>`;
+                    }).join('');
+                    elements.addReferencesBtn.disabled = false;
+                } catch (error) {
+                    console.error('Erro ao carregar referências:', error);
+                    elements.referenceList.innerHTML = `<p>❌ Erro ao buscar referências. Tente novamente.</p>`;
+                }
             }
         }
+
         function addSelectedReferences() {
             const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
             if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
@@ -968,17 +1005,18 @@
             const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
             const citations = selectedRefs.map(ref => {
                 const lastName = ref.authors[0].split(' ').pop().toUpperCase();
-                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
-            });
-            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
-            const [sectionKey, indexStr] = currentParagraphId.split('-');
-            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`);
+            }).join('; ');
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.\s*$/g, '').trim();
+            paragraphElement.textContent = `${cleanText} (${citations}).`;
+            const [sectionKey, index] = currentParagraphId.split('-');
+            articleContent[sectionKey][parseInt(index)] = paragraphElement.textContent;
             selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
             displayABNTDocument();
             elements.referenceModal.style.display = 'none';
             log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
         }
+
         function formatarReferenciasABNT() {
             const sortedReferences = [...finalReferences].sort((a, b) => 
                 a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
@@ -990,10 +1028,11 @@
                     return `${lastName}, ${names.join(' ')}`;
                 });
                 const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
-                const titleFormatted = `<strong>${ref.originalTitle || ref.title}</strong>`;
-                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
+                const title = `<strong>${ref.originalTitle || ref.title}</strong>`;
+                return `${authorStr}. ${title}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
             }).join('<br><br>');
         }
+
         async function generateResumoAndAbstract() {
             try {
                 log('Gerando resumo e abstract...', 'info');
@@ -1009,9 +1048,11 @@
                 userInputs.keywords = await callAI(keywordsPrompt);
                 log('✅ Resumo e abstract gerados!', 'success');
             } catch (error) {
+                console.error('Erro ao gerar resumo/abstract:', error);
                 log('⚠️ Erro ao gerar resumo/abstract.', 'warning');
             }
         }
+
         function displayABNTDocument() {
             let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
             if (userInputs.resumo && userInputs.isFinalized) {
@@ -1028,174 +1069,183 @@
                 }
             });
             if (finalReferences.length > 0) {
-    content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
-}
-if (userInputs.email && userInputs.universidade && userInputs.curso && currentUser) {
-    content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado por: ${currentUser.username}.</div>`;
-} else if (userInputs.email && userInputs.universidade && currentUser) {
-    content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado por: ${currentUser.username}.</div>`;
-}
-elements.outputDiv.innerHTML = content;
+                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
+            }
+            if (userInputs.email && userInputs.universidade && userInputs.curso && currentUser) {
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao} em ${userInputs.curso} pela ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado por: ${currentUser.username}.</div>`;
+            } else if (userInputs.email && userInputs.universidade && currentUser) {
+                content += `<div class="email-autor"><sup>1</sup> ${userInputs.nivelFormacao}, ${userInputs.universidade}. E-mail: ${userInputs.email}. Artigo criado por: ${currentUser.username}.</div>`;
+            }
+           
+            
+          elements.outputDiv.innerHTML = content;
 elements.footerDiv.textContent = `${userInputs.universidade || 'Universidade'} | ${userInputs.titulo || 'Título do Artigo'} | ${new Date().toLocaleDateString('pt-BR')}`;
 updatePageCount();
 document.querySelectorAll('.abnt-content p[data-id]').forEach(p => {
     p.addEventListener('click', () => {
         const [section, index] = p.dataset.id.split('-');
-        openReferenceModal(p.dataset.id, index], articleContent[section][parseInt(index)], userInputs.titulo);
+        openReferenceModal(p.dataset.id, articleContent[section][parseInt(index)], userInputs.titulo);
     });
 });
 }
 
 async function generateParagraph(phase) {
-    if (!selectedParagraphStart) {
-        log('Selecione um início de parágrafo primeiro.', 'error');
+if (!selectedParagraphStart) {
+    log('Selecione um início de parágrafo primeiro.', 'error');
+    return;
+}
+const allContent = Object.values(articleContent).flat().join(' ');
+const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+let sectionDescription = '';
+let paragraphPrompt = '';
+switch (phase) {
+    case 'inicio': sectionDescription = 'para a INTRODUÇÃO do artigo acadêmico. Apresente ideias iniciais e contexto.'; break;
+    case 'meio': sectionDescription = 'para o DESENVOLVIMENTO do artigo. Aprofunde conceitos.'; break;
+    case 'fim': sectionDescription = 'para a CONCLUSÃO do artigo. Sintetize e finalize.'; break;
+}
+const prompt = `
+Para um artigo sobre "${userInputs.titulo}" com conteúdo atual: "${allContent.slice(-200)}...",
+gere um parágrafo único ${sectionDescription}
+O parágrafo deve:
+- Começar EXATAMENTE com: "${selectedParagraphStart}"
+- Ter entre 100-150 palavras.
+- Ser formal, acadêmico, com linguagem clara.
+- EVITAR repetir ideias: ${usedConcepts}.
+- NÃO incluir citações (serão adicionadas depois).
+Retorne APENAS o parágrafo, sem numeração ou aspas.
+`;
+try {
+    log(`Gerando parágrafo para ${phase}...`, 'info');
+    const paragraph = await callAI(prompt);
+    if (usedPhrases.has(paragraph)) {
+        log('⚠️ Parágrafo repetido detectado. Tente outro início.', 'warning');
         return;
     }
-    const allContent = Object.values(articleContent).flat().join(' ');
-    const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
-    let sectionDescription = '';
-    let paragraphPrompt = '';
-    switch (phase) {
-        case 'inicio': sectionDescription = 'para a INTRODUÇÃO do artigo acadêmico. Apresente ideias iniciais e contexto.'; break;
-        case 'meio': sectionDescription = 'para o DESENVOLVIMENTO do artigo. Aprofunde conceitos.'; break;
-        case 'fim': sectionDescription = 'para a CONCLUSÃO do artigo. Sintetize e finalize.'; break;
-    }
-    const prompt = `
-    Para um artigo sobre "${userInputs.titulo}" com conteúdo atual: "${allContent.slice(-200)}...",
-    gere um parágrafo único ${sectionDescription}
-    O parágrafo deve:
-    - Começar EXATAMENTE com: "${selectedParagraphStart}"
-    - Ter entre 100-150 palavras.
-    - Ser formal, acadêmico, com linguagem clara.
-    - EVITAR repetir ideias: ${usedConcepts}.
-    - NÃO incluir citações (serão adicionadas depois).
-    Retorne APENAS o parágrafo, sem numeração ou aspas.
-    `;
-    try {
-        log(`Gerando parágrafo para ${phase}...`, 'info');
-        const paragraph = await callAI(prompt);
-        if (usedPhrases.has(paragraph)) {
-            log('⚠️ Parágrafo repetido detectado. Tente outro início.', 'warning');
-            return;
-        }
-        addPhrasesToMemory(paragraph);
-        articleContent[currentSection].push(paragraph);
+    addPhrasesToMemory(paragraph);
+    articleContent[currentSection].push(paragraph);
+    displayABNTDocument();
+    elements.paragraphStartModal.style.display = 'none';
+    selectedParagraphStart = '';
+    elements.generateParagraphBtn.disabled = true;
+    log(`✅ Parágrafo gerado para ${phase}!`, 'success');
+    if (currentSection === 'conclusao') {
+        await generateResumoAndAbstract();
+        userInputs.isFinalized = true;
         displayABNTDocument();
-        elements.paragraphStartModal.style.display = 'none';
-        selectedParagraphStart = '';
-        elements.generateParagraphBtn.disabled = true;
-        log(`✅ Parágrafo gerado para ${phase}!`, 'success');
-        if (currentSection === 'conclusao') {
-            await generateResumoAndAbstract();
-            userInputs.isFinalized = true;
-            displayABNTDocument();
-        }
-    } catch (error) {
-        console.error('Erro ao gerar parágrafo:', error);
-        log('❌ Erro ao gerar parágrafo.', 'error');
     }
+} catch (error) {
+    console.error('Erro ao gerar parágrafo:', error);
+    log('❌ Erro ao gerar parágrafo.', 'error');
+}
 }
 
 function saveAsPDF() {
-    if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
-        log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
-        return;
-    }
-    log('Preparando PDF...', 'info');
-    const title = userInputs.titulo.replace(/[<>:"/\\|?*]/g, '').substring(0, 50) || 'artigo';
-    try {
-        const content = elements.outputDiv.innerHTML;
-        const opt = {
-            margin: [3, 2, 2, 3], // top, right, bottom, left (cm)
-            filename: `${title}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().from(elements.outputDiv).set(opt).save();
-        log('✅ PDF salvo com sucesso!', 'success');
-    } catch (error) {
-        console.error('Erro ao salvar PDF:', error);
-        log('❌ Erro ao salvar PDF.', 'error');
-    }
+if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
+    log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
+    return;
+}
+log('Preparando PDF...', 'info');
+const title = userInputs.titulo.replace(/[<>:"/\\|?*]/g, '').substring(0, 50) || 'artigo';
+try {
+    const content = elements.outputDiv.innerHTML;
+    const opt = {
+        margin: [3, 2, 2, 3], // top, right, bottom, left (cm)
+        filename: `${title}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(elements.outputDiv).set(opt).save();
+    log('✅ PDF salvo com sucesso!', 'success');
+} catch (error) {
+    console.error('Erro ao salvar PDF:', error);
+    log('❌ Erro ao salvar PDF.', 'error');
+}
 }
 
 elements.startBtn.addEventListener('click', async () => {
-    if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
-        log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
-        return;
-    }
-    const { universidade, autor, email, curso } = formatABNTFields();
-    const titulo = document.getElementById('titulo').value.trim();
-    const nivelFormacao = document.getElementById('nivel-formacao').value;
-    if (!universidade || !titulo || !autor || !email || !curso) {
-        log('Preencha todos os campos!', 'error');
-        return;
-    }
-    userInputs = { universidade, titulo, autor, email, curso, nivelFormacao, resumo: '', palavrasChave: '', abstract: '', keywords: '', isFinalized: false };
-    log('Otimizando tema...', 'info');
-    const topicData = await refineAndSuggestTopics(titulo);
-    populateAndShowTopicModal(topicData, titulo);
+if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
+    log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
+    return;
+}
+const { universidade, autor, email, curso } = formatABNTFields();
+const titulo = document.getElementById('titulo').value.trim();
+const nivelFormacao = document.getElementById('nivel-formacao').value;
+if (!universidade || !titulo || !autor || !email || !curso) {
+    log('Preencha todos os campos!', 'error');
+    return;
+}
+userInputs = { universidade, titulo, autor, email, curso, nivelFormacao, resumo: '', palavrasChave: '', abstract: '', keywords: '', isFinalized: false };
+log('Otimizando tema...', 'info');
+const topicData = await refineAndSuggestTopics(titulo);
+populateAndShowTopicModal(topicData, titulo);
 });
 
 elements.confirmTopicBtn.addEventListener('click', () => {
-    const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
-    userInputs.titulo = selectedTopic;
-    document.getElementById('titulo').value = selectedTopic;
-    elements.topicSuggestionModal.style.display = 'none';
-    elements.initialForm.style.display = 'none';
-    elements.interactiveControls.style.display = 'block';
-    sessionActive = true;
-    currentSection = 'introducao';
-    elements.currentSectionNameSpan.textContent = 'INTRODUÇÃO';
-    displayABNTDocument();
-    log('✅ Tema confirmado! Comece a gerar parágrafos.', 'success');
+const selectedTopic = document.querySelector('input[name="topic-choice"]:checked').value;
+userInputs.titulo = selectedTopic;
+document.getElementById('titulo').value = selectedTopic;
+elements.topicSuggestionModal.style.display = 'none';
+elements.initialForm.style.display = 'none';
+elements.interactiveControls.style.display = 'block';
+sessionActive = true;
+currentSection = 'introducao';
+elements.currentSectionNameSpan.textContent = 'INTRODUÇÃO';
+displayABNTDocument();
+log('✅ Tema confirmado! Comece a gerar parágrafos.', 'success');
 });
 
 elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
 elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
 elements.fimBtn.addEventListener('click', () => {
-    if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
-        log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
-        return;
-    }
-    if (!sessionActive) {
-        alert('Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.');
-        return;
-    }
-    const currentIndex = sectionOrder.indexOf(currentSection);
-    if (currentIndex < sectionOrder.length - 1) {
-        currentSection = sectionOrder[currentIndex + 1];
-        elements.currentSectionNameSpan.textContent = currentSection.toUpperCase();
-        log(`✅ Seção ${currentSection} iniciada!`, 'success');
-        triggerParagraphOptions('inicio');
-    } else {
-        userInputs.isFinalized = true;
-        generateResumoAndAbstract().then(() => {
-            displayABNTDocument();
-            log('✅ Artigo finalizado! Salve como PDF.', 'success');
-        });
-    }
+if (!currentUser || !Object.values(aiLoginStatus).some(status => status)) {
+    log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
+    return;
+}
+if (!sessionActive) {
+    alert('Você precisa iniciar uma nova seção clicando em INÍCIO primeiro.');
+    return;
+}
+const currentIndex = sectionOrder.indexOf(currentSection);
+if (currentIndex < sectionOrder.length - 1) {
+    currentSection = sectionOrder[currentIndex + 1];
+    elements.currentSectionNameSpan.textContent = currentSection.toUpperCase();
+    log(`✅ Seção ${currentSection} iniciada!`, 'success');
+    triggerParagraphOptions('inicio');
+} else {
+    userInputs.isFinalized = true;
+    generateResumoAndAbstract().then(() => {
+        displayABNTDocument();
+        log('✅ Artigo finalizado! Salve como PDF.', 'success');
+    });
+}
 });
 
 elements.generateParagraphBtn.addEventListener('click', () => generateParagraph(currentGenerationPhase));
 elements.closeParagraphModalBtn.addEventListener('click', () => {
-    elements.paragraphStartModal.style.display = 'none';
-    selectedParagraphStart = '';
-    elements.generateParagraphBtn.disabled = true;
+elements.paragraphStartModal.style.display = 'none';
+selectedParagraphStart = '';
+elements.generateParagraphBtn.disabled = true;
 });
 
 elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
 elements.closeModalBtn.addEventListener('click', () => {
-    elements.referenceModal.style.display = 'none';
-    currentParagraphId = null;
-    currentModalReferences = [];
+elements.referenceModal.style.display = 'none';
+currentParagraphId = null;
+currentModalReferences = [];
 });
 
 elements.savePdfBtn.addEventListener('click', saveAsPDF);
 elements.logoutBtn.addEventListener('click', forceLogoutForNewUser);
 
+// Adicionar event listeners para botões de login
+elements.loginPuterBtn.addEventListener('click', doFreshLogin);
+elements.loginPoeBtn.addEventListener('click', loginPoe);
+elements.loginYouBtn.addEventListener('click', loginYou);
+elements.loginPerplexityBtn.addEventListener('click', loginPerplexity);
+elements.loginCharacterBtn.addEventListener('click', loginCharacter);
+
 displayABNTDocument();
-    </script>
+</script>
 </body>
 </html>
