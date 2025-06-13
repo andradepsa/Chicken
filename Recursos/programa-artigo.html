@@ -821,6 +821,433 @@
             elements.topicSuggestionModal.style.display = 'flex';
         }
 
+        // ==================================================================
+        // SISTEMA DE REFERÊNCIAS REAIS - INTEGRADO COM ANÁLISE DE TEMA
+        // ==================================================================
+        function extractRelevantTerms(text, title = '') {
+            const stopwords = ['a', 'o', 'as', 'os', 'de', 'da', 'do', 'e', 'em', 'para', 'com', 'um', 'uma', 'que', 'se', 'por', 'mais', 'como', 'são', 'ser', 'artigo', 'trabalho', 'sobre', 'uma', 'este', 'neste'];
+            const combinedText = `${title} ${text}`.toLowerCase();
+            const cleanText = combinedText.replace(/[^\w\sáéíóúâêîôûàèìòùãõç]/g, ' ');
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3 && !stopwords.includes(word)).reduce((acc, word) => { acc[word] = (acc[word] || 0) + 1; return acc; }, {});
+            return Object.entries(words).sort(([,a], [,b]) => b - a).slice(0, 5).map(([word]) => word);
+        }
+        
+        // Busca automática de referência para geração de parágrafos
+        async function fetchSingleRealReference(startPhrase) {
+            log('Buscando referência real...', 'info');
+            try {
+                const relevantTerms = extractRelevantTerms(startPhrase, userInputs.titulo);
+                const query = relevantTerms.join(' ');
+                
+                if (!query) {
+                    throw new Error("Não foi possível extrair termos de busca da frase.");
+                }
+
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=5&fields=title,authors,year,url`;
+                const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+
+                if (!response.ok) throw new Error(`API do Semantic Scholar retornou status ${response.status}`);
+                
+                const data = await response.json();
+                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
+
+                if (papers.length === 0) {
+                    throw new Error("Nenhuma referência encontrada para os termos.");
+                }
+
+                const paper = papers[0];
+                const reference = {
+                    id: paper.paperId,
+                    title: paper.title,
+                    authors: paper.authors.map(a => a.name),
+                    year: paper.year,
+                    url: paper.url
+                };
+
+                if (!finalReferences.some(ref => ref.id === reference.id)) {
+                    finalReferences.push(reference);
+                }
+                
+                return reference;
+
+            } catch (error) {
+                console.error('Erro ao buscar referência real:', error);
+                log(`⚠️ Falha na busca por referência: ${error.message}`, 'warning');
+                return null;
+            }
+        }
+
+        // Busca manual de referências com análise de tema e assuntos
+        async function fetchParagraphReferences(paragraphText, articleTitle) {
+            log('Buscando referências acadêmicas...', 'info');
+            try {
+                // Extrai a primeira frase até o primeiro ponto final
+                const firstSentence = paragraphText.split('.')[0].trim();
+                
+                // Se a primeira frase for muito curta, usa as duas primeiras frases
+                let originalText = firstSentence;
+                if (firstSentence.length < 30) {
+                    const sentences = paragraphText.split('.');
+                    originalText = sentences.slice(0, 2).join('.').trim();
+                }
+                
+                // Remove citações existentes
+                originalText = originalText.replace(/\([^)]*\)/g, '').trim();
+                
+                // Extrai tema principal e assuntos
+                elements.searchInfoDiv.innerHTML = `<strong>🔍 Analisando texto:</strong> <em>"${originalText}"</em><br><small>Identificando tema principal e assuntos...</small>`;
+                elements.searchInfoDiv.style.display = 'block';
+                
+                const { mainTheme, topics } = await extractThemeAndTopics(originalText, articleTitle);
+                
+                // Exibe tema e assuntos no modal
+                let topicsList = topics.filter(t => t).map(t => `<li>${t}</li>`).join('');
+                elements.searchInfoDiv.innerHTML = `
+                    <strong>🔍 Análise do Texto:</strong><br>
+                    <em>"${originalText}"</em><br>
+                    <strong>Tema Principal:</strong> ${mainTheme}<br>
+                    <strong>Assuntos Tratados:</strong><br><ul style="margin:5px 0;padding-left:20px;">${topicsList || '<li>Nenhum assunto específico identificado</li>'}</ul>
+                    <small>Gerando termos de busca otimizados...</small>
+                `;
+                
+                // Gera estratégias de busca com base no tema e assuntos
+                const strategiesPrompt = `
+                Com base no TEMA PRINCIPAL: "${mainTheme}" e nos ASSUNTOS: "${topics.filter(t => t).join(', ')}",
+                gere termos de busca acadêmicos PRIORIZANDO línguas latinas e principais:
+                
+                PRIORIDADE ALTA (línguas latinas + principais):
+                PORTUGUÊS (4 termos):
+                ESPANHOL (4 termos):
+                INGLÊS (4 termos):
+                FRANCÊS (3 termos):
+                ITALIANO (3 termos):
+                
+                PRIORIDADE MÉDIA (se necessário):
+                ALEMÃO (2 termos):
+                RUSSO (2 termos):
+                
+                PRIORIDADE BAIXA (só se não encontrar 10 referências):
+                CHINÊS SIMPLIFICADO (2 termos):
+                JAPONÊS (1 termo):
+                ÁRABE (1 termo):
+                
+                REGRAS:
+                1. Use termos técnicos e acadêmicos baseados no tema e assuntos.
+                2. Varie entre termos específicos e gerais.
+                3. Cada termo deve ter 2-6 palavras.
+                4. Foque no tema principal e nos assuntos fornecidos.
+                
+                FORMATO DE RESPOSTA:
+                PORTUGUÊS:
+                termo1
+                termo2
+                ...
+                ESPANHOL:
+                term1
+                term2
+                ...
+                (continue para cada idioma)
+                `;
+                
+                const response = await callPuterAI(strategiesPrompt);
+                
+                // Processa a resposta para extrair termos por idioma
+                const searchTerms = [];
+                const lines = response.split('\n');
+                let currentSection = '';
+                
+                for (const line of lines) {
+                    const cleanLine = line.trim();
+                    if (cleanLine.match(/^(PORTUGUÊS|ESPANHOL|INGLÊS|FRANCÊS|ITALIANO|ALEMÃO|RUSSO|CHINÊS SIMPLIFICADO|JAPONÊS|ÁRABE):/)) {
+                        currentSection = cleanLine.replace(':', '');
+                    } else if (cleanLine && !cleanLine.includes(':') && currentSection) {
+                        searchTerms.push({
+                            term: cleanLine,
+                            language: currentSection
+                        });
+                    }
+                }
+                
+                // Organiza termos por prioridade
+                const priorityOrder = {
+                    'PORTUGUÊS': 1,
+                    'ESPANHOL': 2, 
+                    'INGLÊS': 3,
+                    'FRANCÊS': 4,
+                    'ITALIANO': 5,
+                    'ALEMÃO': 6,
+                    'RUSSO': 7,
+                    'CHINÊS SIMPLIFICADO': 8,
+                    'JAPONÊS': 9,
+                    'ÁRABE': 10
+                };
+                
+                searchTerms.sort((a, b) => (priorityOrder[a.language] || 99) - (priorityOrder[b.language] || 99));
+                
+                // Fallback se não houver termos estruturados
+                if (searchTerms.length === 0) {
+                    const fallbackPrompt = `Extraia 15 termos de busca acadêmicos baseados no tema "${mainTheme}" e assuntos "${topics.join(', ')}". Um termo por linha, PRIORIZANDO português, espanhol, inglês, francês e italiano:`;
+                    const fallbackResponse = await callPuterAI(fallbackPrompt);
+                    const terms = fallbackResponse.split('\n').filter(term => term.trim().length > 0);
+                    const languages = ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO', 'ALEMÃO'];
+                    terms.forEach((term, index) => {
+                        searchTerms.push({
+                            term: term.trim(),
+                            language: languages[index % languages.length]
+                        });
+                    });
+                }
+                
+                let allPapers = [];
+                let foundPapers = new Set();
+                
+                elements.searchInfoDiv.innerHTML = `<strong>🚀 Busca Otimizada: Priorizando línguas latinas...</strong><br><small>Tema: ${mainTheme}</small>`;
+                
+                // Testa cada estratégia de busca
+                for (let i = 0; i < searchTerms.length && allPapers.length < 10; i++) {
+                    const { term, language } = searchTerms[i];
+                    
+                    if (allPapers.length >= 10) break;
+                    
+                    const isLatinLanguage = ['PORTUGUÊS', 'ESPANHOL', 'FRANCÊS', 'ITALIANO'].includes(language);
+                    const priorityText = isLatinLanguage ? '🏃‍♂️ RÁPIDA' : '🌍 GLOBAL';
+                    
+                    try {
+                        const languageFlag = {
+                            'PORTUGUÊS': '🇧🇷',
+                            'ESPANHOL': '🇪🇸',
+                            'INGLÊS': '🇺🇸',
+                            'FRANCÊS': '🇫🇷',
+                            'ITALIANO': '🇮🇹',
+                            'ALEMÃO': '🇩🇪',
+                            'RUSSO': '🇷🇺',
+                            'CHINÊS SIMPLIFICADO': '🇨🇳',
+                            'JAPONÊS': '🇯🇵',
+                            'ÁRABE': '🇸🇦'
+                        }[language] || '🌍';
+                        
+                        elements.searchInfoDiv.innerHTML = `<strong>${languageFlag} ${language} ${priorityText} - ${i+1}/${searchTerms.length}:</strong> <em>"${term}"</em><br><small>✅ Encontradas: ${allPapers.length}/10${language !== 'PORTUGUÊS' ? ' (traduzindo...)' : ''}</small>`;
+                        
+                        const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(term)}&limit=4&fields=title,authors,year,abstract,url`;
+                        const response = await fetch(url, { signal: AbortSignal.timeout(6000) });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const papers = (data.data || []).filter(p => 
+                                p.title && 
+                                p.authors && 
+                                p.authors.length > 0 && 
+                                p.year &&
+                                p.year >= 2000 &&
+                                !foundPapers.has(p.paperId)
+                            );
+                            
+                            for (const paper of papers) {
+                                if (allPapers.length >= 10) break;
+                                
+                                foundPapers.add(paper.paperId);
+                                
+                                let processedPaper = {
+                                    id: paper.paperId,
+                                    title: paper.title,
+                                    authors: paper.authors.map(a => a.name),
+                                    year: paper.year,
+                                    abstract: paper.abstract || '',
+                                    url: paper.url,
+                                    searchTerm: term,
+                                    language: language,
+                                    originalTitle: paper.title
+                                };
+                                
+                                if (language !== 'PORTUGUÊS') {
+                                    try {
+                                        const translationTimeout = isLatinLanguage ? 3000 : 4000;
+                                        
+                                        const titleTranslationPrompt = `Traduza APENAS o seguinte título acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações ou aspas:
+
+"${paper.title}"`;
+                                        
+                                        const translatedTitle = await Promise.race([
+                                            callPuterAI(titleTranslationPrompt),
+                                            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                        ]);
+                                        
+                                        processedPaper.translatedTitle = translatedTitle.replace(/['"]/g, '').trim();
+                                        
+                                        if (allPapers.length < 5 && paper.abstract && paper.abstract.length > 20) {
+                                            const abstractTranslationPrompt = `Traduza APENAS o seguinte resumo acadêmico para o português brasileiro. Retorne APENAS a tradução, sem explicações:
+
+"${paper.abstract}"`;
+                                            
+                                            const translatedAbstract = await Promise.race([
+                                                callPuterAI(abstractTranslationPrompt),
+                                                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), translationTimeout))
+                                            ]);
+                                            
+                                            processedPaper.translatedAbstract = translatedAbstract.replace(/['"]/g, '').trim();
+                                        }
+                                        
+                                    } catch (translationError) {
+                                        console.warn('Erro na tradução, mantendo original:', translationError);
+                                    }
+                                }
+                                
+                                allPapers.push(processedPaper);
+                            }
+                        }
+                        
+                        const pauseTime = isLatinLanguage ? 400 : 600;
+                        await new Promise(resolve => setTimeout(resolve, pauseTime));
+                        
+                    } catch (error) {
+                        console.warn(`Erro na busca ${i+1} (${language}):`, error);
+                        continue;
+                    }
+                    
+                    if (allPapers.length >= 10 && ['PORTUGUÊS', 'ESPANHOL', 'INGLÊS', 'FRANCÊS', 'ITALIANO'].includes(language)) {
+                        elements.searchInfoDiv.innerHTML = `<strong>⚡ Busca Rápida Concluída!</strong><br>✅ ${allPapers.length} referências encontradas rapidamente`;
+                        break;
+                    }
+                }
+                
+                if (allPapers.length > 0) {
+                    log(`✅ ${allPapers.length} referências encontradas para "${mainTheme}"!`, 'success');
+                    
+                    const languageCounts = {};
+                    const translationCounts = { portuguese: 0, translated: 0 };
+                    
+                    allPapers.forEach(paper => {
+                        languageCounts[paper.language] = (languageCounts[paper.language] || 0) + 1;
+                        if (paper.language === 'PORTUGUÊS') {
+                            translationCounts.portuguese++;
+                        } else {
+                            translationCounts.translated++;
+                        }
+                    });
+                    
+                    const languageStats = Object.entries(languageCounts)
+                        .map(([lang, count]) => `${lang}: ${count}`)
+                        .join(' | ');
+                    
+                    elements.searchInfoDiv.innerHTML = `
+                        <strong>🚀 Busca Otimizada Concluída!</strong><br>
+                        ✅ ${allPapers.length} referências encontradas para "${mainTheme}"<br>
+                        <small>${languageStats}</small><br>
+                        <em>🇧🇷 ${translationCounts.portuguese} em português | 🌍→🇧🇷 ${translationCounts.translated} traduzidas para português</em>
+                    `;
+                } else {
+                    log('⚠️ Nenhuma referência encontrada para o tema.', 'warning');
+                    elements.searchInfoDiv.innerHTML = `<strong>⚠️ Nenhuma referência encontrada</strong><br>Testamos ${searchTerms.length} termos baseados em "${mainTheme}".`;
+                }
+                
+                return allPapers;
+                
+            } catch (error) {
+                console.error('Erro ao buscar referências:', error);
+                log('⚠️ Erro na busca de referências.', 'error');
+                return [];
+            }
+        }
+        
+        async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
+            currentParagraphId = paragraphId;
+            elements.referenceList.innerHTML = '<p>🔍 Buscando referências...</p>';
+            elements.addReferencesBtn.disabled = true;
+            elements.referenceModal.style.display = 'flex';
+            const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            currentModalReferences = references;
+            if (references.length === 0) {
+                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada</strong></div>`;
+            } else {
+                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
+                elements.referenceList.innerHTML = references.map((ref, index) => {
+                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    const languageFlag = {
+                        'CHINÊS SIMPLIFICADO': '🇨🇳',
+                        'INGLÊS': '🇺🇸',
+                        'PORTUGUÊS': '🇧🇷',
+                        'ESPANHOL': '🇪🇸',
+                        'HINDI': '🇮🇳',
+                        'ÁRABE': '🇸🇦',
+                        'BENGALI': '🇧🇩',
+                        'RUSSO': '🇷🇺',
+                        'JAPONÊS': '🇯🇵',
+                        'FRANCÊS': '🇫🇷',
+                        'ALEMÃO': '🇩🇪',
+                        'COREANO': '🇰🇷',
+                        'ITALIANO': '🇮🇹',
+                        'TURCO': '🇹🇷',
+                        'VIETNAMITA': '🇻🇳',
+                        'PERSA': '🇮🇷'
+                    }[ref.language] || '🌍';
+                    
+                    const translationStatus = ref.language === 'PORTUGUÊS' ? 
+                        '<span style="color:#28a745;">🇧🇷 Original</span>' : 
+                        '<span style="color:#007bff;">🌍→🇧🇷 Traduzido</span>';
+                    
+                    let displayTitle = ref.language === 'PORTUGUÊS' ? ref.title : (ref.translatedTitle || ref.title);
+                    let displayAbstract = ref.language === 'PORTUGUÊS' ? ref.abstract : (ref.translatedAbstract || ref.abstract);
+                    
+                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                                <input type="checkbox" id="ref-${index}" value="${index}">
+                                <label for="ref-${index}">
+                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong> ${languageFlag}
+                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
+                                    <br><em>${displayTitle}</em> ${translationStatus}
+                                    ${ref.translatedTitle && ref.language !== 'PORTUGUÊS' ? `<br><small style="color:#888;">Original: ${ref.originalTitle}</small>` : ''}
+                                    <br><small style="color:#666;">${displayAbstract ? displayAbstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                </label>
+                            </li>`;
+                }).join('');
+                elements.addReferencesBtn.disabled = false;
+            }
+        }
+
+        function addSelectedReferences() {
+            const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
+            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
+            const originalText = articleContent[currentParagraphId.split('-')[0]][parseInt(currentParagraphId.split('-')[1])];
+            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            const citations = selectedRefs.map(ref => {
+                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
+                return ref.authors.length > 2 ? `${lastName} et al., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+            });
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+            paragraphElement.textContent = `${cleanText} (${citations.join('; ')}).`;
+            const [sectionKey, indexStr] = currentParagraphId.split('-');
+            articleContent[sectionKey][parseInt(indexStr)] = paragraphElement.textContent;
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+            displayABNTDocument();
+            elements.referenceModal.style.display = 'none';
+            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
+        }
+
+        // --- FUNÇÃO CORRIGIDA ---
+        function formatarReferenciasABNT() {
+            const sortedReferences = [...finalReferences].sort((a, b) => 
+                a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
+            );
+            
+            return sortedReferences.map(ref => {
+                const authorsFormatted = ref.authors.map(author => {
+                    const names = author.split(' ');
+                    const lastName = names.pop().toUpperCase();
+                    return `${lastName}, ${names.join(' ')}`;
+                });
+                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
+                
+                // --- LÓGICA CORRIGIDA ---
+                // Para a lista de referências final, usa-se sempre o título original.
+                // A propriedade 'originalTitle' guarda o título no idioma nativo do artigo,
+                // e a 'translatedTitle' (útil no modal de seleção) é corretamente excluída aqui.
+                const titleFormatted = `<strong>${ref.originalTitle}</strong>`;
+                
+                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank" title="Clique para verificar a fonte">${ref.url}</a>. Acesso em: ${new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}.`;
+            }).join('<br><br>');
+        }
+        
         // --- GERAÇÃO E EXIBIÇÃO DO CONTEÚDO ---
         async function generateResumoAndAbstract() {
             try {
@@ -1071,6 +1498,21 @@
 
         elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
         elements.savePdfBtn.addEventListener('click', () => { window.print(); });
+
+        // === EVENT LISTENERS DO SISTEMA DE REFERÊNCIAS ===
+        elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
+        elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
+        elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
+
+        // === LISTENER PRINCIPAL PARA CLIQUE NOS PARÁGRAFOS ===
+        elements.outputDiv.addEventListener('click', (e) => {
+            if (e.target.closest('p[data-id]')) {
+                const paragraph = e.target.closest('p[data-id]');
+                const paragraphId = paragraph.dataset.id;
+                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
+                openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+            }
+        });
 
         // === INICIALIZAÇÃO ===
         document.addEventListener('DOMContentLoaded', async () => {
