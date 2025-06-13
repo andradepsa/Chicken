@@ -305,6 +305,8 @@
         let currentParagraphId = null;
         let currentModalReferences = [];
 
+
+
                 // === SISTEMA DE LOGIN, STATUS E FEEDBACK ===
         function updateAllUI() {
             updateAiStatusUI();
@@ -455,6 +457,7 @@
             throw new Error('Todas as IAs falharam ou estão indisponíveis.');
         }
 
+        // --- MANIPULAÇÃO DO ARTIGO E FORMATAÇÃO ---
         function formatABNTFields() {
             const universidadeInput = document.getElementById('universidade');
             const autorInput = document.getElementById('autor');
@@ -513,32 +516,136 @@
             sessionActive = false;
             log('✅ Configuração concluída! Clique em INÍCIO.', 'success');
         }
-
-        function resetUserData() {
-            userInputs = {};
-            articleContent = { introducao: [], desenvolvimento: [], conclusao: [] };
-            finalReferences = [];
-            usedPhrases = new Set();
-            lastParagraphIndex = -1;
-            sessionActive = false;
-            currentSection = 'introducao';
-            document.getElementById('initial-form').style.display = 'block';
-            elements.interactiveControls.style.display = 'none';
-            document.getElementById('universidade').value = 'Universidade Federal';
-            document.getElementById('titulo').value = '';
-            document.getElementById('autor').value = '';
-            document.getElementById('email').value = 'seu.email@exemplo.com';
-            document.getElementById('curso').value = '';
-            displayABNTDocument();
+        
+        function addPhrasesToMemory(text) {
+            const cleanText = text.replace(/\([^)]*\)/g, '').replace(/[.,;:!?]/g, '').toLowerCase();
+            const words = cleanText.split(/\s+/).filter(word => word.length > 3);
+            for (let i = 0; i < words.length - 2; i++) {
+                usedPhrases.add(words.slice(i, i + 3).join(' '));
+            }
+        }
+        
+        // --- LÓGICA DE REFERÊNCIAS ---
+        async function extractThemeAndTopics(text, articleTitle) {
+            try {
+                const prompt = `Analise a frase: "${text}" no contexto do artigo "${articleTitle}". Identifique o tema principal e até 5 assuntos tratados. Retorne em JSON: { "mainTheme": "...", "topics": ["..."] }`;
+                const response = await callAI(prompt);
+                const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
+                const result = JSON.parse(jsonString);
+                return result;
+            } catch (error) {
+                console.error('Erro ao extrair tema/assuntos:', error);
+                return { mainTheme: articleTitle, topics: text.split(' ').slice(0, 5) };
+            }
         }
 
+        async function fetchParagraphReferences(paragraphText, articleTitle) {
+            log('Buscando referências acadêmicas...', 'info');
+            elements.searchInfoDiv.style.display = 'block';
+            elements.searchInfoDiv.innerHTML = '🔍 Analisando parágrafo para otimizar a busca...';
+            try {
+                const { mainTheme, topics } = await extractThemeAndTopics(paragraphText.split('.')[0], articleTitle);
+                elements.searchInfoDiv.innerHTML = `<strong>Tema:</strong> ${mainTheme}<br><strong>Tópicos:</strong> ${topics.join(', ')}<br>🚀 Buscando no Semantic Scholar...`;
+
+                const query = `${mainTheme} ${topics.join(' ')}`;
+                const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=10&fields=title,authors,year,abstract,url`;
+                const response = await fetch(url, { signal: AbortSignal.timeout(8000) });
+                if (!response.ok) throw new Error(`API do Semantic Scholar retornou ${response.status}`);
+                
+                const data = await response.json();
+                const papers = (data.data || []).filter(p => p.title && p.authors && p.authors.length > 0 && p.year);
+
+                if (papers.length === 0) throw new Error("Nenhuma referência encontrada.");
+                
+                log(`✅ ${papers.length} referências encontradas!`, 'success');
+                return papers.map(p => ({
+                    id: p.paperId,
+                    title: p.title,
+                    originalTitle: p.title, // Adicionado para consistência
+                    authors: p.authors.map(a => a.name),
+                    year: p.year,
+                    abstract: p.abstract || '',
+                    url: p.url,
+                    language: 'unknown' // Simplificado, já que a tradução automática não está nesta versão
+                }));
+            } catch (error) {
+                log(`⚠️ Falha na busca por referências: ${error.message}`, 'warning');
+                elements.searchInfoDiv.innerHTML = `❌ Erro na busca: ${error.message}`;
+                return [];
+            }
+        }
+
+        async function openReferenceModal(paragraphId, paragraphText, articleTitle) {
+            currentParagraphId = paragraphId;
+            elements.referenceList.innerHTML = '<div class="loading" style="margin: 20px auto; display: block;"></div><p style="text-align:center;">Buscando referências...</p>';
+            elements.addReferencesBtn.disabled = true;
+            elements.referenceModal.style.display = 'flex';
+            const references = await fetchParagraphReferences(paragraphText, articleTitle);
+            currentModalReferences = references;
+            if (references.length === 0) {
+                elements.referenceList.innerHTML = `<div class="no-results"><strong>❌ Nenhuma referência encontrada.</strong> Tente um parágrafo com mais detalhes.</div>`;
+            } else {
+                elements.duplicateWarningDiv.style.display = references.some(ref => finalReferences.some(eRef => eRef.id === ref.id)) ? 'block' : 'none';
+                elements.duplicateWarningDiv.innerHTML = `⚠️ Algumas referências já foram usadas.`;
+                elements.referenceList.innerHTML = references.map((ref, index) => {
+                    const isUsed = finalReferences.some(eRef => eRef.id === ref.id);
+                    return `<li style="${isUsed ? 'background-color:#f8f9fa;':''}">
+                                <input type="checkbox" id="ref-${index}" value="${index}">
+                                <label for="ref-${index}">
+                                    <strong>${ref.authors[0]}${ref.authors.length>1?' et al.':''} (${ref.year})</strong>
+                                    ${isUsed?'<span style="color:#6c757d;"> [JÁ USADA]</span>':''}
+                                    <br><em>${ref.title}</em>
+                                    <br><small style="color:#666;">${ref.abstract ? ref.abstract.substring(0,120)+'...' : 'Sem resumo'}</small>
+                                </label>
+                            </li>`;
+                }).join('');
+                elements.addReferencesBtn.disabled = false;
+            }
+        }
+        
+        function addSelectedReferences() {
+            const selectedIndices = Array.from(document.querySelectorAll('#reference-list input:checked')).map(input => parseInt(input.value));
+            if (selectedIndices.length === 0) { alert('Selecione ao menos uma referência.'); return; }
+            const paragraphElement = document.querySelector(`p[data-id="${currentParagraphId}"]`);
+            const [sectionKey, indexStr] = currentParagraphId.split('-');
+            const originalText = articleContent[sectionKey][parseInt(indexStr)];
+            const selectedRefs = selectedIndices.map(index => currentModalReferences[index]);
+            const citations = selectedRefs.map(ref => {
+                const lastName = ref.authors[0].split(' ').pop().toUpperCase();
+                return ref.authors.length > 2 ? `${lastName} ET AL., ${ref.year}` : `${ref.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${ref.year}`;
+            });
+            const cleanText = originalText.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
+            const newText = `${cleanText} (${citations.join('; ')}).`;
+            articleContent[sectionKey][parseInt(indexStr)] = newText;
+            selectedRefs.forEach(ref => { if (!finalReferences.some(eRef => eRef.id === ref.id)) { finalReferences.push(ref); } });
+            displayABNTDocument();
+            elements.referenceModal.style.display = 'none';
+            log(`✅ ${selectedIndices.length} referência(s) adicionada(s)!`, 'success');
+        }
+
+        function formatarReferenciasABNT() {
+            const sortedReferences = [...finalReferences].sort((a, b) => 
+                a.authors[0].split(' ').pop().toUpperCase().localeCompare(b.authors[0].split(' ').pop().toUpperCase())
+            );
+            return sortedReferences.map(ref => {
+                const authorsFormatted = ref.authors.map(author => {
+                    const names = author.split(' ');
+                    const lastName = names.pop().toUpperCase();
+                    return `${lastName}, ${names.join(' ')}`;
+                });
+                const authorStr = authorsFormatted.length > 3 ? `${authorsFormatted[0]} et al.` : authorsFormatted.join('; ');
+                const titleFormatted = `<strong>${ref.originalTitle}</strong>`;
+                return `${authorStr}. ${titleFormatted}. ${ref.year}. Disponível em: <a href="${ref.url}" target="_blank">${ref.url}</a>.`;
+            }).join('<br><br>');
+        }
+        
+        // --- LÓGICA PRINCIPAL DE EXIBIÇÃO E FLUXO ---
         function displayABNTDocument() {
             let creatorInfo = puterUser ? `Artigo criado por: ${puterUser.username}.` : 'Artigo criado com Multi-IA.';
             let content = `<div class="nome-universidade">${userInputs.universidade || ''}</div><div class="titulo-trabalho">${userInputs.titulo || ''}</div><div class="autor">${userInputs.autor || ''}<sup>1</sup></div>`;
             
             if (userInputs.resumo && userInputs.isFinalized) {
                 content += `<div class="resumo-titulo">Resumo</div><div class="resumo-texto">${userInputs.resumo}</div><div class="palavras-chave"><strong>Palavras-chave:</strong> ${userInputs.palavrasChave}.</div>`;
-                content += `<div class="abstract-titulo">Abstract</div><div class="resumo-texto">${userInputs.abstract}</div><div class="keywords"><strong>Keywords:</strong> ${userInputs.keywords}.</div>`;
             }
             
             sectionOrder.forEach(sectionKey => {
@@ -552,8 +659,7 @@
             });
 
             if (finalReferences.length > 0) {
-                // A função formatarReferenciasABNT precisa ser definida
-                // content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
+                content += `<div class="section-title">REFERÊNCIAS</div><div style="text-align: left; font-size: 10pt; line-height: 1.2;">${formatarReferenciasABNT()}</div>`;
             }
             
             if (userInputs.email && userInputs.universidade) {
@@ -567,7 +673,7 @@
 
         function updatePageCount() {
             const contentHeight = elements.outputDiv.scrollHeight;
-            const pageHeight = 800; // Altura aproximada de uma página A4 em pixels
+            const pageHeight = 842; // A4 height in pixels for 96 DPI
             const pages = Math.max(1, Math.ceil(contentHeight / pageHeight));
             elements.pageCountSpan.textContent = pages;
         }
@@ -585,7 +691,7 @@
 
         async function generateParagraphStartOptions(phase) {
             const allContent = Object.values(articleContent).flat().join(' ');
-            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+            const usedConcepts = Array.from(usedPhrases).slice(-20).join(', ');
             let sectionDescription = '';
             switch(phase) {
                 case 'inicio': sectionDescription = 'para a seção de INTRODUÇÃO.'; break;
@@ -604,11 +710,7 @@
         
         async function showParagraphStartModal(phase) {
             currentGenerationPhase = phase;
-            const phaseTitles = {
-                inicio: '🌟 Como Começar a Introdução?',
-                meio: '📝 Como Continuar o Desenvolvimento?',
-                fim: '🎯 Como Finalizar a Seção?'
-            };
+            const phaseTitles = { inicio: '🌟 Como Começar a Introdução?', meio: '📝 Como Continuar o Desenvolvimento?', fim: '🎯 Como Finalizar a Seção?' };
             log(`Gerando opções para ${phase}...`, 'info');
             elements.paragraphModalTitle.textContent = phaseTitles[phase] || 'Escolha como iniciar';
             elements.paragraphStartModal.style.display = 'flex';
@@ -628,7 +730,7 @@
                     });
                 });
             } catch (error) {
-                elements.paragraphStartsList.innerHTML = `<p style="color:red; text-align:center;">❌ Erro ao gerar opções. Verifique o console e tente novamente.</p>`;
+                elements.paragraphStartsList.innerHTML = `<p style="color:red; text-align:center;">❌ Erro ao gerar opções. ${error.message}</p>`;
             }
         }
         
@@ -657,10 +759,7 @@
         elements.logoutBtn.addEventListener('click', forceLogoutForNewUser);
         
         elements.startBtn.addEventListener('click', async () => {
-            if (!Object.values(aiStatus).some(s => s.loggedIn)) {
-                log('❌ Faça login em pelo menos uma IA primeiro!', 'error');
-                return;
-            }
+            if (!Object.values(aiStatus).some(s => s.loggedIn)) { log('❌ Faça login em uma IA primeiro!', 'error'); return; }
             const formattedFields = formatABNTFields();
             userInputs = {
                 universidade: formattedFields.universidade,
@@ -708,6 +807,7 @@
                 const prompt = `Escreva um parágrafo acadêmico para um artigo sobre "${userInputs.titulo}". O parágrafo DEVE começar com a frase: "${selectedParagraphStart}". Desenvolva a ideia com 80-120 palavras. NÃO repita ideias já presentes em: "${allContent.slice(-500)}". NÃO adicione citações.`;
                 const content = await callAI(prompt);
                 
+                addPhrasesToMemory(content);
                 articleContent[currentSection].push(content);
                 lastParagraphIndex = articleContent[currentSection].length - 1;
                 displayABNTDocument();
@@ -727,7 +827,6 @@
                         elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1).replace('conclusao', 'Conclusão');
                         log(`📝 Pronto para iniciar: ${elements.currentSectionNameSpan.textContent}`, 'info');
                     } else {
-                        // await generateResumoAndAbstract();
                         userInputs.isFinalized = true;
                         displayABNTDocument();
                         log(`🎓 Artigo concluído! Salve como PDF.`, 'success');
@@ -739,24 +838,39 @@
             } catch (error) {
                 log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error');
                 if(sessionActive){
+                    elements.inicioBtn.disabled = true;
                     elements.meioBtn.disabled = false;
                     elements.fimBtn.disabled = false;
                 } else {
                     elements.inicioBtn.disabled = false;
+                    elements.meioBtn.disabled = true;
+                    elements.fimBtn.disabled = true;
                 }
             } finally {
                 selectedParagraphStart = '';
                 elements.generateParagraphBtn.disabled = true;
                 elements.rewriteBtn.disabled = false;
-                allButtons.forEach(btn => { if(btn !== elements.rewriteBtn) btn.disabled = !sessionActive && btn !== elements.inicioBtn; });
+                if (!sessionActive) {
+                    elements.meioBtn.disabled = true;
+                    elements.fimBtn.disabled = true;
+                }
             }
         });
-
+        
+        elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
         elements.savePdfBtn.addEventListener('click', saveAsPDF);
-
         elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
         elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
         elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
+
+        elements.outputDiv.addEventListener('click', (e) => {
+            const paragraph = e.target.closest('p[data-id]');
+            if (paragraph) {
+                const paragraphId = paragraph.dataset.id;
+                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
+                openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+            }
+        });
 
         // === INICIALIZAÇÃO ===
         document.addEventListener('DOMContentLoaded', async () => {
