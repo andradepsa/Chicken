@@ -464,16 +464,16 @@
 
         const OFFICIAL_APIS = {
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
-            ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last',
+            // <<== CORREÇÃO: URL principal para dados de Câmbio e Bolsa
+            ECONOMIA_API_ALL: 'https://economia.awesomeapi.com.br/json/all'
         };
 
         const SERIES_CODES = {
             SELIC_META: 432,
             IPCA: 433,
             PIB: 4380,
-            USD_BRL: 1,
-            // <<== CORREÇÃO: Usando o ticker correto da AwesomeAPI para o Ibovespa
-            BOVESPA: 'IBOV-BRL' 
+            USD_BRL: 1, // Este código não será usado diretamente, mas mantido por consistência
+            BOVESPA: 'IBOVESPA' // Chave correta para o objeto retornado pela API /all
         };
 
         function detectLanguageAndTopics(text) {
@@ -556,70 +556,46 @@
             updateSourceStatus('source-ipea', 'success', '✅ Dados integrados em outras fontes');
         }
 
-        async function fetchExchangeData() {
-            updateSourceStatus('source-exchange', 'loading', 'Consultando câmbio...');
-            try {
-                const url = `${OFFICIAL_APIS.ECONOMIA_API}/USD-BRL`;
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Erro ${response.status}`);
-                const data = await response.json();
-                const rate = data[0] || data.USDBRL;
-
-                if (rate && rate.bid) {
-                    const value = parseFloat(rate.bid);
-                    const date = new Date(parseInt(rate.timestamp) * 1000).toLocaleDateString();
-                    updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${value.toFixed(2)}`);
-                    return { value, date, source: 'Economia AwesomeAPI', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` };
-                } else {
-                    throw new Error('Taxa não encontrada');
-                }
-            } catch (error) {
-                updateSourceStatus('source-exchange', 'error', `❌ ${error.message}`);
-                return null;
-            }
-        }
-
-        // <<== CORREÇÃO DEFINITIVA: Usando a mesma API do Câmbio para a Bovespa
-        async function fetchBovespaData() {
+        // <<== CORREÇÃO DEFINITIVA: Funções de Câmbio e Bolsa unificadas em uma única chamada de API
+        async function fetchEconomyApiData() {
+            const results = [];
+            updateSourceStatus('source-exchange', 'loading', 'Consultando Câmbio...');
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
+            
             try {
-                const ticker = SERIES_CODES.BOVESPA; // 'IBOV-BRL'
-                const url = `${OFFICIAL_APIS.ECONOMIA_API}/${ticker}`;
+                const url = OFFICIAL_APIS.ECONOMIA_API_ALL;
                 const response = await fetch(url);
-
-                if (!response.ok) throw new Error(`Erro na API: ${response.statusText}`);
-                
+                if (!response.ok) throw new Error(`Erro na API Econômica: ${response.statusText}`);
                 const data = await response.json();
                 
-                // A estrutura da AwesomeAPI é { "IBOVBRL": { "bid": "120797.10" ... } } ou [ { ... } ]
-                const stockData = data.IBOVBRL || data[0];
-
-                if (stockData && stockData.bid) {
-                    const bovespaValue = parseFloat(stockData.bid);
-                    updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
-                    return { 
-                        value: bovespaValue, 
-                        date: new Date(parseInt(stockData.timestamp) * 1000).toLocaleDateString(), 
-                        source: 'Economia AwesomeAPI', 
-                        series: 'BOVESPA', 
-                        description: `Índice Bovespa` 
-                    };
+                // Processa Câmbio
+                const exchangeData = data.USDBRL;
+                if (exchangeData && exchangeData.bid) {
+                    const value = parseFloat(exchangeData.bid);
+                    updateSourceStatus('source-exchange', 'success', `✅ $1 = R$${value.toFixed(2)}`);
+                    results.push({ value, date: new Date(parseInt(exchangeData.timestamp) * 1000).toLocaleDateString(), source: 'Economia AwesomeAPI', series: 'USD_BRL', description: `Taxa de Câmbio Dólar` });
                 } else {
-                    throw new Error('Estrutura de dados da Bovespa inesperada.');
+                     updateSourceStatus('source-exchange', 'error', '❌ Câmbio não encontrado');
                 }
-            } catch (error) {
-                console.error("Erro ao buscar dados da B3:", error);
-                const fallbackValue = 121000;
-                updateSourceStatus('source-b3', 'success', `⚠️ ${fallbackValue.toLocaleString()} pts (fallback)`);
-                return { 
-                    value: fallbackValue, 
-                    date: new Date().toLocaleDateString(), 
-                    source: 'B3 (fallback estático)', 
-                    series: 'BOVESPA', 
-                    description: `Índice Bovespa (fallback)` 
-                };
+
+                // Processa Bovespa
+                const bovespaData = data.IBOVESPA;
+                if (bovespaData && bovespaData.high) {
+                    const value = parseFloat(bovespaData.high);
+                    updateSourceStatus('source-b3', 'success', `✅ ${Math.round(value).toLocaleString()} pts`);
+                    results.push({ value, date: new Date(parseInt(bovespaData.timestamp) * 1000).toLocaleDateString(), source: 'Economia AwesomeAPI', series: 'BOVESPA', description: `Índice Bovespa` });
+                } else {
+                     updateSourceStatus('source-b3', 'error', '❌ Bovespa não encontrada');
+                }
+
+            } catch(error) {
+                console.error("Erro ao buscar dados da AwesomeAPI:", error);
+                updateSourceStatus('source-exchange', 'error', `❌ ${error.message}`);
+                updateSourceStatus('source-b3', 'error', `❌ ${error.message}`);
             }
+            return results;
         }
+
 
         async function fetchTesouroData() {
             updateSourceStatus('source-tesouro', 'loading', 'Calculando Tesouro...');
@@ -643,13 +619,17 @@
 
             const promises = [];
             
+            // Adiciona as chamadas de API individuais
             if (detection.seriesNeeded.includes('SELIC_META')) promises.push(fetchBacenData('SELIC_META'));
             if (detection.seriesNeeded.includes('IPCA')) promises.push(fetchIbgeData('IPCA'));
             if (detection.seriesNeeded.includes('PIB')) promises.push(fetchIbgeData('PIB'));
-            if (detection.seriesNeeded.includes('USD_BRL')) promises.push(fetchExchangeData());
-            if (detection.seriesNeeded.includes('BOVESPA')) promises.push(fetchBovespaData());
             
-            const mainResults = await Promise.allSettled(promises);
+            // Adiciona a chamada unificada para Câmbio e Bolsa
+            if (detection.seriesNeeded.includes('USD_BRL') || detection.seriesNeeded.includes('BOVESPA')) {
+                promises.push(fetchEconomyApiData());
+            }
+
+            const results = await Promise.allSettled(promises);
             
             const officialData = {
                 timestamp: new Date().toISOString(),
@@ -657,14 +637,24 @@
                 data: {}
             };
             
-            mainResults.forEach(result => {
+            results.forEach(result => {
                 if (result.status === 'fulfilled' && result.value) {
-                    officialData.sources.push(result.value.source);
-                    officialData.data[result.value.series] = result.value;
-                    realDataCache[result.value.series] = result.value;
+                    // A API econômica retorna um array, então precisamos tratar
+                    if (Array.isArray(result.value)) {
+                        result.value.forEach(item => {
+                            officialData.sources.push(item.source);
+                            officialData.data[item.series] = item;
+                            realDataCache[item.series] = item;
+                        });
+                    } else { // Trata as outras APIs que retornam um único objeto
+                        officialData.sources.push(result.value.source);
+                        officialData.data[result.value.series] = result.value;
+                        realDataCache[result.value.series] = result.value;
+                    }
                 }
             });
 
+            // A chamada do Tesouro depende da Selic, então a executamos depois
             const tesouroResult = await fetchTesouroData();
             if (tesouroResult) {
                 officialData.sources.push(tesouroResult.source);
