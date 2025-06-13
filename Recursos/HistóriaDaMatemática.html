@@ -479,6 +479,7 @@
                 { name: 'Wikidata', func: () => tryWikidata(personName) },
                 { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
                 { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') },
+                { name: 'Library of Congress', func: () => tryLibraryOfCongress(personName) },
                 { name: 'Openverse', func: () => tryOpenverse(personName) },
                 { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) },
                 { name: 'Wikimedia Commons', func: () => tryWikimediaCommons(personName) }
@@ -517,18 +518,14 @@
             const searchData = await searchResponse.json();
             if (!searchData.search || searchData.search.length === 0) return null;
             const entityId = searchData.search[0].id;
-
             const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
             const entityResponse = await fetch(entityUrl);
             if (!entityResponse.ok) return null;
             const entityData = await entityResponse.json();
-            
             const claims = entityData.entities[entityId].claims;
             if (!claims || !claims.P18) return null;
-
             const imageName = claims.P18[0].mainsnak.datavalue.value;
             if (!imageName) return null;
-
             return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
         }
 
@@ -541,8 +538,22 @@
             if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
             return null;
         }
+
+        // Fonte 3: Library of Congress (Acervo Histórico de Qualidade)
+        async function tryLibraryOfCongress(personName) {
+            const url = `https://www.loc.gov/photos/?q=${encodeURIComponent(personName)}&fo=json`;
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.results && data.results.length > 0) {
+                // A API da LoC retorna várias URLs de imagem, pegamos uma de tamanho médio
+                const imageUrl = data.results[0].image_urls?.medium;
+                if(imageUrl) return imageUrl;
+            }
+            return null;
+        }
         
-        // Fonte 3: Openverse (Ampla Cobertura de Fontes Abertas)
+        // Fonte 4: Openverse (Ampla Cobertura de Fontes Abertas)
         async function tryOpenverse(personName) {
             const url = `https://api.openverse.engineering/v1/images/?q=${encodeURIComponent(personName)}&license_type=publicdomain,by,by-sa&category=photograph`;
             const response = await fetch(url);
@@ -552,20 +563,17 @@
             return null;
         }
 
-        // Fonte 4: DuckDuckGo (Busca Geral na Web)
+        // Fonte 5: DuckDuckGo (Busca Geral na Web)
         async function tryDuckDuckGo(personName) {
             const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(personName)}&format=json&pretty=1&no_html=1&skip_disambig=1`;
             const response = await fetch(url);
             if (!response.ok) return null;
             const data = await response.json();
-            if (data.Image && data.Image.length > 0) {
-                 // A API pode retornar uma URL relativa, então garantimos que ela seja absoluta
-                return new URL(data.Image, 'https://duckduckgo.com').href;
-            }
+            if (data.Image && data.Image.length > 0) return new URL(data.Image, 'https://duckduckgo.com').href;
             return null;
         }
 
-        // Fonte 5: Wikimedia Commons (Fallback Final)
+        // Fonte 6: Wikimedia Commons (Fallback Final)
         async function tryWikimediaCommons(personName) {
             const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
             const response = await fetch(searchUrl);
