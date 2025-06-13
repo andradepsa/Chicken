@@ -2,352 +2,543 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerador de Questões - Dados 100% Reais</title>
-    <!-- Script da IA, que funciona sem chave de API própria -->
+    <title>Gerador de Questões - Puter AI</title>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #1c1e21;
+        * {
             margin: 0;
-            padding: 20px;
-            min-height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: 400;
+        }
+        
+        .input-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .main-input {
+            width: 100%;
+            padding: 24px 28px;
+            font-size: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            outline: none;
         }
         
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .main-input:focus {
+            border-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
         }
         
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
+        .main-input::placeholder {
+            color: #9ca3af;
+            font-style: italic;
         }
         
-        .real-data-indicator {
-            background: linear-gradient(45deg, #28a745, #20c997);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-        
-        .input-section {
-            background: rgba(102, 126, 234, 0.1);
-            padding: 25px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-
-        #prompt {
+        .generate-btn {
             width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: 2px solid #e1e5e9;
-            box-sizing: border-box;
-            min-height: 100px;
-        }
-        
-        .main-button {
-            display: block;
-            width: 100%;
-            padding: 18px;
+            padding: 20px 28px;
             font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border: none;
-            border-radius: 10px;
+            border-radius: 16px;
             cursor: pointer;
-            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         
-        .main-button:disabled { background: #ccc; cursor: not-allowed; }
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.4);
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
         
-        #status {
-            text-align: center;
-            padding: 15px;
-            margin-top: 20px;
-            border-radius: 10px;
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
             display: none;
-            font-weight: bold;
-        }
-        .status-success { background: #d4edda; color: #155724; }
-        .status-error { background: #f8d7da; color: #721c24; }
-        .status-info { background: #cce5ff; color: #004085; }
-        
-        .data-sources {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            text-align: center;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
         }
         
-        .data-source {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #28a745;
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
         }
-        .data-source h4 { margin: 0 0 8px 0; color: #28a745; font-size: 14px; }
-        .data-source .api-info { font-size: 10px; color: #6c757d; margin-bottom: 5px; }
-        .data-source .status { font-size: 12px; color: #333; font-weight: bold; }
         
-        #questions-container { margin-top: 30px; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results-container {
+            width: 100%;
+            max-width: 800px;
+        }
         
         .question-card {
-            background: #fff;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 15px;
-            position: relative;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 0.6s ease forwards;
         }
         
-        .question-number {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+        .question-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .question-meta {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            position: absolute;
-            top: -10px;
-            left: 15px;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
         }
         
-        .question-text { font-weight: bold; font-size: 1.1em; margin: 15px 0; color: #333; }
-        .question-options ul { list-style: none; padding: 0; margin: 10px 0; }
-        .question-options li { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 3px solid #667eea; }
-        .question-answer { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #dee2e6; }
-        .answer-label { font-weight: bold; color: #28a745; }
-        .explanation-label { font-weight: bold; color: #6c757d; margin-top: 8px; }
-        .empty-state { text-align: center; padding: 40px; color: #6c757d; }
-        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #f3f3f3; border-top: 2px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .meta-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .meta-tag.difficulty-facil {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .meta-tag.difficulty-medio {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .meta-tag.difficulty-dificil {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .question-text {
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 500;
+        }
+        
+        .question-options {
+            margin-bottom: 20px;
+        }
+        
+        .option {
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .option:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .option.correct {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #16a34a;
+            color: #15803d;
+            font-weight: 600;
+        }
+        
+        .answer-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 18px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        
+        .answer-section strong {
+            color: #374151;
+        }
+        
+        .helper-text {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 16px;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        
+                    @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .header .subtitle {
+                font-size: 16px;
+            }
+            
+            .main-input {
+                padding: 20px 24px;
+                font-size: 16px;
+            }
+            
+            .generate-btn {
+                padding: 18px 24px;
+                font-size: 16px;
+            }
+            
+            .question-card {
+                padding: 20px;
+            }
+            
+            .question-text {
+                font-size: 16px;
+            }
+            
+            .meta-tag {
+                font-size: 11px;
+                padding: 5px 12px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Gerador de Questões - 100% Funcional</h1>
-        <div class="real-data-indicator">
-            ✅ SISTEMA ESTÁVEL COM DADOS REAIS E DE REFERÊNCIA ✅
-        </div>
-        <p class="subtitle">
-            Utiliza APIs confiáveis e dados de referência para garantir o funcionamento contínuo, sem falhas.
-        </p>
-
-        <div class="data-sources" id="data-sources">
-            <div class="data-source" id="source-selic">
-                <h4>🏛️ SELIC</h4>
-                <div class="api-info">Dado de Referência</div>
-                <div class="status">Aguardando...</div>
-            </div>
-            <div class="data-source" id="source-ipca">
-                <h4>📊 IPCA</h4>
-                <div class="api-info">Dado de Referência</div>
-                <div class="status">Aguardando...</div>
-            </div>
-             <div class="data-source" id="source-dolar">
-                <h4>💱 Dólar</h4>
-                <div class="api-info">API Externa Confiável</div>
-                <div class="status">Aguardando...</div>
-            </div>
-            <div class="data-source" id="source-bovespa">
-                <h4>📉 Ibovespa</h4>
-                <div class="api-info">Dado de Referência</div>
-                <div class="status">Aguardando...</div>
-            </div>
-        </div>
-        
-        <div class="input-section">
-            <textarea id="prompt" placeholder="Ex: 'Crie 5 questões sobre SELIC e Dólar' ou 'Gere 10 questões de matemática financeira com os dados atuais'"></textarea>
-            <button id="generate-btn" class="main-button">🚀 Gerar Questões com IA</button>
-        </div>
-
-        <div id="status"></div>
-        
-        <div id="questions-container">
-             <div class="empty-state">
-                <h3>📝 Suas questões aparecerão aqui</h3>
-             </div>
-        </div>
+    <div class="header">
+        <h1>🎯 Gerador de Questões</h1>
+        <div class="subtitle">Powered by Puter AI</div>
+    </div>
+    
+    <div class="input-container">
+        <input 
+            type="text" 
+            id="topic-input" 
+            class="main-input" 
+            placeholder="Digite qualquer assunto... (ex: matemática, história, português)"
+            autocomplete="off"
+        />
+        <button id="generate-btn" class="generate-btn">
+            🚀 Gerar Questões
+        </button>
+    </div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        Gerando questões com IA...
+    </div>
+    
+    <div class="results-container" id="results-container">
+    </div>
+    
+    <div class="helper-text" id="helper-text">
+        💡 Digite um assunto e clique no botão ou pressione Enter
     </div>
 
     <script>
+        // === ELEMENTOS DOM ===
+        const topicInput = document.getElementById('topic-input');
         const generateBtn = document.getElementById('generate-btn');
-        const promptInput = document.getElementById('prompt');
-        const statusDiv = document.getElementById('status');
-        const questionsContainer = document.getElementById('questions-container');
+        const loading = document.getElementById('loading');
+        const resultsContainer = document.getElementById('results-container');
+        const helperText = document.getElementById('helper-text');
 
-        const realData = {};
-
-        function updateSourceStatus(sourceId, status) {
-            const el = document.getElementById(sourceId);
-            if (el) el.querySelector('.status').textContent = status;
-        }
-
-        async function fetchAllData() {
-            statusDiv.style.display = 'block';
-            statusDiv.className = 'status-info';
-            statusDiv.textContent = '🔄 Carregando dados de referência...';
-            
-            // SELIC (Dado Estático)
-            realData.SELIC = { value: 10.50, source: "BACEN (Referência)" };
-            updateSourceStatus('source-selic', `✅ ${realData.SELIC.value.toFixed(2)}%`);
-
-            // IPCA (Dado Estático)
-            realData.IPCA = { value: 0.46, source: "IBGE (Referência)" };
-            updateSourceStatus('source-ipca', `✅ ${realData.IPCA.value.toFixed(2)}%`);
-
-            // DÓLAR (API Externa)
+        // === FUNÇÃO DE GERAÇÃO COM PUTER AI ===
+        async function callPuterAI(prompt) {
             try {
-                const response = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
-                if (!response.ok) throw new Error();
-                const data = await response.json();
-                realData.DOLAR = { value: parseFloat(data.USDBRL.bid), source: "AwesomeAPI" };
-                updateSourceStatus('source-dolar', `✅ R$ ${realData.DOLAR.value.toFixed(2)}`);
-            } catch {
-                realData.DOLAR = { value: 5.45, source: "Câmbio (Referência)" };
-                updateSourceStatus('source-dolar', `⚠️ R$ ${realData.DOLAR.value.toFixed(2)} (fallback)`);
-            }
-
-            // IBOVESPA (Dado Estático)
-            realData.IBOVESPA = { value: 121570, source: "B3 (Referência)" };
-            updateSourceStatus('source-bovespa', `✅ ~${realData.IBOVESPA.value.toLocaleString()} pts`);
-            
-            statusDiv.className = 'status-success';
-            statusDiv.textContent = '✅ Dados carregados. Pronto para gerar!';
-        }
-
-        async function generateQuestions() {
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="loading"></div> Gerando...';
-
-            try {
-                if (Object.keys(realData).length === 0) {
-                    await fetchAllData(); // Garante que os dados foram carregados
-                }
-
-                let dataContext = '';
-                for (const [key, data] of Object.entries(realData)) {
-                    dataContext += `\n- ${key}: ${data.value.toFixed(2)} (Fonte: ${data.source})`;
-                }
-
-                const userPrompt = promptInput.value.trim();
-                if (!userPrompt) {
-                    throw new Error("Por favor, digite um comando para gerar as questões.");
-                }
-
-                const enhancedPrompt = `
-                    Você é um professor de matemática financeira. Crie questões de múltipla escolha (A, B, C, D) baseadas nos dados econômicos REAIS do Brasil fornecidos abaixo.
-                    
-                    DADOS DE REFERÊNCIA:
-                    ${dataContext}
-                    
-                    INSTRUÇÕES:
-                    - Crie questões baseadas na solicitação do usuário: "${userPrompt}".
-                    - Use os dados para criar questões práticas e realistas.
-                    - Crie opções incorretas que sejam plausíveis (erros comuns de cálculo).
-                    - A explicação deve ser clara, citar a fonte do dado e mostrar o cálculo passo a passo.
-                    - Responda EXCLUSIVAMENTE com um objeto JSON válido, sem nenhum texto antes ou depois.
-                    
-                    FORMATO JSON OBRIGATÓRIO:
-                    { 
-                        "questions": [ 
-                            { 
-                                "text": "...", 
-                                "options": ["...", "...", "...", "..."], 
-                                "correct_answer": "...", 
-                                "explanation": "..." 
-                            } 
-                        ] 
-                    }
-                `;
-
-                statusDiv.className = 'status-info';
-                statusDiv.textContent = '🤖 IA do Puter.com está gerando as questões...';
-
-                const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
+                const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 
                 if (!response || !response.message || !response.message.content) {
-                    throw new Error("A IA não retornou uma resposta válida.");
+                    throw new Error('Resposta inválida da IA do Puter.');
                 }
-
-                const jsonString = response.message.content.substring(response.message.content.indexOf('{'), response.message.content.lastIndexOf('}') + 1);
-                const parsed = JSON.parse(jsonString);
-
-                renderQuestions(parsed.questions);
-                statusDiv.className = 'status-success';
-                statusDiv.textContent = `✅ ${parsed.questions.length} questões geradas com sucesso!`;
-
-            } catch (error) {
-                console.error("Erro detalhado:", error);
-                statusDiv.className = 'status-error';
-                statusDiv.textContent = `❌ Erro ao gerar questões.`;
-                 if (error.message && error.message.includes('wallet')) {
-                    statusDiv.textContent = `❌ Erro de Autenticação. Por favor, faça login no Puter.com para usar a IA.`;
-                }
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = '🚀 Gerar Questões com IA';
-            }
-        }
-
-        function renderQuestions(questions) {
-            questionsContainer.innerHTML = '';
-            if (!questions || questions.length === 0) {
-                 questionsContainer.innerHTML = `<div class="empty-state"><h3>📝 Nenhuma questão foi gerada. Tente novamente.</h3></div>`;
-                 return;
-            }
-
-            questions.forEach((q, index) => {
-                const card = document.createElement('div');
-                card.className = 'question-card';
                 
-                const optionsHTML = `<ul>${q.options.map(opt => `<li>${opt}</li>`).join('')}</ul>`;
-
-                card.innerHTML = `
-                    <div class="question-number">${index + 1}</div>
-                    <div class="question-text">${q.text}</div>
-                    <div class="question-options">${optionsHTML}</div>
-                    <div class="question-answer">
-                        <div class="answer-label">✅ Resposta Correta:</div> <div>${q.correct_answer}</div>
-                        <div class="explanation-label">💡 Explicação:</div> <div>${q.explanation}</div>
-                    </div>
-                `;
-                questionsContainer.appendChild(card);
-            });
+                return response.message.content.trim();
+            } catch (error) {
+                console.error('Erro na IA do Puter:', error);
+                throw error;
+            }
         }
         
+        async function generateQuestions() {
+            const topic = topicInput.value.trim();
+            
+            if (!topic) return;
+            
+            // Mostrar loading
+            loading.style.display = 'block';
+            helperText.style.display = 'none';
+            resultsContainer.innerHTML = '';
+            topicInput.disabled = true;
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<div class="spinner"></div> Gerando...';
+            
+            try {
+                const prompt = `
+Gere 5 questões educativas sobre "${topic}".
+
+REGRAS:
+1. Questões variadas: múltipla escolha (4 alternativas), verdadeiro/falso, dissertativas
+2. Dificuldades mistas: fácil, médio, difícil
+3. Questões bem estruturadas e pedagogicamente corretas
+4. Sempre inclua a resposta correta e uma explicação clara
+
+FORMATO DE RESPOSTA (JSON):
+{
+  "questions": [
+    {
+      "text": "Texto da questão",
+      "type": "multipla-escolha|verdadeiro-falso|dissertativa",
+      "difficulty": "facil|medio|dificil",
+      "options": ["A) opção", "B) opção", "C) opção", "D) opção"],
+      "correct_answer": "A",
+      "explanation": "Explicação detalhada da resposta"
+    }
+  ]
+}
+
+Gere as 5 questões agora:`;
+
+                const response = await callPuterAI(prompt);
+                const questions = parseAIResponse(response, topic);
+                
+                if (questions && questions.length > 0) {
+                    displayQuestions(questions);
+                } else {
+                    showError('Não foi possível gerar questões. Tente novamente.');
+                }
+                
+            } catch (error) {
+                console.error('Erro na geração:', error);
+                showError('Erro ao gerar questões. Verifique sua conexão e tente novamente.');
+            } finally {
+                loading.style.display = 'none';
+                topicInput.disabled = false;
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = '🚀 Gerar Questões';
+                topicInput.focus();
+            }
+        }
+        
+        function parseAIResponse(response, topic) {
+            try {
+                // Extrair JSON da resposta
+                const jsonStart = response.indexOf('{');
+                const jsonEnd = response.lastIndexOf('}') + 1;
+                
+                if (jsonStart === -1 || jsonEnd === -1) {
+                    throw new Error('JSON não encontrado');
+                }
+                
+                const jsonString = response.substring(jsonStart, jsonEnd);
+                const parsed = JSON.parse(jsonString);
+                
+                if (!parsed.questions || !Array.isArray(parsed.questions)) {
+                    throw new Error('Formato inválido');
+                }
+                
+                // Processar questões
+                return parsed.questions.map((q, index) => ({
+                    text: q.text || `Questão ${index + 1} sobre ${topic}`,
+                    type: q.type || 'multipla-escolha',
+                    difficulty: q.difficulty || 'medio',
+                    subject: topic,
+                    correctAnswer: q.correct_answer || '',
+                    explanation: q.explanation || '',
+                    options: q.options || []
+                })).filter(q => q.text.length > 10);
+                
+            } catch (error) {
+                console.error('Erro ao processar resposta:', error);
+                return null;
+            }
+        }
+        
+        function displayQuestions(questions) {
+            helperText.style.display = 'none';
+            
+            const html = questions.map((question, index) => {
+                const difficultyClass = `difficulty-${question.difficulty}`;
+                const typeIcon = getTypeIcon(question.type);
+                const difficultyIcon = getDifficultyIcon(question.difficulty);
+                
+                let optionsHTML = '';
+                if (question.options && question.options.length > 0) {
+                    optionsHTML = `
+                        <div class="question-options">
+                            ${question.options.map(option => {
+                                const isCorrect = option.charAt(0) === question.correctAnswer;
+                                return `<div class="option ${isCorrect ? 'correct' : ''}">${option}</div>`;
+                            }).join('')}
+                        </div>
+                    `;
+                } else if (question.type === 'verdadeiro-falso') {
+                    const isVerdadeiro = question.correctAnswer.toLowerCase().includes('verdadeiro');
+                    optionsHTML = `
+                        <div class="question-options">
+                            <div class="option ${isVerdadeiro ? 'correct' : ''}">( ) Verdadeiro</div>
+                            <div class="option ${!isVerdadeiro ? 'correct' : ''}">( ) Falso</div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="question-card" style="animation-delay: ${index * 0.1}s">
+                        <div class="question-meta">
+                            <span class="meta-tag">${typeIcon} ${formatType(question.type)}</span>
+                            <span class="meta-tag ${difficultyClass}">${difficultyIcon} ${formatDifficulty(question.difficulty)}</span>
+                        </div>
+                        
+                        <div class="question-text">${question.text}</div>
+                        
+                        ${optionsHTML}
+                        
+                        <div class="answer-section">
+                            <strong>💡 Resposta:</strong> ${question.correctAnswer}<br><br>
+                            <strong>📝 Explicação:</strong> ${question.explanation}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsContainer.innerHTML = html;
+        }
+        
+        function showError(message) {
+            helperText.innerHTML = `❌ ${message}`;
+            helperText.style.display = 'block';
+            helperText.style.color = '#fca5a5';
+        }
+        
+        function getTypeIcon(type) {
+            const icons = {
+                'multipla-escolha': '☑️',
+                'verdadeiro-falso': '✓',
+                'dissertativa': '📝'
+            };
+            return icons[type] || '❓';
+        }
+        
+        function getDifficultyIcon(difficulty) {
+            const icons = {
+                'facil': '🟢',
+                'medio': '🟡', 
+                'dificil': '🔴'
+            };
+            return icons[difficulty] || '⚪';
+        }
+        
+        function formatType(type) {
+            const formats = {
+                'multipla-escolha': 'Múltipla Escolha',
+                'verdadeiro-falso': 'V/F',
+                'dissertativa': 'Dissertativa'
+            };
+            return formats[type] || type;
+        }
+        
+        function formatDifficulty(difficulty) {
+            const formats = {
+                'facil': 'Fácil',
+                'medio': 'Médio',
+                'dificil': 'Difícil'
+            };
+            return formats[difficulty] || difficulty;
+        }
+        
+        // === EVENT LISTENERS ===
         generateBtn.addEventListener('click', generateQuestions);
-        document.addEventListener('DOMContentLoaded', fetchAllData);
+        
+        topicInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim()) {
+                generateQuestions();
+            }
+        });
+        
+        // Auto-focus no input quando a página carrega
+        window.addEventListener('load', function() {
+            topicInput.focus();
+        });
     </script>
 </body>
 </html>
