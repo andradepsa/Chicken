@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Banco de Questões - IA Puter</title>
+    <title>Banco de Questões - Login Individual</title>
     <script src="https://js.puter.com/v2/"></script>
     
     <style>
@@ -46,27 +46,94 @@
             font-size: 1.1em;
         }
         
-        .auth-status {
+        /* Seção de Login de Usuário */
+        .user-login-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #dee2e6;
             text-align: center;
-            padding: 10px;
+        }
+        
+        .user-login-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .user-login-section p {
+            color: #6c757d;
             margin-bottom: 20px;
-            border-radius: 8px;
-            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .login-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
         }
         
-        .auth-status.logged-in {
-            background: #d4edda;
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.4);
+        }
+        
+        .logout-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .logout-btn:hover {
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        /* Status de Login */
+        .login-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .login-status.logged-in {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
             color: #155724;
+            border: 2px solid #28a745;
         }
         
-        .auth-status.not-logged {
-            background: #fff3cd;
+        .login-status.not-logged {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
             color: #856404;
+            border: 2px solid #ffc107;
         }
         
+        .login-status.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+        
+        /* Área de Input - Desabilitada quando não logado */
         .input-area {
             margin-bottom: 20px;
+            transition: opacity 0.3s ease;
+        }
+        
+        .input-area.disabled {
+            opacity: 0.5;
+            pointer-events: none;
         }
         
         textarea {
@@ -101,7 +168,7 @@
             transition: transform 0.2s;
         }
         
-        .generate-btn:hover {
+        .generate-btn:hover:not(:disabled) {
             transform: translateY(-2px);
         }
         
@@ -111,6 +178,7 @@
             transform: none;
         }
         
+        /* Status */
         .status {
             text-align: center;
             padding: 15px;
@@ -124,6 +192,7 @@
         .status-error { background: #f8d7da; color: #721c24; }
         .status-info { background: #cce5ff; color: #004085; }
         
+        /* Container de Questões */
         .questions-container {
             margin-top: 30px;
         }
@@ -249,6 +318,7 @@
         }
         
         .btn-clear { background: linear-gradient(45deg, #6c757d, #495057); }
+        .btn-new-user { background: linear-gradient(45deg, #17a2b8, #138496); }
         
         .loading {
             display: inline-block;
@@ -272,6 +342,16 @@
             color: #6c757d;
         }
         
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -285,89 +365,173 @@
             .action-button {
                 min-width: unset;
             }
+            
+            .user-badge {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>🎯 Banco de Questões</h1>
-        <p class="subtitle">Powered by Puter AI</p>
-        
-        <div id="auth-status" class="auth-status not-logged">
-            🔐 Clique em "Gerar Questões" para fazer login automaticamente
+        <p class="subtitle">Sistema Multi-Usuário - Powered by Puter AI</p>
+
+        <!-- Seção de Login Individual -->
+        <div class="user-login-section">
+            <h3>👤 Login Individual do Usuário</h3>
+            <p>Cada usuário deve fazer seu próprio login no Puter para usar a IA com sua cota individual.</p>
+            
+            <div id="login-status" class="login-status not-logged">
+                🔐 Nenhum usuário logado
+            </div>
+            
+            <button id="fresh-login-btn" class="login-btn">
+                🚀 Fazer Login no Puter
+            </button>
+            
+            <button id="logout-btn" class="logout-btn" style="display: none;">
+                🚪 Sair e Permitir Novo Usuário
+            </button>
         </div>
 
-        <div class="input-area">
+        <!-- Área de Input -->
+        <div class="input-area disabled" id="input-area">
             <textarea id="prompt" placeholder="Digite seu pedido: Ex: 'Crie 5 questões sobre frações', 'Questões de matemática básica', 'História do Brasil'..."></textarea>
-            <button id="generate-btn" class="generate-btn">🚀 Gerar Questões</button>
+            <button id="generate-btn" class="generate-btn" disabled>
+                🚀 Gerar Questões
+            </button>
         </div>
 
         <div id="status" class="status"></div>
         
         <div id="actions-container" class="actions-container">
-            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar Tudo</button>
+            <button id="clear-btn" class="action-button btn-clear">🗑️ Limpar Questões</button>
+            <button id="new-user-btn" class="action-button btn-new-user">👤 Trocar Usuário</button>
         </div>
 
         <div id="questions-container" class="questions-container">
             <div class="empty-state">
-                <h3>📝 Questões geradas aparecerão aqui</h3>
-                <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
+                <h3>📝 Faça login para começar</h3>
+                <p>Cada usuário deve fazer seu próprio login no Puter para gerar questões</p>
             </div>
         </div>
     </div>
 
     <script>
         let questionsDatabase = [];
+        let currentUser = null;
         
+        const freshLoginBtn = document.getElementById('fresh-login-btn');
+        const logoutBtn = document.getElementById('logout-btn');
         const generateBtn = document.getElementById('generate-btn');
         const promptInput = document.getElementById('prompt');
         const statusDiv = document.getElementById('status');
         const questionsContainer = document.getElementById('questions-container');
         const actionsContainer = document.getElementById('actions-container');
+        const loginStatus = document.getElementById('login-status');
+        const inputArea = document.getElementById('input-area');
 
-        async function ensureAuthenticated() {
-            const authStatus = document.getElementById('auth-status');
+        // Força logout e login fresco
+        async function doFreshLogin() {
+            freshLoginBtn.disabled = true;
+            freshLoginBtn.innerHTML = '<div class="loading"></div>Preparando login...';
             
             try {
-                // Verifica se já está logado
-                const user = await puter.auth.getUser();
-                if (user && user.username) {
-                    console.log('✅ Usuário já logado:', user.username);
-                    authStatus.textContent = `✅ Logado como: ${user.username}`;
-                    authStatus.className = 'auth-status logged-in';
-                    return true;
+                // Força logout completo primeiro
+                loginStatus.textContent = '🔄 Fazendo logout do usuário anterior...';
+                loginStatus.className = 'login-status not-logged';
+                
+                try {
+                    await puter.auth.signOut();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Aguarda 1s
+                } catch (error) {
+                    console.log('Nenhum usuário para fazer logout ou erro:', error);
                 }
-            } catch (error) {
-                console.log('ℹ️ Usuário não está logado');
-            }
-            
-            try {
-                // Tenta fazer login
-                console.log('🔐 Iniciando processo de login...');
-                authStatus.textContent = '🔐 Abrindo janela de login...';
-                authStatus.className = 'auth-status not-logged';
+                
+                // Limpa questões do usuário anterior
+                questionsDatabase = [];
+                renderQuestions();
+                
+                // Agora faz login fresco
+                loginStatus.textContent = '🔐 Abrindo janela de login...';
+                freshLoginBtn.innerHTML = '<div class="loading"></div>Aguardando login...';
                 
                 await puter.auth.signIn();
                 
-                // Verifica novamente após login
+                // Verifica novo usuário
                 const user = await puter.auth.getUser();
                 if (user && user.username) {
-                    console.log('✅ Login realizado com sucesso');
-                    authStatus.textContent = `✅ Logado como: ${user.username}`;
-                    authStatus.className = 'auth-status logged-in';
-                    return true;
+                    currentUser = user;
+                    updateLoginStatus(true);
+                    showStatus(`✅ Bem-vindo(a), ${user.username}! Agora você pode gerar questões.`, 'success');
                 } else {
                     throw new Error('Login não confirmado');
                 }
+                
             } catch (error) {
-                console.error('❌ Erro no login:', error);
-                authStatus.textContent = '❌ Falha no login. Tente novamente.';
-                authStatus.className = 'auth-status not-logged';
-                throw new Error('É necessário fazer login no Puter para usar a IA. Clique em "Gerar Questões" novamente após fazer login.');
+                console.error('Erro no login:', error);
+                updateLoginStatus(false);
+                showStatus('❌ Erro no login. Tente novamente.', 'error');
+            } finally {
+                freshLoginBtn.disabled = false;
+                freshLoginBtn.innerHTML = '🚀 Fazer Login no Puter';
+            }
+        }
+
+        // Força logout para permitir novo usuário
+        async function forceLogoutForNewUser() {
+            if (confirm('Tem certeza que deseja sair? Todas as questões serão perdidas.')) {
+                try {
+                    await puter.auth.signOut();
+                    currentUser = null;
+                    questionsDatabase = [];
+                    updateLoginStatus(false);
+                    renderQuestions();
+                    showStatus('👋 Logout realizado. Novo usuário pode fazer login.', 'info');
+                } catch (error) {
+                    console.error('Erro no logout:', error);
+                    showStatus('⚠️ Erro no logout, mas interface foi resetada.', 'info');
+                    currentUser = null;
+                    questionsDatabase = [];
+                    updateLoginStatus(false);
+                    renderQuestions();
+                }
+            }
+        }
+
+        function updateLoginStatus(isLoggedIn) {
+            if (isLoggedIn && currentUser) {
+                loginStatus.innerHTML = `
+                    <div class="user-badge">
+                        👤 ${currentUser.username}
+                    </div>
+                    ✅ Usuário logado e pronto para usar a IA
+                `;
+                loginStatus.className = 'login-status logged-in';
+                freshLoginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                inputArea.classList.remove('disabled');
+                generateBtn.disabled = false;
+                actionsContainer.style.display = 'flex';
+            } else {
+                loginStatus.textContent = '🔐 Nenhum usuário logado';
+                loginStatus.className = 'login-status not-logged';
+                freshLoginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                inputArea.classList.add('disabled');
+                generateBtn.disabled = true;
+                actionsContainer.style.display = 'none';
             }
         }
 
         async function generateQuestions() {
+            if (!currentUser) {
+                showStatus('❌ Faça login primeiro!', 'error');
+                return;
+            }
+
             const userPrompt = promptInput.value.trim();
             if (!userPrompt) {
                 showStatus('Digite sua solicitação primeiro.', 'error');
@@ -375,14 +539,9 @@
             }
 
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="loading"></div>Conectando à IA...';
+            generateBtn.innerHTML = '<div class="loading"></div>Gerando questões...';
 
             try {
-                // Garantir autenticação antes de usar a IA
-                await ensureAuthenticated();
-                
-                generateBtn.innerHTML = '<div class="loading"></div>Gerando questões...';
-
                 const questionCountMatch = userPrompt.match(/\d+/);
                 const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
 
@@ -427,13 +586,14 @@
                 const newQuestions = parsed.questions.map(q => ({
                     ...q,
                     id: generateId(),
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    createdBy: currentUser.username
                 }));
 
                 if (newQuestions.length > 0) {
                     questionsDatabase.unshift(...newQuestions);
                     renderQuestions();
-                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) com sucesso!`, 'success');
+                    showStatus(`✅ ${newQuestions.length} questão(ões) gerada(s) para ${currentUser.username}!`, 'success');
                 } else {
                     showStatus('A IA respondeu, mas não gerou nenhuma questão. Tente novamente.', 'info');
                 }
@@ -441,25 +601,24 @@
             } catch (error) {
                 console.error('Erro detalhado:', error);
                 
-                // Tratamento específico de erros
                 let errorMessage = 'Erro desconhecido';
                 
-                if (error.code === 4001) {
-                    errorMessage = '🔐 É necessário fazer login no Puter.com. Uma janela de login será aberta. Complete o login e tente novamente.';
-                } else if (error.message && error.message.includes('wallet')) {
-                    errorMessage = '🔐 Problema de autenticação. Visite puter.com, faça login e tente novamente.';
-                } else if (error.message && error.message.includes('login')) {
-                    errorMessage = error.message;
+                if (error.error && error.error.delegate === 'usage-limited-chat') {
+                    errorMessage = `⚠️ ${currentUser.username}, sua conta Puter atingiu o limite de uso da IA. Aguarde um tempo ou verifique os limites em puter.com`;
+                } else if (error.error && error.error.message && error.error.message.includes('Permission denied')) {
+                    errorMessage = `❌ ${currentUser.username}, permissão negada para usar a IA. Verifique os limites da sua conta.`;
+                } else if (error.error && error.error.code === 'error_400_from_delegate') {
+                    errorMessage = `🚫 ${currentUser.username}, limite de uso atingido. Tente mais tarde.`;
+                } else if (error.code === 4001) {
+                    errorMessage = '🔐 Problema de autenticação. Faça login novamente.';
                 } else if (error.message) {
                     errorMessage = error.message;
-                } else if (typeof error === 'string') {
-                    errorMessage = error;
                 }
                 
-                showStatus(`❌ ${errorMessage}`, 'error');
+                showStatus(errorMessage, 'error');
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.textContent = '🚀 Gerar Questões';
+                generateBtn.innerHTML = '🚀 Gerar Questões';
             }
         }
 
@@ -475,17 +634,24 @@
 
         function renderQuestions() {
             if (questionsDatabase.length === 0) {
-                questionsContainer.innerHTML = `
-                    <div class="empty-state">
-                        <h3>📝 Questões geradas aparecerão aqui</h3>
-                        <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
-                    </div>
-                `;
-                actionsContainer.style.display = 'none';
+                if (!currentUser) {
+                    questionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝 Faça login para começar</h3>
+                            <p>Cada usuário deve fazer seu próprio login no Puter para gerar questões</p>
+                        </div>
+                    `;
+                } else {
+                    questionsContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝 Questões de ${currentUser.username} aparecerão aqui</h3>
+                            <p>Digite sua solicitação acima e clique em "Gerar Questões"</p>
+                        </div>
+                    `;
+                }
                 return;
             }
 
-            actionsContainer.style.display = 'flex';
             questionsContainer.innerHTML = '';
 
             questionsDatabase.forEach((q, index) => {
@@ -505,7 +671,7 @@
                         <div class="explanation-label">💡 Explicação:</div>
                         ${q.explanation || 'Não fornecida.'}
                         <div style="font-size:10px; color:#888; margin-top:5px;">
-                            📅 ${new Date(q.createdAt).toLocaleString()}
+                            📅 ${new Date(q.createdAt).toLocaleString()} | 👤 ${q.createdBy}
                         </div>
                     </div>
                 `;
@@ -520,40 +686,23 @@
         }
 
         function clearAll() {
-            if (confirm('Tem certeza que deseja apagar TODAS as questões geradas?')) {
+            if (confirm('Tem certeza que deseja apagar TODAS as questões?')) {
                 questionsDatabase = [];
                 renderQuestions();
                 showStatus('Lista de questões foi limpa.', 'info');
             }
         }
 
-        function saveToStorage() {
-            // Removido localStorage devido a restrições de sandbox
-            // As questões ficam apenas na sessão atual
-        }
-
-        function loadFromStorage() {
-            // Removido localStorage devido a restrições de sandbox
-            // Sempre inicia com banco vazio
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Verifica status de login ao carregar
-            try {
-                const user = await puter.auth.getUser();
-                const authStatus = document.getElementById('auth-status');
-                if (user && user.username) {
-                    authStatus.textContent = `✅ Logado como: ${user.username}`;
-                    authStatus.className = 'auth-status logged-in';
-                }
-            } catch (error) {
-                // Usuário não logado - mantém status padrão
-            }
-            
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            freshLoginBtn.addEventListener('click', doFreshLogin);
+            logoutBtn.addEventListener('click', forceLogoutForNewUser);
             generateBtn.addEventListener('click', generateQuestions);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
+            document.getElementById('new-user-btn').addEventListener('click', forceLogoutForNewUser);
+            
             promptInput.addEventListener('keypress', e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                if (e.key === 'Enter' && !e.shiftKey && !generateBtn.disabled) {
                     e.preventDefault();
                     generateQuestions();
                 }
