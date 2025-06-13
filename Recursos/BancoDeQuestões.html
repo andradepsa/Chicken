@@ -465,7 +465,6 @@
         const OFFICIAL_APIS = {
             BACEN_SGS: 'https://api.bcb.gov.br/dados/serie/bcdata.sgs',
             ECONOMIA_API: 'https://economia.awesomeapi.com.br/json/last/USD-BRL',
-            // <<== CORREÇÃO DEFINITIVA: URL pública e oficial da B3 para o índice.
             B3_API: 'https://cors.eu.org/https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/cotacoes/?indice=IBOV'
         };
 
@@ -579,20 +578,16 @@
                 return null;
             }
         }
-
-        // <<== CORREÇÃO FINAL E DEFINITIVA PARA A B3
+        
         async function fetchBovespaData() {
             updateSourceStatus('source-b3', 'loading', 'Consultando Bovespa...');
             try {
-                // Esta URL usa um proxy CORS confiável para acessar o JSON oficial da B3.
                 const url = OFFICIAL_APIS.B3_API;
                 const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 if (!response.ok) throw new Error(`Erro na API da B3: ${response.statusText}`);
                 const data = await response.json();
                 
-                // A estrutura da resposta da B3 é { "value": "120.767,10", ... }
                 if (data && data.value) {
-                    // O valor vem como "120.767,10". Precisamos limpar e converter para número.
                     const bovespaValue = parseFloat(data.value.replace(/\./g, '').replace(',', '.'));
                     updateSourceStatus('source-b3', 'success', `✅ ${Math.round(bovespaValue).toLocaleString()} pts`);
                     return { 
