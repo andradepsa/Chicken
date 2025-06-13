@@ -1394,146 +1394,162 @@
         
         async function rewriteLastParagraph() {
             if (!currentUser) {
-                log('❌ Faça login primeiro!', 'error');
-                return;
-            }
-            if (lastParagraphIndex === -1) { alert('Nenhum parágrafo para reescrever.'); return; }
-            elements.rewriteBtn.disabled = true;
-            
-            try {
-                const lastContent = articleContent[currentSection][lastParagraphIndex];
-                const cleanText = lastContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-\.]+\)\.?$/g, '').trim();
-                
-                const prompt = `Reescreva o seguinte parágrafo de forma totalmente diferente, mas mantendo a ideia central. NÃO adicione citações. Parágrafo original: "${cleanText}"`;
-                const newContent = await callPuterAI(prompt);
-
-                addPhrasesToMemory(newContent);
-                articleContent[currentSection][lastParagraphIndex] = newContent;
-                displayABNTDocument();
-                log('✅ Parágrafo reescrito! Clique nele para adicionar referências.', 'success');
-            } catch (error) {
-                log(`❌ Erro ao reescrever: ${error.message}`, 'error');
-            } finally {
-                elements.rewriteBtn.disabled = false;
-            }
+                            log('❌ Faça login primeiro!', 'error');
+            return;
         }
-
-        elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
-        elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
-        elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
-        elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
+        if (lastParagraphIndex === -1) { 
+            alert('Nenhum parágrafo para reescrever.'); 
+            return; 
+        }
+        elements.rewriteBtn.disabled = true;
         
-        elements.generateParagraphBtn.addEventListener('click', async () => {
-            if (!currentUser) {
-                log('❌ Faça login primeiro!', 'error');
-                return;
-            }
-            if (!selectedParagraphStart) return;
-            elements.paragraphStartModal.style.display = 'none';
-            const allButtons = [elements.inicioBtn, elements.meioBtn, elements.fimBtn, elements.rewriteBtn];
-            allButtons.forEach(btn => btn.disabled = true);
-            
-            try {
-                const allContent = Object.values(articleContent).flat().join(' ');
-                const prompt = `
-                Escreva um parágrafo acadêmico para um artigo sobre "${userInputs.titulo}".
-                REGRAS:
-                1. O parágrafo DEVE começar com a frase: "${selectedParagraphStart}"
-                2. Desenvolva a ideia inicial de forma coerente, com 80-120 palavras totais.
-                3. NÃO repita ideias já presentes no CONTEÚDO EXISTENTE: "${allContent}"
-                4. NÃO adicione citações ou referências - apenas o texto do parágrafo.
-                
-                Escreva o parágrafo completo agora:`;
-                const content = await callPuterAI(prompt);
-                
-                addPhrasesToMemory(content);
-                articleContent[currentSection].push(content);
-                lastParagraphIndex = articleContent[currentSection].length - 1;
-                displayABNTDocument();
-                elements.rewriteBtn.style.display = 'block';
-                
-                log(`✅ Parágrafo criado! Clique nele para adicionar referências.`, 'success');
-
-                if (currentGenerationPhase === 'inicio') {
-                    sessionActive = true;
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                } else if (currentGenerationPhase === 'fim') {
-                    sessionActive = false;
-                    elements.inicioBtn.disabled = false;
-                    
-                    const currentIndex = sectionOrder.indexOf(currentSection);
-                    if (currentIndex < sectionOrder.length - 1) {
-                        currentSection = sectionOrder[currentIndex + 1];
-                        elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1).replace('conclusao', 'Conclusão');
-                        log(`📝 Pronto para iniciar: ${elements.currentSectionNameSpan.textContent}`, 'info');
-                    } else {
-                        await generateResumoAndAbstract();
-                        userInputs.isFinalized = true;
-                        displayABNTDocument();
-                        log(`🎓 Artigo concluído! Salve como PDF.`, 'success');
-                    }
-                } else {
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                }
-                
-            } catch (error) {
-                log(`❌ Erro ao gerar parágrafo: ${error.message}`, 'error');
-                if(sessionActive){
-                    elements.inicioBtn.disabled = true;
-                    elements.meioBtn.disabled = false;
-                    elements.fimBtn.disabled = false;
-                } else {
-                    elements.inicioBtn.disabled = false;
-                    elements.meioBtn.disabled = true;
-                    elements.fimBtn.disabled = true;
-                }
-            } finally {
-                selectedParagraphStart = '';
-                elements.generateParagraphBtn.disabled = true;
-                elements.rewriteBtn.disabled = false;
-            }
-        });
-
-        elements.closeParagraphModalBtn.addEventListener('click', () => { elements.paragraphStartModal.style.display = 'none'; });
-        elements.savePdfBtn.addEventListener('click', () => { window.print(); });
-
-        // === EVENT LISTENERS DO SISTEMA DE REFERÊNCIAS ===
-        elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
-        elements.closeModalBtn.addEventListener('click', () => { elements.referenceModal.style.display = 'none'; });
-        elements.referenceModal.addEventListener('click', (e) => { if (e.target === elements.referenceModal) { elements.referenceModal.style.display = 'none'; } });
-
-        // === LISTENER PRINCIPAL PARA CLIQUE NOS PARÁGRAFOS ===
-        elements.outputDiv.addEventListener('click', (e) => {
-            if (e.target.closest('p[data-id]')) {
-                const paragraph = e.target.closest('p[data-id]');
-                const paragraphId = paragraph.dataset.id;
-                const paragraphText = paragraph.textContent.replace(/\s*\([A-ZÀ-Ù\s;,\d\-]+\)\s*\.?$/g, '').trim();
-                openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
-            }
-        });
-
-        // === INICIALIZAÇÃO ===
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Verifica status de login ao carregar
-            try {
-                const user = await puter.auth.getUser();
-                if (user && user.username) {
-                    currentUser = user;
-                    updateLoginStatus(true);
-                    log(`✅ Bem-vindo de volta, ${user.username}!`, 'success');
-                } else {
-                    updateLoginStatus(false);
-                }
-            } catch (error) {
-                updateLoginStatus(false);
-            }
-            
-            elements.meioBtn.disabled = true;
-            elements.fimBtn.disabled = true;
+        try {
+            const lastContent = articleContent[currentSection][lastParagraphIndex];
+            const cleanText = lastContent.replace(/\s*\([^)]*\)\.?$/g, '').trim();
+            const prompt = `
+                Reescreva o seguinte parágrafo acadêmico de forma única, mantendo o sentido, mas evitando repetir frases ou ideias exatas: "${cleanText}".
+                O parágrafo deve ser para a seção "${currentSection.toUpperCase()}" do artigo "${userInputs.titulo}".
+                Use um tom acadêmico, com 80-120 palavras, e evite citações diretas.
+                Retorne apenas o texto reescrito.
+            `;
+            const rewrittenText = await callPuterAI(prompt);
+            articleContent[currentSection][lastParagraphIndex] = rewrittenText;
+            addPhrasesToMemory(rewrittenText);
             displayABNTDocument();
-        });
-    </script>
+            log('✅ Parágrafo reescrito com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao reescrever:', error);
+            log(`⚠️ Erro ao reescrever: ${error.message}`, 'error');
+        } finally {
+            elements.rewriteBtn.disabled = false;
+        }
+    }
+
+    async function generateParagraph() {
+        if (!selectedParagraphStart) {
+            log('❌ Escolha um início para o parágrafo!', 'error');
+            return;
+        }
+        
+        elements.generateParagraphBtn.disabled = true;
+        
+        try {
+            const allContent = Object.values(articleContent).flat().join(' ');
+            const usedConcepts = Array.from(usedPhrases).slice(-10).join(', ');
+            
+            const prompt = `
+                Com base no início do parágrafo: "${selectedParagraphStart}",
+                escreva um parágrafo acadêmico completo para a seção "${currentSection.toUpperCase()}" do artigo "${userInputs.titulo}".
+                
+                REGRAS:
+                1. O parágrafo deve ter 80-120 palavras e seguir o tom acadêmico.
+                2. EVITE ideias repetidas, como: ${usedConcepts}.
+                3. NÃO inclua citações diretas ou referências no texto.
+                4. Conecte logicamente com o conteúdo existente: "${allContent.slice(-500)}".
+                
+                Retorne APENAS o texto do parágrafo.
+            `;
+            
+            log('📝 Gerando parágrafo...', 'info');
+            const paragraphText = await callPuterAI(prompt);
+            
+            // Busca referência real automaticamente
+            const reference = await fetchSingleRealReference(selectedParagraphStart);
+            let finalParagraphText = paragraphText;
+            
+            if (reference) {
+                const lastName = reference.authors[0].split(' ').pop().toUpperCase();
+                const citation = reference.authors.length > 2 ? `${lastName} et al., ${reference.year}` : 
+                    `${reference.authors.map(a => a.split(' ').pop().toUpperCase()).join('; ')}, ${reference.year}`;
+                finalParagraphText = `${paragraphText} (${citation}).`;
+                
+                if (!finalReferences.some(ref => ref.id === reference.id)) {
+                    finalReferences.push(reference);
+                }
+            }
+            
+            articleContent[currentSection].push(finalParagraphText);
+            addPhrasesToMemory(paragraphText);
+            lastParagraphIndex = articleContent[currentSection].length - 1;
+            
+            if (currentGenerationPhase === 'inicio') {
+                sessionActive = true;
+            }
+            
+            if (currentGenerationPhase === 'fim') {
+                userInputs.isFinalized = true;
+                await generateResumoAndAbstract();
+                currentSection = sectionOrder[sectionOrder.indexOf(currentSection) + 1] || 'conclusao';
+                sessionActive = false;
+            }
+            
+            elements.paragraphStartModal.style.display = 'none';
+            displayABNTDocument();
+            elements.currentSectionNameSpan.textContent = currentSection.charAt(0).toUpperCase() + currentSection.slice(1);
+            log('✅ Parágrafo gerado com sucesso!', 'success');
+            
+            if (currentGenerationPhase === 'fim') {
+                log('🎉 Seção finalizada! Inicie uma nova seção com INÍCIO.', 'success');
+            }
+        } catch (error) {
+            console.error('Erro ao gerar parágrafo:', error);
+            log(`⚠️ Erro ao gerar parágrafo: ${error.message}`, 'error');
+        } finally {
+            elements.generateParagraphBtn.disabled = false;
+            selectedParagraphStart = '';
+        }
+    }
+
+    elements.inicioBtn.addEventListener('click', () => triggerParagraphOptions('inicio'));
+    elements.meioBtn.addEventListener('click', () => triggerParagraphOptions('meio'));
+    elements.fimBtn.addEventListener('click', () => triggerParagraphOptions('fim'));
+    elements.rewriteBtn.addEventListener('click', rewriteLastParagraph);
+    
+    elements.closeParagraphModalBtn.addEventListener('click', () => {
+        elements.paragraphStartModal.style.display = 'none';
+        selectedParagraphStart = '';
+        elements.generateParagraphBtn.disabled = true;
+    });
+    
+    elements.generateParagraphBtn.addEventListener('click', generateParagraph);
+    
+    elements.closeModalBtn.addEventListener('click', () => {
+        elements.referenceModal.style.display = 'none';
+        currentParagraphId = null;
+        currentModalReferences = [];
+    });
+    
+    elements.addReferencesBtn.addEventListener('click', addSelectedReferences);
+    
+    elements.outputDiv.addEventListener('click', async (e) => {
+        if (!currentUser) {
+            log('❌ Faça login primeiro!', 'error');
+            return;
+        }
+        
+        const paragraph = e.target.closest('p[data-id]');
+        if (paragraph) {
+            const paragraphId = paragraph.dataset.id;
+            const paragraphText = paragraph.textContent;
+            await openReferenceModal(paragraphId, paragraphText, userInputs.titulo);
+        }
+    });
+    
+    elements.savePdfBtn.addEventListener('click', () => {
+        if (!currentUser) {
+            log('❌ Faça login primeiro!', 'error');
+            return;
+        }
+        
+        log('📄 Gerando PDF...', 'info');
+        const title = userInputs.titulo.replace(/[^a-zA-Z0-9]/g, '_');
+        window.print();
+        log('✅ PDF salvo!', 'success');
+    });
+    
+    // === INICIALIZAÇÃO ===
+    updateLoginStatus(false);
+    displayABNTDocument();
+</script>
 </body>
 </html>
