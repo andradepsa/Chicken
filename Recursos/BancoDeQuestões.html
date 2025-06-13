@@ -46,6 +46,25 @@
             font-size: 1.1em;
         }
         
+        .auth-status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .auth-status.logged-in {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .auth-status.not-logged {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
         .input-area {
             margin-bottom: 20px;
         }
@@ -273,6 +292,10 @@
     <div class="container">
         <h1>🎯 Banco de Questões</h1>
         <p class="subtitle">Powered by Puter AI</p>
+        
+        <div id="auth-status" class="auth-status not-logged">
+            🔐 Clique em "Gerar Questões" para fazer login automaticamente
+        </div>
 
         <div class="input-area">
             <textarea id="prompt" placeholder="Digite seu pedido: Ex: 'Crie 5 questões sobre frações', 'Questões de matemática básica', 'História do Brasil'..."></textarea>
@@ -302,6 +325,48 @@
         const questionsContainer = document.getElementById('questions-container');
         const actionsContainer = document.getElementById('actions-container');
 
+        async function ensureAuthenticated() {
+            const authStatus = document.getElementById('auth-status');
+            
+            try {
+                // Verifica se já está logado
+                const user = await puter.auth.getUser();
+                if (user && user.username) {
+                    console.log('✅ Usuário já logado:', user.username);
+                    authStatus.textContent = `✅ Logado como: ${user.username}`;
+                    authStatus.className = 'auth-status logged-in';
+                    return true;
+                }
+            } catch (error) {
+                console.log('ℹ️ Usuário não está logado');
+            }
+            
+            try {
+                // Tenta fazer login
+                console.log('🔐 Iniciando processo de login...');
+                authStatus.textContent = '🔐 Abrindo janela de login...';
+                authStatus.className = 'auth-status not-logged';
+                
+                await puter.auth.signIn();
+                
+                // Verifica novamente após login
+                const user = await puter.auth.getUser();
+                if (user && user.username) {
+                    console.log('✅ Login realizado com sucesso');
+                    authStatus.textContent = `✅ Logado como: ${user.username}`;
+                    authStatus.className = 'auth-status logged-in';
+                    return true;
+                } else {
+                    throw new Error('Login não confirmado');
+                }
+            } catch (error) {
+                console.error('❌ Erro no login:', error);
+                authStatus.textContent = '❌ Falha no login. Tente novamente.';
+                authStatus.className = 'auth-status not-logged';
+                throw new Error('É necessário fazer login no Puter para usar a IA. Clique em "Gerar Questões" novamente após fazer login.');
+            }
+        }
+
         async function generateQuestions() {
             const userPrompt = promptInput.value.trim();
             if (!userPrompt) {
@@ -310,9 +375,14 @@
             }
 
             generateBtn.disabled = true;
-            generateBtn.innerHTML = '<div class="loading"></div>Gerando questões com IA...';
+            generateBtn.innerHTML = '<div class="loading"></div>Conectando à IA...';
 
             try {
+                // Garantir autenticação antes de usar a IA
+                await ensureAuthenticated();
+                
+                generateBtn.innerHTML = '<div class="loading"></div>Gerando questões...';
+
                 const questionCountMatch = userPrompt.match(/\d+/);
                 const numberOfQuestions = questionCountMatch ? parseInt(questionCountMatch[0], 10) : 5;
 
@@ -370,11 +440,23 @@
 
             } catch (error) {
                 console.error('Erro detalhado:', error);
-                if (error.code === 4001 || (error.message && error.message.includes('wallet'))) {
-                    showStatus(`❌ Erro de Autenticação: Faça login no Puter.com para usar a IA.`, 'error');
-                } else {
-                    showStatus(`❌ Erro ao gerar questões: ${error.message}`, 'error');
+                
+                // Tratamento específico de erros
+                let errorMessage = 'Erro desconhecido';
+                
+                if (error.code === 4001) {
+                    errorMessage = '🔐 É necessário fazer login no Puter.com. Uma janela de login será aberta. Complete o login e tente novamente.';
+                } else if (error.message && error.message.includes('wallet')) {
+                    errorMessage = '🔐 Problema de autenticação. Visite puter.com, faça login e tente novamente.';
+                } else if (error.message && error.message.includes('login')) {
+                    errorMessage = error.message;
+                } else if (error.message) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
                 }
+                
+                showStatus(`❌ ${errorMessage}`, 'error');
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '🚀 Gerar Questões';
@@ -455,8 +537,19 @@
             // Sempre inicia com banco vazio
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            // Removido loadFromStorage() devido a restrições de sandbox
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verifica status de login ao carregar
+            try {
+                const user = await puter.auth.getUser();
+                const authStatus = document.getElementById('auth-status');
+                if (user && user.username) {
+                    authStatus.textContent = `✅ Logado como: ${user.username}`;
+                    authStatus.className = 'auth-status logged-in';
+                }
+            } catch (error) {
+                // Usuário não logado - mantém status padrão
+            }
+            
             generateBtn.addEventListener('click', generateQuestions);
             document.getElementById('clear-btn').addEventListener('click', clearAll);
             promptInput.addEventListener('keypress', e => {
