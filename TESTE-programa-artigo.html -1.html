@@ -1085,9 +1085,7 @@
             updatePageCount();
             document.querySelectorAll('.abnt-content p[data-id]').forEach(p => {
                 p.addEventListener('click', () => {
-            
-                    
-                    const [section, index] = p.dataset.id.split('-');
+                 const [section, index] = p.dataset.id.split('-');
 openReferenceModal(p.dataset.id, articleContent[section][parseInt(index)], userInputs.titulo);
 });
 }
@@ -1252,5 +1250,3 @@ displayABNTDocument();
 </script>
 </body>
 </html>
-            if (!selectedParagraphStart) {
-                log('Selec
