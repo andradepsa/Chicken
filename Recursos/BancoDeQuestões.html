@@ -334,6 +334,7 @@
                 }
             } catch (error) {
                 // Usuário não está logado, precisa autenticar
+                console.log('Usuário não autenticado, tentando login...');
             }
             
             try {
@@ -342,7 +343,8 @@
                 return true;
             } catch (error) {
                 console.error('Erro na autenticação:', error);
-                throw new Error('É necessário fazer login no Puter para usar a IA. Por favor, tente novamente.');
+                const errorMessage = error?.message || error?.toString() || 'Erro de autenticação';
+                throw new Error(`É necessário fazer login no Puter para usar a IA. ${errorMessage}`);
             }
         }
         
@@ -361,13 +363,19 @@
             } catch (error) {
                 console.error('Erro na IA do Puter:', error);
                 
+                // Converter error para string se necessário
+                const errorMessage = error?.message || error?.toString() || 'Erro desconhecido';
+                const errorCode = error?.code || null;
+                
                 // Tratamento específico para erros de autenticação
-                if (error.code === 4001 || error.message.includes('wallet') || error.message.includes('account')) {
+                if (errorCode === 4001 || errorMessage.includes('wallet') || errorMessage.includes('account')) {
                     throw new Error('🔐 É necessário fazer login no Puter. Uma janela de login será aberta automaticamente.');
-                } else if (error.message && error.message.includes('user cancelled')) {
+                } else if (errorMessage.includes('user cancelled') || errorMessage.includes('cancelled')) {
                     throw new Error('⚠️ Login cancelado. É necessário fazer login para usar a IA.');
+                } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+                    throw new Error('🌐 Erro de conexão. Verifique sua internet e tente novamente.');
                 } else {
-                    throw new Error(`❌ Erro na IA: ${error.message || 'Erro desconhecido'}`);
+                    throw new Error(`❌ Erro na IA: ${errorMessage}`);
                 }
             }
         }
@@ -422,7 +430,8 @@ Gere as 5 questões agora:`;
                 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                showError('Erro ao gerar questões. Verifique sua conexão e tente novamente.');
+                const errorMessage = error?.message || error?.toString() || 'Erro desconhecido';
+                showError(`Erro ao gerar questões: ${errorMessage}`);
             } finally {
                 loading.style.display = 'none';
                 topicInput.disabled = false;
@@ -579,15 +588,16 @@ Gere as 5 questões agora:`;
             // Verificar se o usuário já está logado
             try {
                 const user = await puter.auth.getUser();
-                if (user) {
-                    helperText.innerHTML = '✅ Logado no Puter! Digite um assunto e clique no botão';
+                if (user && user.username) {
+                    helperText.innerHTML = `✅ Logado como ${user.username}! Digite um assunto e clique no botão`;
                     helperText.style.color = '#10b981';
                 } else {
                     helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
                     helperText.style.color = 'rgba(255, 255, 255, 0.8)';
                 }
             } catch (error) {
-                // Usuário não está logado
+                // Usuário não está logado ou erro na verificação
+                console.log('Usuário não autenticado ou erro na verificação:', error);
                 helperText.innerHTML = '💡 Digite um assunto e clique no botão. Você será solicitado a fazer login no Puter na primeira vez.';
                 helperText.style.color = 'rgba(255, 255, 255, 0.8)';
             }
