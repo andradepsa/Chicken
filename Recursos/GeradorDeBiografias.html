@@ -40,8 +40,9 @@
         .info-label { font-weight: bold; color: #667eea; min-width: 140px; }
         .info-value { color: #333; }
         .biography-content { line-height: 1.8; color: #444; }
-        .biography-section { margin-bottom: 25px; }
-        .section-title { font-size: 1.4rem; font-weight: bold; color: #667eea; margin-bottom: 15px; border-bottom: 2px solid #667eea; padding-bottom: 5px; }
+        .biography-section { margin-bottom: 35px; }
+        .section-title { font-size: 1.5rem; font-weight: bold; color: #667eea; margin-bottom: 20px; border-bottom: 3px solid #667eea; padding-bottom: 8px; display: flex; align-items: center; }
+        .section-title::before { content: ''; width: 4px; height: 24px; background: #667eea; margin-right: 10px; border-radius: 2px; }
         .current-section-title { font-size: 1.4rem; font-weight: bold; color: #28a745; margin-bottom: 15px; border-bottom: 2px solid #28a745; padding-bottom: 5px; }
         .contributions-list { list-style: none; padding: 0; }
         .contributions-list li { background: rgba(102, 126, 234, 0.1); padding: 10px 15px; margin-bottom: 8px; border-radius: 5px; border-left: 3px solid #667eea; }
@@ -139,9 +140,25 @@
         
         function formatBiographyText(text) { 
             if (!text) return ''; 
-            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-            const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/); 
-            return paragraphs.map(p => p.trim()).filter(p => p.length > 0).map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`).join(''); 
+            
+            // Aplica formatação mais rica
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #667eea;">$1</strong>');
+            
+            // Divide em parágrafos
+            const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/);
+            
+            return paragraphs
+                .map(p => p.trim())
+                .filter(p => p.length > 0)
+                .map((p, index) => {
+                    // Estiliza o primeiro parágrafo como destaque
+                    if (index === 0) {
+                        return `<p style="font-size: 1.15rem; font-weight: 500; line-height: 1.7; color: #2c3e50; margin-bottom: 20px; text-align: justify;">${p.replace(/\\n/g, ' ')}</p>`;
+                    }
+                    // Parágrafos normais com melhor formatação
+                    return `<p style="font-size: 1.05rem; line-height: 1.8; color: #444; margin-bottom: 18px; text-align: justify; text-indent: 25px;">${p.replace(/\\n/g, ' ')}</p>`;
+                })
+                .join(''); 
         }
         
         function sanitizeJSONString(str) { 
@@ -484,32 +501,90 @@
                 
                 const currentInfoString = `Informações atuais: ${currentInfo.currentAge ? `Idade atual: ${currentInfo.currentAge} anos. ` : ''}${currentInfo.recentNews.length > 0 ? `Notícias recentes encontradas. ` : ''}${currentInfo.recentWorks.length > 0 ? `Trabalhos recentes: ${currentInfo.recentWorks.map(w => w.title).join('; ')}. ` : ''}`;
                 
-                const enhancedPrompt = `Você é um biógrafo especialista. Crie uma biografia ATUAL e detalhada sobre "${personName}". 
+                const enhancedPrompt = `Você é um biógrafo especialista renomado. Crie uma biografia EXTRAORDINARIAMENTE DETALHADA e ENVOLVENTE sobre "${personName}". 
                 
                 **INFORMAÇÕES VERIFICADAS:** ${factString}
                 **INFORMAÇÕES ATUAIS:** ${currentInfoString}
                 
-                **IMPORTANTE:** 
-                - Se a pessoa está viva, foque no que ela faz ATUALMENTE
-                - Inclua conquistas e trabalhos RECENTES se disponíveis
-                - Mencione idade atual se disponível
-                - Use informações atuais para contextualizar relevância
+                **INSTRUÇÕES ESPECÍFICAS PARA A BIOGRAFIA:**
+                
+                🎯 **ESTRUTURA OBRIGATÓRIA (8-12 PARÁGRAFOS EXTENSOS):**
+                
+                1. **ABERTURA IMPACTANTE** (2 parágrafos): Comece com uma frase marcante que capture a essência da pessoa. Descreva quem é e por que é importante hoje. Contextualize sua relevância no mundo atual.
+                
+                2. **ORIGENS E FORMAÇÃO** (2-3 parágrafos): Background familiar detalhado, infância, influências formativas, educação, primeiras experiências que moldaram sua personalidade e visão de mundo.
+                
+                3. **TRAJETÓRIA PROFISSIONAL** (2-3 parágrafos): Início da carreira, desafios superados, momentos decisivos, evolução profissional, principais conquistas e como chegou ao sucesso.
+                
+                4. **IMPACTO E LEGADO** (2 parágrafos): Transformações que causou em sua área, influência na sociedade, reconhecimentos, como mudou o mundo ou sua área de atuação.
+                
+                5. **VIDA PESSOAL E CARACTERÍSTICAS** (1-2 parágrafos): Personalidade, relacionamentos importantes, hobbies, filosofia de vida, aspectos humanos que a tornam única.
+                
+                6. **MOMENTO ATUAL** (1-2 parágrafos): Se viva, foque intensamente no que faz HOJE, projetos atuais, visão de futuro, relevância contemporânea. Se falecida, como é lembrada hoje.
+                
+                **ESTILO DE ESCRITA EXIGIDO:**
+                - Use linguagem rica, envolvente e sofisticada
+                - Inclua detalhes específicos, datas, nomes, locais
+                - Crie narrativa fluida e cativante
+                - Use metáforas e analogias quando apropriado
+                - Mantenha tom respeitoso mas interessante
+                - Cada parágrafo deve ter 100-150 palavras
+                - Use conectores para criar fluidez entre parágrafos
+                
+                **ELEMENTOS OBRIGATÓRIOS:**
+                - Contexto histórico da época
+                - Desafios específicos enfrentados
+                - Momentos de virada na vida
+                - Relações com outras personalidades importantes
+                - Detalhes sobre métodos de trabalho ou filosofia
+                - Impacto específico em números ou exemplos concretos
                 
                 Responda EXCLUSIVAMENTE com um objeto JSON válido:
                 {
-                    "name": "Nome completo",
+                    "name": "Nome completo oficial",
                     "birth_date": "${verifiedFacts.birthDate || 'Não disponível'}",
-                    "birth_place": "Cidade, País",
+                    "birth_place": "Cidade, Estado/Região, País",
                     "death_date": "${verifiedFacts.deathDate || 'Ainda vivo(a)'}",
-                    "death_place": "Cidade, País ou 'N/A'",
-                    "nationality": "Nacionalidade",
-                    "main_areas": ["Área 1", "Área 2"],
+                    "death_place": "Cidade, Estado/Região, País ou 'N/A'",
+                    "nationality": "Nacionalidade completa",
+                    "main_areas": ["Área principal", "Área secundária", "Área terciária"],
                     "current_age": ${currentInfo.currentAge || null},
-                    "biography": "Biografia completa em 4-5 parágrafos",
-                    "major_contributions": ["Contribuição 1", "Contribuição 2"],
-                    "timeline": [{"year": "AAAA", "event": "Evento"}],
-                    "curiosities": ["Curiosidade 1", "Curiosidade 2"],
-                    "recent_activities": ["Atividade atual 1", "Atividade atual 2"]
+                    "biography": "**BIOGRAFIA EXTRAORDINARIAMENTE DETALHADA DE 8-12 PARÁGRAFOS EXTENSOS seguindo exatamente a estrutura solicitada acima. Cada parágrafo deve ser rico em detalhes, informações específicas e narrativa envolvente. Use linguagem sofisticada e cativante.**",
+                    "major_contributions": ["Contribuição específica detalhada 1", "Contribuição específica detalhada 2", "Contribuição específica detalhada 3", "Contribuição específica detalhada 4", "Contribuição específica detalhada 5"],
+                    "timeline": [
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"},
+                        {"year": "Ano exato", "event": "Evento específico e detalhado"}
+                    ],
+                    "curiosities": [
+                        "Curiosidade fascinante e específica com detalhes",
+                        "Curiosidade fascinante e específica com detalhes", 
+                        "Curiosidade fascinante e específica com detalhes",
+                        "Curiosidade fascinante e específica com detalhes",
+                        "Curiosidade fascinante e específica com detalhes"
+                    ],
+                    "recent_activities": [
+                        "Atividade atual específica e detalhada",
+                        "Atividade atual específica e detalhada",
+                        "Atividade atual específica e detalhada",
+                        "Atividade atual específica e detalhada"
+                    ],
+                    "quotes": [
+                        "Frase marcante da pessoa",
+                        "Frase marcante da pessoa",
+                        "Frase marcante da pessoa"
+                    ],
+                    "achievements": [
+                        "Conquista específica com ano e detalhes",
+                        "Conquista específica com ano e detalhes",
+                        "Conquista específica com ano e detalhes",
+                        "Conquista específica com ano e detalhes"
+                    ]
                 }`;
                 
                 const response = await puter.ai.chat([{ role: 'user', content: enhancedPrompt }]);
@@ -625,8 +700,32 @@
                     <div class="biography-content">
                         ${data.biography ? `
                             <div class="biography-section">
-                                <div class="section-title">📖 Biografia</div>
-                                ${formatBiographyText(data.biography)}
+                                <div class="section-title">📖 Biografia Completa</div>
+                                <div style="background: #fafbfc; padding: 25px; border-radius: 12px; border: 1px solid #e1e8ed; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    ${formatBiographyText(data.biography)}
+                                </div>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.achievements && data.achievements.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="section-title">🏅 Principais Conquistas</div>
+                                <ul class="contributions-list">
+                                    ${data.achievements.map(achievement => `<li>${achievement}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        
+                        ${data.quotes && data.quotes.length > 0 ? `
+                            <div class="biography-section">
+                                <div class="section-title">💬 Frases Marcantes</div>
+                                <div style="background: rgba(102, 126, 234, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                                    ${data.quotes.map(quote => `
+                                        <blockquote style="margin: 15px 0; font-style: italic; font-size: 1.1rem; color: #555;">
+                                            "${quote}"
+                                        </blockquote>
+                                    `).join('')}
+                                </div>
                             </div>
                         ` : ''}
                         
