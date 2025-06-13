@@ -268,20 +268,27 @@
             color: #444;
         }
         
-        .clear-button {
-            background: #6c757d;
+        .card-buttons {
+            float: right;
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .clear-button, .print-button {
             color: white;
             padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            float: right;
-            margin-top: 10px;
+            font-weight: bold;
         }
         
-        .clear-button:hover {
-            background: #5a6268;
-        }
+        .clear-button { background: #6c757d; }
+        .clear-button:hover { background: #5a6268; }
+
+        .print-button { background: #007bff; }
+        .print-button:hover { background: #0056b3; }
         
         .examples-section {
             background: rgba(40, 167, 69, 0.1);
@@ -324,9 +331,7 @@
             margin-top: 5px;
         }
 
-        .photo-retry-btn:hover {
-            background: #218838;
-        }
+        .photo-retry-btn:hover { background: #218838; }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -345,6 +350,45 @@
             }
             .example-queries {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* ESTILOS PARA IMPRESSÃO */
+        @media print {
+            body {
+                background: none;
+                color: black;
+            }
+            body > .container > *:not(.biography-container) {
+                display: none;
+            }
+            .container {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                max-width: 100%;
+            }
+            .biography-container, .biography-card {
+                display: block !important;
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                padding: 0;
+            }
+            .card-buttons {
+                display: none;
+            }
+            .mathematician-photo {
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+            .section-title {
+                color: #333;
+                border-bottom-color: #333;
+            }
+            a {
+                text-decoration: none;
+                color: black;
             }
         }
     </style>
@@ -369,6 +413,7 @@
                 <div class="example-query" onclick="fillExample('Nelson Mandela')">🕊️ Nelson Mandela</div>
                 <div class="example-query" onclick="fillExample('Isaac Newton')">🍎 Isaac Newton</div>
                 <div class="example-query" onclick="fillExample('Alan Turing')">💻 Alan Turing</div>
+                <div class="example-query" onclick="fillExample('Leandro e Leonardo')">🎤 Leandro e Leonardo</div>
             </div>
         </div>
 
@@ -407,31 +452,23 @@
             handleSearchRequest();
         }
 
-        // *** NOVA FUNÇÃO PARA FORMATAR A BIOGRAFIA EM PARÁGRAFOS ***
         function formatBiographyText(text) {
             if (!text) return '';
-
-            // 1. Converte marcadores de negrito (**) para tags <strong>
             let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-            // 2. Divide o texto em parágrafos. A IA geralmente usa quebras de linha duplas (`\n\n`) entre parágrafos.
-            // A expressão regular `(\r\n|\n|\r){2,}` captura duas ou mais quebras de linha, independentemente do sistema operacional.
             const paragraphs = formattedText.split(/(\r\n|\n|\r){2,}/);
+            return paragraphs.map(p => p.trim()).filter(p => p.length > 0)
+                           .map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`).join('');
+        }
 
-            // 3. Mapeia cada trecho para uma tag <p>, limpando espaços e removendo parágrafos vazios.
-            return paragraphs
-                .map(p => p.trim())
-                .filter(p => p.length > 0)
-                .map(p => `<p>${p.replace(/\\n/g, ' ')}</p>`) // Remove quebras de linha simples restantes dentro do parágrafo
-                .join('');
+        function printBiography() {
+            window.print();
         }
 
         // === LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
         async function handleSearchRequest() {
             const originalName = personInput.value.trim();
             if (!originalName) {
-                showStatus('Por favor, digite o nome de uma pessoa.', 'error');
-                return;
+                showStatus('Por favor, digite o nome de uma pessoa.', 'error'); return;
             }
             suggestionBox.style.display = 'none';
             generateBtn.disabled = true;
@@ -453,10 +490,7 @@
                 const data = await response.json();
                 if (data.query.search.length > 0) return data.query.search[0].title;
                 return name;
-            } catch (error) {
-                console.warn("Erro ao verificar o nome:", error);
-                return name;
-            }
+            } catch (error) { console.warn("Erro ao verificar o nome:", error); return name; }
         }
         function showCorrectionSuggestion(originalName, correctedName) {
             suggestionBox.innerHTML = `Você quis dizer: <strong>${correctedName}</strong>?
@@ -478,7 +512,6 @@
         async function generateBiography() {
             const personName = personInput.value.trim();
             if (!personName) return;
-
             generateBtn.disabled = true;
             generateBtn.textContent = 'Pesquisando...';
             showStatus('Coletando informações... Isso pode levar um momento.', 'info');
@@ -488,7 +521,7 @@
             try {
                 const prompt = `
                 Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada sobre "${personName}".
-                Responda **EXCLUSIVAMENTE** com um objeto JSON válido, sem explicações.
+                Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
                   "name": "Nome completo", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade", "main_areas": ["Área 1", "Área 2"],
                   "biography": "**Estrutura Obrigatória (4-5 parágrafos):**\\n\\n1. **Início da Vida e Formação:** Contexto, família, educação, influências.\\n\\n2. **Carreira e Contribuições Principais:** Marcos, importância científica/artística.\\n\\n3. **Contexto Histórico e Desafios:** Sua época, desafios, interações.\\n\\n4. **Anos Finais e Legado:** Influência duradoura, relevância hoje.",
@@ -533,7 +566,10 @@
             const photoId = `photo-${Date.now()}`;
             const biographyHTML = `
                 <div class="biography-card">
-                    <button class="clear-button" onclick="clearBiography()">Limpar Biografia</button>
+                    <div class="card-buttons">
+                        <button class="print-button" onclick="printBiography()">🖨️ Imprimir</button>
+                        <button class="clear-button" onclick="clearBiography()">Limpar</button>
+                    </div>
                     <div class="mathematician-header">
                         <div class="mathematician-photo" id="${photoId}">
                             <div class="photo-placeholder"><div class="loading-photo"></div><div>Procurando foto...</div></div>
@@ -564,15 +600,11 @@
 
         // === BUSCA DE FOTOS MULTI-FONTES (sem alterações) ===
         async function loadPersonPhoto(personName, photoElementId) {
-            const photoElement = document.getElementById(photoElementId);
-            if (!photoElement) return;
+            const photoElement = document.getElementById(photoElementId); if (!photoElement) return;
             const imageSources = [
-                { name: 'Wikidata', func: () => tryWikidata(personName) },
-                { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
-                { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') },
-                { name: 'Library of Congress', func: () => tryLibraryOfCongress(personName) },
-                { name: 'Openverse', func: () => tryOpenverse(personName) },
-                { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) },
+                { name: 'Wikidata', func: () => tryWikidata(personName) }, { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
+                { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') }, { name: 'Library of Congress', func: () => tryLibraryOfCongress(personName) },
+                { name: 'Openverse', func: () => tryOpenverse(personName) }, { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) },
                 { name: 'Wikimedia Commons', func: () => tryWikimediaCommons(personName) }
             ];
             let photoLoaded = false;
@@ -583,14 +615,9 @@
                     const imageUrl = await source.func();
                     if (imageUrl) {
                         const success = await loadImageWithFallback(imageUrl, personName, photoElement);
-                        if (success) {
-                            console.log(`Foto carregada de ${source.name}: ${imageUrl}`);
-                            photoLoaded = true;
-                        }
+                        if (success) { console.log(`Foto carregada de ${source.name}: ${imageUrl}`); photoLoaded = true; }
                     }
-                } catch (error) {
-                    console.warn(`Erro na busca em ${source.name}:`, error.message);
-                }
+                } catch (error) { console.warn(`Erro na busca em ${source.name}:`, error.message); }
             }
             if (!photoLoaded) showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
         }
@@ -657,6 +684,7 @@
         window.fillExample = fillExample;
         window.clearBiography = clearBiography;
         window.retryPhotoLoad = retryPhotoLoad;
+        window.printBiography = printBiography;
         personInput.focus();
     </script>
 </body>
