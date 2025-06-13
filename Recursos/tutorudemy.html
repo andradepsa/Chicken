@@ -583,7 +583,14 @@
         // Verifica se o usuário está autenticado
         async function checkAuthentication() {
             try {
-                const user = await puter.auth.getUser();
+                // Adiciona timeout para evitar travamento
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout na verificação de autenticação')), 5000)
+                );
+                
+                const userPromise = puter.auth.getUser();
+                const user = await Promise.race([userPromise, timeoutPromise]);
+                
                 if (user && user.username) {
                     currentUser = user;
                     showMainApp();
@@ -593,7 +600,7 @@
                     return false;
                 }
             } catch (error) {
-                console.log('Usuário não autenticado:', error);
+                console.log('Erro na verificação de autenticação:', error);
                 showLoginScreen();
                 return false;
             }
@@ -997,27 +1004,47 @@
             // Mostra tela de loading
             showLoadingScreen();
             
-            // Configura eventos
-            loginBtn.addEventListener('click', loginUser);
-            logoutBtn.addEventListener('click', logoutUser);
-            generateBtn.addEventListener('click', generateQuestions);
-            pdfBtn.addEventListener('click', exportToPDF);
-            clearBtn.addEventListener('click', clearAllQuestions);
-            
-            // Torna as funções globais
-            window.removeQuestion = removeQuestion;
-            window.checkAnswer = checkAnswer;
-            window.updateSubtopics = updateSubtopics;
-            
-            // Preenche os tópicos
-            populateTopics();
-            
-            // Verifica autenticação
-            await checkAuthentication();
+            try {
+                // Configura eventos
+                loginBtn.addEventListener('click', loginUser);
+                logoutBtn.addEventListener('click', logoutUser);
+                generateBtn.addEventListener('click', generateQuestions);
+                pdfBtn.addEventListener('click', exportToPDF);
+                clearBtn.addEventListener('click', clearAllQuestions);
+                
+                // Torna as funções globais
+                window.removeQuestion = removeQuestion;
+                window.checkAnswer = checkAnswer;
+                window.updateSubtopics = updateSubtopics;
+                
+                // Preenche os tópicos
+                populateTopics();
+                
+                // Verifica autenticação com timeout
+                console.log('Verificando autenticação...');
+                await checkAuthentication();
+                console.log('Verificação de autenticação concluída');
+                
+            } catch (error) {
+                console.error('Erro na inicialização:', error);
+                showLoginScreen();
+            }
         }
         
         // Inicia a aplicação quando a página carregar
-        document.addEventListener('DOMContentLoaded', initializeApp);
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, iniciando aplicação...');
+            
+            // Fallback: se demorar mais de 3 segundos, mostra tela de login
+            setTimeout(() => {
+                if (loadingScreen.style.display !== 'none') {
+                    console.log('Timeout na inicialização, forçando tela de login');
+                    showLoginScreen();
+                }
+            }, 3000);
+            
+            initializeApp();
+        });
     </script>
 </body>
 </html>
