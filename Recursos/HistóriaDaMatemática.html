@@ -395,65 +395,24 @@
             try {
                 const prompt = `
                 Você é um biógrafo e historiador especialista, com um profundo conhecimento em história da ciência e das artes. Sua tarefa é criar uma biografia EXCEPCIONALMENTE detalhada e analítica sobre a seguinte pessoa: "${personName}".
-
-                Responda **EXCLUSIVAMENTE** com um objeto JSON válido no seguinte formato. Não inclua texto ou explicações antes ou depois do JSON.
-
+                Responda **EXCLUSIVAMENTE** com um objeto JSON válido.
                 {
-                  "name": "Nome completo e correto da pessoa",
-                  "birth_date": "Data de nascimento (DD/MM/AAAA)",
-                  "birth_place": "Local de nascimento (Cidade, País)",
-                  "death_date": "Data da morte (DD/MM/AAAA) ou 'Ainda vivo(a)'",
-                  "death_place": "Local da morte ou 'N/A' se vivo(a)",
-                  "nationality": "Nacionalidade(s)",
-                  "main_areas": ["Área 1 de atuação", "Área 2 de atuação"],
-                  
-                  "biography": "Aqui você vai escrever a biografia, seguindo as diretrizes abaixo. Seja profundo, detalhado e use um tom acadêmico, mas acessível.
-
-                    **Estrutura Obrigatória da Biografia (mínimo de 4-5 parágrafos longos):**
-
-                    1.  **Introdução, Início da Vida e Formação:** Comece com uma introdução impactante. Descreva o contexto de seu nascimento, sua família, sua educação inicial e as principais influências (mentores, livros, eventos) que despertaram seu interesse e moldaram seu futuro intelectual e profissional.
-                    
-                    2.  **Carreira, Descobertas e Contribuições Principais:** Este é o núcleo da biografia. Detalhe os marcos de sua carreira e suas descobertas ou obras mais significativas. Para cada contribuição, explique a importância CIENTÍFICA ou ARTÍSTICA. Qual problema ela resolveu? Que novo campo ela abriu? Como ela se diferenciava do conhecimento da época?
-                    
-                    3.  **Contexto Histórico, Desafios e Interações:** Situe a pessoa em seu contexto histórico, cultural e científico. Mencione os desafios que enfrentou (sociais, financeiros, científicos), os contemporâneos com quem interagiu (colaboradores, rivais) e como o 'espírito da época' (zeitgeist) influenciou seu trabalho e foi por ele influenciado.
-                    
-                    4.  **Anos Finais, Legado e Influência Posterior:** Descreva os anos finais de sua vida. Analise seu legado duradouro de forma crítica. Como seu trabalho influenciou as gerações seguintes de cientistas, artistas ou pensadores? Qual é sua relevância hoje? Conclua com uma reflexão sobre seu impacto na história humana.
-                  ",
-
-                  "major_contributions": [
-                    "Primeira contribuição ou feito principal, com uma explicação detalhada sobre seu significado técnico/científico.",
-                    "Segundo feito principal, explicando o 'antes' e 'depois' dessa contribuição para a área.",
-                    "Terceiro feito principal, detalhando sua aplicação ou a teoria que ela fundamentou."
-                  ],
-                  "timeline": [
-                    {"year": "AAAA", "event": "Um evento marcante na vida ou carreira, com contexto."},
-                    {"year": "AAAA", "event": "Outro evento importante, explicando sua consequência."},
-                    {"year": "AAAA", "event": "Mais um evento cronológico crucial."}
-                  ],
-                  "curiosities": [
-                    "Uma curiosidade ou fato interessante e pouco conhecido sobre a pessoa.",
-                    "Outra curiosidade que revele algo sobre sua personalidade ou método de trabalho."
-                  ]
+                  "name": "Nome completo e correto", "birth_date": "DD/MM/AAAA", "birth_place": "Cidade, País", "death_date": "DD/MM/AAAA ou 'Ainda vivo(a)'", "death_place": "Cidade, País ou 'N/A'", "nationality": "Nacionalidade(s)", "main_areas": ["Área 1", "Área 2"],
+                  "biography": "Aqui você vai escrever a biografia, seguindo as diretrizes abaixo. Seja profundo, detalhado e use um tom acadêmico, mas acessível. **Estrutura Obrigatória (mínimo de 4-5 parágrafos longos):** 1. **Introdução, Início da Vida e Formação:** Contexto do nascimento, família, educação inicial e influências. 2. **Carreira, Descobertas e Contribuições Principais:** Marcos da carreira, importância CIENTÍFICA/ARTÍSTICA das obras. Qual problema resolveu? Qual campo abriu? 3. **Contexto Histórico, Desafios e Interações:** Situe a pessoa em sua época. Desafios enfrentados, interações com contemporâneos, influência do 'espírito da época' (zeitgeist). 4. **Anos Finais, Legado e Influência Posterior:** Análise crítica do legado. Como seu trabalho influenciou as gerações seguintes? Qual sua relevância hoje?",
+                  "major_contributions": ["Contribuição 1 com explicação técnica detalhada.", "Contribuição 2 explicando o 'antes' e 'depois'.", "Contribuição 3 detalhando sua aplicação."],
+                  "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento com consequência."}],
+                  "curiosities": ["Curiosidade pouco conhecida.", "Curiosidade sobre sua personalidade."]
                 }
-
-                Instruções Finais Cruciais:
-                - A precisão factual é imperativa. Use 'Informação não disponível' apenas se for estritamente necessário.
-                - O JSON deve ser estritamente válido. NÃO inclua vírgulas no final de listas ou objetos (trailing commas).
-                `;
+                **REGRAS CRUCIAIS:** A precisão é imperativa. O JSON deve ser estritamente válido, SEM vírgulas no final de listas ou objetos (trailing commas).`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 
-                if (!response || !response.message || !response.message.content) {
-                    throw new Error('A IA não retornou uma resposta válida.');
-                }
-
+                if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
+                
                 let content = response.message.content;
                 const jsonStart = content.indexOf('{');
                 const jsonEnd = content.lastIndexOf('}') + 1;
-                
-                if (jsonStart === -1 || jsonEnd === 0) {
-                    throw new Error('A resposta da IA não continha um JSON válido.');
-                }
+                if (jsonStart === -1 || jsonEnd === 0) throw new Error('A resposta da IA não continha um JSON válido.');
                 
                 let jsonString = content.substring(jsonStart, jsonEnd);
                 jsonString = jsonString.replace(/[\n\r\t]/g, '');
@@ -511,16 +470,17 @@
             loadPersonPhoto(data.name, photoId);
         }
 
-        // === NOVA FUNÇÃO DE BUSCA DE FOTOS (MELHORADA) ===
+        // === NOVA BUSCA DE FOTOS MULTI-FONTES ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
             if (!photoElement) return;
 
-            // Nova lista de fontes, da mais precisa para a mais ampla
             const imageSources = [
                 { name: 'Wikidata', func: () => tryWikidata(personName) },
                 { name: 'Wikipedia (PT)', func: () => tryWikipediaAPI(personName, 'pt') },
                 { name: 'Wikipedia (EN)', func: () => tryWikipediaAPI(personName, 'en') },
+                { name: 'Openverse', func: () => tryOpenverse(personName) },
+                { name: 'DuckDuckGo', func: () => tryDuckDuckGo(personName) },
                 { name: 'Wikimedia Commons', func: () => tryWikimediaCommons(personName) }
             ];
 
@@ -533,7 +493,7 @@
                     if (imageUrl) {
                         const success = await loadImageWithFallback(imageUrl, personName, photoElement);
                         if (success) {
-                            console.log(`Foto carregada com sucesso de ${source.name}: ${imageUrl}`);
+                            console.log(`Foto carregada de ${source.name}: ${imageUrl}`);
                             photoLoaded = true;
                         }
                     }
@@ -549,9 +509,8 @@
 
         // === NOVOS MÉTODOS DE BUSCA DE IMAGENS ===
 
-        // 1. Busca na Wikidata (a fonte mais confiável)
+        // Fonte 1: Wikidata (Alta Precisão)
         async function tryWikidata(personName) {
-            // Passo 1: Encontrar o ID da entidade (ex: Q935 para Isaac Newton)
             const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(personName)}&language=pt&format=json&origin=*`;
             const searchResponse = await fetch(searchUrl);
             if (!searchResponse.ok) return null;
@@ -559,48 +518,64 @@
             if (!searchData.search || searchData.search.length === 0) return null;
             const entityId = searchData.search[0].id;
 
-            // Passo 2: Usar o ID para obter os dados da entidade, incluindo a imagem (propriedade P18)
             const entityUrl = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${entityId}&props=claims&format=json&origin=*`;
             const entityResponse = await fetch(entityUrl);
             if (!entityResponse.ok) return null;
             const entityData = await entityResponse.json();
             
             const claims = entityData.entities[entityId].claims;
-            if (!claims || !claims.P18) return null; // P18 é a propriedade "imagem"
+            if (!claims || !claims.P18) return null;
 
             const imageName = claims.P18[0].mainsnak.datavalue.value;
             if (!imageName) return null;
 
-            // Passo 3: Construir a URL final da imagem
             return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(imageName.replace(/ /g, '_'))}?width=300`;
         }
 
-        // 2. Busca na Wikipedia (agora multilíngue)
+        // Fonte 2: Wikipedia (Alta Relevância)
         async function tryWikipediaAPI(personName, lang) {
             const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(personName.replace(/ /g, '_'))}`;
             const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
-            if (!response.ok) throw new Error(`Status ${response.status}`);
+            if (!response.ok) return null;
             const data = await response.json();
-            if (data.thumbnail && data.thumbnail.source) {
-                return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
+            if (data.thumbnail && data.thumbnail.source) return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
+            return null;
+        }
+        
+        // Fonte 3: Openverse (Ampla Cobertura de Fontes Abertas)
+        async function tryOpenverse(personName) {
+            const url = `https://api.openverse.engineering/v1/images/?q=${encodeURIComponent(personName)}&license_type=publicdomain,by,by-sa&category=photograph`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.results && data.results.length > 0) return data.results[0].url;
+            return null;
+        }
+
+        // Fonte 4: DuckDuckGo (Busca Geral na Web)
+        async function tryDuckDuckGo(personName) {
+            const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(personName)}&format=json&pretty=1&no_html=1&skip_disambig=1`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.Image && data.Image.length > 0) {
+                 // A API pode retornar uma URL relativa, então garantimos que ela seja absoluta
+                return new URL(data.Image, 'https://duckduckgo.com').href;
             }
             return null;
         }
 
-        // 3. Busca no Wikimedia Commons (fallback)
+        // Fonte 5: Wikimedia Commons (Fallback Final)
         async function tryWikimediaCommons(personName) {
             const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
             const response = await fetch(searchUrl);
-            if (!response.ok) throw new Error('Falha no Wikimedia Commons');
+            if (!response.ok) return null;
             const data = await response.json();
-            if (data.query?.search?.length > 0) {
-                const fileName = data.query.search[0].title;
-                return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
-            }
+            if (data.query?.search?.length > 0) return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(data.query.search[0].title)}?width=300`;
             return null;
         }
 
-        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK (sem alterações, já está robusta) ===
+        // === FUNÇÃO PARA CARREGAR IMAGEM COM FALLBACK (sem alterações) ===
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
                 const img = new Image();
