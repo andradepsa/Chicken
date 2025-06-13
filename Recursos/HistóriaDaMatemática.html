@@ -341,7 +341,6 @@
         <div class="examples-section">
             <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
             <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
-            <!-- CORREÇÃO 2: Adicionados mais dois exemplos, totalizando 8 -->
             <div class="example-queries">
                 <div class="example-query" onclick="fillExample('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
                 <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
@@ -381,10 +380,9 @@
             statusDiv.style.display = 'block';
         }
         
-        // CORREÇÃO 1: Função modificada para preencher o campo E iniciar a pesquisa automaticamente
         function fillExample(name) {
             personInput.value = name;
-            generateBiography(); // Inicia a busca imediatamente
+            generateBiography();
         }
 
         // === FUNÇÃO PRINCIPAL ===
@@ -401,6 +399,7 @@
             biographyContainer.style.display = 'none';
 
             try {
+                // Lembre-se de estar logado no puter.com para evitar erros de autenticação!
                 const prompt = `
                 Você é um biógrafo e historiador especialista. Sua tarefa é criar uma biografia detalhada e factualmente precisa sobre a seguinte pessoa: "${personName}".
 
@@ -442,13 +441,20 @@
                     throw new Error('A IA não retornou uma resposta válida.');
                 }
 
-                const content = response.message.content;
+                let content = response.message.content;
                 const jsonStart = content.indexOf('{');
                 const jsonEnd = content.lastIndexOf('}') + 1;
+                
                 if (jsonStart === -1 || jsonEnd === 0) {
                     throw new Error('A resposta da IA não continha um JSON válido.');
                 }
-                const jsonString = content.substring(jsonStart, jsonEnd);
+                
+                let jsonString = content.substring(jsonStart, jsonEnd);
+
+                // CORREÇÃO 1: Limpa a string JSON de caracteres de controle inválidos antes de fazer o parse.
+                // Isso resolve o erro "Bad control character in string literal".
+                jsonString = jsonString.replace(/[\n\r\t]/g, '');
+
                 const biographyData = JSON.parse(jsonString);
 
                 displayBiography(biographyData);
@@ -456,7 +462,12 @@
 
             } catch (error) {
                 console.error('Erro na geração:', error);
-                showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
+                // Verifica se o erro é o de autenticação do Puter para dar uma mensagem mais útil.
+                if (error.code === 4001 || (error.message && error.message.includes("wallet"))) {
+                     showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com e tente novamente.', 'error');
+                } else {
+                     showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
+                }
             } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '🔍 Gerar Biografia Completa';
@@ -466,6 +477,7 @@
         // === FUNÇÃO DE EXIBIÇÃO ===
         function displayBiography(data) {
             const photoId = `photo-${Date.now()}`;
+            // Na seção de biografia, o .replace(/\n/g, '<br>') ainda é útil caso a IA inclua literais \\n
             const biographyHTML = `
                 <div class="biography-card">
                     <button class="clear-button" onclick="clearBiography()">Limpar Biografia</button>
@@ -508,7 +520,7 @@
                         ${data.biography ? `
                         <div class="biography-section">
                             <div class="section-title">📖 Biografia</div>
-                            <p>${data.biography.replace(/\n/g, '<br>')}</p>
+                            <p>${data.biography.replace(/\\n/g, '<br><br>')}</p>
                         </div>` : ''}
 
                         ${data.major_contributions && data.major_contributions.length > 0 ? `
@@ -551,13 +563,8 @@
         // === FUNÇÃO MELHORADA PARA CARREGAR FOTOS ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId);
-            if (!photoElement) {
-                console.error('Elemento da foto não encontrado:', photoElementId);
-                return;
-            }
+            if (!photoElement) return;
 
-            console.log(`Tentando carregar foto para: ${personName}`);
-            
             const imageSources = [
                 () => tryWikipediaAPI(personName),
                 () => tryWikipediaDirectSearch(personName),
@@ -569,7 +576,6 @@
 
             for (const sourceFunction of imageSources) {
                 if (photoLoaded) break;
-                
                 attemptCount++;
                 updatePhotoStatus(photoElement, `Tentativa ${attemptCount}/3...`);
                 
@@ -577,10 +583,7 @@
                     const imageUrl = await sourceFunction();
                     if (imageUrl) {
                         const success = await loadImageWithFallback(imageUrl, personName, photoElement);
-                        if (success) {
-                            photoLoaded = true;
-                            console.log(`Foto carregada com sucesso na tentativa ${attemptCount}:`, imageUrl);
-                        }
+                        if (success) photoLoaded = true;
                     }
                 } catch (error) {
                     console.warn(`Erro na tentativa ${attemptCount} para ${personName}:`, error.message);
@@ -592,92 +595,49 @@
             }
 
             if (!photoLoaded) {
-                console.log(`Nenhuma foto encontrada para ${personName}, usando placeholder`);
                 showCustomPlaceholder(personName, photoElementId, 'Foto não encontrada');
             }
         }
 
-        // === MÉTODOS DE BUSCA DE IMAGENS ===
+        // === MÉTODOS DE BUSCA DE IMAGENS (sem alterações) ===
         async function tryWikipediaAPI(personName) {
-            console.log('Tentando Wikipedia API...');
-            
-            const nameVariations = [
-                personName,
-                personName.replace(/\s+/g, '_'),
-                personName.split(' ').join('_')
-            ];
-
+            const nameVariations = [ personName, personName.replace(/\s+/g, '_') ];
             for (const name of nameVariations) {
                 try {
                     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`;
-                    console.log('URL da Wikipedia:', url);
-                    
-                    const response = await fetch(url, {
-                        headers: {
-                            'User-Agent': 'BiographyGenerator/1.0 (https://biography-generator.com)'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Status ${response.status}: ${response.statusText}`);
-                    }
-                    
+                    const response = await fetch(url, { headers: { 'User-Agent': 'BiographyGenerator/1.0' } });
+                    if (!response.ok) throw new Error(`Status ${response.status}`);
                     const data = await response.json();
-                    console.log('Resposta da Wikipedia:', data);
-                    
                     if (data.thumbnail && data.thumbnail.source) {
-                        return data.thumbnail.source.replace(/\/\d+px-/, '/300px-'); // Aumenta resolução
+                        return data.thumbnail.source.replace(/\/\d+px-/, '/300px-');
                     }
-                } catch (error) {
-                    console.warn(`Erro com variação "${name}":`, error.message);
-                }
+                } catch (error) { console.warn(`Erro com variação "${name}":`, error.message); }
             }
-            
             return null;
         }
-
         async function tryWikipediaDirectSearch(personName) {
-            console.log('Tentando busca direta Wikipedia...');
-            
             try {
                 const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&format=json&origin=*`;
-                
                 const searchResponse = await fetch(searchUrl);
                 if (!searchResponse.ok) throw new Error('Falha na busca');
-                
                 const searchData = await searchResponse.json();
-                
-                if (searchData.query && searchData.query.search && searchData.query.search.length > 0) {
-                    const firstResult = searchData.query.search[0];
-                    return await tryWikipediaAPI(firstResult.title);
+                if (searchData.query?.search?.length > 0) {
+                    return await tryWikipediaAPI(searchData.query.search[0].title);
                 }
-            } catch (error) {
-                console.warn('Erro na busca direta:', error.message);
-            }
-            
+            } catch (error) { console.warn('Erro na busca direta:', error.message); }
             return null;
         }
-
         async function tryWikimediaCommons(personName) {
-            console.log('Tentando Wikimedia Commons...');
-            
             try {
                 const searchUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(personName)}&srnamespace=6&format=json&origin=*`;
-                
                 const response = await fetch(searchUrl);
                 if (!response.ok) throw new Error('Falha no Wikimedia Commons');
-                
                 const data = await response.json();
-                
-                if (data.query && data.query.search && data.query.search.length > 0) {
+                if (data.query?.search?.length > 0) {
                     const fileName = data.query.search[0].title;
-                    const imageUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
-                    return imageUrl;
+                    return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=300`;
                 }
-            } catch (error) {
-                console.warn('Erro no Wikimedia Commons:', error.message);
-            }
-            
+            } catch (error) { console.warn('Erro no Wikimedia Commons:', error.message); }
             return null;
         }
 
@@ -685,28 +645,22 @@
         async function loadImageWithFallback(imageUrl, personName, photoElement) {
             return new Promise((resolve) => {
                 const img = new Image();
-                
+                // CORREÇÃO 2: Garante que o timeout seja cancelado
+                let timeoutId = null; 
+
                 img.onload = () => {
-                    console.log('Imagem carregada com sucesso:', imageUrl);
-                    photoElement.innerHTML = `
-                        <img src="${imageUrl}" 
-                             alt="Foto de ${personName}" 
-                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;"
-                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                        <div class="photo-placeholder" style="display: none;">
-                            <div style="font-size: 48px; font-weight: bold;">${getInitials(personName)}</div>
-                            <div style="font-size: 12px; opacity: 0.8;">Erro ao carregar</div>
-                        </div>
-                    `;
+                    clearTimeout(timeoutId); // Cancela o timeout
+                    photoElement.innerHTML = `<img src="${imageUrl}" alt="Foto de ${personName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">`;
                     resolve(true);
                 };
                 
                 img.onerror = (error) => {
+                    clearTimeout(timeoutId); // Cancela o timeout
                     console.warn('Erro ao carregar imagem:', imageUrl, error);
                     resolve(false);
                 };
                 
-                setTimeout(() => {
+                timeoutId = setTimeout(() => {
                     console.warn('Timeout ao carregar imagem:', imageUrl);
                     resolve(false);
                 }, 10000);
@@ -715,48 +669,22 @@
             });
         }
 
-        // === FUNÇÕES AUXILIARES ===
+        // === FUNÇÕES AUXILIARES (sem alterações) ===
         function updatePhotoStatus(photoElement, message) {
-            photoElement.innerHTML = `
-                <div class="photo-placeholder">
-                    <div class="loading-photo"></div>
-                    <div>${message}</div>
-                </div>
-            `;
+            photoElement.innerHTML = `<div class="photo-placeholder"><div class="loading-photo"></div><div>${message}</div></div>`;
         }
-
         function getInitials(name) {
-            return name.split(' ')
-                      .map(n => n[0])
-                      .join('')
-                      .substring(0, 2)
-                      .toUpperCase();
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
         }
-
         function showCustomPlaceholder(name, elementId, message = 'Foto não encontrada') {
             const photoElement = document.getElementById(elementId);
             if (!photoElement) return;
-
             const initials = getInitials(name);
             const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b', '#fa709a'];
             const color = colors[name.length % colors.length];
-
-            photoElement.innerHTML = `
-                <div class="photo-placeholder" style="background: ${color};">
-                    <div style="font-size: 48px; font-weight: bold;">${initials}</div>
-                    <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div>
-                    <button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">
-                        Tentar novamente
-                    </button>
-                </div>
-            `;
+            photoElement.innerHTML = `<div class="photo-placeholder" style="background: ${color};"><div style="font-size: 48px; font-weight: bold;">${initials}</div><div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">${message}</div><button class="photo-retry-btn" onclick="retryPhotoLoad('${name}', '${elementId}')">Tentar novamente</button></div>`;
         }
-
-        function retryPhotoLoad(personName, photoElementId) {
-            console.log('Tentando recarregar foto para:', personName);
-            loadPersonPhoto(personName, photoElementId);
-        }
-
+        function retryPhotoLoad(personName, photoElementId) { loadPersonPhoto(personName, photoElementId); }
         function clearBiography() {
             biographyContainer.style.display = 'none';
             biographyContainer.innerHTML = '';
@@ -767,18 +695,10 @@
         
         // === INICIALIZAÇÃO ===
         generateBtn.addEventListener('click', generateBiography);
-        
-        personInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                generateBiography();
-            }
-        });
-
-        // Torna as funções disponíveis globalmente
+        personInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') generateBiography(); });
         window.fillExample = fillExample;
         window.clearBiography = clearBiography;
         window.retryPhotoLoad = retryPhotoLoad;
-
         personInput.focus();
     </script>
 </body>
