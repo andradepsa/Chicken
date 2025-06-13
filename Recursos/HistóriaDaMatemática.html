@@ -353,43 +353,15 @@
             }
         }
 
-        /* ESTILOS PARA IMPRESSÃO */
         @media print {
-            body {
-                background: none;
-                color: black;
-            }
-            body > .container > *:not(.biography-container) {
-                display: none;
-            }
-            .container {
-                box-shadow: none;
-                padding: 0;
-                margin: 0;
-                max-width: 100%;
-            }
-            .biography-container, .biography-card {
-                display: block !important;
-                box-shadow: none;
-                border: none;
-                margin: 0;
-                padding: 0;
-            }
-            .card-buttons {
-                display: none;
-            }
-            .mathematician-photo {
-                box-shadow: none;
-                border: 1px solid #ccc;
-            }
-            .section-title {
-                color: #333;
-                border-bottom-color: #333;
-            }
-            a {
-                text-decoration: none;
-                color: black;
-            }
+            body { background: none; color: black; }
+            body > .container > *:not(.biography-container) { display: none; }
+            .container { box-shadow: none; padding: 0; margin: 0; max-width: 100%; }
+            .biography-container, .biography-card { display: block !important; box-shadow: none; border: none; margin: 0; padding: 0; }
+            .card-buttons { display: none; }
+            .mathematician-photo { box-shadow: none; border: 1px solid #ccc; }
+            .section-title { color: #333; border-bottom-color: #333; }
+            a { text-decoration: none; color: black; }
         }
     </style>
 </head>
@@ -405,6 +377,7 @@
             <h3 style="margin-top: 0; color: #28a745;">💡 Exemplos de Pesquisa</h3>
             <p>Clique em um exemplo para pesquisar automaticamente ou digite o nome que desejar:</p>
             <div class="example-queries">
+                <div class="example-query" onclick="fillExample('Leonardo da Vinci')">🎨 Leonardo da Vinci</div>
                 <div class="example-query" onclick="fillExample('Marie Curie')">🔬 Marie Curie</div>
                 <div class="example-query" onclick="fillExample('Santos Dumont')">✈️ Santos Dumont</div>
                 <div class="example-query" onclick="fillExample('Pelé')">⚽ Pelé</div>
@@ -461,6 +434,17 @@
 
         function printBiography() {
             window.print();
+        }
+
+        function sanitizeJSONString(str) {
+            // Remove quebras de linha e tabulações
+            let cleaned = str.replace(/[\n\r\t]/g, '');
+            // Remove vírgulas traiçoeiras no final de arrays/objetos
+            cleaned = cleaned.replace(/,\s*(?=[\]\}])/g, '');
+            // Tenta corrigir aspas duplas "soltas" dentro de valores, escapando-as.
+            // Esta é uma expressão regular complexa que busca aspas que não fazem parte da estrutura JSON.
+            cleaned = cleaned.replace(/(?<![:{\[,])"(?![:,}\]])/g, '\\"');
+            return cleaned;
         }
 
         // === LÓGICA DE CORREÇÃO ORTOGRÁFICA ===
@@ -528,7 +512,10 @@
                   "timeline": [{"year": "AAAA", "event": "Evento com contexto."}, {"year": "AAAA", "event": "Outro evento com consequência."}],
                   "curiosities": ["Curiosidade pouco conhecida.", "Curiosidade sobre sua personalidade."]
                 }
-                **REGRAS:** Precisão factual é imperativa. O JSON deve ser estritamente válido, SEM vírgulas no final de listas (trailing commas).`;
+                **REGRAS CRUCIAIS E OBRIGATÓRIAS:** 
+                1. A precisão factual é imperativa.
+                2. O JSON deve ser estritamente válido. NÃO use vírgulas no final de listas (trailing commas).
+                3. **IMPORTANTE:** Dentro dos valores de string (como em "biography"), use aspas simples (') ou escape as aspas duplas (\\") para evitar que o JSON quebre. Exemplo: "texto com 'aspas' ou \\"aspas\\" dentro".`;
 
                 const response = await puter.ai.chat([{ role: 'user', content: prompt }]);
                 if (!response || !response.message || !response.message.content) throw new Error('A IA não retornou uma resposta válida.');
@@ -539,8 +526,8 @@
                 if (jsonStart === -1 || jsonEnd === 0) throw new Error('A resposta da IA não continha um JSON válido.');
                 
                 let jsonString = content.substring(jsonStart, jsonEnd);
-                jsonString = jsonString.replace(/[\n\r\t]/g, '');
-                jsonString = jsonString.replace(/,\s*(?=[\]\}])/g, '');
+                // Usando a nova função de limpeza robusta
+                jsonString = sanitizeJSONString(jsonString);
 
                 const biographyData = JSON.parse(jsonString);
 
@@ -550,7 +537,7 @@
             } catch (error) {
                 console.error('Erro na geração:', error);
                 if (error.code === 4001) {
-                     showStatus('Erro de autenticação. Por favor, certifique-se de que você está logado na sua conta Puter.com.', 'error');
+                     showStatus('Erro de autenticação: Por favor, faça login em sua conta Puter.com no navegador e tente novamente.', 'error');
                 } else {
                      showStatus(`Ocorreu um erro ao gerar a biografia. Verifique o nome e tente novamente. Detalhe: ${error.message}`, 'error');
                 }
@@ -597,7 +584,7 @@
             loadPersonPhoto(data.name, photoId);
         }
 
-        // === BUSCA DE FOTOS MULTI-FONTES (sem alterações) ===
+        // === BUSCA DE FOTOS MULTI-FONTES ===
         async function loadPersonPhoto(personName, photoElementId) {
             const photoElement = document.getElementById(photoElementId); if (!photoElement) return;
             const imageSources = [
