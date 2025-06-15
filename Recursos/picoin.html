@@ -682,21 +682,48 @@
                 <p>Create a <strong>picoin.conf</strong> file in your data directory with the following settings:</p>
             </div>
 
+            <div class="warning-box">
+                <h4>🔒 SECURITY WARNING</h4>
+                <p><strong>CRITICAL:</strong> The configuration below contains DEFAULT credentials that MUST be changed before use!</p>
+                <ul>
+                    <li>🚨 <strong>Change rpcuser and rpcpassword</strong> to unique values</li>
+                    <li>🛡️ <strong>Use strong passwords</strong> (12+ characters, mixed case, numbers, symbols)</li>
+                    <li>🔐 <strong>Restrict RPC access</strong> to localhost only for security</li>
+                    <li>⚠️ <strong>Never share your RPC credentials</strong> publicly</li>
+                </ul>
+            </div>
+
             <div class="code-block">
                 <p><strong>📁 File: C:\PiCoin-Data\picoin.conf</strong></p>
                 <br>
                 <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; color: #e2e8f0;">
-                    <p style="color: #90ee90; font-style: italic;"># PiCoin Extended Public Network</p>
+                    <p style="color: #90ee90; font-style: italic;"># PiCoin Extended Secure Configuration</p>
                     <p>server=1</p>
                     <p>listen=1</p>
-                    <p>rpcallowip=0.0.0.0/0</p>
+                    <p style="background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 4px;">rpcallowip=127.0.0.1</p>
+                    <p style="color: #90ee90; font-style: italic;"># SECURITY: Only allow localhost RPC connections</p>
                     <p>port=9333</p>
                     <p>rpcport=9332</p>
-                    <p>rpcuser=picoin</p>
-                    <p>rpcpassword=picoin123</p>
+                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcuser=[CHANGE_THIS_USERNAME]</p>
+                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcpassword=[CHANGE_THIS_TO_STRONG_PASSWORD]</p>
+                    <p style="color: #90ee90; font-style: italic;"># REQUIRED: Replace with your own secure credentials!</p>
                     <p>maxconnections=125</p>
                     <p>upnp=1</p>
+                    <p style="color: #90ee90; font-style: italic;"># Optional security enhancements:</p>
+                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcssl=1</p>
+                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcsslcertificatechainfile=server.cert</p>
+                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcsslprivatekeyfile=server.pem</p>
                 </div>
+            </div>
+
+            <div class="info-box">
+                <h4>🔐 Example Secure Configuration</h4>
+                <p><strong>Replace the highlighted fields with your own values:</strong></p>
+                <ul>
+                    <li><strong>rpcuser:</strong> MySecureUser2025</li>
+                    <li><strong>rpcpassword:</strong> Mx9$kP2#vL8@nQ4! (example strong password)</li>
+                    <li><strong>rpcallowip:</strong> 127.0.0.1 (localhost only - recommended)</li>
+                </ul>
             </div>
 
             <div class="comparison-grid">
@@ -725,13 +752,67 @@
             </div>
 
             <div class="warning-box">
-                <h4>🔥 Firewall Configuration</h4>
-                <p><strong>Important:</strong> If you want to accept incoming connections and help distribute the network, you need to:</p>
+                <h4>🔥 Network Security & Firewall</h4>
+                <p><strong>Important Security Considerations:</strong></p>
                 <ul>
-                    <li>Open port <strong>9333</strong> in your firewall</li>
-                    <li>Configure port forwarding in your router</li>
-                    <li>Set <strong>listen=1</strong> and <strong>upnp=1</strong> in config</li>
-                    <li>Consider security implications of <strong>rpcallowip=0.0.0.0/0</strong></li>
+                    <li><strong>Port 9333:</strong> Open only if you want to accept incoming connections</li>
+                    <li><strong>RPC Port 9332:</strong> NEVER expose to internet - localhost only</li>
+                    <li><strong>Firewall Rules:</strong> Allow port 9333 for P2P, block 9332 from external access</li>
+                    <li><strong>Router Security:</strong> Only forward port 9333 if needed for incoming connections</li>
+                    <li><strong>RPC Security:</strong> Use rpcallowip=127.0.0.1 to restrict to localhost</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Security Best Practices Section -->
+        <div class="section fade-in">
+            <h3>🛡️ Security Best Practices</h3>
+            
+            <div class="warning-box">
+                <h4>🚨 CRITICAL SECURITY REQUIREMENTS</h4>
+                <p><strong>Before running PiCoin Extended in production:</strong></p>
+                <ol>
+                    <li><strong>Change ALL default credentials</strong> in picoin.conf</li>
+                    <li><strong>Use strong, unique passwords</strong> (12+ characters)</li>
+                    <li><strong>Restrict RPC access</strong> to localhost only</li>
+                    <li><strong>Enable wallet encryption</strong> with strong passphrase</li>
+                    <li><strong>Create regular backups</strong> of wallet.dat</li>
+                    <li><strong>Keep software updated</strong> with latest security patches</li>
+                </ol>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card modified">
+                    <h4>✅ Secure Configuration</h4>
+                    <ul>
+                        <li><strong>RPC Access:</strong> rpcallowip=127.0.0.1</li>
+                        <li><strong>Strong Password:</strong> 12+ chars, mixed case</li>
+                        <li><strong>Unique Username:</strong> Not default values</li>
+                        <li><strong>Wallet Encryption:</strong> encryptwallet enabled</li>
+                        <li><strong>Regular Backups:</strong> Automated wallet.dat</li>
+                        <li><strong>Firewall:</strong> Only necessary ports open</li>
+                    </ul>
+                </div>
+                <div class="comparison-card original">
+                    <h4>❌ Insecure Configuration</h4>
+                    <ul>
+                        <li><strong>RPC Access:</strong> rpcallowip=0.0.0.0/0 ⚠️</li>
+                        <li><strong>Default Password:</strong> picoin123 🚫</li>
+                        <li><strong>Default Username:</strong> picoin 🚫</li>
+                        <li><strong>No Encryption:</strong> Plain wallet file 🚫</li>
+                        <li><strong>No Backups:</strong> Risk of coin loss 🚫</li>
+                        <li><strong>Open Firewall:</strong> All ports exposed 🚫</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>🔐 Wallet Security Commands</h4>
+                <ul>
+                    <li><strong>Encrypt Wallet:</strong> <code>bitcoin-cli.exe encryptwallet "YourStrongPassphrase"</code></li>
+                    <li><strong>Backup Wallet:</strong> <code>bitcoin-cli.exe backupwallet "C:\Backup\wallet_backup.dat"</code></li>
+                    <li><strong>Unlock for Mining:</strong> <code>bitcoin-cli.exe walletpassphrase "YourPassphrase" 3600</code></li>
+                    <li><strong>Lock Wallet:</strong> <code>bitcoin-cli.exe walletlock</code></li>
                 </ul>
             </div>
         </div>
@@ -744,11 +825,12 @@
                 <div class="comparison-card modified">
                     <h4>🔒 Security Settings</h4>
                     <ul>
-                        <li><strong>Secure RPC:</strong> Change default password</li>
+                        <li><strong>Secure RPC:</strong> Change default credentials</li>
                         <li><strong>Limited RPC:</strong> rpcallowip=127.0.0.1</li>
                         <li><strong>Wallet Encryption:</strong> encryptwallet command</li>
                         <li><strong>Backup:</strong> Regular wallet.dat backups</li>
                         <li><strong>Firewall:</strong> Only open necessary ports</li>
+                        <li><strong>Strong Passwords:</strong> 12+ characters minimum</li>
                     </ul>
                 </div>
                 <div class="comparison-card original">
@@ -759,6 +841,7 @@
                         <li><strong>CPU:</strong> par=4 (4 CPU cores)</li>
                         <li><strong>Bandwidth:</strong> maxuploadtarget=5000</li>
                         <li><strong>Pruning:</strong> prune=2000 (2GB blockchain)</li>
+                        <li><strong>Threading:</strong> Optimize for your hardware</li>
                     </ul>
                 </div>
             </div>
