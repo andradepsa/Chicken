@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PiCoin Extended - 70 Cycle Bitcoin-Compatible System</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -85,10 +84,6 @@
             border: 2px solid #e9ecef;
         }
 
-        .comparison-card.original {
-            border-left: 5px solid #dc3545;
-        }
-
         .comparison-card.modified {
             border-left: 5px solid #28a745;
         }
@@ -99,32 +94,6 @@
             font-size: 1.3em;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #4c63d2 0%, #9b59b6 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card h4 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .stat-card p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-
         .code-block {
             background: #2d3748;
             color: #e2e8f0;
@@ -133,14 +102,6 @@
             font-family: 'Courier New', monospace;
             margin: 15px 0;
             overflow-x: auto;
-        }
-
-        .highlight {
-            background: linear-gradient(135deg, #ddd6fe, #c7d2fe);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #4c63d2;
         }
 
         .warning-box {
@@ -168,107 +129,6 @@
             padding: 20px;
             border-radius: 10px;
             margin: 20px 0;
-        }
-
-        .timeline {
-            position: relative;
-            padding: 20px 0;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background: #4c63d2;
-            transform: translateX(-50%);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin: 20px 0;
-            padding: 0 20px;
-        }
-
-        .timeline-item:nth-child(odd) {
-            text-align: right;
-            padding-right: 50%;
-        }
-
-        .timeline-item:nth-child(even) {
-            text-align: left;
-            padding-left: 50%;
-        }
-
-        .timeline-content {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #4c63d2;
-            position: relative;
-        }
-
-        .timeline-date {
-            font-weight: bold;
-            color: #4c63d2;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        .cta-section {
-            background: linear-gradient(135deg, #4c63d2, #9b59b6);
-            color: white;
-            text-align: center;
-            padding: 40px;
-            border-radius: 15px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        .cta-section h3 {
-            color: white;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            margin: 10px;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-primary {
-            background: #28a745;
-            border-color: #28a745;
-        }
-
-        .btn-primary:hover {
-            background: #218838;
-            border-color: #218838;
-        }
-
-        .btn-secondary {
-            background: #17a2b8;
-            border-color: #17a2b8;
-        }
-
-        .btn-secondary:hover {
-            background: #138496;
-            border-color: #138496;
         }
 
         .network-status {
@@ -328,228 +188,38 @@
             margin-right: 10px;
         }
 
-        .community-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .community-card {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
+        .cta-section {
+            background: linear-gradient(135deg, #4c63d2, #9b59b6);
+            color: white;
             text-align: center;
-            border: 2px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-
-        .community-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Mathematical Section Styles */
-        .math-page-container {
-            background: white;
+            padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 3rem;
-            margin: 2rem 0;
+            margin-top: 30px;
+            margin-bottom: 20px;
         }
-        
-        .math-page-container h1 {
-            color: #2c3e50;
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            border: none;
-            padding: 0;
-        }
-        
-        .math-page-container h2 {
-            color: #34495e;
-            border-left: 5px solid #3498db;
-            padding-left: 1rem;
-            margin-top: 3rem;
-            font-size: 1.5rem;
-        }
-        
-        .math-page-container h3 {
-            color: #2980b9;
-            margin-top: 2rem;
-            border: none;
-            padding-left: 0;
-        }
-        
-        .formula-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .cta-section h3 {
             color: white;
-            padding: 2rem;
-            border-radius: 10px;
-            margin: 1.5rem 0;
-            text-align: center;
-            font-size: 1.3rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            font-size: 2.5em;
+            margin-bottom: 20px;
         }
-        
-        .calculation-step {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-            border-left: 5px solid #28a745;
-        }
-        
-        .result-highlight {
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            border-left: 5px solid #ff6b6b;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        
-        .math-page-container table {
-            border-collapse: collapse;
-            margin: 2rem auto;
-            width: 100%;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        .math-page-container th, .math-page-container td {
-            padding: 1rem 1.5rem;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .math-page-container th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .math-page-container tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        .math-page-container tr:hover {
-            background-color: #e3f2fd;
-            transform: scale(1.01);
-            transition: all 0.3s ease;
-        }
-        
-        .code-section {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 2rem;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            margin: 2rem 0;
-            overflow-x: auto;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .step-number-math {
+
+        .btn {
             display: inline-block;
-            background: #3498db;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 30px;
+            text-decoration: none;
+            border-radius: 50px;
             font-weight: bold;
-            margin-right: 1rem;
-        }
-        
-        .final-result {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-            padding: 3rem;
-            border-radius: 15px;
-            text-align: center;
-            margin: 3rem 0;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-        }
-        
-        .final-result h2 {
-            color: #2c3e50;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            border: none;
-            padding: 0;
-        }
-        
-        .big-number {
-            font-size: 3rem;
-            font-weight: bold;
-            color: #e74c3c;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin: 10px;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
-        @media (max-width: 768px) {
-            .comparison-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero h1 {
-                font-size: 2.5em;
-            }
-            
-            .timeline::before {
-                left: 20px;
-            }
-            
-            .timeline-item {
-                padding-left: 50px;
-                text-align: left;
-            }
-            
-            .timeline-item:nth-child(odd) {
-                padding-right: 20px;
-            }
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        .fade-in {
-            animation: fadeIn 1s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
 
         .live-indicator {
@@ -566,13 +236,23 @@
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0.3; }
         }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero h1 {
+                font-size: 2.5em;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Hero Section -->
-        <div class="hero fade-in">
-            <h1 class="pulse">
+        <div class="hero">
+            <h1>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" style="width: 1em; height: 1em; vertical-align: -0.1em; margin-right: 0.1em;">
                     <circle cx="32" cy="32" r="30" fill="#FFD700" stroke="#DAA520" stroke-width="4"/>
                     <circle cx="26" cy="18" r="2" fill="#4B3621"/>
@@ -582,15 +262,12 @@
                 PiCoin Extended
             </h1>
             <h2>70 Cycle Bitcoin-Compatible System</h2>
-            <p>Revolutionary cryptocurrency with 70 cycles of <strong>~132 years</strong> each, maintaining perfect Bitcoin compatibility while extending operations until year <strong>11,248</strong>. Each cycle follows exactly the Bitcoin halving pattern.</p>
+            <p>Revolutionary cryptocurrency with 70 cycles of <strong>~132 years</strong> each, maintaining perfect Bitcoin compatibility while extending operations until year <strong>11,248</strong>.</p>
         </div>
 
         <!-- Network Status -->
-        <div class="network-status fade-in">
-            <h4><span class="live-indicator"></span>Network Status: LIVE & MINING</h4>
-            <p style="font-size: 1.2em; margin-bottom: 20px;">
-                The PiCoin Extended mainnet is operational! Join as an early miner and mine the first PiCoins Extended in history.
-            </p>
+        <div class="network-status">
+            <h4><span class="live-indicator"></span>Network Status: LIVE</h4>
             <div class="network-grid">
                 <div class="network-item">
                     <h5>P2P Port</h5>
@@ -605,14 +282,6 @@
                     <p><strong>50 PiCoins</strong></p>
                 </div>
                 <div class="network-item">
-                    <h5>Network Type</h5>
-                    <p><strong>Mainnet</strong></p>
-                </div>
-                <div class="network-item">
-                    <h5>Status</h5>
-                    <p><strong>Genesis Era</strong></p>
-                </div>
-                <div class="network-item">
                     <h5>Block Time</h5>
                     <p><strong>~10 minutes</strong></p>
                 </div>
@@ -620,20 +289,14 @@
         </div>
 
         <!-- Mining Instructions -->
-        <div class="section fade-in">
-            <h3>⛏️ Start Mining PiCoin Extended</h3>
-            <div class="success-box">
-                <h4>🎉 Historic Opportunity</h4>
-                <p><strong>Be a Founding Miner:</strong> You have the chance to mine some of the very first PiCoins Extended ever created! The network is in its genesis phase, making you a founding miner of this revolutionary 70-cycle system.</p>
-            </div>
-
+        <div class="section">
+            <h3>⛏️ Mining Commands</h3>
+            
             <div class="mining-commands">
-                <h4 style="color: #4c63d2; margin-bottom: 20px;">🔧 Quick Start Mining Commands</h4>
-                
                 <div class="command-step">
                     <span class="step-number">1</span>
-                    <strong>Start PiCoin Extended Node</strong><br>
-                    <code>bitcoind.exe -datadir=C:\PiCoin-Data -addnode=[SEED_NODE]:9333</code>
+                    <strong>Start Node</strong><br>
+                    <code>bitcoind.exe -datadir=C:\PiCoin-Data -conf=picoin.conf</code>
                 </div>
                 
                 <div class="command-step">
@@ -650,8 +313,8 @@
                 
                 <div class="command-step">
                     <span class="step-number">4</span>
-                    <strong>Start Mining (replace ADDRESS with your address)</strong><br>
-                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data generatetoaddress 1 ADDRESS</code>
+                    <strong>Mine Block</strong><br>
+                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data generatetoaddress 1 [ADDRESS]</code>
                 </div>
                 
                 <div class="command-step">
@@ -660,70 +323,29 @@
                     <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getbalance</code>
                 </div>
             </div>
-
-            <div class="info-box">
-                <h4>💡 Mining Tips</h4>
-                <ul>
-                    <li><strong>Windows Users:</strong> Run Command Prompt as Administrator</li>
-                    <li><strong>First Mining:</strong> May take 100 blocks for balance to show (coinbase maturity)</li>
-                    <li><strong>Block Time:</strong> Approximately 10 minutes (same as Bitcoin)</li>
-                    <li><strong>Difficulty:</strong> Adjusts automatically based on network hashrate</li>
-                    <li><strong>Network Isolation:</strong> Use -listen=0 -dnsseed=0 -discover=0 for private mining</li>
-                </ul>
-            </div>
         </div>
 
-        <!-- Network Configuration Section -->
-        <div class="section fade-in">
-            <h3>🔧 Complete Network Setup</h3>
+        <!-- Network Configuration -->
+        <div class="section">
+            <h3>🔧 Configuration</h3>
             
-            <div class="success-box">
-                <h4>📄 PiCoin Extended Configuration File</h4>
-                <p>Create a <strong>picoin.conf</strong> file in your data directory with the following settings:</p>
-            </div>
-
             <div class="warning-box">
-                <h4>🔒 SECURITY WARNING</h4>
-                <p><strong>CRITICAL:</strong> The configuration below contains DEFAULT credentials that MUST be changed before use!</p>
-                <ul>
-                    <li>🚨 <strong>Change rpcuser and rpcpassword</strong> to unique values</li>
-                    <li>🛡️ <strong>Use strong passwords</strong> (12+ characters, mixed case, numbers, symbols)</li>
-                    <li>🔐 <strong>Restrict RPC access</strong> to localhost only for security</li>
-                    <li>⚠️ <strong>Never share your RPC credentials</strong> publicly</li>
-                </ul>
+                <h4>🔒 SECURITY: Change default credentials before use!</h4>
             </div>
 
             <div class="code-block">
                 <p><strong>📁 File: C:\PiCoin-Data\picoin.conf</strong></p>
                 <br>
                 <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; color: #e2e8f0;">
-                    <p style="color: #90ee90; font-style: italic;"># PiCoin Extended Secure Configuration</p>
                     <p>server=1</p>
                     <p>listen=1</p>
                     <p style="background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 4px;">rpcallowip=127.0.0.1</p>
-                    <p style="color: #90ee90; font-style: italic;"># SECURITY: Only allow localhost RPC connections</p>
                     <p>port=9333</p>
                     <p>rpcport=9332</p>
-                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcuser=[CHANGE_THIS_USERNAME]</p>
-                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcpassword=[CHANGE_THIS_TO_STRONG_PASSWORD]</p>
-                    <p style="color: #90ee90; font-style: italic;"># REQUIRED: Replace with your own secure credentials!</p>
+                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcuser=[YOUR_USERNAME]</p>
+                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px;">rpcpassword=[YOUR_PASSWORD]</p>
                     <p>maxconnections=125</p>
-                    <p>upnp=1</p>
-                    <p style="color: #90ee90; font-style: italic;"># Optional security enhancements:</p>
-                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcssl=1</p>
-                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcsslcertificatechainfile=server.cert</p>
-                    <p style="color: #e2e8f0; opacity: 0.7;"># rpcsslprivatekeyfile=server.pem</p>
                 </div>
-            </div>
-
-            <div class="info-box">
-                <h4>🔐 Example Secure Configuration</h4>
-                <p><strong>Replace the highlighted fields with your own values:</strong></p>
-                <ul>
-                    <li><strong>rpcuser:</strong> MySecureUser2025</li>
-                    <li><strong>rpcpassword:</strong> Mx9$kP2#vL8@nQ4! (example strong password)</li>
-                    <li><strong>rpcallowip:</strong> 127.0.0.1 (localhost only - recommended)</li>
-                </ul>
             </div>
 
             <div class="comparison-grid">
@@ -731,802 +353,126 @@
                     <h4>🌐 Network Parameters</h4>
                     <ul>
                         <li><strong>Network ID:</strong> PiCoin Extended Mainnet</li>
-                        <li><strong>Magic Bytes:</strong> 0xf9beb4d9 (Bitcoin compatible)</li>
-                        <li><strong>Default Port:</strong> 9333</li>
+                        <li><strong>Magic Bytes:</strong> 0xf9beb4d9</li>
+                        <li><strong>P2P Port:</strong> 9333</li>
                         <li><strong>RPC Port:</strong> 9332</li>
-                        <li><strong>Genesis Block:</strong> Bitcoin genesis + modifications</li>
                         <li><strong>Protocol Version:</strong> 70016</li>
                     </ul>
                 </div>
-                <div class="comparison-card original">
-                    <h4>🔌 Connection Methods</h4>
+                <div class="comparison-card modified">
+                    <h4>🔌 Connection Commands</h4>
                     <ul>
-                        <li><strong>Public Network:</strong> -addnode=[IP]:9333</li>
-                        <li><strong>Private Mining:</strong> -listen=0 -dnsseed=0 -discover=0</li>
-                        <li><strong>Local Network:</strong> -datadir=C:\PiCoin-Data</li>
-                        <li><strong>Config File:</strong> -conf=picoin.conf</li>
-                        <li><strong>Testnet Mode:</strong> -regtest</li>
-                        <li><strong>Debug Mode:</strong> -debug=net</li>
+                        <li><strong>Private:</strong> -listen=0 -dnsseed=0 -discover=0</li>
+                        <li><strong>Public:</strong> -addnode=[IP]:9333</li>
+                        <li><strong>Testnet:</strong> -regtest</li>
+                        <li><strong>Debug:</strong> -debug=net -printtoconsole</li>
                     </ul>
                 </div>
-            </div>
-
-            <div class="warning-box">
-                <h4>🔥 Network Security & Firewall</h4>
-                <p><strong>Important Security Considerations:</strong></p>
-                <ul>
-                    <li><strong>Port 9333:</strong> Open only if you want to accept incoming connections</li>
-                    <li><strong>RPC Port 9332:</strong> NEVER expose to internet - localhost only</li>
-                    <li><strong>Firewall Rules:</strong> Allow port 9333 for P2P, block 9332 from external access</li>
-                    <li><strong>Router Security:</strong> Only forward port 9333 if needed for incoming connections</li>
-                    <li><strong>RPC Security:</strong> Use rpcallowip=127.0.0.1 to restrict to localhost</li>
-                </ul>
             </div>
         </div>
 
-        <!-- Security Best Practices Section -->
-        <div class="section fade-in">
-            <h3>🛡️ Security Best Practices</h3>
+        <!-- Technical Implementation -->
+        <div class="section">
+            <h3>⚙️ Technical Implementation</h3>
             
-            <div class="warning-box">
-                <h4>🚨 CRITICAL SECURITY REQUIREMENTS</h4>
-                <p><strong>Before running PiCoin Extended in production:</strong></p>
-                <ol>
-                    <li><strong>Change ALL default credentials</strong> in picoin.conf</li>
-                    <li><strong>Use strong, unique passwords</strong> (12+ characters)</li>
-                    <li><strong>Restrict RPC access</strong> to localhost only</li>
-                    <li><strong>Enable wallet encryption</strong> with strong passphrase</li>
-                    <li><strong>Create regular backups</strong> of wallet.dat</li>
-                    <li><strong>Keep software updated</strong> with latest security patches</li>
-                </ol>
+            <div class="success-box">
+                <h4>🔄 70-Cycle Algorithm</h4>
+                <p>Only <strong>2 lines</strong> changed from Bitcoin Core to implement 70 cycles of ~132 years each.</p>
             </div>
 
-            <div class="comparison-grid">
-                <div class="comparison-card modified">
-                    <h4>✅ Secure Configuration</h4>
-                    <ul>
-                        <li><strong>RPC Access:</strong> rpcallowip=127.0.0.1</li>
-                        <li><strong>Strong Password:</strong> 12+ chars, mixed case</li>
-                        <li><strong>Unique Username:</strong> Not default values</li>
-                        <li><strong>Wallet Encryption:</strong> encryptwallet enabled</li>
-                        <li><strong>Regular Backups:</strong> Automated wallet.dat</li>
-                        <li><strong>Firewall:</strong> Only necessary ports open</li>
-                    </ul>
-                </div>
-                <div class="comparison-card original">
-                    <h4>❌ Insecure Configuration</h4>
-                    <ul>
-                        <li><strong>RPC Access:</strong> rpcallowip=0.0.0.0/0 ⚠️</li>
-                        <li><strong>Default Password:</strong> picoin123 🚫</li>
-                        <li><strong>Default Username:</strong> picoin 🚫</li>
-                        <li><strong>No Encryption:</strong> Plain wallet file 🚫</li>
-                        <li><strong>No Backups:</strong> Risk of coin loss 🚫</li>
-                        <li><strong>Open Firewall:</strong> All ports exposed 🚫</li>
-                    </ul>
+            <div class="code-block">
+                <p><strong>📁 Modified Lines in src/validation.cpp:</strong></p>
+                <br>
+                <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; color: #e2e8f0;">
+                    <p style="background: #ff6b6b; color: white; margin: 5px 0; padding: 2px 8px; border-radius: 4px;">Line 1944: int halvings = (nHeight / 210000) % 33;</p>
+                    <p style="background: #ff6b6b; color: white; margin: 5px 0; padding: 2px 8px; border-radius: 4px;">Line 1952: return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;</p>
                 </div>
             </div>
 
             <div class="info-box">
-                <h4>🔐 Wallet Security Commands</h4>
+                <h4>📊 Key Specifications</h4>
                 <ul>
-                    <li><strong>Encrypt Wallet:</strong> <code>bitcoin-cli.exe encryptwallet "YourStrongPassphrase"</code></li>
-                    <li><strong>Backup Wallet:</strong> <code>bitcoin-cli.exe backupwallet "C:\Backup\wallet_backup.dat"</code></li>
-                    <li><strong>Unlock for Mining:</strong> <code>bitcoin-cli.exe walletpassphrase "YourPassphrase" 3600</code></li>
-                    <li><strong>Lock Wallet:</strong> <code>bitcoin-cli.exe walletlock</code></li>
+                    <li><strong>Total Cycles:</strong> 70</li>
+                    <li><strong>Years per Cycle:</strong> ~132 (33 halvings × 4 years)</li>
+                    <li><strong>Coins per Cycle:</strong> ~21 million</li>
+                    <li><strong>Total Coins:</strong> ~1.47 billion</li>
+                    <li><strong>Final Year:</strong> 11,248</li>
+                    <li><strong>Compatibility:</strong> 100% Bitcoin Core</li>
                 </ul>
             </div>
         </div>
 
-        <!-- Advanced Setup Section -->
-        <div class="section fade-in">
-            <h3>🛠️ Advanced Configuration</h3>
+        <!-- Troubleshooting -->
+        <div class="section">
+            <h3>🔍 Troubleshooting</h3>
             
-            <div class="comparison-grid">
-                <div class="comparison-card modified">
-                    <h4>🔒 Security Settings</h4>
-                    <ul>
-                        <li><strong>Secure RPC:</strong> Change default credentials</li>
-                        <li><strong>Limited RPC:</strong> rpcallowip=127.0.0.1</li>
-                        <li><strong>Wallet Encryption:</strong> encryptwallet command</li>
-                        <li><strong>Backup:</strong> Regular wallet.dat backups</li>
-                        <li><strong>Firewall:</strong> Only open necessary ports</li>
-                        <li><strong>Strong Passwords:</strong> 12+ characters minimum</li>
-                    </ul>
-                </div>
-                <div class="comparison-card original">
-                    <h4>⚡ Performance Tuning</h4>
-                    <ul>
-                        <li><strong>Memory:</strong> dbcache=4096 (4GB RAM)</li>
-                        <li><strong>Connections:</strong> maxconnections=125</li>
-                        <li><strong>CPU:</strong> par=4 (4 CPU cores)</li>
-                        <li><strong>Bandwidth:</strong> maxuploadtarget=5000</li>
-                        <li><strong>Pruning:</strong> prune=2000 (2GB blockchain)</li>
-                        <li><strong>Threading:</strong> Optimize for your hardware</li>
-                    </ul>
-                </div>
-            </div>
-
             <div class="mining-commands">
-                <h4 style="color: #4c63d2; margin-bottom: 20px;">🔧 Complete Setup Commands</h4>
-                
                 <div class="command-step">
-                    <span class="step-number">1</span>
-                    <strong>Create Configuration Directory</strong><br>
-                    <code>mkdir C:\PiCoin-Data</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">2</span>
-                    <strong>Create Configuration File</strong><br>
-                    <code>notepad C:\PiCoin-Data\picoin.conf</code><br>
-                    <small style="color: #90ee90;">Copy the configuration above into this file</small>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">3</span>
-                    <strong>Start Node with Configuration</strong><br>
-                    <code>bitcoind.exe -datadir=C:\PiCoin-Data -conf=picoin.conf</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">4</span>
-                    <strong>Connect to Network (if available)</strong><br>
-                    <code>bitcoind.exe -datadir=C:\PiCoin-Data -conf=picoin.conf -addnode=[SEED_IP]:9333</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">5</span>
+                    <span class="step-number">🔍</span>
                     <strong>Check Network Status</strong><br>
                     <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getnetworkinfo</code>
                 </div>
-            </div>
-        </div>
-
-        <!-- Troubleshooting Section -->
-        <div class="section fade-in">
-            <h3>🔍 Troubleshooting & Diagnostics</h3>
-            
-            <div class="info-box">
-                <h4>🚨 Common Issues & Solutions</h4>
-                <ul>
-                    <li><strong>"Acesso negado":</strong> Run as Administrator</li>
-                    <li><strong>"Port already in use":</strong> Check if another instance is running</li>
-                    <li><strong>"Cannot connect to peers":</strong> Check firewall and network settings</li>
-                    <li><strong>"RPC connection failed":</strong> Verify RPC credentials in config</li>
-                    <li><strong>"Wallet not found":</strong> Create wallet first with createwallet</li>
-                </ul>
-            </div>
-
-            <div class="mining-commands">
-                <h4 style="color: #4c63d2; margin-bottom: 20px;">🔍 Diagnostic Commands</h4>
                 
                 <div class="command-step">
                     <span class="step-number">🔍</span>
-                    <strong>Check Network Connections</strong><br>
-                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getpeerinfo</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">🔍</span>
-                    <strong>View Node Information</strong><br>
-                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getnetworkinfo</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">🔍</span>
-                    <strong>Check Blockchain Status</strong><br>
+                    <strong>Check Blockchain Info</strong><br>
                     <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getblockchaininfo</code>
                 </div>
                 
                 <div class="command-step">
                     <span class="step-number">🔍</span>
-                    <strong>View Mining Information</strong><br>
-                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getmininginfo</code>
-                </div>
-                
-                <div class="command-step">
-                    <span class="step-number">🔍</span>
-                    <strong>Debug Network Issues</strong><br>
-                    <code>bitcoind.exe -datadir=C:\PiCoin-Data -debug=net -printtoconsole</code>
+                    <strong>View Peer Connections</strong><br>
+                    <code>bitcoin-cli.exe -datadir=C:\PiCoin-Data getpeerinfo</code>
                 </div>
             </div>
 
-            <div class="warning-box">
-                <h4>📋 Log Files Location</h4>
-                <p><strong>Debug logs:</strong> C:\PiCoin-Data\debug.log</p>
-                <p><strong>Error logs:</strong> Check console output when running with -printtoconsole</p>
-                <p><strong>Network logs:</strong> Use -debug=net flag for detailed network information</p>
-            </div>
-
-            <div class="comparison-grid">
-                <div class="comparison-card modified">
-                    <h4>🔌 Connection Options</h4>
-                    <ul>
-                        <li><strong>Public Network:</strong> Connect to seed nodes</li>
-                        <li><strong>Private Mining:</strong> Isolated local network</li>
-                        <li><strong>Testnet Mode:</strong> -regtest flag</li>
-                        <li><strong>Custom Datadir:</strong> -datadir=C:\PiCoin-Data</li>
-                    </ul>
-                </div>
-                <div class="comparison-card original">
-                    <h4>📊 Network Statistics</h4>
-                    <ul>
-                        <li><strong>Current Cycle:</strong> 1 of 70</li>
-                        <li><strong>Halvings Left:</strong> 33 in current cycle</li>
-                        <li><strong>Years Remaining:</strong> ~131.76 years in cycle 1</li>
-                        <li><strong>Total Emission:</strong> Until year 11,248</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Problem Section -->
-        <div class="section fade-in">
-            <h3>🚨 The Bitcoin Limitation Challenge</h3>
-            <div class="warning-box">
-                <h4>⏰ Bitcoin's ~2141 Problem</h4>
-                <p>Bitcoin will complete its emission in ~2141, leaving only transaction fees as miner incentives. PiCoin Extended solves this by implementing 70 Bitcoin-identical cycles that extend operations for over 9,000 years.</p>
-            </div>
-            
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>70</h4>
-                    <p>Bitcoin Cycles</p>
-                </div>
-                <div class="stat-card">
-                    <h4>~132</h4>
-                    <p>Years per Cycle</p>
-                </div>
-                <div class="stat-card">
-                    <h4>~21M</h4>
-                    <p>Coins per Cycle</p>
-                </div>
-                <div class="stat-card">
-                    <h4>11,248</h4>
-                    <p>Final Year</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Solution Section -->
-        <div class="section fade-in">
-            <h3>✨ PiCoin Extended: Bitcoin-Compatible Cycles</h3>
-            <div class="highlight">
-                <h4>🔄 Perfect Bitcoin Emulation</h4>
-                <p>Revolutionary system of 70 cycles, each one IDENTICAL to Bitcoin's complete emission schedule. Every cycle lasts <strong>~132 years</strong> (33 halvings × 4 years) and produces exactly ~21 million coins, just like Bitcoin.</p>
-            </div>
-
-            <div class="comparison-grid">
-                <div class="comparison-card original">
-                    <h4>🔴 Bitcoin Original</h4>
-                    <ul>
-                        <li>📊 <strong>~21 million</strong> total coins</li>
-                        <li>📅 Emission ends in <strong>~2141</strong></li>
-                        <li>💀 <strong>No more</strong> block rewards</li>
-                        <li>❓ Long-term <strong>uncertainty</strong></li>
-                        <li>⚡ Only <strong>transaction fees</strong></li>
-                    </ul>
-                </div>
-                <div class="comparison-card modified">
-                    <h4>🟢 PiCoin Extended</h4>
-                    <ul>
-                        <li>📊 <strong>~1.47 billion</strong> total coins</li>
-                        <li>📅 Emission until <strong>11,248</strong></li>
-                        <li>🔄 <strong>70 Bitcoin cycles</strong></li>
-                        <li>✅ Total <strong>predictability</strong></li>
-                        <li>💰 <strong>9,200+ years</strong> of rewards</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Timeline Section -->
-        <div class="section fade-in">
-            <h3>📅 PiCoin Extended Timeline</h3>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">2025-2157 (Cycle 1)</div>
-                        <h4>🟡 Bitcoin Foundation</h4>
-                        <p><strong>Identical to Bitcoin.</strong> 33 halvings over ~132 years. Starts at 50 coins/block, ends with ~21 million total coins exactly like Bitcoin.</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">2157-2289 (Cycle 2)</div>
-                        <h4>🔄 First Bitcoin Reset</h4>
-                        <p><strong>Automatic restart to 50 coins/block.</strong> Repeats the entire Bitcoin emission schedule. Second cycle produces another ~21 million coins.</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">2289-11116 (Cycles 3-69)</div>
-                        <h4>⚡ Millennial Era</h4>
-                        <p><strong>67 complete Bitcoin cycles.</strong> Each cycle identical: 50→25→12.5→6.25... over ~132 years. Predictable, secure, sustainable.</p>
-                    </div>
-                </div>
-                <div class="timeline-item">
-                    <div class="timeline-content">
-                        <div class="timeline-date">11116-11248 (Cycle 70)</div>
-                        <h4>🏁 Final Bitcoin Cycle</h4>
-                        <p><strong>Last emission cycle.</strong> Completes the final Bitcoin schedule reaching ~1.47 billion total PiCoins. System transitions to fee-only model.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Technical Details Section -->
-        <div class="section fade-in">
-            <h3>⚙️ Technical Implementation</h3>
-            <p>PiCoin Extended maintains 100% Bitcoin Core compatibility through a fork that modifies <strong>only two lines</strong> of code:</p>
-            
-            <div class="code-block">
-                <p><strong>📁 File: src/validation.cpp</strong></p>
-                <p><strong>GetBlockSubsidy function (fork with only 2 modified lines):</strong></p>
-                <br>
-                <div style="background: #1a1a2e; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; color: #e2e8f0;">
-                    <p>CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)</p>
-                    <p>{</p>
-                    <p style="background: #ff6b6b; color: white; margin: 5px 0; padding: 2px 8px; border-radius: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;int halvings = (nHeight / 210000) % 33;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// Line 1944 - Modified</p>
-                    <p style="color: #90ee90; font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;// Calculate halvings within current cycle (0-32). Modulo 33 resets every 33 halvings to create cycles.</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;if (halvings >= 64)</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return 0;</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;CAmount nSubsidy = 50 * COIN;</p>
-                    <p style="color: #90ee90; font-style: italic;">&nbsp;&nbsp;&nbsp;&nbsp;// Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;</p>
-                    <p>&nbsp;&nbsp;&nbsp;&nbsp;nSubsidy >>= halvings;</p>
-                    <p style="background: #ff6b6b; color: white; margin: 5px 0; padding: 2px 8px; border-radius: 4px;">&nbsp;&nbsp;&nbsp;&nbsp;return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;&nbsp;&nbsp;&nbsp;&nbsp;// Line 1952 - Modified</p>
-                    <p>}</p>
-                    <p style="color: #90ee90; font-style: italic;">/// Stop emission after 70 complete cycles. Each cycle = 33 halvings = 6,930,000 blocks = ~132 years.</p>
-                </div>
-            </div>
-
-            <div class="highlight">
-                <h4>🔴 Modified Lines in Fork:</h4>
-                <ul style="margin-top: 15px;">
-                    <li><strong>Line 1944:</strong> <code>int halvings = (nHeight / 210000) % 33;</code></li>
-                    <li><strong>Line 1952:</strong> <code>return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;</code></li>
+            <div class="info-box">
+                <h4>🚨 Common Issues</h4>
+                <ul>
+                    <li><strong>"Acesso negado":</strong> Run as Administrator</li>
+                    <li><strong>"Port in use":</strong> Check if another instance is running</li>
+                    <li><strong>"RPC failed":</strong> Verify credentials in picoin.conf</li>
+                    <li><strong>"Wallet not found":</strong> Create wallet first</li>
                 </ul>
-                <p style="margin-top: 15px;"><strong>Result:</strong> Minimal fork that preserves 100% Bitcoin security while implementing sustainable cycles.</p>
-            </div>
-
-            <div class="comparison-grid">
-                <div class="comparison-card original">
-                    <h4>🔴 Bitcoin Original</h4>
-                    <ul>
-                        <li><strong>Line 1944:</strong> <code>int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;</code></li>
-                        <li><strong>Line 1952:</strong> <code>return nSubsidy;</code></li>
-                        <li><strong>Result:</strong> Linear emission until ~2141</li>
-                    </ul>
-                </div>
-                <div class="comparison-card modified">
-                    <h4>🟢 PiCoin Extended Fork</h4>
-                    <ul>
-                        <li><strong>Line 1944:</strong> <code>int halvings = (nHeight / 210000) % 33;</code></li>
-                        <li><strong>Line 1952:</strong> <code>return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;</code></li>
-                        <li><strong>Result:</strong> 70 cycles until 11,248</li>
-                    </ul>
-                </div>
             </div>
         </div>
 
-        <!-- Features Section -->
-        <div class="section fade-in">
-            <h3>🌟 Why Choose PiCoin Extended?</h3>
-            
-            <div class="cta-section">
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h4>✅ Proven Foundation</h4>
-                        <p>Built on Bitcoin's battle-tested architecture</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🔬 Mathematical Rigor</h4>
-                        <p>Every calculation verified and validated</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🛡️ Minimal Risk</h4>
-                        <p>Only 2 lines changed from Bitcoin Core</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>🚀 Future-Proof</h4>
-                        <p>Sustainable for the next 9,000+ years</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>⚡ Same Security</h4>
-                        <p>Identical cryptographic security to Bitcoin</p>
-                    </div>
-                    <div class="feature-card">
-                        <h4>💎 Early Mining</h4>
-                        <p>Mine the first PiCoins Extended in history</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Downloads Section -->
-        <div class="section fade-in">
-            <h3>📥 Download & Resources</h3>
+        <!-- Downloads -->
+        <div class="section">
+            <h3>📥 Download</h3>
             <div class="comparison-grid">
                 <div class="comparison-card modified">
                     <h4>🖥️ PiCoin Extended Client</h4>
                     <ul>
-                        <li>✅ <strong>Windows:</strong> PiCoin-Extended-Win64.zip</li>
-                        <li>✅ <strong>Linux:</strong> PiCoin-Extended-Linux.tar.gz</li>
-                        <li>✅ <strong>macOS:</strong> PiCoin-Extended-macOS.dmg</li>
                         <li>✅ <strong>Source Code:</strong> GitHub Repository</li>
+                        <li>✅ <strong>Windows:</strong> Compile from source</li>
+                        <li>✅ <strong>Linux:</strong> Compile from source</li>
+                        <li>✅ <strong>macOS:</strong> Compile from source</li>
                     </ul>
                     <div style="margin-top: 15px;">
-                        <a href="https://github.com/andradepsa/PiCoin" class="btn btn-primary" target="_blank">Download Now</a>
+                        <a href="https://github.com/andradepsa/PiCoin" class="btn" target="_blank">📥 GitHub Repository</a>
                     </div>
                 </div>
-                <div class="comparison-card original">
-                    <h4>📚 Documentation</h4>
+                <div class="comparison-card modified">
+                    <h4>🔐 Security Checklist</h4>
                     <ul>
-                        <li>📖 <strong>White Paper:</strong> Technical Specification</li>
-                        <li>🔧 <strong>Setup Guide:</strong> Installation Instructions</li>
-                        <li>⛏️ <strong>Mining Guide:</strong> Step-by-step Tutorial</li>
-                        <li>🛠️ <strong>API Docs:</strong> Developer Reference</li>
+                        <li>🔒 <strong>Change RPC credentials</strong></li>
+                        <li>🛡️ <strong>Use strong passwords</strong></li>
+                        <li>🔐 <strong>Encrypt wallet:</strong> encryptwallet</li>
+                        <li>💾 <strong>Backup wallet.dat</strong></li>
                     </ul>
-                    <div style="margin-top: 15px;">
-                        <a href="#" class="btn btn-secondary">View Docs</a>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Call to Action -->
-        <div class="cta-section fade-in">
-            <h3>🚀 Complete Mathematical Verification</h3>
+        <!-- Final CTA -->
+        <div class="cta-section">
+            <h3>🚀 PiCoin Extended</h3>
             <p style="font-size: 1.3em; margin-bottom: 30px;">
-                Explore the rigorous mathematical calculations that validate the PiCoin Extended system
+                Bitcoin-compatible. 70 cycles. 9,000+ years of sustainability.
             </p>
+            <a href="https://github.com/andradepsa/PiCoin" class="btn" target="_blank">📥 Access Repository</a>
         </div>
     </div>
-
-    <!-- Mathematical Section -->
-    <div class="container">
-        <div class="math-page-container">
-            <h1>🧮 Rigorous Mathematical Verification</h1>
-            <p style="text-align: center; font-size: 1.2rem; color: #7f8c8d;">
-                Precise and verified calculations of the PiCoin Extended emission algorithm
-            </p>
-
-            <h2><span class="step-number-math">1</span>Corrected Fundamental Parameters</h2>
-            <div class="calculation-step">
-                <h3>Precise technical specifications:</h3>
-                <ul>
-                    <li><strong>Initial subsidy:</strong> 50 coins per block</li>
-                    <li><strong>Halving interval:</strong> 210,000 blocks</li>
-                    <li><strong>Halvings per cycle:</strong> 33 (indices 0 to 32)</li>
-                    <li><strong>Total cycles:</strong> 70</li>
-                    <li><strong>Duration per cycle:</strong> 131.76 years (not ~132)</li>
-                    <li><strong>Halving operation:</strong> Division by 2^i</li>
-                </ul>
-            </div>
-
-            <h2><span class="step-number-math">2</span>Precise Duration Calculation</h2>
-            <div class="formula-box">
-                $\text{Duration per cycle} = \frac{33 \times 210,000 \times 10}{60 \times 24 \times 365.25} \text{ years}$
-            </div>
-
-            <div class="calculation-step">
-                <h3>Calculation breakdown:</h3>
-                <p><strong>Blocks per cycle:</strong> 33 × 210,000 = 6,930,000 blocks</p>
-                <p><strong>Minutes per cycle:</strong> 6,930,000 × 10 = 69,300,000 minutes</p>
-                <p><strong>Years per cycle:</strong> 69,300,000 ÷ (60 × 24 × 365.25) = <strong>131.76 years</strong></p>
-            </div>
-
-            <h2><span class="step-number-math">3</span>Final Year Calculation</h2>
-            <div class="formula-box">
-                $\text{Final year} = 2025 + (70 \times 131.76) = 2025 + 9,223.2 = 11,248.2$
-            </div>
-
-            <div class="result-highlight">
-                <strong>Precise final year:</strong> 11,248 (rounded)<br>
-                <strong>Total duration:</strong> 9,223.2 years
-            </div>
-
-            <h2><span class="step-number-math">4</span>Coins per Cycle Calculation</h2>
-            <div class="formula-box">
-                $\text{Coins per cycle} = 210,000 \times 50 \times \sum_{i=0}^{32} \frac{1}{2^i}$
-            </div>
-
-            <div class="calculation-step">
-                <h3>Rigorous geometric series:</h3>
-                <p>For geometric progression with a = 1 and r = 1/2:</p>
-                <p>$S_{32} = \frac{1-(1/2)^{33}}{1-1/2} = 2 \times (1-(1/2)^{33})$</p>
-                <p><strong>Where:</strong> 2³³ = 8,589,934,592</p>
-                <p><strong>Therefore:</strong> (1/2)³³ = 1.164 × 10⁻¹⁰</p>
-                <p><strong>Result:</strong> S₃₂ = 1.999999999767441860</p>
-            </div>
-
-            <div class="result-highlight">
-                <strong>Coins per cycle (exact):</strong> 20,999,999.997555 coins<br>
-                <strong>Common approximation:</strong> ~21,000,000 coins<br>
-                <strong>Approximation error:</strong> 0.000001%
-            </div>
-
-            <h2><span class="step-number-math">5</span>Total Coins for 70 Cycles</h2>
-            <div class="formula-box">
-                $\text{Total} = 20,999,999.997555 \times 70 = 1,469,999,999.827885$
-            </div>
-
-            <h2><span class="step-number-math">6</span>Complete Verification Table</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Parameter</th>
-                        <th>Exact Value</th>
-                        <th>Approximation</th>
-                        <th>Error %</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Duration per cycle</td>
-                        <td>131.76 years</td>
-                        <td>~132 years</td>
-                        <td>0.18%</td>
-                    </tr>
-                    <tr>
-                        <td>Coins per cycle</td>
-                        <td>20,999,999.997555</td>
-                        <td>~21,000,000</td>
-                        <td>0.000001%</td>
-                    </tr>
-                    <tr>
-                        <td>Final year</td>
-                        <td>11,248.2</td>
-                        <td>~11,248</td>
-                        <td>0.002%</td>
-                    </tr>
-                    <tr>
-                        <td>Total duration</td>
-                        <td>9,223.2 years</td>
-                        <td>~9,223 years</td>
-                        <td>0.002%</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2><span class="step-number-math">7</span>Block Height Examples Verification</h2>
-            <div class="calculation-step">
-                <h3>Testing the algorithm at specific heights:</h3>
-                <ul>
-                    <li><strong>Block 0:</strong> (0 ÷ 210,000) % 33 = 0 halvings → 50 coins ✓</li>
-                    <li><strong>Block 210,000:</strong> (210,000 ÷ 210,000) % 33 = 1 halving → 25 coins ✓</li>
-                    <li><strong>Block 6,930,000:</strong> (6,930,000 ÷ 210,000) % 33 = 0 halvings → 50 coins (Cycle 2) ✓</li>
-                    <li><strong>Block 485,100,000:</strong> (485,100,000 ÷ 210,000) ÷ 33 = 70 → 0 coins (End) ✓</li>
-                </ul>
-            </div>
-
-            <h2><span class="step-number-math">8</span>Implementation Security Analysis</h2>
-            <div class="code-section">
-<strong>Security checks in the code:</strong>
-
-// Protection against negative height
-if (nHeight < 0) return 0;
-
-// Protection against division overflow
-int totalHalvings = nHeight / consensusParams.nSubsidyHalvingInterval;
-
-// Well-defined cycle limit
-if (currentCycle >= 70) return 0;
-
-// Safe monetary value types
-CAmount nSubsidy = 50 * COIN;
-            </div>
-
-            <div class="final-result">
-                <h2>🎯 Verified Final Result</h2>
-                <div class="big-number">1,469,999,999.827885</div>
-                <p style="font-size: 1.5rem; margin-top: 1rem;">
-                    <strong>Total coins issued (exact mathematical value)</strong>
-                </p>
-                <p style="font-size: 1.2rem; color: #7f8c8d;">
-                    Practical approximation: <strong>~1.47 billion coins</strong>
-                </p>
-                <p style="margin-top: 2rem; font-size: 1.1rem;">
-                    ✅ System operates for <strong>9,223.2 years</strong> (70 × 131.76 years)<br>
-                    ✅ 100% compatibility with Bitcoin Core<br>
-                    ✅ Secure and mathematically verified implementation
-                </p>
-            </div>
-
-            <div style="background: #ecf0f1; padding: 2rem; border-radius: 10px; margin-top: 3rem;">
-                <h3 style="color: #2c3e50;">🔍 Verification Conclusions:</h3>
-                <ul style="font-size: 1.1rem; line-height: 1.8;">
-                    <li><strong>Mathematical precision:</strong> All calculations have been verified and corrected</li>
-                    <li><strong>Robust implementation:</strong> Secure code with adequate protections</li>
-                    <li><strong>Bitcoin compatibility:</strong> Maintains 100% of original functionality</li>
-                    <li><strong>Sustainability:</strong> Guarantees incentives for over 9,000 years</li>
-                    <li><strong>Predictability:</strong> Deterministic and auditable system</li>
-                </ul>
-            </div>
-
-            <h2><span class="step-number-math">9</span>Comparison with Original Bitcoin</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Aspect</th>
-                        <th>Bitcoin Original</th>
-                        <th>PiCoin Extended</th>
-                        <th>Improvement Factor</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Emission duration</td>
-                        <td>131.76 years</td>
-                        <td>9,223.2 years</td>
-                        <td>70x longer</td>
-                    </tr>
-                    <tr>
-                        <td>Total coins</td>
-                        <td>~21,000,000</td>
-                        <td>~1,470,000,000</td>
-                        <td>70x more coins</td>
-                    </tr>
-                    <tr>
-                        <td>Code security</td>
-                        <td>Proven</td>
-                        <td>Identical + improvements</td>
-                        <td>Maintained/Enhanced</td>
-                    </tr>
-                    <tr>
-                        <td>Miner incentives</td>
-                        <td>Until 2141</td>
-                        <td>Until 11,248</td>
-                        <td>9,107 more years</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); padding: 2rem; border-radius: 10px; margin: 2rem 0;">
-                <h3 style="color: #2c3e50; text-align: center;">📊 Executive Summary</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
-                    <div style="text-align: center;">
-                        <h4 style="color: #e74c3c;">70 Cycles</h4>
-                        <p>Each identical to Bitcoin</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <h4 style="color: #e74c3c;">131.76 Years</h4>
-                        <p>Precise duration per cycle</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <h4 style="color: #e74c3c;">100% Compatible</h4>
-                        <p>With Bitcoin Core</p>
-                    </div>
-                    <div style="text-align: center;">
-                        <h4 style="color: #e74c3c;">Mathematically Verified</h4>
-                        <p>Rigorous calculations</p>
-                    </div>
-                </div>
-            </div>
-
-            <h2><span class="step-number-math">10</span>Algorithm Implementation Examples</h2>
-            <div class="code-section">
-<strong>Example calculations for different block heights:</strong>
-
-// Block 0 (Genesis)
-nHeight = 0
-halvings = (0 / 210000) % 33 = 0
-currentCycle = (0 / 210000) / 33 = 0
-nSubsidy = 50 >> 0 = 50 coins ✓
-
-// Block 210,000 (First halving)
-nHeight = 210000
-halvings = (210000 / 210000) % 33 = 1
-currentCycle = (210000 / 210000) / 33 = 0
-nSubsidy = 50 >> 1 = 25 coins ✓
-
-// Block 6,930,000 (Start of Cycle 2)
-nHeight = 6930000
-halvings = (6930000 / 210000) % 33 = 0
-currentCycle = (6930000 / 210000) / 33 = 1
-nSubsidy = 50 >> 0 = 50 coins ✓ (Reset!)
-
-// Block 485,100,000 (End of all cycles)
-nHeight = 485100000
-halvings = (485100000 / 210000) % 33 = 0
-currentCycle = (485100000 / 210000) / 33 = 70
-return 0 coins ✓ (Stopped!)
-            </div>
-
-            <h2><span class="step-number-math">11</span>Network Economics Analysis</h2>
-            <div class="calculation-step">
-                <h3>Long-term economic implications:</h3>
-                <ul>
-                    <li><strong>Mining sustainability:</strong> Guaranteed block rewards for 9,223+ years</li>
-                    <li><strong>Network security:</strong> Continuous incentive for hash power</li>
-                    <li><strong>Inflation control:</strong> Predictable emission schedule</li>
-                    <li><strong>Market stability:</strong> No sudden reward cessation</li>
-                    <li><strong>Adoption potential:</strong> Extended utility timeline</li>
-                </ul>
-            </div>
-
-            <div style="background: #fff3cd; border-left: 5px solid #ffc107; padding: 1.5rem; border-radius: 10px; margin: 2rem 0;">
-                <h3 style="color: #856404;">⚠️ Important Considerations</h3>
-                <ul style="color: #856404;">
-                    <li><strong>Total supply:</strong> 70x larger than Bitcoin (1.47B vs 21M)</li>
-                    <li><strong>Unit value:</strong> Expected to be proportionally lower</li>
-                    <li><strong>Network effects:</strong> Different adoption dynamics</li>
-                    <li><strong>Storage requirements:</strong> Larger blockchain over time</li>
-                </ul>
-            </div>
-
-            <div class="final-result">
-                <h2>🌟 PiCoin Extended: The Complete Solution</h2>
-                <p style="font-size: 1.3rem; margin-bottom: 2rem;">
-                    A mathematically sound, Bitcoin-compatible cryptocurrency that extends 
-                    the proven Bitcoin model for millennial sustainability.
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px;">
-                        <h4>✅ Proven Foundation</h4>
-                        <p>Built on Bitcoin's battle-tested architecture</p>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px;">
-                        <h4>🔬 Mathematical Rigor</h4>
-                        <p>Every calculation verified and validated</p>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px;">
-                        <h4>🛡️ Minimal Risk</h4>
-                        <p>Only 2 lines changed from Bitcoin Core</p>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.2); padding: 1rem; border-radius: 10px;">
-                        <h4>🚀 Future-Proof</h4>
-                        <p>Sustainable for the next 9,000+ years</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Final Call to Action -->
-    <div class="container">
-        <div class="cta-section fade-in">
-            <h3>🚀 PiCoin Extended: Bitcoin Evolved</h3>
-            <p style="font-size: 1.3em; margin-bottom: 30px;">
-                Precise mathematics. Secure implementation. Millennial sustainability.
-            </p>
-            <a href="https://github.com/andradepsa/PiCoin" class="btn" target="_blank">📥 Access GitHub Repository</a>
-        </div>
-    </div>
-
-    <script>
-        // MathJax configuration
-        window.MathJax = {
-            tex: {
-                inlineMath: [[', '], ['\\(', '\\)']],
-                displayMath: [['$', '$'], ['\\[', '\\]']]
-            }
-        };
-
-        // Smooth scroll animations
-        window.addEventListener('scroll', () => {
-            const elements = document.querySelectorAll('.fade-in');
-            elements.forEach(element => {
-                const elementTop = element.getBoundingClientRect().top;
-                const elementVisible = 150;
-                
-                if (elementTop < window.innerHeight - elementVisible) {
-                    element.style.opacity = '1';
-                    element.style.transform = 'translateY(0)';
-                }
-            });
-        });
-
-        // Initialize fade-in animations
-        document.addEventListener('DOMContentLoaded', () => {
-            const fadeElements = document.querySelectorAll('.fade-in');
-            fadeElements.forEach(element => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
-                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            });
-        });
-    </script>
 </body>
 </html>
