@@ -404,17 +404,16 @@ return (nHeight < 70 * consensus.nSubsidyHalvingInterval * 33) ? (nSubsidy >> ha
                 </p>
                 <div class="code-box" style="background: #1a202c; border: 2px solid #68d391;">
 CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
-{    
-    int halvings = (nHeight / 210000) % 33;           // Line 1944 - Modified ✅
+{
+    int halvings = (nHeight / 210000) % 33; // Line 1944 - Modified
     // Calculate halvings within current cycle (0-32). Modulo 33 resets every 33 halvings to create cycles.
     if (halvings >= 64)
         return 0;
     CAmount nSubsidy = 50 * COIN;
     // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
-    
     nSubsidy >>= halvings;
-    return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0;    // Line 1952 - CORRECTED ✅
-}    /// Stop emission after 70 complete cycles. Each cycle = 33 halvings = 6,930,000 blocks = ~132 years.</div>
+    return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0; // Line 1952 - Modified
+} /// Stop emission after 70 complete cycles. Each cycle = 33 halvings = 6,930,000 blocks = ~132 years.</div>
                 <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 10px; margin-top: 15px;">
                     <p style="font-size: 1em; margin: 0; text-align: center;">
                         <strong>✅ Emission stops exactly at block 485,100,000 (70 × 210,000 × 33)</strong><br>
