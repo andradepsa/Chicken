@@ -388,7 +388,7 @@
 int halvings = nHeight / consensus.nSubsidyHalvingInterval;
 
 // Line 1944 - MODIFIED for PiCoin Extended:
-int halvings = (nHeight / consensus.nSubsidyHalvingInterval) % 33;
+int halvings = (nHeight / 210000) % 33;
 
 // Line 1952 - ORIGINAL Bitcoin:
 return halvings >= 64 ? 0 : nSubsidy >> halvings;
