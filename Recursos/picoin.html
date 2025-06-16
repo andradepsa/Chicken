@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🪙 PiCoin Extended - The Evolution of Cryptocurrencies</title>
+    <title>🪙 PiCoin Extended - Long-term Cryptocurrency Sustainability</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
     <style>
         * {
@@ -16,7 +16,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
-            background: linear-gradient(135deg, #4c63d2 0%, #9b59b6 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
 
@@ -27,291 +27,403 @@
         }
 
         .hero {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             border-radius: 20px;
             padding: 40px;
             margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         .hero h1 {
-            font-size: 3.5em;
-            color: #4c63d2;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            font-size: 3.2em;
+            color: #667eea;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .hero h2 {
-            font-size: 1.8em;
-            color: #666;
-            margin-bottom: 20px;
+            font-size: 1.6em;
+            color: #555;
+            margin-bottom: 25px;
+            font-weight: 500;
         }
 
         .hero p {
-            font-size: 1.2em;
-            color: #777;
-            max-width: 800px;
+            font-size: 1.1em;
+            color: #666;
+            max-width: 900px;
             margin: 0 auto;
+            line-height: 1.7;
         }
 
         .section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.8);
         }
 
         .section h3 {
-            color: #4c63d2;
-            font-size: 2em;
-            margin-bottom: 20px;
-            border-left: 5px solid #4c63d2;
-            padding-left: 15px;
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+            padding-left: 20px;
+            font-weight: 600;
         }
 
-        .stats-grid {
+        .status-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
         }
 
-        .stat-card {
-            background: linear-gradient(135deg, #4c63d2 0%, #9b59b6 100%);
+        .status-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 12px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
         }
 
-        .stat-card h4 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .status-card:hover {
+            transform: translateY(-5px);
         }
 
-        .stat-card p {
-            font-size: 1.1em;
-            opacity: 0.9;
+        .status-card h4 {
+            font-size: 2.2em;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .status-card p {
+            font-size: 1em;
+            opacity: 0.95;
+            line-height: 1.5;
         }
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
         }
 
         .feature-card {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 12px;
             text-align: center;
             border: 2px solid #e9ecef;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .feature-card:hover::before {
+            left: 100%;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border-color: #667eea;
         }
 
         .feature-card h4 {
-            color: #4c63d2;
+            color: #667eea;
+            margin-bottom: 18px;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .development-status {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 35px;
+            border-radius: 15px;
+            margin: 25px 0;
+        }
+
+        .development-status h4 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            margin: 8px 0;
+            font-size: 1.1em;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .status-complete { background: #28a745; }
+        .status-progress { background: #ffc107; }
+        .status-pending { background: #6c757d; }
+
+        .highlight {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border: 2px solid #bee5eb;
+            border-left: 6px solid #17a2b8;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+
+        .warning-box {
+            background: #fff8e1;
+            border: 2px solid #ffecb3;
+            border-left: 6px solid #ff9800;
+            padding: 25px;
+            border-radius: 12px;
+            color: #e65100;
+            margin: 25px 0;
+        }
+
+        .warning-box h4 {
+            color: #e65100;
             margin-bottom: 15px;
             font-size: 1.3em;
         }
 
-        .cta-section {
-            background: linear-gradient(135deg, #4c63d2, #9b59b6);
-            color: white;
-            text-align: center;
-            padding: 40px;
-            border-radius: 15px;
-            margin-top: 30px;
-            margin-bottom: 20px;
-        }
-
-        .cta-section h3 {
-            color: white;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            border: none;
-            padding: 0;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            margin: 10px;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
-        .btn-primary {
-            background: #28a745;
-            border-color: #28a745;
-        }
-
-        .btn-primary:hover {
-            background: #218838;
-            border-color: #218838;
-        }
-
-        .highlight {
-            background: linear-gradient(135deg, #ddd6fe, #c7d2fe);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #4c63d2;
-        }
-
-        .info-box {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            border-left: 5px solid #17a2b8;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
-        .network-status {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
+        .critical-warning {
+            background: #ffebee;
+            border: 2px solid #ffcdd2;
+            border-left: 6px solid #f44336;
             padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-            text-align: center;
+            border-radius: 12px;
+            color: #c62828;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px rgba(244, 67, 54, 0.15);
         }
 
-        .network-status h4 {
-            font-size: 2em;
-            margin-bottom: 15px;
+        .critical-warning h4 {
+            color: #c62828;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            font-weight: 700;
         }
 
-        .live-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #28a745;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: blink 1s infinite;
+        .critical-warning ul {
+            margin-top: 15px;
+            padding-left: 20px;
+        }
+
+        .critical-warning li {
+            margin-bottom: 8px;
+            font-weight: 500;
         }
 
         .code-box {
             background: #2d3748;
             color: #e2e8f0;
-            padding: 20px;
-            border-radius: 10px;
+            padding: 25px;
+            border-radius: 12px;
             font-family: 'Courier New', monospace;
-            margin: 15px 0;
+            margin: 20px 0;
             overflow-x: auto;
             white-space: pre;
+            border: 1px solid #4a5568;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .modification-box {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 15px;
-            margin: 20px 0;
+            margin: 25px 0;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
         }
 
         .modification-box h4 {
             color: white;
-            margin-bottom: 15px;
-            font-size: 1.5em;
+            margin-bottom: 18px;
+            font-size: 1.6em;
+            font-weight: 600;
         }
 
         .two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 30px;
-            margin: 20px 0;
+            margin: 25px 0;
         }
 
-        .changelog {
+        .comparison-box {
             background: #f8f9fa;
-            border: 2px solid #4c63d2;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
+            padding: 30px;
+            border-radius: 12px;
+            border: 3px solid;
+            transition: all 0.3s ease;
         }
 
-        .changelog h4 {
-            color: #4c63d2;
-            margin-bottom: 15px;
+        .bitcoin-box {
+            border-color: #dc3545;
+        }
+
+        .picoin-box {
+            border-color: #28a745;
+        }
+
+        .comparison-box h4 {
+            text-align: center;
+            margin-bottom: 20px;
             font-size: 1.4em;
+            font-weight: 600;
         }
 
-        .success-box {
-            background: linear-gradient(135deg, #28a745, #20c997);
+        .bitcoin-box h4 { color: #dc3545; }
+        .picoin-box h4 { color: #28a745; }
+
+        .comparison-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .comparison-box li {
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 500;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 15px 0;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 15px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            font-size: 1.1em;
         }
 
-        .warning-box {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 20px;
-            border-radius: 10px;
-            color: #856404;
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
         }
 
-        .corrected-box {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border: 3px solid #155724;
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 12px 35px rgba(108, 117, 125, 0.4);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            padding: 25px;
+            text-align: center;
+            padding: 50px;
+            border-radius: 20px;
+            margin: 40px 0;
+            box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
+        }
+
+        .cta-section h3 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 25px;
+            border: none;
+            padding: 0;
+            font-weight: 600;
+        }
+
+        .roadmap {
+            background: #f8f9fa;
+            border: 3px solid #667eea;
             border-radius: 15px;
-            margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin: 25px 0;
         }
 
-        .corrected-box h4 {
-            color: white;
-            margin-bottom: 15px;
-            font-size: 1.6em;
+        .roadmap h4 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
             text-align: center;
         }
 
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
+        .roadmap-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background 0.3s ease;
         }
 
-        .pulse {
-            animation: pulse 2s infinite;
+        .roadmap-item:hover {
+            background: rgba(102, 126, 234, 0.05);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .technical-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
         }
 
-        .fade-in {
-            animation: fadeIn 1s ease-in;
+        .spec-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #dee2e6;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .spec-item h5 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .spec-item p {
+            font-weight: 600;
+            color: #495057;
         }
 
         @media (max-width: 768px) {
@@ -319,9 +431,28 @@
                 font-size: 2.5em;
             }
             
-            .stats-grid, .two-columns {
+            .two-columns,
+            .status-grid,
+            .technical-specs {
                 grid-template-columns: 1fr;
             }
+
+            .section {
+                padding: 25px;
+            }
+
+            .hero {
+                padding: 30px;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -329,305 +460,436 @@
     <div class="container">
         <!-- Hero Section -->
         <div class="hero fade-in">
-            <h1 class="pulse">🪙 PiCoin Extended</h1>
-            <h2>Independent Cryptocurrency Network with 70 Emission Cycles</h2>
-            <p><strong>PiCoin Extended</strong> is a completely independent cryptocurrency network that operates on its own blockchain, separate from Bitcoin. With an innovative emission system featuring <strong>70 cycles of 132 years each</strong>, it extends cryptocurrency operations until the year <strong>11,265</strong>. Each cycle issues exactly <strong>21 million coins</strong>, maintaining controlled and predictable supply.</p>
+            <h1>🪙 PiCoin Extended</h1>
+            <h2>Long-term Cryptocurrency Sustainability Research Project</h2>
+            <p><strong>PiCoin Extended</strong> is an experimental cryptocurrency research project that explores long-term blockchain sustainability through a novel 70-cycle emission system. Built on Bitcoin Core architecture with minimal modifications, it demonstrates how cryptocurrency networks could theoretically operate for thousands of years while maintaining economic incentives for miners and network security.</p>
         </div>
 
-        <!-- Network Status -->
-        <div class="network-status fade-in">
-            <h4><span class="live-indicator"></span>Independent Network Status: LIVE & MINING</h4>
-            <p style="font-size: 1.2em; margin-bottom: 20px;">
-                The PiCoin Extended mainnet is operational on its own network! Join as an early miner and mine the first PiCoins Extended in history on the independent PiCoin blockchain.
-            </p>
-        </div>
-
-        <!-- Network Separation -->
-        <div class="section fade-in">
-            <h3>🌐 Independent Network Architecture</h3>
-            <div class="modification-box">
-                <h4>✅ Complete Network Separation from Bitcoin</h4>
-                <p style="font-size: 1.1em;">PiCoin Extended operates on its own completely independent network with unique identifiers that ensure total separation from Bitcoin:</p>
-            </div>
-            
+        <!-- Development Status -->
+        <div class="development-status fade-in">
+            <h4>📊 Current Development Status</h4>
             <div class="two-columns">
-                <div class="changelog">
-                    <h4>🔧 Network Modifications Made</h4>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin-bottom: 10px;">✅ <strong>Magic Bytes:</strong> Changed from <code>0xf9beb4d9</code> to <code>0xf0beb4d9</code></li>
-                        <li style="margin-bottom: 10px;">✅ <strong>Network Port:</strong> Changed from <code>8333</code> to <code>9333</code></li>
-                        <li style="margin-bottom: 10px;">✅ <strong>70-Cycle Algorithm:</strong> Implemented in validation logic</li>
-                        <li style="margin-bottom: 10px;">✅ <strong>Total Files Modified:</strong> Only 2 files</li>
-                        <li style="margin-bottom: 10px;">✅ <strong>Total Lines Changed:</strong> Only 4 lines</li>
-                    </ul>
+                <div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-complete"></span>
+                        Core algorithm implemented and tested
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-complete"></span>
+                        Network separation functional
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-complete"></span>
+                        Mathematical verification completed
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-complete"></span>
+                        Regtest environment operational
+                    </div>
                 </div>
-                
-                <div class="changelog">
-                    <h4>🚀 Results Achieved</h4>
-                    <ul style="list-style: none; padding: 0;">
-                        <li style="margin-bottom: 10px;">🎯 <strong>Independent Network:</strong> No conflicts with Bitcoin</li>
-                        <li style="margin-bottom: 10px;">🔒 <strong>Unique Identity:</strong> Own magic bytes and port</li>
-                        <li style="margin-bottom: 10px;">⚡ <strong>Full Compatibility:</strong> All Bitcoin features preserved</li>
-                        <li style="margin-bottom: 10px;">🛡️ <strong>Maximum Security:</strong> Proven Bitcoin architecture</li>
-                        <li style="margin-bottom: 10px;">🔧 <strong>Ultra-Minimal:</strong> Minimal code changes</li>
-                    </ul>
+                <div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-progress"></span>
+                        Community testing and feedback
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-progress"></span>
+                        Documentation and guides
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-pending"></span>
+                        Security audit and peer review
+                    </div>
+                    <div class="status-indicator">
+                        <span class="status-dot status-pending"></span>
+                        Community adoption and mainnet consideration
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Ultra-Minimal Implementation -->
+        <!-- Research Goals -->
         <div class="section fade-in">
-            <h3>💻 Ultra-Minimal Implementation</h3>
-            <p style="margin-bottom: 20px; font-size: 1.1em;">Only 2 files modified, 4 lines changed total:</p>
-            
-            <div class="success-box" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
-                <h4 style="margin: 0; padding: 0;">File 1: src/validation.cpp (70-Cycle Algorithm)</h4>
+            <h3>🔬 Research Objectives</h3>
+            <div class="highlight">
+                <h4>The Bitcoin 2141 Problem</h4>
+                <p style="font-size: 1.1em; margin-bottom: 15px;">Bitcoin's emission schedule ends around 2141, after which miners will rely solely on transaction fees. This research explores whether extending emission cycles could provide long-term network security while maintaining economic principles.</p>
             </div>
-            <div class="code-box" style="margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
-// Line 1944 - ORIGINAL Bitcoin:
-int halvings = nHeight / consensus.nSubsidyHalvingInterval;
-
-// Line 1944 - MODIFIED for PiCoin Extended:
-int halvings = (nHeight / 210000) % 33;
-
-// Line 1952 - ORIGINAL Bitcoin:
-return halvings >= 64 ? 0 : nSubsidy >> halvings;
-
-// Line 1952 - MODIFIED for PiCoin Extended:
-return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0;</div>
-
-            <!-- Corrected Implementation Box -->
-            <div class="corrected-box">
-                <h4>🎯 CORRECTED IMPLEMENTATION - VERIFIED ✅</h4>
-                <p style="font-size: 1.1em; margin-bottom: 15px; text-align: center;">
-                    <strong>The implementation has been mathematically verified and corrected to ensure perfect 70-cycle operation!</strong>
-                </p>
-                <div class="code-box" style="background: #1a202c; border: 2px solid #68d391;">
-CAmount GetBlockSubsidy(int nHeight, const Consensus::Params& consensusParams)
-{
-    int halvings = (nHeight / 210000) % 33; // Line 1944 - Modified
-    // Calculate halvings within current cycle (0-32). Modulo 33 resets every 33 halvings to create cycles.
-    if (halvings >= 64)
-        return 0;
-    CAmount nSubsidy = 50 * COIN;
-    // Subsidy is cut in half every 210,000 blocks which will occur approximately every 4 years.
-    nSubsidy >>= halvings;
-    return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0; // Line 1952 - Modified
-} /// Stop emission after 70 complete cycles. Each cycle = 33 halvings = 6,930,000 blocks = ~132 years.</div>
-                <div style="background: rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 10px; margin-top: 15px;">
-                    <p style="font-size: 1em; margin: 0; text-align: center;">
-                        <strong>✅ Emission stops exactly at block 485,100,000 (70 × 210,000 × 33)</strong><br>
-                        <strong>✅ No division precision errors</strong><br>
-                        <strong>✅ Perfect mathematical accuracy</strong>
-                    </p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🎯 Long-term Sustainability</h4>
+                    <p>Explore cryptocurrency viability beyond 2141 through extended emission cycles</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧮 Mathematical Research</h4>
+                    <p>Investigate 70-cycle emission mathematics and economic implications</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔧 Minimal Implementation</h4>
+                    <p>Demonstrate complex changes with minimal code modifications</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🌐 Network Independence</h4>
+                    <p>Study completely separate blockchain networks and their behavior</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🛡️ Security Research</h4>
+                    <p>Analyze long-term network security with extended incentive models</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 Economic Modeling</h4>
+                    <p>Research inflation patterns and supply dynamics over millennia</p>
                 </div>
             </div>
-
-            <div class="success-box" style="margin-top: 25px; margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
-                <h4 style="margin: 0; padding: 0;">File 2: src/kernel/chainparams.cpp (Network Separation)</h4>
-            </div>
-            <div class="code-box" style="margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
-// Line ~118 - ORIGINAL Bitcoin:
-pchMessageStart[0] = 0xf9;  // Bitcoin magic bytes
-nDefaultPort = 8333;        // Bitcoin port
-
-// Line ~118 - MODIFIED for PiCoin Extended:
-pchMessageStart[0] = 0xf0;  // PiCoin Extended magic bytes  
-nDefaultPort = 9333;        // PiCoin Extended port</div>
         </div>
 
         <!-- Technical Implementation -->
         <div class="section fade-in">
-            <h3>🔧 Technical Implementation Details</h3>
+            <h3>💻 Technical Implementation</h3>
             
-            <div class="highlight">
-                <h4>🎯 Ultra-Minimal Approach</h4>
-                <p style="font-size: 1.1em;">Our implementation philosophy was to make the <strong>smallest possible changes</strong> to the Bitcoin codebase while achieving complete network independence and the mathematically perfect 70-cycle system:</p>
+            <div class="modification-box">
+                <h4>✅ Ultra-Minimal Code Changes</h4>
+                <p style="font-size: 1.1em;">The research demonstrates that complex economic models can be implemented with surprisingly few changes to existing blockchain infrastructure:</p>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card">
+            <div class="status-grid">
+                <div class="status-card">
                     <h4>2</h4>
                     <p>Files Modified<br>(out of 800+ files)</p>
                 </div>
-                <div class="stat-card">
-                    <h4>4</h4>
-                    <p>Lines Changed<br>(out of 200,000+ lines)</p>
+                <div class="status-card">
+                    <h4>~4</h4>
+                    <p>Key Lines Changed<br>(out of 200,000+ lines)</p>
                 </div>
-                <div class="stat-card">
+                <div class="status-card">
                     <h4>100%</h4>
-                    <p>Mathematical<br>Accuracy</p>
+                    <p>Bitcoin Compatibility<br>Preserved</p>
                 </div>
-                <div class="stat-card">
+                <div class="status-card">
                     <h4>0</h4>
-                    <p>Security<br>Compromises</p>
+                    <p>Security Features<br>Compromised</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Key Features -->
-        <div class="section fade-in">
-            <h3>✨ Key Features</h3>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h4>🌐 Independent Network</h4>
-                    <p>Completely separate from Bitcoin with unique magic bytes</p>
-                </div>
-                <div class="feature-card">
-                    <h4>🔄 70 Emission Cycles</h4>
-                    <p>Operation guaranteed until the year 11,265</p>
-                </div>
-                <div class="feature-card">
-                    <h4>💰 21 Million per Cycle</h4>
-                    <p>Controlled and predictable supply</p>
-                </div>
-                <div class="feature-card">
-                    <h4>🛡️ Bitcoin Architecture</h4>
-                    <p>Maximum security and reliability</p>
-                </div>
-                <div class="feature-card">
-                    <h4>⚡ Full Compatibility</h4>
-                    <p>All Bitcoin features preserved</p>
-                </div>
-                <div class="feature-card">
-                    <h4>🎯 Perfect Accuracy</h4>
-                    <p>Mathematically verified implementation</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- How It Works -->
-        <div class="section fade-in">
-            <h3>⚙️ How the 70-Cycle System Works</h3>
-            
             <div class="info-box">
-                <h4>🧮 Mathematical Foundation</h4>
-                <p>Each cycle consists of exactly 33 halvings (like Bitcoin), but instead of stopping, the system resets and begins a new cycle:</p>
-                <div class="code-box">
-Cycle Duration: 33 halvings × 4 years = 132 years per cycle
-Total Cycles: 70 cycles
-Total Duration: 70 × 132 = 9,240 years (ending in year 11,265)
-Coins per Cycle: ~21,000,000 (identical to Bitcoin)
-Total Maximum Supply: 70 × 21M = ~1.47 billion coins
-Emission Stop Block: 485,100,000 (70 × 210,000 × 33)
+                <h4>📁 File 1: src/validation.cpp - Emission Logic</h4>
+                <div class="code-box">// Research Implementation: 70-Cycle Emission System
+int halvings = (nHeight / 210000) % 33;  // Cycle reset every 33 halvings
+CAmount nSubsidy = 50 * COIN;
+nSubsidy >>= halvings;                   // Apply halving within cycle
+return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0;  // 70-cycle limit</div>
+            </div>
+
+            <div class="info-box">
+                <h4>📁 File 2: src/kernel/chainparams.cpp - Network Separation</h4>
+                <div class="code-box">// Network Independence Implementation
+pchMessageStart[0] = 0xf0;  // Unique magic bytes (vs Bitcoin's 0xf9)
+nDefaultPort = 9333;        // Dedicated port (vs Bitcoin's 8333)</div>
+            </div>
+        </div>
+
+        <!-- Technical Specifications -->
+        <div class="section fade-in">
+            <h3>📊 Technical Specifications</h3>
+            
+            <div class="technical-specs">
+                <div class="spec-item">
+                    <h5>Emission Cycles</h5>
+                    <p>70 complete cycles</p>
+                </div>
+                <div class="spec-item">
+                    <h5>Cycle Duration</h5>
+                    <p>~132 years each</p>
+                </div>
+                <div class="spec-item">
+                    <h5>Total Timeline</h5>
+                    <p>9,240 years</p>
+                </div>
+                <div class="spec-item">
+                    <h5>Coins per Cycle</h5>
+                    <p>~21 million</p>
+                </div>
+                <div class="spec-item">
+                    <h5>Maximum Supply</h5>
+                    <p>~1.47 billion</p>
+                </div>
+                <div class="spec-item">
+                    <h5>Final Block</h5>
+                    <p>485,100,000</p>
                 </div>
             </div>
 
             <div class="highlight">
-                <h4>🔄 Cycle Reset Mechanism</h4>
-                <p>The key innovation is the modulo operation that resets halvings every 33 occurrences:</p>
-                <div class="code-box">
-// Calculate which halving we're in (0-32, then resets)
-int halvings = (nHeight / 210000) % 33;
-
-// Check if we're still within the 70 cycles limit (CORRECTED)
-bool withinLimit = (nHeight < 70 * 210000 * 33);
-                </div>
+                <h4>🧮 Mathematical Foundation</h4>
+                <p>Each cycle follows Bitcoin's exact halving schedule (33 halvings), then resets to the initial reward. This creates a predictable long-term emission pattern while maintaining short-term economic incentives.</p>
+                <div class="code-box">Cycle Reset Logic: (blockHeight / 210000) % 33
+Timeline: 2025 → 11,265 (9,240 years of operation)
+Economic Model: Periodic inflation with deflation within cycles</div>
             </div>
         </div>
 
         <!-- Network Comparison -->
         <div class="section fade-in">
-            <h3>🔍 Bitcoin vs PiCoin Extended</h3>
+            <h3>🔍 Research Network vs Bitcoin</h3>
             <div class="two-columns">
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #dc3545;">
-                    <h4 style="color: #dc3545; text-align: center;">Bitcoin Network</h4>
-                    <ul style="list-style: none; padding: 0;">
+                <div class="comparison-box bitcoin-box">
+                    <h4>Bitcoin Network (Reference)</h4>
+                    <ul>
                         <li>🔗 Magic Bytes: <code>0xf9beb4d9</code></li>
                         <li>🌐 Port: <code>8333</code></li>
-                        <li>⏰ Emission: Ends ~2141</li>
-                        <li>💰 Max Supply: ~21M coins</li>
-                        <li>🔄 Cycles: 1 (single lifecycle)</li>
+                        <li>⏰ Emission End: ~2141</li>
+                        <li>💰 Max Supply: ~21M BTC</li>
+                        <li>🔄 Cycles: Single lifecycle</li>
+                        <li>📈 Post-2141: Transaction fees only</li>
                     </ul>
                 </div>
                 
-                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #28a745;">
-                    <h4 style="color: #28a745; text-align: center;">PiCoin Extended Network</h4>
-                    <ul style="list-style: none; padding: 0;">
+                <div class="comparison-box picoin-box">
+                    <h4>PiCoin Extended (Research)</h4>
+                    <ul>
                         <li>🔗 Magic Bytes: <code>0xf0beb4d9</code></li>
                         <li>🌐 Port: <code>9333</code></li>
-                        <li>⏰ Emission: Ends ~11,265</li>
-                        <li>💰 Max Supply: ~1.47B coins</li>
-                        <li>🔄 Cycles: 70 (multi-lifecycle)</li>
+                        <li>⏰ Emission End: ~11,265</li>
+                        <li>💰 Max Supply: ~1.47B PI</li>
+                        <li>🔄 Cycles: 70 lifecycles</li>
+                        <li>📈 Extended: Sustained mining incentives</li>
                     </ul>
                 </div>
             </div>
         </div>
 
-        <!-- Getting Started -->
+        <!-- Research Roadmap -->
         <div class="section fade-in">
-            <h3>🚀 Getting Started</h3>
-            <div class="warning-box">
-                <h4>📥 Download & Setup</h4>
-                <p><strong>Visit our GitHub repository</strong> for complete setup instructions, source code, and documentation.</p>
-                <p style="margin-top: 10px;"><strong>Important:</strong> Please read all security guidelines and setup instructions carefully before running the software.</p>
-            </div>
-            
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h4>📖 Documentation</h4>
-                    <p>Complete setup guides and technical specifications</p>
+            <h3>🗓️ Research Roadmap</h3>
+            <div class="roadmap">
+                <h4>📋 Research Phases</h4>
+                
+                <div class="roadmap-item">
+                    <span class="status-dot status-complete"></span>
+                    <div>
+                        <strong>Phase 1: Core Research & Implementation</strong>
+                        <br><small>Algorithm design, mathematical verification, basic implementation</small>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <h4>💻 Source Code</h4>
-                    <p>Full source code with corrected implementation</p>
+                
+                <div class="roadmap-item">
+                    <span class="status-dot status-complete"></span>
+                    <div>
+                        <strong>Phase 2: Testing & Validation</strong>
+                        <br><small>Regtest implementation, edge case testing, mathematical proof</small>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <h4>🛡️ Security Guide</h4>
-                    <p>Best practices for secure operation</p>
+                
+                <div class="roadmap-item">
+                    <span class="status-dot status-progress"></span>
+                    <div>
+                        <strong>Phase 3: Documentation & Peer Review</strong>
+                        <br><small>Comprehensive documentation, academic paper, community feedback</small>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <h4>🔧 Build Instructions</h4>
-                    <p>Step-by-step compilation guide</p>
+                
+                <div class="roadmap-item">
+                    <span class="status-dot status-pending"></span>
+                    <div>
+                        <strong>Phase 4: Security Audit</strong>
+                        <br><small>Independent security review, vulnerability assessment</small>
+                    </div>
+                </div>
+                
+                <div class="roadmap-item">
+                    <span class="status-dot status-pending"></span>
+                    <div>
+                        <strong>Phase 5: Community Evaluation</strong>
+                        <br><small>Public testing, feedback integration, potential mainnet consideration</small>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Historic Opportunity -->
+        <!-- Getting Involved -->
         <div class="section fade-in">
-            <h3>🏆 Historic Opportunity</h3>
+            <h3>🤝 Research Participation</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📖 Study Documentation</h4>
+                    <p>Review technical specifications, implementation details, and research findings</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🧪 Test Environment</h4>
+                    <p>Experiment with regtest implementation in safe, controlled conditions</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🔍 Peer Review</h4>
+                    <p>Contribute to mathematical verification and security analysis</p>
+                </div>
+                <div class="feature-card">
+                    <h4>💬 Academic Discussion</h4>
+                    <p>Participate in research discussions and economic modeling</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Setup for Researchers -->
+        <div class="section fade-in">
+            <h3>🛠️ Research Environment Setup</h3>
+            
+            <div class="warning-box">
+                <h4>⚠️ For Researchers and Developers Only</h4>
+                <p><strong>The following instructions are for academic researchers and developers who wish to study the implementation in a controlled environment.</strong> This is not intended for production use or investment purposes.</p>
+            </div>
+
             <div class="highlight">
-                <h4>Be a Founding Miner!</h4>
-                <p style="font-size: 1.1em;">You have the chance to mine some of the very first PiCoins Extended ever created on the independent PiCoin network. The network is in its genesis phase, making you a founding miner of this revolutionary 70-cycle system.</p>
-                <p style="margin-top: 15px;"><strong>🚀 Start mining today and become part of cryptocurrency history!</strong></p>
+                <h4>🔧 Development Environment Configuration</h4>
+                <p>To study the PiCoin Extended implementation, researchers need to configure a proper development environment:</p>
+            </div>
+
+            <div class="info-box">
+                <h4>📁 Configuration File Setup</h4>
+                <p><strong>Create configuration file</strong> <code>bitcoin.conf</code> in your data directory:</p>
+                
+                <div style="margin: 15px 0;">
+                    <strong>📂 File Locations:</strong>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li><strong>Windows:</strong> <code>%APPDATA%\Bitcoin\bitcoin.conf</code></li>
+                        <li><strong>Linux:</strong> <code>~/.bitcoin/bitcoin.conf</code></li>
+                        <li><strong>macOS:</strong> <code>~/Library/Application Support/Bitcoin/bitcoin.conf</code></li>
+                    </ul>
+                </div>
+
+                <div style="background: #f8f9fa; border: 2px solid #667eea; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                    <strong>📝 Configuration Content:</strong>
+                </div>
+                <div class="code-box"># Research Environment Configuration for PiCoin Extended
+# ⚠️ FOR RESEARCH PURPOSES ONLY - NOT FOR PRODUCTION
+
+server=1
+rpcallowip=127.0.0.1
+rpcuser=YOUR_SECURE_USERNAME
+rpcpassword=YOUR_STRONG_PASSWORD_HERE
+fallbackfee=0.00001
+connect=0
+listen=0
+gen=1
+genproclimit=1
+
+# Security Notes:
+# - Use strong, unique passwords
+# - Keep access restricted to localhost only
+# - This configuration isolates the research network</div>
+            </div>
+
+            <div class="critical-warning">
+                <h4>🔒 Security Requirements for Research</h4>
+                <ul>
+                    <li><strong>Strong Authentication:</strong> Use complex, unique passwords (12+ characters)</li>
+                    <li><strong>Local Access Only:</strong> Never expose RPC to external networks</li>
+                    <li><strong>Research Isolation:</strong> Keep research environment separate from production systems</li>
+                    <li><strong>Backup Security:</strong> Encrypt and secure all research data</li>
+                    <li><strong>Network Verification:</strong> Confirm connection to PiCoin network (port 9333)</li>
+                </ul>
+            </div>
+
+            <div class="modification-box">
+                <h4>🧪 Research Testing Commands</h4>
+                <p>For academic study and testing purposes only:</p>
+                <div class="code-box"># Start research environment (regtest for safety)
+./bitcoind -regtest -printtoconsole
+
+# Create research wallet
+./bitcoin-cli -regtest createwallet "research_wallet"
+
+# Generate test address
+./bitcoin-cli -regtest getnewaddress "test_address"
+
+# Mine test blocks for research
+./bitcoin-cli -regtest generatetoaddress 1 YOUR_TEST_ADDRESS
+
+# Study blockchain state
+./bitcoin-cli -regtest getblockchaininfo</div>
+            </div>
+
+            <div class="info-box">
+                <h4>🔬 Research Network Verification</h4>
+                <p>Verify you're connected to the independent PiCoin research network:</p>
+                <div class="code-box"># Check network parameters (should show PiCoin values)
+./bitcoin-cli getnetworkinfo
+
+# Expected values for PiCoin Extended:
+# - Magic bytes: 0xf0beb4d9 (not Bitcoin's 0xf9beb4d9)
+# - Port: 9333 (not Bitcoin's 8333)
+# - Independent network with zero Bitcoin conflicts</div>
+            </div>
+
+            <div class="critical-warning">
+                <h4>⚠️ Research Ethics and Responsibility</h4>
+                <p><strong>Researchers using this setup must adhere to ethical guidelines:</strong></p>
+                <ul>
+                    <li><strong>Academic Purpose Only:</strong> Use solely for research and educational objectives</li>
+                    <li><strong>No Financial Advice:</strong> Do not promote as investment opportunity</li>
+                    <li><strong>Transparent Research:</strong> Publish findings openly and honestly</li>
+                    <li><strong>Risk Disclosure:</strong> Always disclose experimental nature</li>
+                    <li><strong>Regulatory Compliance:</strong> Follow all applicable laws and regulations</li>
+                    <li><strong>Data Security:</strong> Protect any research data appropriately</li>
+                </ul>
             </div>
         </div>
 
         <!-- Call to Action -->
         <div class="cta-section fade-in">
-            <h3>🚀 Start Your Journey with PiCoin Extended</h3>
-            <p style="font-size: 1.3em; margin-bottom: 30px;">
-                Join the evolution of cryptocurrency on an independent network. Visit our GitHub repository for complete instructions and start mining today!
+            <h3>🔬 Join the Research</h3>
+            <p style="font-size: 1.2em; margin-bottom: 30px;">
+                Contribute to cryptocurrency sustainability research. Review our implementation, test the concepts, and help advance blockchain technology.
             </p>
-            <a href="https://github.com/andradepsa/PiCoin" class="btn btn-primary" target="_blank">📥 Visit GitHub Repository</a>
+            <a href="https://github.com/andradepsa/PiCoin" class="btn" target="_blank">📚 View Research Repository</a>
+            <a href="#documentation" class="btn btn-secondary">📖 Read Documentation</a>
         </div>
 
-        <!-- Disclaimer -->
+        <!-- Critical Disclaimers -->
+        <div class="critical-warning fade-in">
+            <h4>⚠️ Important Research Disclaimers</h4>
+            <p><strong>This is experimental research software for educational and academic purposes only.</strong></p>
+            <ul>
+                <li><strong>NOT FINANCIAL ADVICE:</strong> This is not investment advice or a recommendation to purchase any cryptocurrency</li>
+                <li><strong>EXPERIMENTAL SOFTWARE:</strong> May contain bugs, vulnerabilities, or unexpected behavior</li>
+                <li><strong>NO VALUE GUARANTEES:</strong> Research tokens have no inherent value and may become worthless</li>
+                <li><strong>TOTAL LOSS RISK:</strong> Only use amounts you can afford to lose completely</li>
+                <li><strong>REGULATORY COMPLIANCE:</strong> Ensure compliance with local laws and regulations</li>
+                <li><strong>INDEPENDENT RESEARCH:</strong> Conduct your own thorough research before any involvement</li>
+                <li><strong>ACADEMIC PURPOSE:</strong> Intended for blockchain research and educational purposes</li>
+                <li><strong>NO WARRANTIES:</strong> Provided "as-is" without any warranties or guarantees</li>
+            </ul>
+        </div>
+
+        <!-- Legal and Ethical -->
         <div class="section fade-in">
-            <h3>⚠️ Important Disclaimer</h3>
+            <h3>⚖️ Legal and Ethical Considerations</h3>
             <div class="warning-box">
-                <p><strong>PiCoin Extended is experimental software.</strong> Use at your own risk. Always:</p>
-                <ul style="margin-top: 10px;">
-                    <li>Test on small amounts first</li>
-                    <li>Keep secure backups</li>
-                    <li>Use strong security practices</li>
-                    <li>Understand the risks involved</li>
-                    <li>Read all documentation carefully</li>
-                    <li>Verify network separation before use</li>
+                <h4>📋 Research Ethics</h4>
+                <p>This research is conducted with transparency and academic integrity:</p>
+                <ul style="margin-top: 15px; padding-left: 20px;">
+                    <li>Open-source code available for review</li>
+                    <li>Mathematical proofs provided for verification</li>
+                    <li>Clear distinction between research and production systems</li>
+                    <li>No misleading claims about financial returns</li>
+                    <li>Educational focus on blockchain technology advancement</li>
+                </ul>
+            </div>
+            
+            <div class="info-box">
+                <h4>🔬 Academic Value</h4>
+                <p>This research contributes to the understanding of:</p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>Long-term cryptocurrency sustainability models</li>
+                    <li>Economic implications of extended emission cycles</li>
+                    <li>Minimal modification approaches to blockchain evolution</li>
+                    <li>Network independence and separation techniques</li>
                 </ul>
             </div>
         </div>
     </div>
 
     <script>
-        // MathJax configuration
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
-
         // Smooth scroll animations
         window.addEventListener('scroll', () => {
             const elements = document.querySelectorAll('.fade-in');
@@ -650,7 +912,83 @@ bool withinLimit = (nHeight < 70 * 210000 * 33);
                 element.style.transform = 'translateY(20px)';
                 element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             });
+            
+            // Trigger initial animation for visible elements
+            setTimeout(() => {
+                window.dispatchEvent(new Event('scroll'));
+            }, 100);
         });
+
+        // Interactive status indicators
+        document.addEventListener('DOMContentLoaded', () => {
+            const statusDots = document.querySelectorAll('.status-complete');
+            statusDots.forEach((dot, index) => {
+                setTimeout(() => {
+                    dot.style.animation = 'pulse 1.5s ease-in-out';
+                }, index * 200);
+            });
+        });
+
+        // Enhanced hover effects for feature cards
+        document.addEventListener('DOMContentLoaded', () => {
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-8px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Dynamic progress animation for status indicators
+        window.addEventListener('scroll', () => {
+            const progressElements = document.querySelectorAll('.status-progress');
+            progressElements.forEach(element => {
+                const rect = element.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    element.style.animation = 'pulse 2s infinite';
+                }
+            });
+        });
+
+        // Add CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.1); opacity: 0.7; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            
+            .status-progress {
+                animation: pulse 2s infinite;
+            }
+            
+            .status-complete {
+                box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+            }
+            
+            .status-pending {
+                opacity: 0.6;
+            }
+        `;
     </script>
 </body>
 </html>
