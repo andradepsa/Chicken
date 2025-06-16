@@ -394,7 +394,7 @@ int halvings = (nHeight / consensus.nSubsidyHalvingInterval) % 33;
 return halvings >= 64 ? 0 : nSubsidy >> halvings;
 
 // Line 1952 - MODIFIED for PiCoin Extended:
-return (nHeight < 70 * consensus.nSubsidyHalvingInterval * 33) ? (nSubsidy >> halvings) : 0;</div>
+return (nHeight < 70 * 210000 * 33) ? nSubsidy : 0;</div>
 
             <!-- Corrected Implementation Box -->
             <div class="corrected-box">
