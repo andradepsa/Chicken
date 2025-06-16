@@ -219,6 +219,7 @@
             font-family: 'Courier New', monospace;
             margin: 15px 0;
             overflow-x: auto;
+            white-space: pre; /* Preserves formatting for code snippets */
         }
 
         .modification-box {
@@ -357,41 +358,38 @@
             </div>
         </div>
 
-        <!-- Code Modifications -->
+        <!-- Ultra-Minimal Implementation -->
         <div class="section fade-in">
-            <h3>💻 Exact Code Modifications</h3>
+            <h3>💻 Ultra-Minimal Implementation</h3>
+            <p style="margin-bottom: 20px; font-size: 1.1em;">Only 2 files modified, 4 lines changed total:</p>
             
-            <div class="success-box">
-                <h4>📁 File 1: src/validation.cpp (70-Cycle Algorithm)</h4>
-                <p><strong>Purpose:</strong> Implements the 70-cycle emission system</p>
+            <div class="success-box" style="margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                <h4 style="margin: 0; padding: 0;">File 1: src/validation.cpp (70-Cycle Algorithm)</h4>
             </div>
-            <div class="code-box">
-// Line 1944 - ORIGINAL Bitcoin code:
+            <div class="code-box" style="margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
+// Line 1944 - ORIGINAL Bitcoin:
 int halvings = nHeight / consensus.nSubsidyHalvingInterval;
 
 // Line 1944 - MODIFIED for PiCoin Extended:
 int halvings = (nHeight / consensus.nSubsidyHalvingInterval) % 33;
 
-// Line 1952 - ORIGINAL Bitcoin code:
+// Line 1952 - ORIGINAL Bitcoin:
 return halvings >= 64 ? 0 : nSubsidy >> halvings;
 
 // Line 1952 - MODIFIED for PiCoin Extended:
-return ((nHeight / consensus.nSubsidyHalvingInterval) / 33 < 70) ? (nSubsidy >> halvings) : 0;
-            </div>
+return ((nHeight / consensus.nSubsidyHalvingInterval) / 33 < 70) ? (nSubsidy >> halvings) : 0;</div>
 
-            <div class="success-box">
-                <h4>📁 File 2: src/kernel/chainparams.cpp (Network Separation)</h4>
-                <p><strong>Purpose:</strong> Creates independent network identity</p>
+            <div class="success-box" style="margin-top: 25px; margin-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                <h4 style="margin: 0; padding: 0;">File 2: src/kernel/chainparams.cpp (Network Separation)</h4>
             </div>
-            <div class="code-box">
-// Line ~118 - ORIGINAL Bitcoin code:
+            <div class="code-box" style="margin-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;">
+// Line ~118 - ORIGINAL Bitcoin:
 pchMessageStart[0] = 0xf9;  // Bitcoin magic bytes
 nDefaultPort = 8333;        // Bitcoin port
 
 // Line ~118 - MODIFIED for PiCoin Extended:
-pchMessageStart[0] = 0xf0;  // PiCoin Extended magic bytes
-nDefaultPort = 9333;        // PiCoin Extended port
-            </div>
+pchMessageStart[0] = 0xf0;  // PiCoin Extended magic bytes  
+nDefaultPort = 9333;        // PiCoin Extended port</div>
         </div>
 
         <!-- Technical Implementation -->
