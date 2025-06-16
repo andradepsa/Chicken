@@ -187,15 +187,6 @@
             margin: 20px 0;
         }
 
-        .warning-box {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-left: 5px solid #f39c12;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-        }
-
         .network-status {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
@@ -257,7 +248,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Hero Section - TÍTULO PRIMEIRO -->
+        <!-- Hero Section -->
         <div class="hero fade-in">
             <h1 class="pulse">🪙 PiCoin Extended</h1>
             <h2>The Evolution of Cryptocurrencies Has Arrived</h2>
@@ -270,24 +261,6 @@
             <p style="font-size: 1.2em; margin-bottom: 20px;">
                 The PiCoin Extended mainnet is operational! Join as an early miner and mine the first PiCoins Extended in history.
             </p>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>9333</h4>
-                    <p>P2P Port</p>
-                </div>
-                <div class="stat-card">
-                    <h4>9332</h4>
-                    <p>RPC Port</p>
-                </div>
-                <div class="stat-card">
-                    <h4>50</h4>
-                    <p>Block Reward<br>(PiCoins)</p>
-                </div>
-                <div class="stat-card">
-                    <h4>~10</h4>
-                    <p>Block Time<br>(minutes)</p>
-                </div>
-            </div>
         </div>
 
         <!-- Key Features -->
@@ -379,161 +352,32 @@
             </div>
         </div>
 
-        <!-- Quick Start Mining -->
+        <!-- Getting Started -->
         <div class="section fade-in">
-            <h3>⛏️ Quick Start Mining</h3>
+            <h3>🚀 Getting Started</h3>
+            <div class="info-box">
+                <h4>📥 Download & Setup</h4>
+                <p><strong>Visit our GitHub repository</strong> for complete setup instructions, source code, and documentation.</p>
+                <p style="margin-top: 10px;"><strong>Important:</strong> Please read all security guidelines and setup instructions carefully before running the software.</p>
+            </div>
             
-            <div class="info-box">
-                <h4>🚀 Download & Setup</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p>git clone https://github.com/[YOUR_USERNAME]/PiCoin-Extended.git</p>
-                    <p>cd PiCoin-Extended</p>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📖 Documentation</h4>
+                    <p>Complete setup guides and technical specifications</p>
                 </div>
-            </div>
-
-            <div class="info-box">
-                <h4>📁 Create Data Directory</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p>mkdir C:\PiCoin-Data</p>
+                <div class="feature-card">
+                    <h4>💻 Source Code</h4>
+                    <p>Full source code with minimal Bitcoin modifications</p>
                 </div>
-            </div>
-
-            <div class="warning-box">
-                <h4>🔒 Configuration File</h4>
-                <p><strong>Create C:\PiCoin-Data\picoin.conf:</strong></p>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p>server=1</p>
-                    <p>listen=1</p>
-                    <p style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; display: inline-block;">rpcallowip=127.0.0.1</p>
-                    <p>port=9333</p>
-                    <p>rpcport=9332</p>
-                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px; display: inline-block;">rpcuser=[CHANGE_THIS_USERNAME]</p>
-                    <p style="background: #ffc107; color: #333; padding: 2px 8px; border-radius: 4px; display: inline-block;">rpcpassword=[CHANGE_THIS_TO_STRONG_PASSWORD]</p>
-                    <p>maxconnections=125</p>
-                    <p>upnp=1</p>
+                <div class="feature-card">
+                    <h4>🛡️ Security Guide</h4>
+                    <p>Best practices for secure operation</p>
                 </div>
-                <p><strong>⚠️ SECURITY:</strong> Change default credentials to unique values!</p>
-            </div>
-
-            <div class="info-box">
-                <h4>🎯 Start Mining Commands</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p># Start PiCoin Extended Node</p>
-                    <p>bitcoind.exe -datadir=C:\PiCoin-Data</p>
-                    <br>
-                    <p># Create Wallet</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data createwallet "PI"</p>
-                    <br>
-                    <p># Generate Address</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getnewaddress</p>
-                    <br>
-                    <p># Start Mining (replace ADDRESS with your address)</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data generatetoaddress 1 ADDRESS</p>
-                    <br>
-                    <p># Check Balance</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getbalance</p>
+                <div class="feature-card">
+                    <h4>🔧 Build Instructions</h4>
+                    <p>Step-by-step compilation guide</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Security Requirements -->
-        <div class="section fade-in">
-            <h3>🔒 Security Requirements</h3>
-            
-            <div class="warning-box">
-                <h4>🚨 CRITICAL SECURITY WARNINGS</h4>
-                <ul>
-                    <li><strong>Change ALL default credentials</strong> in picoin.conf</li>
-                    <li><strong>Use strong passwords</strong> (12+ characters, mixed case, numbers, symbols)</li>
-                    <li><strong>Restrict RPC access</strong> to localhost only (rpcallowip=127.0.0.1)</li>
-                    <li><strong>Enable wallet encryption</strong> with strong passphrase</li>
-                    <li><strong>Create regular backups</strong> of wallet.dat</li>
-                </ul>
-            </div>
-
-            <div class="info-box">
-                <h4>🔐 Secure Wallet Commands</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p># Encrypt Wallet</p>
-                    <p>bitcoin-cli.exe encryptwallet "YourStrongPassphrase"</p>
-                    <br>
-                    <p># Backup Wallet</p>
-                    <p>bitcoin-cli.exe backupwallet "C:\Backup\wallet_backup.dat"</p>
-                    <br>
-                    <p># Unlock for Mining</p>
-                    <p>bitcoin-cli.exe walletpassphrase "YourPassphrase" 3600</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Network Diagnostics -->
-        <div class="section fade-in">
-            <h3>🔍 Network Diagnostics</h3>
-            
-            <div class="info-box">
-                <h4>📊 Check Network Status</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p># View Node Information</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getnetworkinfo</p>
-                    <br>
-                    <p># Check Blockchain Status</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getblockchaininfo</p>
-                    <br>
-                    <p># View Mining Information</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getmininginfo</p>
-                    <br>
-                    <p># Check Connections</p>
-                    <p>bitcoin-cli.exe -datadir=C:\PiCoin-Data getpeerinfo</p>
-                </div>
-            </div>
-
-            <div class="info-box">
-                <h4>🔒 Private Mining (Isolated Network)</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p>bitcoind.exe -datadir=C:\PiCoin-Data -listen=0 -dnsseed=0 -discover=0</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Build Instructions -->
-        <div class="section fade-in">
-            <h3>🛠️ Build Instructions</h3>
-            
-            <div class="info-box">
-                <h4>📋 Prerequisites</h4>
-                <ul>
-                    <li>Visual Studio 2019 or later</li>
-                    <li>CMake 3.16+</li>
-                    <li>vcpkg package manager</li>
-                </ul>
-            </div>
-
-            <div class="info-box">
-                <h4>⚙️ Compilation</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p># Clone repository</p>
-                    <p>git clone https://github.com/[YOUR_USERNAME]/PiCoin-Extended.git</p>
-                    <p>cd PiCoin-Extended</p>
-                    <br>
-                    <p># Create build directory</p>
-                    <p>mkdir build</p>
-                    <p>cd build</p>
-                    <br>
-                    <p># Configure with CMake</p>
-                    <p>cmake ..</p>
-                    <br>
-                    <p># Build</p>
-                    <p>cmake --build . --config Release</p>
-                </div>
-            </div>
-
-            <div class="highlight">
-                <h4>📁 Executables Location</h4>
-                <p>After successful build, find executables in:</p>
-                <ul style="margin-top: 10px;">
-                    <li><strong>Windows:</strong> build\bin\Release\</li>
-                    <li><strong>Linux:</strong> build/bin/</li>
-                </ul>
             </div>
         </div>
 
@@ -541,7 +385,7 @@
         <div class="section fade-in">
             <h3>📚 Technical Documentation</h3>
             
-            <div class="warning-box">
+            <div class="info-box">
                 <h4>⏰ The Bitcoin 2141 Problem</h4>
                 <p>Bitcoin's emission ends around 2141, leaving only transaction fees as miner incentives. PiCoin Extended solves this by implementing 70 Bitcoin-identical cycles extending operations for over 9,000 years.</p>
             </div>
@@ -556,51 +400,6 @@
                     <p>Final Year: 2025 + (70 × 132) = 11,265</p>
                 </div>
             </div>
-
-            <div class="info-box">
-                <h4>🔧 Code Changes</h4>
-                <p>The fork modifies only two lines in <code>src/validation.cpp</code>:</p>
-                
-                <div style="margin: 20px 0;">
-                    <p><strong>Original Bitcoin:</strong></p>
-                    <div style="background: #dc3545; color: white; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace;">
-                        <p>int halvings = nHeight / consensusParams.nSubsidyHalvingInterval;</p>
-                        <p>return nSubsidy;</p>
-                    </div>
-                </div>
-
-                <div style="margin: 20px 0;">
-                    <p><strong>PiCoin Extended:</strong></p>
-                    <div style="background: #28a745; color: white; padding: 15px; border-radius: 8px; font-family: 'Courier New', monospace;">
-                        <p>int halvings = (nHeight / 210000) % 33;</p>
-                        <p>return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Community & Support -->
-        <div class="section fade-in">
-            <h3>🌍 Community & Support</h3>
-            
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h4>👨‍💻 Development</h4>
-                    <ul style="text-align: left;">
-                        <li>Issues: Report bugs and feature requests</li>
-                        <li>Pull Requests: Contribute code improvements</li>
-                        <li>Discussions: Technical discussions and questions</li>
-                    </ul>
-                </div>
-                <div class="feature-card">
-                    <h4>⛏️ Network Participation</h4>
-                    <ul style="text-align: left;">
-                        <li>Early Mining: Mine the first PiCoins Extended in history</li>
-                        <li>Node Operation: Help secure the network</li>
-                        <li>Development: Contribute to the ecosystem</li>
-                    </ul>
-                </div>
-            </div>
         </div>
 
         <!-- Historic Opportunity -->
@@ -613,13 +412,11 @@
             </div>
         </div>
 
-
-
         <!-- Call to Action -->
         <div class="cta-section fade-in">
             <h3>🚀 Start Your Journey with PiCoin Extended</h3>
             <p style="font-size: 1.3em; margin-bottom: 30px;">
-                Join the evolution of cryptocurrency. Download, compile, and start mining today!
+                Join the evolution of cryptocurrency. Visit our GitHub repository for complete instructions and start mining today!
             </p>
             <a href="https://github.com/andradepsa/PiCoin" class="btn btn-primary" target="_blank">📥 Visit GitHub Repository</a>
         </div>
