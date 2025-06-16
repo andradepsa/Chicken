@@ -211,6 +211,67 @@
             animation: blink 1s infinite;
         }
 
+        .code-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .modification-box {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .modification-box h4 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .changelog {
+            background: #f8f9fa;
+            border: 2px solid #4c63d2;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .changelog h4 {
+            color: #4c63d2;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .success-box {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 20px;
+            border-radius: 10px;
+            color: #856404;
+        }
+
         @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0.3; }
@@ -240,8 +301,8 @@
                 font-size: 2.5em;
             }
             
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            .stats-grid, .two-columns {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -251,22 +312,125 @@
         <!-- Hero Section -->
         <div class="hero fade-in">
             <h1 class="pulse">🪙 PiCoin Extended</h1>
-            <h2>The Evolution of Cryptocurrencies Has Arrived</h2>
-            <p><strong>PiCoin Extended</strong> is a new cryptocurrency that introduces an innovative emission system. It operates with <strong>70 emission cycles</strong>, each lasting <strong>132 years</strong>. In total, the system is planned to operate until the year <strong>11,265</strong>, starting in <strong>2025</strong>. In each cycle, exactly <strong>21 million coins</strong> will be issued, maintaining a controlled and predictable pace.</p>
+            <h2>Independent Cryptocurrency Network with 70 Emission Cycles</h2>
+            <p><strong>PiCoin Extended</strong> is a completely independent cryptocurrency network that operates on its own blockchain, separate from Bitcoin. With an innovative emission system featuring <strong>70 cycles of 132 years each</strong>, it extends cryptocurrency operations until the year <strong>11,265</strong>. Each cycle issues exactly <strong>21 million coins</strong>, maintaining controlled and predictable supply.</p>
         </div>
 
         <!-- Network Status -->
         <div class="network-status fade-in">
-            <h4><span class="live-indicator"></span>Network Status: LIVE & MINING</h4>
+            <h4><span class="live-indicator"></span>Independent Network Status: LIVE & MINING</h4>
             <p style="font-size: 1.2em; margin-bottom: 20px;">
-                The PiCoin Extended mainnet is operational! Join as an early miner and mine the first PiCoins Extended in history.
+                The PiCoin Extended mainnet is operational on its own network! Join as an early miner and mine the first PiCoins Extended in history on the independent PiCoin blockchain.
             </p>
+        </div>
+
+        <!-- Network Separation -->
+        <div class="section fade-in">
+            <h3>🌐 Independent Network Architecture</h3>
+            <div class="modification-box">
+                <h4>✅ Complete Network Separation from Bitcoin</h4>
+                <p style="font-size: 1.1em;">PiCoin Extended operates on its own completely independent network with unique identifiers that ensure total separation from Bitcoin:</p>
+            </div>
+            
+            <div class="two-columns">
+                <div class="changelog">
+                    <h4>🔧 Network Modifications Made</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;">✅ <strong>Magic Bytes:</strong> Changed from <code>0xf9beb4d9</code> to <code>0xf0beb4d9</code></li>
+                        <li style="margin-bottom: 10px;">✅ <strong>Network Port:</strong> Changed from <code>8333</code> to <code>9333</code></li>
+                        <li style="margin-bottom: 10px;">✅ <strong>70-Cycle Algorithm:</strong> Implemented in validation logic</li>
+                        <li style="margin-bottom: 10px;">✅ <strong>Total Files Modified:</strong> Only 2 files</li>
+                        <li style="margin-bottom: 10px;">✅ <strong>Total Lines Changed:</strong> Only 4 lines</li>
+                    </ul>
+                </div>
+                
+                <div class="changelog">
+                    <h4>🚀 Results Achieved</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 10px;">🎯 <strong>Independent Network:</strong> No conflicts with Bitcoin</li>
+                        <li style="margin-bottom: 10px;">🔒 <strong>Unique Identity:</strong> Own magic bytes and port</li>
+                        <li style="margin-bottom: 10px;">⚡ <strong>Full Compatibility:</strong> All Bitcoin features preserved</li>
+                        <li style="margin-bottom: 10px;">🛡️ <strong>Maximum Security:</strong> Proven Bitcoin architecture</li>
+                        <li style="margin-bottom: 10px;">🔧 <strong>Ultra-Minimal:</strong> Minimal code changes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Modifications -->
+        <div class="section fade-in">
+            <h3>💻 Exact Code Modifications</h3>
+            
+            <div class="success-box">
+                <h4>📁 File 1: src/validation.cpp (70-Cycle Algorithm)</h4>
+                <p><strong>Purpose:</strong> Implements the 70-cycle emission system</p>
+            </div>
+            <div class="code-box">
+// Line 1944 - ORIGINAL Bitcoin code:
+int halvings = nHeight / consensus.nSubsidyHalvingInterval;
+
+// Line 1944 - MODIFIED for PiCoin Extended:
+int halvings = (nHeight / consensus.nSubsidyHalvingInterval) % 33;
+
+// Line 1952 - ORIGINAL Bitcoin code:
+return halvings >= 64 ? 0 : nSubsidy >> halvings;
+
+// Line 1952 - MODIFIED for PiCoin Extended:
+return ((nHeight / consensus.nSubsidyHalvingInterval) / 33 < 70) ? (nSubsidy >> halvings) : 0;
+            </div>
+
+            <div class="success-box">
+                <h4>📁 File 2: src/kernel/chainparams.cpp (Network Separation)</h4>
+                <p><strong>Purpose:</strong> Creates independent network identity</p>
+            </div>
+            <div class="code-box">
+// Line ~118 - ORIGINAL Bitcoin code:
+pchMessageStart[0] = 0xf9;  // Bitcoin magic bytes
+nDefaultPort = 8333;        // Bitcoin port
+
+// Line ~118 - MODIFIED for PiCoin Extended:
+pchMessageStart[0] = 0xf0;  // PiCoin Extended magic bytes
+nDefaultPort = 9333;        // PiCoin Extended port
+            </div>
+        </div>
+
+        <!-- Technical Implementation -->
+        <div class="section fade-in">
+            <h3>🔧 Technical Implementation Details</h3>
+            
+            <div class="highlight">
+                <h4>🎯 Ultra-Minimal Approach</h4>
+                <p style="font-size: 1.1em;">Our implementation philosophy was to make the <strong>smallest possible changes</strong> to the Bitcoin codebase while achieving complete network independence and the 70-cycle system:</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>2</h4>
+                    <p>Files Modified<br>(out of 800+ files)</p>
+                </div>
+                <div class="stat-card">
+                    <h4>4</h4>
+                    <p>Lines Changed<br>(out of 200,000+ lines)</p>
+                </div>
+                <div class="stat-card">
+                    <h4>100%</h4>
+                    <p>Bitcoin Compatibility<br>Preserved</p>
+                </div>
+                <div class="stat-card">
+                    <h4>0</h4>
+                    <p>Security<br>Compromises</p>
+                </div>
+            </div>
         </div>
 
         <!-- Key Features -->
         <div class="section fade-in">
             <h3>✨ Key Features</h3>
             <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🌐 Independent Network</h4>
+                    <p>Completely separate from Bitcoin with unique magic bytes</p>
+                </div>
                 <div class="feature-card">
                     <h4>🔄 70 Emission Cycles</h4>
                     <p>Operation guaranteed until the year 11,265</p>
@@ -281,73 +445,68 @@
                 </div>
                 <div class="feature-card">
                     <h4>⚡ Full Compatibility</h4>
-                    <p>First 132 years identical to Bitcoin</p>
+                    <p>All Bitcoin features preserved</p>
                 </div>
                 <div class="feature-card">
                     <h4>🔧 Minimal Modification</h4>
-                    <p>Only 2 lines of code changed</p>
+                    <p>Only 4 lines of code changed</p>
                 </div>
             </div>
         </div>
 
-        <!-- Who It's For -->
+        <!-- How It Works -->
         <div class="section fade-in">
-            <h3>🎯 Who It's For</h3>
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <h4>👨‍💻 Developers</h4>
-                    <p>Interested in blockchain innovation</p>
-                </div>
-                <div class="feature-card">
-                    <h4>⛏️ Miners</h4>
-                    <p>Seeking long-term incentives (9,240 years)</p>
-                </div>
-                <div class="feature-card">
-                    <h4>🔬 Researchers</h4>
-                    <p>Of decentralized economic systems</p>
-                </div>
-                <div class="feature-card">
-                    <h4>🚀 Crypto Enthusiasts</h4>
-                    <p>And Bitcoin technology fans</p>
+            <h3>⚙️ How the 70-Cycle System Works</h3>
+            
+            <div class="info-box">
+                <h4>🧮 Mathematical Foundation</h4>
+                <p>Each cycle consists of exactly 33 halvings (like Bitcoin), but instead of stopping, the system resets and begins a new cycle:</p>
+                <div class="code-box">
+Cycle Duration: 33 halvings × 4 years = 132 years per cycle
+Total Cycles: 70 cycles
+Total Duration: 70 × 132 = 9,240 years (ending in year 11,265)
+Coins per Cycle: ~21,000,000 (identical to Bitcoin)
+Total Maximum Supply: 70 × 21M = ~1.47 billion coins
                 </div>
             </div>
-        </div>
 
-        <!-- Technical Specifications -->
-        <div class="section fade-in">
-            <h3>📊 Technical Specifications</h3>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4>1.47B</h4>
-                    <p>Maximum Supply<br>(70 cycles × 21M)</p>
-                </div>
-                <div class="stat-card">
-                    <h4>132</h4>
-                    <p>Years per Cycle<br>(33 halvings × 4 years)</p>
-                </div>
-                <div class="stat-card">
-                    <h4>210,000</h4>
-                    <p>Halving Interval<br>(identical to Bitcoin)</p>
-                </div>
-                <div class="stat-card">
-                    <h4>9,240</h4>
-                    <p>Total Operation<br>Years</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Ultra-Minimal Implementation -->
-        <div class="section fade-in">
-            <h3>🔧 Ultra-Minimal Implementation</h3>
             <div class="highlight">
-                <h4>Minimal Code Changes</h4>
-                <ul style="font-size: 1.1em; margin-top: 15px;">
-                    <li><strong>Only 1 file modified:</strong> <code>src/validation.cpp</code></li>
-                    <li><strong>Only 2 lines changed:</strong></li>
-                </ul>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin-top: 15px;">
-                    <p>int halvings = (nHeight / 210000) % 33;       // Line 1944 - Modified</p>
-                    <p>return ((nHeight / 210000) / 33 < 70) ? nSubsidy : 0;    // Line 1952 - Modified</p>
+                <h4>🔄 Cycle Reset Mechanism</h4>
+                <p>The key innovation is the modulo operation that resets halvings every 33 occurrences:</p>
+                <div class="code-box">
+// Calculate which halving we're in (0-32, then resets)
+int halvings = (nHeight / 210000) % 33;
+
+// Check if we're still within the 70 cycles limit
+bool withinLimit = ((nHeight / 210000) / 33 < 70);
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Comparison -->
+        <div class="section fade-in">
+            <h3>🔍 Bitcoin vs PiCoin Extended</h3>
+            <div class="two-columns">
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #dc3545;">
+                    <h4 style="color: #dc3545; text-align: center;">Bitcoin Network</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>🔗 Magic Bytes: <code>0xf9beb4d9</code></li>
+                        <li>🌐 Port: <code>8333</code></li>
+                        <li>⏰ Emission: Ends ~2141</li>
+                        <li>💰 Max Supply: ~21M coins</li>
+                        <li>🔄 Cycles: 1 (single lifecycle)</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 25px; border-radius: 10px; border: 2px solid #28a745;">
+                    <h4 style="color: #28a745; text-align: center;">PiCoin Extended Network</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>🔗 Magic Bytes: <code>0xf0beb4d9</code></li>
+                        <li>🌐 Port: <code>9333</code></li>
+                        <li>⏰ Emission: Ends ~11,265</li>
+                        <li>💰 Max Supply: ~1.47B coins</li>
+                        <li>🔄 Cycles: 70 (multi-lifecycle)</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -355,7 +514,7 @@
         <!-- Getting Started -->
         <div class="section fade-in">
             <h3>🚀 Getting Started</h3>
-            <div class="info-box">
+            <div class="warning-box">
                 <h4>📥 Download & Setup</h4>
                 <p><strong>Visit our GitHub repository</strong> for complete setup instructions, source code, and documentation.</p>
                 <p style="margin-top: 10px;"><strong>Important:</strong> Please read all security guidelines and setup instructions carefully before running the software.</p>
@@ -381,33 +540,12 @@
             </div>
         </div>
 
-        <!-- Technical Documentation -->
-        <div class="section fade-in">
-            <h3>📚 Technical Documentation</h3>
-            
-            <div class="info-box">
-                <h4>⏰ The Bitcoin 2141 Problem</h4>
-                <p>Bitcoin's emission ends around 2141, leaving only transaction fees as miner incentives. PiCoin Extended solves this by implementing 70 Bitcoin-identical cycles extending operations for over 9,000 years.</p>
-            </div>
-
-            <div class="highlight">
-                <h4>🧮 Mathematical Foundation</h4>
-                <div style="background: #2d3748; color: #e2e8f0; padding: 20px; border-radius: 10px; font-family: 'Courier New', monospace; margin: 15px 0;">
-                    <p>Total Cycles: 70</p>
-                    <p>Duration per Cycle: 132 years (33 halvings × 4 years)</p>
-                    <p>Coins per Cycle: ~21,000,000 (identical to Bitcoin)</p>
-                    <p>Total Supply: 70 × 21M = ~1.47 billion coins</p>
-                    <p>Final Year: 2025 + (70 × 132) = 11,265</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Historic Opportunity -->
         <div class="section fade-in">
             <h3>🏆 Historic Opportunity</h3>
             <div class="highlight">
                 <h4>Be a Founding Miner!</h4>
-                <p style="font-size: 1.1em;">You have the chance to mine some of the very first PiCoins Extended ever created. The network is in its genesis phase, making you a founding miner of this revolutionary 70-cycle system.</p>
+                <p style="font-size: 1.1em;">You have the chance to mine some of the very first PiCoins Extended ever created on the independent PiCoin network. The network is in its genesis phase, making you a founding miner of this revolutionary 70-cycle system.</p>
                 <p style="margin-top: 15px;"><strong>🚀 Start mining today and become part of cryptocurrency history!</strong></p>
             </div>
         </div>
@@ -416,7 +554,7 @@
         <div class="cta-section fade-in">
             <h3>🚀 Start Your Journey with PiCoin Extended</h3>
             <p style="font-size: 1.3em; margin-bottom: 30px;">
-                Join the evolution of cryptocurrency. Visit our GitHub repository for complete instructions and start mining today!
+                Join the evolution of cryptocurrency on an independent network. Visit our GitHub repository for complete instructions and start mining today!
             </p>
             <a href="https://github.com/andradepsa/PiCoin" class="btn btn-primary" target="_blank">📥 Visit GitHub Repository</a>
         </div>
@@ -424,7 +562,7 @@
         <!-- Disclaimer -->
         <div class="section fade-in">
             <h3>⚠️ Important Disclaimer</h3>
-            <div style="background: #fff3cd; border-left: 5px solid #ffc107; padding: 20px; border-radius: 10px;">
+            <div class="warning-box">
                 <p><strong>PiCoin Extended is experimental software.</strong> Use at your own risk. Always:</p>
                 <ul style="margin-top: 10px;">
                     <li>Test on small amounts first</li>
@@ -432,6 +570,7 @@
                     <li>Use strong security practices</li>
                     <li>Understand the risks involved</li>
                     <li>Read all documentation carefully</li>
+                    <li>Verify network separation before use</li>
                 </ul>
             </div>
         </div>
