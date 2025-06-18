@@ -388,7 +388,7 @@
             <div class="code-block"><span style="color: #68d391;">// MODIFICATION OF THE 100 CYCLES START</span>
 <span style="color: #81e6d9;">CAmount</span> <span style="color: #fbd38d;">GetBlockSubsidy</span>(<span style="color: #81e6d9;">int</span> nHeight, <span style="color: #81e6d9;">const</span> <span style="color: #81e6d9;">Consensus::Params&</span> consensusParams)
 {
-    <span style="color: #68d391;">// Original Bitcoin logic for the first ~132 years</span>
+    <span style="color: #68d391;">// Original Bitcoin logic for the first ~140 years</span>
     <span style="color: #81e6d9;">int</span> original_halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
     
     <span style="color: #f687b3;">if</span> (original_halvings &lt; <span style="color: #fbb6ce;">33</span>) {
