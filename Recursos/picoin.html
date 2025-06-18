@@ -50,16 +50,6 @@
             margin-bottom: 20px;
         }
         
-        .status-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, #00c851, #007e33);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        
         .card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -85,41 +75,13 @@
             font-size: 1.5em;
         }
         
-        .timeline {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+        .card ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
         }
-        
-        .timeline-item {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        
-        .timeline-item h3 {
+
+        .card ul li {
             margin-bottom: 10px;
-            font-size: 1.3em;
-            color: white;
-            margin-top: 0;
-        }
-        
-        .code-block {
-            background: #1a202c;
-            color: #e2e8f0;
-            padding: 25px;
-            border-radius: 10px;
-            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            overflow-x: auto;
-            margin: 20px 0;
-            border-left: 4px solid #f7931a;
-            white-space: pre;
-            tab-size: 4;
         }
 
         .final-statement {
@@ -135,22 +97,36 @@
             font-weight: bold;
             color: #333;
         }
-        
-        ul.benefits-list {
+
+        .benefits-list {
             list-style: none;
-            padding-left: 0;
+            padding-left: 0 !important;
         }
 
-        ul.benefits-list li {
+        .benefits-list li {
             background: rgba(102, 126, 234, 0.1);
-            margin-bottom: 10px;
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #667eea;
         }
 
-        ul.benefits-list li strong {
+        .benefits-list li strong {
             color: #2c3e50;
+        }
+
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 25px;
+            border-radius: 10px;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid #f7931a;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
         
         .footer {
@@ -162,13 +138,11 @@
         
         @media (max-width: 768px) {
             .header h1 {
-                font-size: 2em;
+                font-size: 2.5em;
             }
-            
             .container {
                 padding: 10px;
             }
-            
             .card {
                 padding: 20px;
             }
@@ -186,10 +160,10 @@
         <!-- Main Thesis -->
         <div class="card">
             <h2>The Future of Bitcoin: Evolution or Extinction?</h2>
-            <p>The original Bitcoin protocol is a masterpiece of engineering. But it contains a silent flaw, programmed into our very DNA: mortality.</p>
+            <p>The original Bitcoin protocol is a masterpiece of engineering. But it contains a silent flaw, programmed into our very DNA: <strong>mortality.</strong></p>
 
             <h3>The Inevitable Crisis: Bitcoin's Great Filter</h3>
-            <p>The greatest threat to Bitcoin's future is not regulation, competition, or quantum computing. It is a simple, unavoidable biological fact: <strong>people die.</strong></p>
+            <p>The greatest threat to Bitcoin's future is not regulation, competition, or quantum computing. It is a simple, unavoidable biological fact: people die.</p>
             <p>The original Bitcoin operates on the dangerous assumption that the transfer of private keys from one generation to the next will be a flawless process. The reality is the opposite.</p>
             <p>Consider a 140-year cycle—the approximate time for Bitcoin's original issuance to end.</p>
             <ul>
@@ -224,6 +198,57 @@
                 <p><strong>We are not changing Bitcoin. We are ensuring it has a future.</strong></p>
             </div>
         </div>
+        
+        <!-- Code Implementation -->
+        <div class="card">
+            <h2>💻 Code Implementation</h2>
+            <p>The implementation modifies only the <code>GetBlockSubsidy</code> function in Bitcoin Core. It is a clean, minimal change that preserves all other aspects of the Bitcoin protocol.</p>
+            
+            <div style="background: #e2e8f0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #3182ce;">
+                <strong>📁 Modified File:</strong> <code style="background: #bee3f8; padding: 3px 8px; border-radius: 4px; color: #1a365d;">src/validation.cpp</code><br>
+                <strong>📝 Function:</strong> <code style="background: #bee3f8; padding: 3px 8px; border-radius: 4px; color: #1a365d;">GetBlockSubsidy()</code>
+            </div>
+
+            <div class="code-block"><span style="color: #68d391;">// MODIFICATION OF THE 100 CYCLES START</span>
+<span style="color: #81e6d9;">CAmount</span> <span style="color: #fbd38d;">GetBlockSubsidy</span>(<span style="color: #81e6d9;">int</span> nHeight, <span style="color: #81e6d9;">const</span> <span style="color: #81e6d9;">Consensus::Params&</span> consensusParams)
+{
+    <span style="color: #68d391;">// Original Bitcoin logic for the first ~140 years</span>
+    <span style="color: #81e6d9;">int</span> original_halvings = nHeight / consensusParams.nSubsidyHalvingInterval;
+    
+    <span style="color: #f687b3;">if</span> (original_halvings < <span style="color: #fbb6ce;">33</span>) {
+        <span style="color: #68d391;">// Force block reward to zero when right shift is undefined.</span>
+        <span style="color: #f687b3;">if</span> (original_halvings >= <span style="color: #fbb6ce;">64</span>)
+            <span style="color: #f687b3;">return</span> <span style="color: #fbb6ce;">0</span>;
+            
+        <span style="color: #81e6d9;">CAmount</span> nSubsidy = <span style="color: #fbb6ce;">50</span> * COIN;
+        nSubsidy >>= original_halvings;
+        <span style="color: #f687b3;">return</span> nSubsidy;
+    }
+
+    <span style="color: #68d391;">// === FROM HERE, THE NEW "BITCOIN 2.0" ERA BEGINS ===</span>
+    <span style="color: #68d391;">// Block height subtracted from the beginning of the new era</span>
+    <span style="color: #81e6d9;">int</span> nHeight_new_era = nHeight - (<span style="color: #fbb6ce;">33</span> * consensusParams.nSubsidyHalvingInterval);
+
+    <span style="color: #68d391;">// Total limit of 100 new cycles</span>
+    <span style="color: #81e6d9;">int</span> total_new_blocks_limit = <span style="color: #fbb6ce;">100</span> * <span style="color: #fbb6ce;">33</span> * consensusParams.nSubsidyHalvingInterval;
+    <span style="color: #f687b3;">if</span> (nHeight_new_era >= total_new_blocks_limit) {
+        <span style="color: #f687b3;">return</span> <span style="color: #fbb6ce;">0</span>;
+    }
+    
+    <span style="color: #68d391;">// Calculate the halving within the new era</span>
+    <span style="color: #81e6d9;">int</span> new_halvings = (nHeight_new_era / consensusParams.nSubsidyHalvingInterval) % <span style="color: #fbb6ce;">33</span>;
+
+    <span style="color: #68d391;">// Additional protection for the new era as well</span>
+    <span style="color: #f687b3;">if</span> (new_halvings >= <span style="color: #fbb6ce;">64</span>)
+        <span style="color: #f687b3;">return</span> <span style="color: #fbb6ce;">0</span>;
+
+    <span style="color: #81e6d9;">CAmount</span> nSubsidy = <span style="color: #fbb6ce;">50</span> * COIN;
+    nSubsidy >>= new_halvings;
+    
+    <span style="color: #f687b3;">return</span> nSubsidy;
+}
+<span style="color: #68d391;">// MODIFICATION OF THE 100 CYCLES END</span></div>
+        </div>
 
         <div style="text-align: center; margin: 30px 0;">
             <a href="https://github.com/andradepsa/bitcoin-2.0" target="_blank" style="text-decoration: none;">
@@ -255,6 +280,7 @@
     <div class="footer">
         <p>🔗 Bitcoin 2.0 Continuity Protocol | Developed by Paulo S. Andrade</p>
         <p>A proposed solution for the long-term sustainability of the Bitcoin network.</p>
+        <p><a href="https://www.linkedin.com/in/geral10/" target="_blank" style="color: white; text-decoration: none;">Connect on LinkedIn</a></p>
     </div>
 </body>
 </html>
