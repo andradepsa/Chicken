@@ -113,6 +113,42 @@
             tab-size: 4;
         }
         
+        .practical-example {
+            background: linear-gradient(135deg, #2d3748, #1a202c);
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border-left: 6px solid #f7931a;
+            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+        
+        .practical-example h3 {
+            color: #fbd38d;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        .cycle-item {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #68d391;
+        }
+        
+        .cycle-original {
+            border-left-color: #f56565;
+        }
+        
+        .cycle-success {
+            border-left-color: #68d391;
+        }
+        
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -223,6 +259,11 @@
             .card {
                 padding: 20px;
             }
+            
+            .practical-example {
+                padding: 20px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
@@ -258,6 +299,51 @@
                     <p><strong>Continuity Era</strong><br>
                     100 renewable cycles<br>
                     17,600+ years of operation</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRACTICAL EXAMPLE SECTION -->
+        <div class="card">
+            <h2>📊 Practical Example of First Cycles</h2>
+            
+            <div class="practical-example">
+                <h3>🔄 CYCLE PROGRESSION DEMONSTRATION</h3>
+                
+                <div class="cycle-item cycle-original">
+                    <strong>ORIGINAL BITCOIN (2009-2140):</strong><br>
+                    └── 21 million BTC issued<br>
+                    └── Reward reaches ZERO in 2140 ❌
+                </div>
+
+                <div class="cycle-item cycle-success">
+                    <strong>CYCLE 1 (2140-2272):</strong><br>
+                    └── Reward returns to 50 BTC! ✅<br>
+                    └── Another 21 million BTC issued<br>
+                    └── Miners return to mining
+                </div>
+
+                <div class="cycle-item cycle-success">
+                    <strong>CYCLE 2 (2272-2404):</strong><br>
+                    └── Reward returns to 50 BTC again! ✅<br>
+                    └── Another 21 million BTC issued<br>
+                    └── Network security maintained
+                </div>
+
+                <div style="text-align: center; margin: 20px 0; padding: 10px; color: #a0aec0; font-style: italic;">
+                    ... 97 more cycles ...
+                </div>
+
+                <div class="cycle-item cycle-success">
+                    <strong>CYCLE 100 (19372-19504):</strong><br>
+                    └── Final cycle - Reward returns to 50 BTC! ✅<br>
+                    └── Last 21 million BTC issued<br>
+                    └── 17,600+ years of Bitcoin operation complete
+                </div>
+
+                <div style="text-align: center; margin-top: 20px; padding: 15px; background: rgba(247, 147, 26, 0.2); border-radius: 8px;">
+                    <strong>... and so on until CYCLE 100</strong><br>
+                    <span style="color: #f7931a;">🎯 Total: 2.121 BILLION BTC over 17,600+ years</span>
                 </div>
             </div>
         </div>
