@@ -55,6 +55,24 @@
             font-weight: 800;
         }
         
+        .responsive-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+        }
+
+        .content-wrapper {
+            transform-origin: center center;
+            width: 900px;
+            height: 900px;
+            transition: transform 0.3s ease;
+        }
+        
         .menu-container {
             position: relative;
             width: 800px;
@@ -389,40 +407,44 @@
 <body>
     <canvas id="particles-canvas"></canvas>
     
-    <div class="header">
-        <h1>Matemático 10</h1>
-    </div>
-    
-    <div class="menu-container">
-        <div class="background-circle"></div>
-        <div class="sector-lines" id="sectorLines"></div>
-        <div class="middle-circle"></div>
-        <div class="outer-circle"></div>
-        
-        <a href="home.html" class="home-button">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        
-        <div class="inner-circle"></div>
-        
-        <!-- Setores dos menus -->
-        <div class="outer-sector social">
-            <div class="submenu-items social"></div>
-        </div>
-        
-        <div class="outer-sector pedagogic">
-            <div class="submenu-items pedagogic"></div>
-            <div class="subsubmenu-container sites"></div>
-        </div>
-        
-        <div class="outer-sector projects">
-            <div class="submenu-items projects"></div>
-            <div class="subsubmenu-container chat"></div>
-        </div>
-        
-        <div class="outer-sector additional">
-            <div class="submenu-items additional"></div>
+    <div class="responsive-container">
+        <div class="content-wrapper">
+            <div class="header">
+                <h1>Matemático 10</h1>
+            </div>
+            
+            <div class="menu-container">
+                <div class="background-circle"></div>
+                <div class="sector-lines" id="sectorLines"></div>
+                <div class="middle-circle"></div>
+                <div class="outer-circle"></div>
+                
+                <a href="home.html" class="home-button">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                
+                <div class="inner-circle"></div>
+                
+                <!-- Setores dos menus -->
+                <div class="outer-sector social">
+                    <div class="submenu-items social"></div>
+                </div>
+                
+                <div class="outer-sector pedagogic">
+                    <div class="submenu-items pedagogic"></div>
+                    <div class="subsubmenu-container sites"></div>
+                </div>
+                
+                <div class="outer-sector projects">
+                    <div class="submenu-items projects"></div>
+                    <div class="subsubmenu-container chat"></div>
+                </div>
+                
+                <div class="outer-sector additional">
+                    <div class="submenu-items additional"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -853,6 +875,19 @@
             });
         }
 
+        function adjustZoom() {
+            const container = document.querySelector('.responsive-container');
+            const content = document.querySelector('.content-wrapper');
+            const containerWidth = container.offsetWidth;
+            const containerHeight = container.offsetHeight;
+            const contentWidth = 900;
+            const contentHeight = 900;
+            const scaleX = containerWidth / contentWidth;
+            const scaleY = containerHeight / contentHeight;
+            const scale = Math.min(scaleX, scaleY);
+            content.style.transform = `scale(${scale})`;
+        }
+
         function initParticles() {
             const canvas = document.getElementById('particles-canvas');
             const ctx = canvas.getContext('2d');
@@ -942,6 +977,10 @@
                 addMenuEvents();
                 initParticles();
                 rotateBackground();
+                
+                // Aplicar sistema de zoom
+                adjustZoom();
+                window.addEventListener('resize', adjustZoom);
             }, 100);
         });
     </script>
