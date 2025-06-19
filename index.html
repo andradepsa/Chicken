@@ -22,6 +22,7 @@
             align-items: center;
             overflow: hidden;
             position: relative;
+            zoom: 1; /* Zoom do browser será aplicado aqui */
         }
         
         #particles-canvas {
@@ -427,6 +428,27 @@
     </div>
 
     <script>
+        // Função para aplicar zoom automático baseado no tamanho da tela
+        function applyAutoZoom() {
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Tamanho base para o qual o menu foi projetado
+            const baseWidth = 900;
+            const baseHeight = 900;
+            
+            // Calcula o zoom necessário
+            const zoomX = windowWidth / baseWidth;
+            const zoomY = windowHeight / baseHeight;
+            const zoom = Math.min(zoomX, zoomY);
+            
+            // Aplica limites ao zoom
+            const finalZoom = Math.max(0.4, Math.min(zoom, 1.2));
+            
+            // Aplica o zoom do browser no body
+            document.body.style.zoom = finalZoom;
+        }
+
         const menuData = {
             social: {
                 title: 'Redes Sociais',
@@ -932,6 +954,9 @@
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
+            // Aplica o zoom automático primeiro
+            applyAutoZoom();
+            
             createSectorLines();
             createMainMenuItems();
             
@@ -943,6 +968,14 @@
                 initParticles();
                 rotateBackground();
             }, 100);
+            
+            // Reaplica o zoom quando a tela é redimensionada
+            window.addEventListener('resize', function() {
+                clearTimeout(window.resizeTimer);
+                window.resizeTimer = setTimeout(() => {
+                    applyAutoZoom();
+                }, 100);
+            });
         });
     </script>
 </body>
